@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Medicos| Papelera</title>
+  <title>Médicos| Papelera</title>
 </head>
 
 <?php
@@ -76,7 +76,7 @@ include('../includes/headerPapelera.php');
   ?>
   <section class="content-header">
     <h1>
-      Medicos Inactivos (<?php echo $total_medicos; ?>)
+      Médicos Inactivos (<?php echo $total_medicos; ?>)
     </h1>
     <ol class="breadcrumb">
       <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
@@ -88,7 +88,16 @@ include('../includes/headerPapelera.php');
   <section class="content">
     <div style="padding-bottom: 10px;">
       <a href="../rh_medico_listado.php" class="btn-sm btn-primary pull-right"> Regresar al Listado </a>
-      <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba nombre o apellido para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+      <div class="pull-left form-inline">
+        <form method="GET" action="" id="formBusquedaRapida">
+          <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+        </form>
+      </div>
+      <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de médicos.">
+        <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada" style="margin-left: 5px;">
+          <i class="fa fa-filter"><img src="../../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar médicos"></i>
+        </button>
+      </span>
     </div>
     <br><br>
     <div id="contenedorTabla">
@@ -107,18 +116,32 @@ include('../includes/headerPapelera.php');
             <?php
             // Número de registros por página
             $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
-
-            // 2. Configuración de paginación
             $registros_por_pagina = 14;
             $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
             $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
-            // 3. Definir el filtro base (Médicos inactivos: rol 4 y estatus 0)
-            $donde = "WHERE r.Id_rol = 7 AND p.estatus = 0";
+            $busqueda       = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+            $f_tipo_medico  = isset($_GET['f_tipo_medico']) ? mysqli_real_escape_string($conexion, $_GET['f_tipo_medico']) : '';
+            $f_genero       = isset($_GET['f_genero']) ? mysqli_real_escape_string($conexion, $_GET['f_genero']) : '';
+            $f_especialidad = isset($_GET['f_especialidad']) ? (int)$_GET['f_especialidad'] : 0;
 
-            // 4. Agregar condición de búsqueda si existe
+            // 2. Definir el filtro base (Buscamos en nombres, apellidos, cédula o especialidad)
+            $donde = "WHERE r.Id_rol = 7 AND p.estatus = 0";
             if ($busqueda != '') {
-              $donde .= " AND (p.nombre LIKE '%$busqueda%' OR p.apellido LIKE '%$busqueda%' OR p.cedula LIKE '%$busqueda%')";
+              $donde .= " AND (p.nombre LIKE '%$busqueda%' 
+                            OR p.apellido LIKE '%$busqueda%' 
+                            OR p.cedula LIKE '%$busqueda%')";
+            }
+
+            if ($f_tipo_medico != '') {
+              $donde .= " AND dm.tipo_medico = '$f_tipo_medico'";
+            }
+            if ($f_genero != '') {
+              $donde .= " AND p.genero = '$f_genero'";
+            }
+            if ($f_especialidad > 0) {
+              // Usamos EXISTS para relacionar al médico con la especialidad seleccionada
+              $donde .= " AND EXISTS (SELECT 1 FROM especialidades_medicos em WHERE em.Id_detalle_medico = dm.Id_detalle_medico AND em.Id_especialidad = '$f_especialidad')";
             }
 
             // 5. Conteo de registros filtrados para la paginación
@@ -146,7 +169,10 @@ include('../includes/headerPapelera.php');
             ?>
           </tr>
           <tr>
-            <?php while ($row = $resultado->fetch_assoc()) { ?>
+              <?php
+              if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) { 
+              ?>
           </tr>
           <tr>
             <td class=""><span class="text-row text-white"><?= ($row['tipo_cedula']) . "-" . ($row['cedula']); ?></span></td>
@@ -163,13 +189,14 @@ include('../includes/headerPapelera.php');
                 <?php endif; ?>
               </td>
             <?php endif; ?>
-
-          </tr>
-        <?php }  ?>
+            <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron médicos inactivos.</td></tr>";
+            } ?>
         </tbody>
       </table>
     </div>
-    <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+     <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
       <ul class="pagination">
         <?php
         // Mantener el término de búsqueda en los enlaces
@@ -293,6 +320,64 @@ include('../includes/headerPapelera.php');
     </div>
   </div>
 
+  <div class="modal fade" id="modalBusquedaAvanzada" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <form id="formBusquedaAvanzada" method="GET" action="">
+          <div class="modal-header bg-primary">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Médicos</h4>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6 form-group">
+                <label>Tipo de Médico</label>
+                <select name="f_tipo_medico" class="form-control">
+                  <option value="">Todos</option>
+                  <option value="Interno" <?php echo ($f_tipo_medico == 'Interno') ? 'selected' : ''; ?>>Interno</option>
+                  <option value="Externo" <?php echo ($f_tipo_medico == 'Externo') ? 'selected' : ''; ?>>Externo</option>
+                </select>
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Especialidad</label>
+                <select name="f_especialidad" class="form-control">
+                  <option value="0">Todas</option>
+                  <?php
+                  $res_esp = $conexion->query("SELECT Id_especialidad, nombre_especialidad FROM especialidad WHERE estatus = 1 ORDER BY nombre_especialidad ASC");
+                  while ($esp = $res_esp->fetch_assoc()) {
+                    $sel = ($f_especialidad == $esp['Id_especialidad']) ? 'selected' : '';
+                    echo "<option value='" . $esp['Id_especialidad'] . "' $sel>" . htmlspecialchars($esp['nombre_especialidad']) . "</option>";
+                  }
+                  ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 form-group">
+                <label>Género</label>
+                <select name="f_genero" class="form-control">
+                  <option value="">Todos</option>
+                  <option value="Masculino" <?php echo ($f_genero == 'Masculino') ? 'selected' : ''; ?>>Masculino</option>
+                  <option value="Femenino" <?php echo ($f_genero == 'Femenino') ? 'selected' : ''; ?>>Femenino</option>
+                </select>
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Buscar por Nombre o Cédula</label>
+                <input type="text" name="buscar" class="form-control" placeholder="Cédula, Nombres, Apellidos..." value="<?php echo htmlspecialchars($busqueda); ?>">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <?php
   include('../includes/footer.php');
   ?>
@@ -331,6 +416,78 @@ include('../includes/headerPapelera.php');
         $('#eliminar').attr('href', urlEliminar);
         $('#EliminarMedico').modal('show');
       })
+
+      // ==========================================
+      // LÓGICA AJAX PARA BÚSQUEDA Y PAGINACIÓN EN VIVO
+      // ==========================================
+      window.cargarDatosAjax = function(url) {
+        $('.tbody').css('opacity', '0.4'); // Efecto visual de carga
+
+        $.get(url, function(data) {
+          var htmlParsed = $(data);
+
+          // Inyectamos el tbody y la paginación sin recargar
+          $('.tbody').html(htmlParsed.find('.tbody').html()).css('opacity', '1');
+          $('nav[aria-label="Page navigation"]').html(htmlParsed.find('nav[aria-label="Page navigation"]').html());
+
+          // Actualizar URL del navegador silenciosamente
+          window.history.pushState(null, '', url);
+        }).fail(function() {
+          alert("Error de conexión al aplicar filtros.");
+          $('.tbody').css('opacity', '1');
+        });
+      };
+
+      // Búsqueda Rápida con KeyUp
+      let timer;
+      $('#buscar').on('keyup', function() {
+        clearTimeout(timer);
+        let query = $(this).val();
+        timer = setTimeout(function() {
+          // Enviar también el resto de filtros si están en el form de Búsqueda Avanzada
+          let formData = $('#formBusquedaAvanzada').serializeArray();
+          let queryParams = [];
+          $.each(formData, function(i, field) {
+            if (field.name !== 'buscar' && field.value !== '' && field.value !== '0') {
+              queryParams.push(field.name + '=' + encodeURIComponent(field.value));
+            }
+          });
+          queryParams.push('buscar=' + encodeURIComponent(query));
+
+          var url = 'rh_medico_papelera_listado.php?' + queryParams.join('&');
+          cargarDatosAjax(url);
+        }, 400);
+      });
+
+      $('#formBusquedaRapida').on('submit', function(e) {
+        e.preventDefault();
+      });
+
+      // Interceptar Búsqueda Avanzada
+      $('#formBusquedaAvanzada').on('submit', function(e) {
+        e.preventDefault();
+        var url = 'rh_medico_papelera_listado.php?' + $(this).serialize();
+        $('#modalBusquedaAvanzada').modal('hide');
+        cargarDatosAjax(url);
+      });
+
+      // Interceptar paginación
+      $(document).on('click', 'nav[aria-label="Page navigation"] .pagination a', function(e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        if (url) {
+          cargarDatosAjax(url);
+        }
+      });
+
+      // Función para Limpiar Filtros
+      window.limpiarFiltrosAjax = function() {
+        $('#formBusquedaAvanzada')[0].reset();
+        $('#buscar').val('');
+        var urlLimpia = window.location.href.split('?')[0];
+        cargarDatosAjax(urlLimpia);
+        $('#modalBusquedaAvanzada').modal('hide');
+      };
 
       // Script para mostrar los modales de sesión
       <?php if ($mostrar_modal_exito) : ?>

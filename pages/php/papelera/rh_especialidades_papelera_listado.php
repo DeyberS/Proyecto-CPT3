@@ -136,7 +136,10 @@
               ?>
             </tr>
             <tr>
-              <?php while ($row = $resultado->fetch_assoc()) { ?>
+              <?php
+              if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) { 
+              ?>
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_especialidad']; ?></span></td>
@@ -152,11 +155,14 @@
                 </td>
               <?php endif; ?>
             </tr>
-          <?php }  ?>
+            <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron especialidades inactivas.</td></tr>";
+            } ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           // Mantiene el término de búsqueda en los enlaces de las páginas

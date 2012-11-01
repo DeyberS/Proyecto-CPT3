@@ -1,12 +1,10 @@
 <?php
-// ====================================================================
-// MODIFICACIÓN CLAVE 1: INICIAR LA SESIÓN
-// Esto es esencial para poder usar $_SESSION y mostrar los modales.
-// ====================================================================
-session_start();
-
 // Incluir la conexión a la base de datos
 include('../conexion.php'); 
+session_start();
+
+$es_admin = (isset($_SESSION['rol']) && $_SESSION['rol'] == 1);
+$ruta_redireccion = $es_admin ? '../../pages/php/cfg_usuario_listado.php' : '../../inicio.php';
 
 require '../../plugins/PHPMailer/src/Exception.php';
 require '../../plugins/PHPMailer/src/PHPMailer.php';
@@ -51,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Si el ID o campos obligatorios faltan, redirigir con error
     if ($id_usuario === 0 || empty($nombre) || empty($email) || $rol === 0) {
         $_SESSION['mensaje_user_error'] = '❌ Error: Faltan datos esenciales (ID, Nombre, Email o Rol) para la actualización.';
-        header('Location: ../../pages/php/cfg_usuario_listado.php');
+        header("Location: $ruta_redireccion");
         exit;
     }
 
@@ -67,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $cambio_password = true;
         } else {
             $_SESSION['mensaje_user_error'] = '⚠️ Error: Las contraseñas nuevas no coinciden.';
-            header('Location: ../../pages/php/cfg_usuario_listado.php');
+            header("Location: $ruta_redireccion");
             exit;
         }
     } else {
@@ -127,33 +125,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Éxito: Redirigir al listado de usuarios con mensaje de éxito
                 $_SESSION['mensaje_user_exito'] = '✅ Éxito: El usuario ' . $nombre . ' ha sido actualizado correctamente' . $info_correo;
-                header('Location: ../../pages/php/cfg_usuario_listado.php');
+                header("Location: $ruta_redireccion");
                 exit;
 
             } else {
                 // Error al actualizar el rol
                 $_SESSION['mensaje_user_error'] = '❌ Error: Los datos personales se actualizaron, pero falló la actualización del rol. Error: ' . $stmt_rol->error;
-                header('Location: ../../pages/php/cfg_usuario_listado.php');
+                header("Location: $ruta_redireccion");
                 exit;
             }
 
         } else {
             // Error en la ejecución de la persona (ej. email duplicado)
             $_SESSION['mensaje_user_error'] = '❌ Error de Ejecución: No se pudieron actualizar los datos personales. Error: ' . $stmt->error;
-            header('Location: ../../pages/php/cfg_usuario_listado.php');
+            header("Location: $ruta_redireccion");
             exit;
         }
 
     } else {
         $_SESSION['mensaje_user_error'] = '❌ Error: No se pudo preparar la consulta SQL.';
-        header('Location: ../../pages/php/cfg_usuario_listado.php');
+        header("Location: $ruta_redireccion");
         exit;
     }
 
 } else {
     // MODIFICACIÓN CLAVE 2: Usar la variable de sesión para el acceso no autorizado
     $_SESSION['mensaje_user_error'] = '⚠️ Error de Petición: Acceso no autorizado al script de edición.';
-    header('Location: ../../pages/php/cfg_usuario_listado.php');
+    header("Location: $ruta_redireccion");
     exit;
 }
 ?>

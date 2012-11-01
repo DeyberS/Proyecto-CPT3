@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 01-11-2012 a las 04:25:06
+-- Tiempo de generación: 12-07-2026 a las 23:26:19
 -- Versión del servidor: 10.1.35-MariaDB
 -- Versión de PHP: 7.2.9
 
@@ -34,14 +34,6 @@ CREATE TABLE `alergias_conocidas` (
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `alergias_conocidas`
---
-
-INSERT INTO `alergias_conocidas` (`Id_alergias_conocidas`, `nombre_alergia`, `estatus`) VALUES
-(6, 'Alergia al Mani', 1),
-(7, 'Rinitis', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -53,15 +45,6 @@ CREATE TABLE `antecedentes_familiares` (
   `descripcion` varchar(150) COLLATE utf8_spanish_ci DEFAULT NULL,
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `antecedentes_familiares`
---
-
-INSERT INTO `antecedentes_familiares` (`Id`, `descripcion`, `estatus`) VALUES
-(18, 'a', '1'),
-(19, 's', '1'),
-(20, 'B', '1');
 
 -- --------------------------------------------------------
 
@@ -75,14 +58,6 @@ CREATE TABLE `antecedentes_perinatales` (
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
---
--- Volcado de datos para la tabla `antecedentes_perinatales`
---
-
-INSERT INTO `antecedentes_perinatales` (`Id`, `descripcion`, `estatus`) VALUES
-(18, 's', '1'),
-(19, 'A', '1');
-
 -- --------------------------------------------------------
 
 --
@@ -94,15 +69,6 @@ CREATE TABLE `antecedentes_sexuales_reproductivos` (
   `descripcion` varchar(150) COLLATE utf8_spanish_ci DEFAULT NULL,
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `antecedentes_sexuales_reproductivos`
---
-
-INSERT INTO `antecedentes_sexuales_reproductivos` (`Id`, `descripcion`, `estatus`) VALUES
-(16, 'b', '1'),
-(17, 's', '1'),
-(18, 'C', '1');
 
 -- --------------------------------------------------------
 
@@ -168,14 +134,6 @@ CREATE TABLE `departamento` (
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `departamento`
---
-
-INSERT INTO `departamento` (`Id_departamento`, `nombre_departamento`, `estatus`) VALUES
-(1, 'Programa', 1),
-(5, 'Farmacia', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -198,15 +156,6 @@ CREATE TABLE `descripcion_medicamento` (
   `Id_medicamento` int(11) NOT NULL,
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `descripcion_medicamento`
---
-
-INSERT INTO `descripcion_medicamento` (`Id`, `via_aplicacion`, `almacenamiento`, `excipientes`, `stock_minimo`, `stock_maximo`, `codigo_barras`, `contenido_neto`, `cantidad_concentracion`, `Id_tipo_concentracion`, `Id_laboratorio`, `Id_presentacion`, `Id_medicamento`, `estatus`) VALUES
-(81, 'Oral', '8_a_15', '', 1, 200, '27489824824742', '10 Tabletas', '10', 2, 2, 1, 94, '1'),
-(82, 'Oral', '8_a_15', 'Fresa, Sal, Mantequilla', 1, 100, '234234235233', '10 Tabletas', '10', 2, 2, 1, 95, '1'),
-(85, 'Oral', '8_a_15', '', 1, 200, '2748982482474', '10 Tabletas', '10', 2, 2, 1, 98, '1');
 
 -- --------------------------------------------------------
 
@@ -241,23 +190,6 @@ CREATE TABLE `detalle_medico` (
   `Id_persona` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `detalle_medico`
---
-
-INSERT INTO `detalle_medico` (`Id_detalle_medico`, `cod_colegiatura`, `fecha_ingreso`, `tipo_medico`, `Id_persona`) VALUES
-(20, 8348234, '2026-04-28', 'Interno', 340),
-(21, 0, '2026-05-14', 'Externo', 341),
-(22, 0, '2026-05-24', 'Interno', 351),
-(23, 0, '2026-06-06', 'Externo', 352),
-(24, 0, '2026-06-06', 'Externo', 353),
-(25, 0, '2026-06-13', 'Externo', 355),
-(26, 0, '2026-06-13', 'Externo', 356),
-(27, 1374280, '2026-06-14', 'Interno', 359),
-(28, 0, '2026-06-15', 'Externo', 362),
-(29, 0, '2026-06-23', 'Externo', 364),
-(30, 0, '2026-06-23', 'Externo', 366);
-
 -- --------------------------------------------------------
 
 --
@@ -282,17 +214,6 @@ CREATE TABLE `detalle_paciente` (
   `id_persona` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `detalle_paciente`
---
-
-INSERT INTO `detalle_paciente` (`Id_detalle_paciente`, `situacion_conyugal`, `etnia`, `tipo_etnia`, `analfabeta`, `seguro_social`, `profesion`, `ocupacion`, `nivel_instruccion`, `mision`, `años_aprobados`, `discapacidad`, `tipo_discapacidad`, `tipo_paciente`, `id_persona`) VALUES
-(69, '', 'No', '', 'No', '', '', '', 'sin_instruccion', '', 0, 'No', '', 'Interno', 328),
-(70, '', 'No', '', 'No', '', '', '', '', '', 0, 'No', '', 'Interno', 332),
-(71, '', 'No', '', 'No', '', '', '', 'sin_instruccion', NULL, NULL, 'No', '', 'Externo', 354),
-(72, '', 'No', '', 'Si', '', '', '', 'sin_instruccion', NULL, NULL, 'No', '', 'Externo', 360),
-(73, 'Soltero', 'No', '', 'No', '', '', '', 'sin_instruccion', NULL, NULL, 'No', '', 'Externo', 365);
-
 -- --------------------------------------------------------
 
 --
@@ -314,17 +235,6 @@ CREATE TABLE `detalle_paciente_menor` (
   `id_persona` int(11) NOT NULL,
   `id_representante` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `detalle_paciente_menor`
---
-
-INSERT INTO `detalle_paciente_menor` (`Id_detalle_paciente_menor`, `parentesco`, `etnia`, `tipo_etnia`, `analfabeta`, `nivel_instruccion`, `mision`, `años_aprobados`, `discapacidad`, `tipo_discapacidad`, `tipo_paciente`, `id_persona`, `id_representante`) VALUES
-(142, 'Padre', 'No', 'Ninguna', 'No', '', NULL, 0, 'No', 'Ninguna', 'Interno', 331, 330),
-(143, 'Padre', 'No', 'Ninguna', 'No', '', NULL, 0, 'No', 'Ninguna', 'Interno', 344, 343),
-(144, 'Padre', 'No', 'Ninguna', 'No', NULL, NULL, 0, 'No', 'Ninguna', 'Externo', 350, 349),
-(145, 'Tío(a)', 'No', 'Ninguna', 'No', NULL, NULL, 0, 'No', 'Ninguna', 'Externo', 358, 357),
-(146, 'Padre', 'No', 'Ninguna', 'No', NULL, NULL, 0, 'No', 'Ninguna', 'Externo', 361, 348);
 
 -- --------------------------------------------------------
 
@@ -349,15 +259,6 @@ CREATE TABLE `detalle_patologia_sintomas` (
   `Id_patologia` int(11) NOT NULL,
   `Id_sintoma` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `detalle_patologia_sintomas`
---
-
-INSERT INTO `detalle_patologia_sintomas` (`Id`, `Id_patologia`, `Id_sintoma`) VALUES
-(29, 32, 14),
-(30, 33, 15),
-(31, 34, 16);
 
 -- --------------------------------------------------------
 
@@ -390,38 +291,7 @@ CREATE TABLE `detalle_persona_rol` (
 --
 
 INSERT INTO `detalle_persona_rol` (`Id_detalle_persona_rol`, `Id_persona`, `Id_rol`, `estatus`) VALUES
-(66, 189, 1, '2'),
-(110, 281, 6, '2'),
-(112, 283, 2, '2'),
-(113, 284, 8, '2'),
-(137, 328, 3, '1'),
-(139, 330, 5, '1'),
-(140, 331, 3, '1'),
-(141, 332, 3, '1'),
-(148, 339, 9, '2'),
-(149, 340, 7, '2'),
-(150, 341, 7, '2'),
-(152, 343, 5, '1'),
-(153, 344, 3, '1'),
-(155, 346, 5, '1'),
-(157, 348, 5, '1'),
-(158, 349, 5, '1'),
-(159, 350, 3, '1'),
-(161, 352, 7, '2'),
-(162, 353, 7, '2'),
-(163, 354, 3, '1'),
-(164, 355, 7, '2'),
-(165, 356, 7, '2'),
-(166, 357, 5, '1'),
-(167, 358, 3, '1'),
-(168, 359, 7, '2'),
-(169, 360, 3, '1'),
-(170, 361, 3, '1'),
-(171, 362, 7, '2'),
-(172, 363, 2, '2'),
-(173, 364, 7, '2'),
-(174, 365, 3, '1'),
-(175, 366, 7, '2');
+(1, 1, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -450,15 +320,6 @@ CREATE TABLE `detalle_principio_medicamento` (
   `id_tipo_unidad_medida` int(11) NOT NULL,
   `cantidad_unidad_medida` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `detalle_principio_medicamento`
---
-
-INSERT INTO `detalle_principio_medicamento` (`Id_principio_medicamento`, `id_medicamento`, `id_principio_activo`, `id_tipo_unidad_medida`, `cantidad_unidad_medida`) VALUES
-(1, 81, 2, 2, 200),
-(2, 82, 1, 2, 300),
-(3, 85, 6, 2, 200);
 
 -- --------------------------------------------------------
 
@@ -494,21 +355,6 @@ CREATE TABLE `direccion` (
   `estatus` enum('1','2') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `direccion`
---
-
-INSERT INTO `direccion` (`Id_Direccion`, `tiempo_residencia`, `tiempo`, `avenida_calle`, `referencia`, `Id_persona`, `Id_sector`, `estatus`) VALUES
-(295, '', 'dia/s', '', '', 328, 2, '1'),
-(296, '', 'dia/s', '', '', 331, 1, '1'),
-(297, '', 'dia/s', '', '', 332, 1, '1'),
-(299, '', 'dia/s', '', '', 330, 1, '1'),
-(300, '', 'dia/s', '', '', 349, NULL, '1'),
-(301, '', 'dia/s', '', '', 344, 4, '1'),
-(302, '', 'dia/s', '', 'Registrado Vía Rápida (Despacho)', 354, NULL, '1'),
-(303, '', 'dia/s', '', 'Registrado Vía Rápida (Despacho)', 360, NULL, '1'),
-(304, '', 'dia/s', '', 'Registrado Vía Rápida (Despacho)', 365, NULL, '1');
-
 -- --------------------------------------------------------
 
 --
@@ -520,16 +366,6 @@ CREATE TABLE `especialidad` (
   `nombre_especialidad` varchar(100) NOT NULL,
   `estatus` int(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `especialidad`
---
-
-INSERT INTO `especialidad` (`Id_especialidad`, `nombre_especialidad`, `estatus`) VALUES
-(1, 'Medicina General', 1),
-(2, 'Medicina Interna', 1),
-(3, 'Neumologia', 1),
-(4, 'Pediatria', 1);
 
 -- --------------------------------------------------------
 
@@ -543,15 +379,6 @@ CREATE TABLE `especialidades_medicos` (
   `Id_detalle_medico` int(11) NOT NULL,
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `especialidades_medicos`
---
-
-INSERT INTO `especialidades_medicos` (`Id`, `Id_especialidad`, `Id_detalle_medico`, `estatus`) VALUES
-(28, 1, 22, NULL),
-(29, 4, 20, NULL),
-(30, 1, 27, NULL);
 
 -- --------------------------------------------------------
 
@@ -608,15 +435,6 @@ CREATE TABLE `estilos_de_vida_paciente` (
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
---
--- Volcado de datos para la tabla `estilos_de_vida_paciente`
---
-
-INSERT INTO `estilos_de_vida_paciente` (`Id`, `Id_tipo`, `Id_Historial`, `estatus`) VALUES
-(11, 14, 86, '1'),
-(12, 15, 87, '1'),
-(13, 16, 90, '1');
-
 -- --------------------------------------------------------
 
 --
@@ -646,13 +464,6 @@ CREATE TABLE `historial_alergias` (
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
---
--- Volcado de datos para la tabla `historial_alergias`
---
-
-INSERT INTO `historial_alergias` (`Id`, `Id_persona`, `Id_alergia`, `Id_Historial`, `fecha_registro`, `estatus`) VALUES
-(71, 344, 6, 90, '2026-05-28', '1');
-
 -- --------------------------------------------------------
 
 --
@@ -665,15 +476,6 @@ CREATE TABLE `historial_antecedentes_familiares` (
   `Id_Historial` int(11) NOT NULL,
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `historial_antecedentes_familiares`
---
-
-INSERT INTO `historial_antecedentes_familiares` (`Id`, `Id_antecedente`, `Id_Historial`, `estatus`) VALUES
-(15, 18, 86, '1'),
-(16, 19, 87, '1'),
-(17, 20, 90, '1');
 
 -- --------------------------------------------------------
 
@@ -688,14 +490,6 @@ CREATE TABLE `historial_antecedentes_perinatales` (
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
---
--- Volcado de datos para la tabla `historial_antecedentes_perinatales`
---
-
-INSERT INTO `historial_antecedentes_perinatales` (`Id`, `Id_antecedente`, `Id_Historial`, `estatus`) VALUES
-(16, 18, 87, '1'),
-(17, 19, 90, '1');
-
 -- --------------------------------------------------------
 
 --
@@ -708,15 +502,6 @@ CREATE TABLE `historial_antecedentes_sexuales_reproductivos` (
   `Id_Historial` int(11) NOT NULL,
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `historial_antecedentes_sexuales_reproductivos`
---
-
-INSERT INTO `historial_antecedentes_sexuales_reproductivos` (`Id`, `Id_antecedente`, `Id_Historial`, `estatus`) VALUES
-(15, 16, 86, '1'),
-(16, 17, 87, '1'),
-(17, 18, 90, '1');
 
 -- --------------------------------------------------------
 
@@ -731,22 +516,6 @@ CREATE TABLE `historial_medico` (
   `Id_persona` int(11) NOT NULL,
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `historial_medico`
---
-
-INSERT INTO `historial_medico` (`id_historial`, `grupo_sanguineo`, `fecha`, `Id_persona`, `estatus`) VALUES
-(86, 'A+', '2012-11-01 08:13:52', 328, 1),
-(87, 'A+', '2012-11-01 14:00:06', 331, 1),
-(88, 'A+', '2012-11-01 06:46:28', 332, 1),
-(90, 'A+', '2026-05-15 23:25:44', 344, 1),
-(91, 'A+', '2026-05-19 22:40:00', 350, 1),
-(92, 'A+', '2026-06-13 21:36:29', 354, 1),
-(93, 'A+', '2026-06-13 21:54:34', 358, 1),
-(94, 'A+', '2026-06-15 02:22:27', 360, 1),
-(95, 'A+', '2026-06-15 02:24:45', 361, 1),
-(96, 'A+', '2026-06-23 19:52:27', 365, 1);
 
 -- --------------------------------------------------------
 
@@ -763,13 +532,6 @@ CREATE TABLE `historial_patologias` (
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
---
--- Volcado de datos para la tabla `historial_patologias`
---
-
-INSERT INTO `historial_patologias` (`Id`, `Id_persona`, `Id_patologia`, `Id_Historial`, `fecha_registro`, `estatus`) VALUES
-(142, 331, 32, 87, '0000-00-00', '1');
-
 -- --------------------------------------------------------
 
 --
@@ -781,16 +543,6 @@ CREATE TABLE `laboratorio` (
   `nombre_laboratorio` varchar(45) NOT NULL,
   `estatus` int(11) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `laboratorio`
---
-
-INSERT INTO `laboratorio` (`Id_laboratorio`, `nombre_laboratorio`, `estatus`) VALUES
-(1, 'Laboratorios Leti', 1),
-(2, 'Behrens', 1),
-(3, 'Calox International', 1),
-(4, 'Laboratorios Farma', 1);
 
 -- --------------------------------------------------------
 
@@ -821,18 +573,6 @@ CREATE TABLE `lugar_nacimiento` (
   `Id_municipio` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
---
--- Volcado de datos para la tabla `lugar_nacimiento`
---
-
-INSERT INTO `lugar_nacimiento` (`Id`, `Id_persona`, `Id_municipio`) VALUES
-(221, 328, 677),
-(222, 331, 973),
-(223, 332, 912),
-(225, 330, 1),
-(226, 349, NULL),
-(227, 344, 944);
-
 -- --------------------------------------------------------
 
 --
@@ -844,15 +584,6 @@ CREATE TABLE `medicamento` (
   `nombre_medicamento` varchar(100) NOT NULL,
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `medicamento`
---
-
-INSERT INTO `medicamento` (`Id_medicamento`, `nombre_medicamento`, `estatus`) VALUES
-(94, 'DARFF', 1),
-(95, 'GERMEW', 1),
-(98, 'AAA', 0);
 
 -- --------------------------------------------------------
 
@@ -883,15 +614,6 @@ CREATE TABLE `medicos_departamentos` (
   `Id_detalle_medico` int(11) NOT NULL,
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `medicos_departamentos`
---
-
-INSERT INTO `medicos_departamentos` (`Id`, `Id_departamento`, `Id_detalle_medico`, `estatus`) VALUES
-(4, 1, 22, NULL),
-(5, 5, 20, NULL),
-(6, 5, 27, NULL);
 
 -- --------------------------------------------------------
 
@@ -1269,42 +991,6 @@ CREATE TABLE `notificaciones_usuarios` (
   `fecha_creacion` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `notificaciones_usuarios`
---
-
-INSERT INTO `notificaciones_usuarios` (`id`, `id_usuario`, `tipo`, `referencia_id`, `titulo`, `mensaje`, `ruta`, `leida`, `fecha_creacion`) VALUES
-(376, 189, 'inventario_lote', 'lote_4_Proximo', 'Lote próximo a vencer', 'El lote DKS de AAA vence pronto (2026-06-24).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
-(377, 281, 'inventario_lote', 'lote_4_Proximo', 'Lote próximo a vencer', 'El lote DKS de AAA vence pronto (2026-06-24).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
-(378, 339, 'inventario_lote', 'lote_4_Proximo', 'Lote próximo a vencer', 'El lote DKS de AAA vence pronto (2026-06-24).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
-(379, 189, 'inventario_lote', 'lote_6_Proximo', 'Lote próximo a vencer', 'El lote ACD de XL vence pronto (2026-07-08).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
-(380, 281, 'inventario_lote', 'lote_6_Proximo', 'Lote próximo a vencer', 'El lote ACD de XL vence pronto (2026-07-08).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
-(381, 339, 'inventario_lote', 'lote_6_Proximo', 'Lote próximo a vencer', 'El lote ACD de XL vence pronto (2026-07-08).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
-(436, 189, 'receta_disponible', 'disp_Externa_2', 'Medicina Disponible para Despachar', 'Ya hay stock de AAA para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:28:25'),
-(437, 281, 'receta_disponible', 'disp_Externa_2', 'Medicina Disponible para Despachar', 'Ya hay stock de AAA para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:28:25'),
-(438, 339, 'receta_disponible', 'disp_Externa_2', 'Medicina Disponible para Despachar', 'Ya hay stock de AAA para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:28:26'),
-(547, 189, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:51:25'),
-(548, 281, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:51:26'),
-(549, 339, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:51:26'),
-(592, 189, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-06-18 03:50:12'),
-(593, 281, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-06-18 03:50:12'),
-(594, 339, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-06-18 03:50:12'),
-(676, 189, 'cita_medica', 'cita_2_hoy', 'Cita programada para hoy', 'Paciente: Steve  Rogers a las 10:30 AM', 'pages/php/citas_medicas_listado.php', 1, '2026-06-19 09:33:36'),
-(677, 359, 'cita_medica', 'cita_2_hoy', 'Cita programada para hoy', 'Paciente: Steve  Rogers a las 10:30 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-19 09:33:36'),
-(855, 189, 'cita_medica', 'cita_4_hoy', 'Cita programada para hoy', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 1, '2026-06-18 09:30:40'),
-(856, 359, 'cita_medica', 'cita_4_hoy', 'Cita programada para hoy', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-18 09:30:40'),
-(943, 189, 'cita_medica', 'cita_4_vencida', 'Cita Vencida', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 1, '2026-06-18 16:13:02'),
-(944, 359, 'cita_medica', 'cita_4_vencida', 'Cita Vencida', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-18 16:13:02'),
-(1014, 189, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-22 16:15:21'),
-(1015, 281, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-22 16:15:21'),
-(1016, 339, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-22 16:15:21'),
-(1020, 189, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-25 11:25:24'),
-(1021, 281, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-25 11:25:25'),
-(1022, 339, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-25 11:25:25'),
-(1437, 189, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 1, '2026-06-25 11:56:28'),
-(1438, 281, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 0, '2026-06-25 11:56:28'),
-(1439, 339, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 1, '2026-06-25 11:56:28');
-
 -- --------------------------------------------------------
 
 --
@@ -1351,16 +1037,6 @@ CREATE TABLE `patologias` (
   `codigo_cie` varchar(10) COLLATE utf8_spanish_ci NOT NULL,
   `contagioso` enum('SI','NO') COLLATE utf8_spanish_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `patologias`
---
-
-INSERT INTO `patologias` (`Id_patologia`, `nombre_patologia`, `descripcion`, `estatus`, `codigo_cie`, `contagioso`) VALUES
-(32, 'Dengue', NULL, 1, 'A99', 'NO'),
-(33, 'Hipertensión Arterial', NULL, 1, 'I10', 'NO'),
-(34, 'Diabetes Mellitus Tipo 2', NULL, 1, 'E11.9', 'NO'),
-(35, 'HLA', NULL, 1, 'A345', 'NO');
 
 -- --------------------------------------------------------
 
@@ -1628,40 +1304,7 @@ CREATE TABLE `persona` (
 --
 
 INSERT INTO `persona` (`id`, `nombre`, `apellido`, `tipo_cedula`, `cedula`, `fecha_nacimiento`, `genero`, `email`, `password`, `login_attempts`, `last_login_attempt`, `reset_token`, `token_expiry`, `estatus`) VALUES
-(189, 'Administrador', '', '', NULL, '0000-00-00', '', 'Admin@gmail.com', '$2y$10$EGos8b6SaoaFZchVovQeE.XKEiiIMFnMVlBNSr4yqYFSnC5Q5AlsK', 0, '2026-04-18 15:07:25', '786882', '2026-03-13 00:03:15', 1),
-(281, 'Farmaceutico', '', '', NULL, '0000-00-00', '', 'farmacia1@gmail.com', '$2y$10$Z4ra3/9G2YevG8DqH9nOreaVP8zCN0mjxrIf5RnkJ0OeU1OplYNU6', 0, NULL, NULL, NULL, 1),
-(283, 'Supervisor', '', '', NULL, '0000-00-00', '', 'supervisor@gmail.com', '$2y$10$LpUujaFYGLR8dh8TLbVeSOPfgEPOoSUhUBRPwDegm4vmCAjesma6K', 0, NULL, NULL, NULL, 2),
-(284, 'Recursos Humanos', '', '', NULL, '0000-00-00', '', 'RH2026@gmail.com', '$2y$10$OZv49JoBe5QAdfDZSthS0.vAX2Z5P/vmcjo5YdNMYEL8K2vP5NMz.', 0, NULL, NULL, NULL, 2),
-(328, 'Ezequiel', 'Veroez', 'V', '22333333', '2004-12-07', 'Masculino', 'Deybersilva12@gmail.com', '', 0, NULL, NULL, NULL, 1),
-(329, 'Francisco', 'Perez Mendoza', 'V', '23456646', '1994-11-01', 'Masculino', 'Camilo@gmail.com', '', 0, NULL, NULL, NULL, 1),
-(330, 'Mario', 'Gomez', 'V', '24244252', '1994-11-01', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(331, 'Steve ', 'Rogers', 'V', '31306212', '2011-03-01', 'Masculino', NULL, '', 0, NULL, NULL, NULL, 1),
-(332, 'Maximiliano', 'Vasquez', 'V', '34567890', '1994-11-01', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(339, 'Despachador', NULL, '', NULL, '0000-00-00', '', 'DespachadorOffi@gmail.com', '$2y$10$Kkjf20ZHBHwn3f6CGKXXd.LLK9WJIFeXGFMxnVT1tRYsgq4tmAV9i', 0, '2026-04-19 22:16:37', NULL, NULL, 1),
-(340, 'Mario ', 'Mario', 'V', '23445525', '1986-01-06', 'Masculino', 'mario12@gmail.com', '$2y$10$p8h4Ro6UFZaGZk2jJCMmmuwleZonrXg8EcTH13D2pZ6PUHU.Cu1fa', 0, NULL, NULL, NULL, 2),
-(341, 'Maicol', 'Jackson', 'V', '33333333', '2008-05-14', 'Masculino', 'Deyber12@gmail.com', '', 0, NULL, NULL, NULL, 2),
-(343, 'sss', 'sssd', 'V', '22433333', '2008-05-15', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(344, 'XSD', 'DSD', 'V', '12222222', '2026-05-15', 'Masculino', NULL, '', 0, NULL, NULL, NULL, 1),
-(346, 'ABCE', 'HSH', 'V', '44444444', '1995-08-13', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(348, 'DDDDD', 'SSSSS', 'V', '77777777', '1988-01-18', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(349, 'BYE', 'HELLO', 'V', '54384384', '2005-09-19', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(350, 'HOLA', 'CHAO', 'PN', '20000000000000000000', '2026-05-19', 'Masculino', NULL, '', 0, NULL, NULL, NULL, 1),
-(351, 'SELECT', 'XXX', 'V', '31306213', '2008-05-24', 'Masculino', 'XXX@gmail.com', '', 0, NULL, NULL, NULL, 0),
-(352, 'ssss', '', 'V', '33333332', '2008-06-06', 'Masculino', '', '', 0, NULL, NULL, NULL, 2),
-(353, 'XX', 'sjnds', 'V', '31306211', '2008-06-06', 'Masculino', '', '', 0, NULL, NULL, NULL, 2),
-(354, 'Fernanda', 'Garcia', 'V', '34306215', '2008-06-13', 'Femenino', '', '', 0, NULL, NULL, NULL, 1),
-(355, 'Daniel ', 'Veroez', 'V', '23475858', '2008-06-13', 'Masculino', '', '', 0, NULL, NULL, NULL, 2),
-(356, 'Fermin', 'Lopez', 'V', '23434343', '2008-06-13', 'Masculino', '', '', 0, NULL, NULL, NULL, 2),
-(357, 'Gabriel', 'Mendoza', 'V', '23553253', '2008-06-13', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(358, 'David', 'Silva', 'RP', '31306211-1', '2025-10-13', 'Masculino', NULL, '', 0, NULL, NULL, NULL, 1),
-(359, 'Carles', 'Puyol', 'V', '25353535', '2008-06-14', 'Masculino', 'CarlitoP@gmail.com', '', 0, NULL, NULL, NULL, 2),
-(360, 'Manzana', '', 'V', '33244323', '2008-06-15', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(361, 'Cebollin', '', 'PN', '52353532523523523532', '2026-06-14', 'Masculino', NULL, '', 0, NULL, NULL, NULL, 1),
-(362, 'XL', '', 'V', '32423423', '2008-06-14', 'Masculino', '', '', 0, NULL, NULL, NULL, 2),
-(363, 'Deybersito', NULL, '', NULL, '0000-00-00', '', 'silvadeyber0712@gmail.com', '$2y$10$fKO98WZgjZSKLc.FvqCNfOsZ5eJ1B.LGAfCNp6fnYV2ZwpBjQiOLe', 0, '2026-06-18 17:34:56', NULL, '2026-06-18 23:55:31', 2),
-(364, 'Musuculoso', '', 'V', '22222222', '2006-06-23', 'Masculino', 'XL@gmail.com', '', 0, NULL, NULL, NULL, 2),
-(365, 'Alex', '', 'V', '55555555', '2008-06-23', 'Masculino', 'AWW@gmaI.com', '', 0, NULL, NULL, NULL, 1),
-(366, 'ZLATAN', '', 'V', '53535333', '2006-06-23', 'Masculino', 'XLW3@gmai.com', '', 0, NULL, NULL, NULL, 2);
+(1, 'Administrador', '', '', NULL, '0000-00-00', '', 'Admin@gmail.com', '$2y$10$EGos8b6SaoaFZchVovQeE.XKEiiIMFnMVlBNSr4yqYFSnC5Q5AlsK', 0, '2026-04-18 15:07:25', '786882', '2026-03-13 00:03:15', 2);
 
 -- --------------------------------------------------------
 
@@ -1743,16 +1386,6 @@ CREATE TABLE `principio_activo` (
   `descripcion` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `principio_activo`
---
-
-INSERT INTO `principio_activo` (`id_principio_activo`, `nombre`, `descripcion`) VALUES
-(1, 'Ibuprofeno', ''),
-(2, 'Amoxicilina', ''),
-(5, 'Losartán', ''),
-(6, 'Losartán Potásico', '');
-
 -- --------------------------------------------------------
 
 --
@@ -1764,15 +1397,6 @@ CREATE TABLE `proveedor` (
   `nombre_proveedor` varchar(50) NOT NULL,
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `proveedor`
---
-
-INSERT INTO `proveedor` (`Id_proveedor`, `nombre_proveedor`, `estatus`) VALUES
-(1, 'SUAF Portuguesa', 1),
-(2, 'Michigan Airlines', 1),
-(3, 'Mexico', 1);
 
 -- --------------------------------------------------------
 
@@ -1794,7 +1418,6 @@ INSERT INTO `rol` (`Id_rol`, `nombre_rol`, `estatus`) VALUES
 (1, 'Administrador', 1),
 (2, 'Supervisor', 1),
 (3, 'Paciente', 1),
-(4, 'Medico (Viejo)', 0),
 (5, 'Representante', 1),
 (6, 'Encargado de Farmacia', 1),
 (7, 'Medico', 1),
@@ -1906,66 +1529,6 @@ INSERT INTO `rol_permiso` (`Id_rol_permiso`, `Id_rol`, `Id_permiso`) VALUES
 (1922, 7, 63),
 (1923, 7, 51),
 (1924, 7, 69),
-(2228, 6, 93),
-(2229, 6, 98),
-(2230, 6, 206),
-(2231, 6, 200),
-(2232, 6, 182),
-(2233, 6, 105),
-(2234, 6, 99),
-(2235, 6, 202),
-(2236, 6, 178),
-(2237, 6, 189),
-(2238, 6, 108),
-(2239, 6, 102),
-(2240, 6, 188),
-(2241, 6, 183),
-(2242, 6, 106),
-(2243, 6, 100),
-(2244, 6, 179),
-(2245, 6, 184),
-(2246, 6, 110),
-(2247, 6, 104),
-(2248, 6, 180),
-(2249, 6, 186),
-(2250, 6, 91),
-(2251, 6, 207),
-(2252, 6, 201),
-(2253, 6, 209),
-(2254, 6, 132),
-(2255, 6, 134),
-(2256, 6, 133),
-(2257, 6, 205),
-(2258, 6, 92),
-(2259, 6, 169),
-(2260, 6, 193),
-(2261, 6, 171),
-(2262, 6, 170),
-(2263, 6, 203),
-(2264, 6, 192),
-(2265, 6, 194),
-(2266, 6, 116),
-(2267, 6, 191),
-(2268, 6, 109),
-(2269, 6, 103),
-(2270, 6, 190),
-(2271, 6, 198),
-(2272, 6, 95),
-(2273, 6, 187),
-(2274, 6, 185),
-(2275, 6, 107),
-(2276, 6, 101),
-(2277, 6, 195),
-(2278, 6, 142),
-(2279, 6, 143),
-(2280, 6, 137),
-(2281, 6, 196),
-(2282, 6, 154),
-(2283, 6, 153),
-(2284, 6, 197),
-(2285, 6, 204),
-(2286, 6, 181),
-(2287, 6, 199),
 (2288, 9, 200),
 (2289, 9, 105),
 (2290, 9, 108),
@@ -2187,7 +1750,63 @@ INSERT INTO `rol_permiso` (`Id_rol_permiso`, `Id_rol`, `Id_permiso`) VALUES
 (2506, 1, 51),
 (2507, 1, 27),
 (2508, 1, 69),
-(2509, 1, 21);
+(2509, 1, 21),
+(2510, 6, 93),
+(2511, 6, 98),
+(2512, 6, 206),
+(2513, 6, 200),
+(2514, 6, 182),
+(2515, 6, 105),
+(2516, 6, 99),
+(2517, 6, 202),
+(2518, 6, 178),
+(2519, 6, 189),
+(2520, 6, 108),
+(2521, 6, 102),
+(2522, 6, 188),
+(2523, 6, 183),
+(2524, 6, 106),
+(2525, 6, 100),
+(2526, 6, 179),
+(2527, 6, 186),
+(2528, 6, 91),
+(2529, 6, 207),
+(2530, 6, 201),
+(2531, 6, 209),
+(2532, 6, 132),
+(2533, 6, 134),
+(2534, 6, 133),
+(2535, 6, 205),
+(2536, 6, 92),
+(2537, 6, 169),
+(2538, 6, 193),
+(2539, 6, 171),
+(2540, 6, 170),
+(2541, 6, 203),
+(2542, 6, 192),
+(2543, 6, 194),
+(2544, 6, 116),
+(2545, 6, 191),
+(2546, 6, 109),
+(2547, 6, 103),
+(2548, 6, 190),
+(2549, 6, 198),
+(2550, 6, 95),
+(2551, 6, 187),
+(2552, 6, 185),
+(2553, 6, 107),
+(2554, 6, 101),
+(2555, 6, 195),
+(2556, 6, 142),
+(2557, 6, 143),
+(2558, 6, 137),
+(2559, 6, 196),
+(2560, 6, 154),
+(2561, 6, 153),
+(2562, 6, 197),
+(2563, 6, 204),
+(2564, 6, 181),
+(2565, 6, 199);
 
 -- --------------------------------------------------------
 
@@ -3170,18 +2789,6 @@ CREATE TABLE `sintomas` (
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `sintomas`
---
-
-INSERT INTO `sintomas` (`Id_sintomas`, `nombre_sintoma`, `estatus`) VALUES
-(13, 'Tos', 1),
-(14, 'Fiebre', 1),
-(15, 'Dolor de cabeza', 1),
-(16, 'Polidipsia', 1),
-(17, 'Poliuria', 1),
-(18, 'Fatiga', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -3213,34 +2820,6 @@ CREATE TABLE `telefonos_personas` (
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
---
--- Volcado de datos para la tabla `telefonos_personas`
---
-
-INSERT INTO `telefonos_personas` (`Id`, `Id_prefijo`, `telefono`, `Id_persona`, `estatus`) VALUES
-(319, 6, '4363741', 328, '1'),
-(321, 1, '2455252', 330, '1'),
-(322, 1, '2333333', 332, '1'),
-(328, 1, '3423534', 340, '2'),
-(329, 1, '2422222', 341, '2'),
-(331, 1, '2333333', 343, '1'),
-(333, 2, '4222222', 346, '1'),
-(335, 1, '2222222', 349, '1'),
-(336, 1, '2422552', 351, '2'),
-(337, 1, '9888898', 352, '2'),
-(338, 1, '2222222', 353, '2'),
-(339, 1, '9393232', 354, '1'),
-(340, 3, '4242267', 355, '2'),
-(341, 1, '3333333', 356, '2'),
-(342, 3, '2444444', 357, '1'),
-(343, 1, '2824848', 359, '2'),
-(344, 1, '2342242', 360, '1'),
-(345, 2, '6464646', 348, '1'),
-(346, 1, '2424442', 362, '2'),
-(347, 1, '3255322', 364, '2'),
-(348, 1, '3555353', 365, '1'),
-(349, 1, '5252525', 366, '2');
-
 -- --------------------------------------------------------
 
 --
@@ -3252,15 +2831,6 @@ CREATE TABLE `tipos_estilos_de_vida` (
   `descripcion` varchar(150) COLLATE utf8_spanish_ci DEFAULT NULL,
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `tipos_estilos_de_vida`
---
-
-INSERT INTO `tipos_estilos_de_vida` (`Id`, `descripcion`, `estatus`) VALUES
-(14, 'c', '1'),
-(15, 's', '1'),
-(16, 'D', '1');
 
 -- --------------------------------------------------------
 
@@ -3764,97 +3334,97 @@ ALTER TABLE `unidad_medida`
 -- AUTO_INCREMENT de la tabla `alergias_conocidas`
 --
 ALTER TABLE `alergias_conocidas`
-  MODIFY `Id_alergias_conocidas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `Id_alergias_conocidas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `antecedentes_familiares`
 --
 ALTER TABLE `antecedentes_familiares`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `antecedentes_perinatales`
 --
 ALTER TABLE `antecedentes_perinatales`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `antecedentes_sexuales_reproductivos`
 --
 ALTER TABLE `antecedentes_sexuales_reproductivos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `consulta`
 --
 ALTER TABLE `consulta`
-  MODIFY `Id_consulta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `Id_consulta` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `departamento`
 --
 ALTER TABLE `departamento`
-  MODIFY `Id_departamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `Id_departamento` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `descripcion_medicamento`
 --
 ALTER TABLE `descripcion_medicamento`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_inventario`
 --
 ALTER TABLE `detalle_inventario`
-  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_medico`
 --
 ALTER TABLE `detalle_medico`
-  MODIFY `Id_detalle_medico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `Id_detalle_medico` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_paciente`
 --
 ALTER TABLE `detalle_paciente`
-  MODIFY `Id_detalle_paciente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `Id_detalle_paciente` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_paciente_menor`
 --
 ALTER TABLE `detalle_paciente_menor`
-  MODIFY `Id_detalle_paciente_menor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=147;
+  MODIFY `Id_detalle_paciente_menor` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_patologia_medicamento`
 --
 ALTER TABLE `detalle_patologia_medicamento`
-  MODIFY `Id_detalle_patologia_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Id_detalle_patologia_medicamento` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_patologia_sintomas`
 --
 ALTER TABLE `detalle_patologia_sintomas`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_pedidos`
 --
 ALTER TABLE `detalle_pedidos`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_persona_rol`
 --
 ALTER TABLE `detalle_persona_rol`
-  MODIFY `Id_detalle_persona_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=176;
+  MODIFY `Id_detalle_persona_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_presentacion_medicamentos`
@@ -3866,31 +3436,31 @@ ALTER TABLE `detalle_presentacion_medicamentos`
 -- AUTO_INCREMENT de la tabla `detalle_principio_medicamento`
 --
 ALTER TABLE `detalle_principio_medicamento`
-  MODIFY `Id_principio_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `Id_principio_medicamento` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_solicitud`
 --
 ALTER TABLE `detalle_solicitud`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  MODIFY `Id_Direccion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=305;
+  MODIFY `Id_Direccion` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `especialidad`
 --
 ALTER TABLE `especialidad`
-  MODIFY `Id_especialidad` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `Id_especialidad` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `especialidades_medicos`
 --
 ALTER TABLE `especialidades_medicos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `estado`
@@ -3902,85 +3472,85 @@ ALTER TABLE `estado`
 -- AUTO_INCREMENT de la tabla `estilos_de_vida_paciente`
 --
 ALTER TABLE `estilos_de_vida_paciente`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `existencias_stock`
 --
 ALTER TABLE `existencias_stock`
-  MODIFY `Id_existencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `Id_existencia` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_alergias`
 --
 ALTER TABLE `historial_alergias`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_antecedentes_familiares`
 --
 ALTER TABLE `historial_antecedentes_familiares`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_antecedentes_perinatales`
 --
 ALTER TABLE `historial_antecedentes_perinatales`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_antecedentes_sexuales_reproductivos`
 --
 ALTER TABLE `historial_antecedentes_sexuales_reproductivos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_medico`
 --
 ALTER TABLE `historial_medico`
-  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
+  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_patologias`
 --
 ALTER TABLE `historial_patologias`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=143;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `laboratorio`
 --
 ALTER TABLE `laboratorio`
-  MODIFY `Id_laboratorio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `Id_laboratorio` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `lotes_medicamentos`
 --
 ALTER TABLE `lotes_medicamentos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `lugar_nacimiento`
 --
 ALTER TABLE `lugar_nacimiento`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=228;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `medicamento`
 --
 ALTER TABLE `medicamento`
-  MODIFY `Id_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
+  MODIFY `Id_medicamento` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `medicamentos_detalle_inventario`
 --
 ALTER TABLE `medicamentos_detalle_inventario`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `medicos_departamentos`
 --
 ALTER TABLE `medicos_departamentos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `municipio`
@@ -3992,7 +3562,7 @@ ALTER TABLE `municipio`
 -- AUTO_INCREMENT de la tabla `notificaciones_usuarios`
 --
 ALTER TABLE `notificaciones_usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1602;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `observaciones_historial_medico`
@@ -4010,13 +3580,13 @@ ALTER TABLE `pais`
 -- AUTO_INCREMENT de la tabla `patologias`
 --
 ALTER TABLE `patologias`
-  MODIFY `Id_patologia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `Id_patologia` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `permiso`
@@ -4028,7 +3598,7 @@ ALTER TABLE `permiso`
 -- AUTO_INCREMENT de la tabla `persona`
 --
 ALTER TABLE `persona`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=367;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `prefijos_telefonos`
@@ -4052,13 +3622,13 @@ ALTER TABLE `presentacion`
 -- AUTO_INCREMENT de la tabla `principio_activo`
 --
 ALTER TABLE `principio_activo`
-  MODIFY `id_principio_activo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_principio_activo` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `proveedor`
 --
 ALTER TABLE `proveedor`
-  MODIFY `Id_proveedor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `Id_proveedor` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `rol`
@@ -4070,7 +3640,7 @@ ALTER TABLE `rol`
 -- AUTO_INCREMENT de la tabla `rol_permiso`
 --
 ALTER TABLE `rol_permiso`
-  MODIFY `Id_rol_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2510;
+  MODIFY `Id_rol_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2566;
 
 --
 -- AUTO_INCREMENT de la tabla `sector`
@@ -4082,25 +3652,25 @@ ALTER TABLE `sector`
 -- AUTO_INCREMENT de la tabla `sintomas`
 --
 ALTER TABLE `sintomas`
-  MODIFY `Id_sintomas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `Id_sintomas` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `solicitud_medicamento`
 --
 ALTER TABLE `solicitud_medicamento`
-  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `telefonos_personas`
 --
 ALTER TABLE `telefonos_personas`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=350;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `tipos_estilos_de_vida`
 --
 ALTER TABLE `tipos_estilos_de_vida`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `tipo_movimiento`

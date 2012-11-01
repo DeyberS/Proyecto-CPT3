@@ -1,34 +1,103 @@
 <script>
   function buscadorGlobal(idInput, idContenedor, idPaginacion) {
     let timeout = null;
+
+    // Función centralizada para buscar y paginar vía AJAX
+    function cargarDatosAjax(url, parametros = null) {
+      $.ajax({
+        url: url,
+        type: "GET",
+        data: parametros,
+        beforeSend: function() {
+          // Transición suave en lugar de un salto brusco (Mejora la UX)
+          $(idContenedor).css({
+            'transition': 'opacity 0.2s ease',
+            'opacity': '0.4',
+            'pointer-events': 'none'
+          });
+          if (idPaginacion) $(idPaginacion).css({
+            'transition': 'opacity 0.2s ease',
+            'opacity': '0.4'
+          });
+        },
+        success: function(data) {
+          // Reemplazamos la tabla y la paginación de forma silenciosa
+          let nuevoContenidoTabla = $(data).find(idContenedor).html();
+          if (nuevoContenidoTabla) $(idContenedor).html(nuevoContenidoTabla);
+
+          if (idPaginacion) {
+            let nuevaPaginacion = $(data).find(idPaginacion).html();
+            if (nuevaPaginacion) $(idPaginacion).html(nuevaPaginacion);
+          }
+
+          // Restauramos visibilidad
+          $(idContenedor).css({
+            'opacity': '1',
+            'pointer-events': 'auto'
+          });
+          if (idPaginacion) $(idPaginacion).css({
+            'opacity': '1'
+          });
+        },
+        error: function() {
+          $(idContenedor).css({
+            'opacity': '1',
+            'pointer-events': 'auto'
+          });
+          if (idPaginacion) $(idPaginacion).css({
+            'opacity': '1'
+          });
+        }
+      });
+    }
+
+    // 1. Escuchar cuando el usuario escribe en el buscador
     $(document).on('keyup', idInput, function() {
       clearTimeout(timeout);
       let valor = $(this).val();
-      let urlActual = window.location.href.split('?')[0];
+      let urlBase = window.location.href.split('?')[0];
 
       timeout = setTimeout(function() {
-        $.ajax({
-          url: urlActual,
-          type: "GET",
-          data: { buscar: valor },
-          beforeSend: function() { $(idContenedor).css('opacity', '0.5'); },
-          success: function(data) {
-            $(idContenedor).html($(data).find(idContenedor).html());
-            if (idPaginacion) {
-              $(idPaginacion).html($(data).find(idPaginacion).html());
-            }
-            $(idContenedor).css('opacity', '1');
-          },
-          error: function() { $(idContenedor).css('opacity', '1'); }
+        // Actualizar la URL de la barra de direcciones sin recargar (History API)
+        let nuevaUrl = urlBase + (valor ? "?buscar=" + encodeURIComponent(valor) : "");
+        window.history.pushState({
+          path: nuevaUrl
+        }, '', nuevaUrl);
+
+        cargarDatosAjax(urlBase, {
+          buscar: valor
         });
       }, 300);
+    });
+
+    // 2. Escuchar los clics en la paginación para que usen AJAX y no recarguen
+    if (idPaginacion) {
+      $(document).on('click', idPaginacion + ' a', function(e) {
+        e.preventDefault(); // Detiene la recarga de página por defecto
+        let urlDestino = $(this).attr('href');
+
+        if (urlDestino && urlDestino !== '#') {
+          // Actualizamos la URL visible
+          window.history.pushState({
+            path: urlDestino
+          }, '', urlDestino);
+          cargarDatosAjax(urlDestino);
+        }
+      });
+    }
+
+    // 3. Soporte para el botón "Atrás" del navegador
+    $(window).on('popstate', function() {
+      cargarDatosAjax(window.location.href);
     });
   }
 
   window.onload = function() {
     const full_loader = document.getElementById('full_loader');
     if (full_loader) {
-      setTimeout(function() { full_loader.style.display = 'none'; }, 200);
+      setTimeout(function() {
+        full_loader.style.display = 'none';
+      }, 200);
     }
   };
 </script>
@@ -46,7 +115,11 @@
   // TRABAJO PESADO: Ejecuta las verificaciones de base de datos e Inserts
   function procesarGeneradorAlertas() {
     let urlGenerar = getRutaBase() + 'cfg/ajax/generar_alertas.php';
-    $.ajax({ url: urlGenerar, type: 'GET', cache: false });
+    $.ajax({
+      url: urlGenerar,
+      type: 'GET',
+      cache: false
+    });
   }
 
   // INTERFAZ GRÁFICA: Refresca el dropdown y la iluminación del menú en 1 sola llamada
@@ -85,12 +158,12 @@
             }
 
             let liHtml = '<li>' +
-                         '  <a href="' + item.ruta + '" style="white-space: normal; display: block; padding: 10px 15px; border-bottom: 1px solid #f4f4f4;">' +
-                         '    <strong class="text-' + tipoAlerta + '">' + item.titulo + '</strong><br>' +
-                         '    <small style="color: #666; display:block; margin-top:2px;">' + item.mensaje + '</small>' +
-                         '  </a>' +
-                         '</li>';
-            
+              '  <a href="' + item.ruta + '" style="white-space: normal; display: block; padding: 10px 15px; border-bottom: 1px solid #f4f4f4;">' +
+              '    <strong class="text-' + tipoAlerta + '">' + item.titulo + '</strong><br>' +
+              '    <small style="color: #666; display:block; margin-top:2px;">' + item.mensaje + '</small>' +
+              '  </a>' +
+              '</li>';
+
             $('#lista-notificaciones-dropdown').append(liHtml);
             totalNuevas++;
 
@@ -126,10 +199,10 @@
 
     // 1. Backend: Correr script pesado cada 2 minutos
     procesarGeneradorAlertas();
-    setInterval(procesarGeneradorAlertas, 120000); 
+    setInterval(procesarGeneradorAlertas, 120000);
 
     // 2. Frontend: Revisar BD para la UI cada 12 segundos (consolidado)
-    setTimeout(revisionGlobalDeNotificaciones, 2000); 
+    setTimeout(revisionGlobalDeNotificaciones, 2000);
     setInterval(revisionGlobalDeNotificaciones, 12000);
 
     // 3. Apagar iluminación al hacer clic en Récipes
@@ -154,7 +227,7 @@
           $('#lista-notificaciones-dropdown').empty();
           $('#contador-notificaciones').text('0').fadeOut();
           $('#titulo-notificaciones').text('No tienes notificaciones nuevas');
-          
+
           // Refrescar el estado general (para apagar brillos residuales)
           revisionGlobalDeNotificaciones();
         }
@@ -164,14 +237,25 @@
 
   function actualizarReloj() {
     const ahora = new Date();
-    const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    const opcionesFecha = {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    };
     const fechaTexto = ahora.toLocaleDateString('es-ES', opcionesFecha);
-    const horaTexto = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    const horaTexto = ahora.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
 
-    if(document.getElementById('fecha-actual')) document.getElementById('fecha-actual').textContent = fechaTexto;
-    if(document.getElementById('reloj-actual')) document.getElementById('reloj-actual').textContent = horaTexto;
+    if (document.getElementById('fecha-actual')) document.getElementById('fecha-actual').textContent = fechaTexto;
+    if (document.getElementById('reloj-actual')) document.getElementById('reloj-actual').textContent = horaTexto;
   }
 
   setInterval(actualizarReloj, 1000);
-  $(document).ready(function() { actualizarReloj(); });
+  $(document).ready(function() {
+    actualizarReloj();
+  });
 </script>

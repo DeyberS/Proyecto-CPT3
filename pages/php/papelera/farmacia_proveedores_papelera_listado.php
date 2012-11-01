@@ -92,7 +92,7 @@
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Nombre del proveedor</th>
-            <?php if (in_array('Gestionar acciones de permisos', $_SESSION["permisos"])) : ?>
+            <?php if (in_array('Gestionar acciones de proveedores', $_SESSION["permisos"])) : ?>
               <th>Acciones</th>
             <?php endif; ?>
           </thead>
@@ -126,26 +126,32 @@
               ?>
             </tr>
             <tr>
-              <?php while ($row = $resultado->fetch_assoc()) { ?>
+              <?php
+              if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) { 
+              ?>
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_proveedor']; ?></span></td>
-              <?php if (in_array('Gestionar acciones de permisos', $_SESSION["permisos"])) : ?>
+              <?php if (in_array('Gestionar acciones de proveedores', $_SESSION["permisos"])) : ?>
                 <td>
-                  <?php if (in_array('Reactivar Permisos', $_SESSION["permisos"])) : ?>
+                  <?php if (in_array('Reactivar Proveedores', $_SESSION["permisos"])) : ?>
                     <a href="#" data-id="<?php echo $row['Id_proveedor'] ?>" class="btn-sm btn-success btn-reactivar" title="Reactivar"><img src="../../../recursos/imagenes/iconos/reactivar.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
-                  <?php if (in_array('Eliminar Permisos', $_SESSION["permisos"])) : ?>
+                  <?php if (in_array('Eliminar Proveedores', $_SESSION["permisos"])) : ?>
                     <a href="#" data-id="<?php echo $row['Id_proveedor'] ?>" class="btn-sm btn-danger btn-eliminar" title="Eliminar"><img src="../../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
                 </td>
               <?php endif; ?>
             </tr>
-          <?php }  ?>
+            <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron proveedores inactivos.</td></tr>";
+            } ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

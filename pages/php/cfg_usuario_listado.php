@@ -144,7 +144,10 @@ include('includes/headerNav2.php');
               LIMIT $inicio, $registros_por_pagina";
           $resultado = $conexion->query($sql);
 
-          while ($row = $resultado->fetch_assoc()) {
+         
+            if ($resultado->num_rows > 0) {
+            while ($row = $resultado->fetch_assoc()) { 
+
             $intentos = $row['login_attempts'];
             $max_intentos = 3;
 
@@ -209,11 +212,14 @@ include('includes/headerNav2.php');
                 </td>
               <?php endif; ?>
             </tr>
-          <?php }  ?>
+          <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron usuarios registrados.</td></tr>";
+            } ?>
         </tbody>
       </table>
     </div>
-    <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+     <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
       <ul class="pagination">
         <?php
         // Parámetro para mantener la búsqueda en los links

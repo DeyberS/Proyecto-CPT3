@@ -172,14 +172,14 @@
               <?php
                 }
               } else {
-                echo "<tr><td colspan='7'>No se encontraron pacientes.</td></tr>";
+                echo "<tr><td colspan='7'>No se encontraron pacientes inactivos.</td></tr>";
               }
               ?>
             </tbody>
           </table>
         </div>
       <?php endif; ?>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           // Mantener la búsqueda en los clics de página

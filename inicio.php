@@ -513,7 +513,7 @@ include('pages/php/includes/headerNav.php');
               <div class="card-footer"><a href="pages/php/farmacia_prescripciones_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
             </div>
           </div>
-          
+
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <?php
             include('cfg/conexion.php');
@@ -868,7 +868,7 @@ include('pages/php/includes/headerNav.php');
                   <i><img src="recursos/imagenes/iconos/filled/people/man@2x.png" style="width:40px; height:40px; filter:invert();"></i>
                 </div>
               </div>
-              <div class="card-footer"><a href="pages/php/pacientes_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
+              <div class="card-footer"><a href="pages/php/pacientes_total_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
             </div>
           </div>
 
@@ -1189,11 +1189,84 @@ include('pages/php/includes/headerNav.php');
     <?php endif; ?>
   </section>
 </div>
+
+<?php
+$mostrar_modal_exito = false;
+$mostrar_modal_error = false;
+$mensaje_modal = '';
+
+if (isset($_SESSION['mensaje_user_exito'])) {
+  $mostrar_modal_exito = true;
+  $mensaje_modal = $_SESSION['mensaje_user_exito'];
+  unset($_SESSION['mensaje_user_exito']); // Limpiar la sesión
+} elseif (isset($_SESSION['mensaje_user_error'])) {
+  $mostrar_modal_error = true;
+  $mensaje_modal = $_SESSION['mensaje_user_error'];
+  unset($_SESSION['mensaje_user_error']); // Limpiar la sesión
+}
+?>
+
+<div class="modal fade" id="modalExito" tabindex="-1" role="dialog" aria-labelledby="modalExitoLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-green">
+        <h5 class="modal-title" id="modalExitoLabel" style="color: white;">Operación Exitosa</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="mensajeExito"><?php echo $mensaje_modal; ?></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalError" tabindex="-1" role="dialog" aria-labelledby="modalErrorLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-crimson">
+        <h5 class="modal-title" id="modalErrorLabel" style="color: white;">Error en la Operación</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="mensajeError"><?php echo $mensaje_modal; ?></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
 <script src="recursos/js/app.min.js"></script>
-
 <script src="recursos/bootstrap/js/bootstrap.min.js"></script>
 <script src="recursos/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+
+    function closeCustomModal(modalElement) {
+      modalElement.removeClass('in').addClass('out');
+      setTimeout(() => {
+        modalElement.modal('hide').removeClass('out');
+      }, 100); // Duración de la animación
+    }
+
+    // Script para mostrar los modales de sesión
+    <?php if ($mostrar_modal_exito) : ?>
+      $('#modalExito').modal('show');
+    <?php elseif ($mostrar_modal_error) : ?>
+      $('#modalError').modal('show');
+    <?php endif; ?>
+  });
+</script>
 
 <?php
 include('pages/php/includes/footer.php');

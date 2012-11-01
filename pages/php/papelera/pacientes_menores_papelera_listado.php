@@ -76,7 +76,7 @@
     ?>
     <section class="content-header">
       <h1>
-        Pacientes Menores de Edad (<?php echo $total_pacientes; ?>)
+        Pacientes Menores de Edad Inactivos (<?php echo $total_pacientes; ?>)
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
@@ -194,13 +194,13 @@
             <?php
               }
             } else {
-              echo "<tr><td colspan='7'>No se encontraron pacientes.</td></tr>";
+              echo "<tr><td colspan='7'>No se encontraron pacientes menores inactivos.</td></tr>";
             }
             ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           // Definimos el query string para mantener la búsqueda en los enlaces

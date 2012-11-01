@@ -179,13 +179,13 @@
             <?php
               }
             } else {
-              echo "<tr><td colspan='7'>No se encontraron representantes.</td></tr>";
+              echo "<tr><td colspan='7'>No se encontraron representantes registrados.</td></tr>";
             }
             ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Recursos Humanos | Medicos</title>
+  <title>Recursos Humanos | Médicos</title>
 </head>
 
 <?php
@@ -104,7 +104,6 @@ include('includes/headerNav2.php');
           <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
         </form>
       </div>
-      <p class="pull-right" style="width:5px;"></p>
       <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de médicos.">
         <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada" style="margin-left: 5px;">
           <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar médicos"></i>
@@ -185,7 +184,10 @@ include('includes/headerNav2.php');
             ?>
           </tr>
           <tr>
-            <?php while ($row = $resultado->fetch_assoc()) { ?>
+            <?php 
+            if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) {
+            ?>
           </tr>
           <tr>
             <td class=""><span class="text-row text-white"><?= ($row['tipo_cedula']) . "-" . ($row['cedula']); ?></span></td>
@@ -207,11 +209,14 @@ include('includes/headerNav2.php');
               </td>
             <?php endif; ?>
           </tr>
-        <?php }  ?>
+          <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron médicos registrados.</td></tr>";
+            } ?>
         </tbody>
       </table>
     </div>
-    <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+     <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

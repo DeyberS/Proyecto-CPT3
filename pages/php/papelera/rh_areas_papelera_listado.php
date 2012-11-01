@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Areas | Papelera</title>
+  <title>Áreas | Papelera</title>
   <?php
   include('../includes/headerPapelera.php');
   ?>
@@ -74,7 +74,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-        Areas Inactivas (<?php echo $total_area; ?>)
+        Áreas Inactivas (<?php echo $total_area; ?>)
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
@@ -140,7 +140,10 @@
               ?>
             </tr>
             <tr>
-              <?php while ($row = $resultado->fetch_assoc()) { ?>
+              <?php
+              if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) { 
+              ?>
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_departamento']; ?></span></td>
@@ -156,11 +159,14 @@
                 </td>
               <?php endif; ?>
             </tr>
-          <?php }  ?>
+            <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron áreas inactivas.</td></tr>";
+            } ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           // Crear cadena de consulta para mantener la búsqueda en los enlaces

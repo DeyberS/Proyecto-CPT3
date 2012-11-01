@@ -27,15 +27,21 @@ class MYPDF extends TCPDF {
         // Logo de referencia (puedes cambiar la ruta al PNG definitivo luego)
         // $this->Image('../../dist/img/logo.png', 15, 10, 30); 
         
+        $this->SetY(15); 
+        
         $this->SetFont('helvetica', 'B', 14);
         $this->SetTextColor(51, 122, 183); // Color azul profesional (#337ab7)
-        $this->Cell(0, 15, 'CPT3 - GESTIÓN DE FARMACIA', 0, false, 'C', 0, '', 0, false, 'M', 'M');
-        $this->Ln(8);
+        
+        // 2. Simplificar un poco los parámetros de la celda ayuda a evitar centrado vertical engañoso
+        $this->Cell(0, 10, 'CPT3 - GESTIÓN DE FARMACIA', 0, false, 'C', 0, '', 0, false, 'T', 'M');
+        $this->Ln(6);
+        
         $this->SetFont('helvetica', 'I', 10);
         $this->SetTextColor(100, 100, 100);
-        $this->Cell(0, 10, 'Control de Inventario y Suministros Médicos', 0, false, 'C', 0, '', 0, false, 'M', 'M');
-        $this->Ln(15);
-        $this->Line(15, 35, 195, 35); // Línea decorativa
+        $this->Cell(0, 10, 'Control de Inventario y Suministros Médicos', 0, false, 'C', 0, '', 0, false, 'T', 'M');
+        $this->Ln(12);
+        
+        $this->Line(15, $this->GetY(), 195, $this->GetY());
     }
 
     public function Footer() {

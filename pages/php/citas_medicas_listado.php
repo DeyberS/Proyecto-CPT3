@@ -172,7 +172,6 @@
             <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
           </form>
         </div>
-        <p class="pull-left" style="width:5px;"></p>
         <span data-toggle="tooltip" data-placement="right" title="Filtros avanzados de búsqueda">
           <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
             <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar consulta"></i>
@@ -260,7 +259,10 @@
               ?>
             </tr>
             <tr>
-              <?php while ($row = $resultado->fetch_assoc()) {
+              <?php  
+              
+              if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) {
 
                 $estatus = $row['estado'];
                 $clase_badge = 'bg-gray'; // Default
@@ -337,11 +339,14 @@
               <?php endif; ?>
               </td>
             </tr>
-          <?php }  ?>
+          <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron citas registradas.</td></tr>";
+            }  ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           // Mantener el parámetro de búsqueda en los enlaces de paginación

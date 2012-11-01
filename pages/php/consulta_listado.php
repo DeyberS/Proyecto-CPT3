@@ -244,7 +244,7 @@
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           // Crear la cadena de texto para la URL si hay una búsqueda activa
@@ -462,6 +462,73 @@
           $('#ModalReporteConsulta').modal('hide');
         })
 
+        // ==========================================
+        // LÓGICA AJAX PARA BÚSQUEDA Y PAGINACIÓN EN VIVO
+        // ==========================================
+        window.cargarDatosAjax = function(url) {
+          $('.tbody').css('opacity', '0.4'); // Efecto visual de carga
+
+          $.get(url, function(data) {
+            var htmlParsed = $(data);
+
+            // 1. Extraemos e inyectamos solo el cuerpo de la tabla
+            $('.tbody').html(htmlParsed.find('.tbody').html()).css('opacity', '1');
+
+            // 2. Extraemos e inyectamos la paginación
+            $('#contenedorPaginacion').html(htmlParsed.find('#contenedorPaginacion').html());
+
+            // 3. Actualizamos la URL del navegador silenciosamente
+            window.history.pushState(null, '', url);
+          }).fail(function() {
+            alert("Error de conexión al aplicar filtros.");
+            $('.tbody').css('opacity', '1');
+          });
+        };
+
+        // Búsqueda Rápida con KeyUp (con temporizador para no saturar el servidor)
+        let timer;
+        $('#buscar').on('keyup', function() {
+          clearTimeout(timer);
+          let query = $(this).val();
+          timer = setTimeout(function() {
+            var url = 'consulta_listado.php?buscar=' + encodeURIComponent(query);
+            cargarDatosAjax(url);
+          }, 400); // Espera 400ms después de que el usuario deja de escribir
+        });
+
+        // Evitar que presionar ENTER en la búsqueda rápida recargue toda la página
+        $('#formBusquedaRapida').on('submit', function(e) {
+          e.preventDefault();
+        });
+
+        // Interceptar el envío del formulario de Búsqueda Avanzada
+        $('#formBusquedaAvanzada').on('submit', function(e) {
+          e.preventDefault();
+          // Serializamos los datos del formulario y los enviamos al mismo archivo
+          var url = 'consulta_listado.php?' + $(this).serialize();
+          $('#modalBusquedaAvanzada').modal('hide');
+          cargarDatosAjax(url);
+        });
+
+        // Interceptar los clics en los enlaces de la paginación
+        $(document).on('click', '#contenedorPaginacion .pagination a', function(e) {
+          e.preventDefault();
+          var url = $(this).attr('href');
+          if (url) {
+            cargarDatosAjax(url);
+          }
+        });
+
+        // Función para el botón "Limpiar Filtros" del modal
+        window.limpiarFiltrosAjax = function() {
+          $('#formBusquedaAvanzada')[0].reset();
+          $('#buscar').val('');
+          // Tomamos la URL sin parámetros GET para limpiar todo
+          var urlLimpia = window.location.href.split('?')[0];
+          cargarDatosAjax(urlLimpia);
+          $('#modalBusquedaAvanzada').modal('hide');
+        };
+
         // Script para mostrar los modales de sesión
         <?php if ($mostrar_modal_exito) : ?>
           $('#modalExito').modal('show');
@@ -471,7 +538,5 @@
       });
     </script>
 
-
     </body>
-
 </html>

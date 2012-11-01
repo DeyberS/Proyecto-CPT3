@@ -70,7 +70,7 @@
     $sqlPacientes = ("SELECT p.estatus, COUNT(p.id) AS total_pacientes FROM persona p 
       JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
       JOIN rol r ON dpr.Id_rol = r.Id_rol
-      WHERE r.Id_rol = 3 AND TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE()) >= 18 AND p.estatus = 1");
+      WHERE r.Id_rol = 3 AND p.estatus = 1");
     $queryData   = mysqli_query($conexion, $sqlPacientes);
     $total_pacientes = mysqli_fetch_assoc($queryData)['total_pacientes'];
     ?>
@@ -87,17 +87,6 @@
     <?php if (isset($_SESSION["permisos"])) : ?>
       <section class="content">
         <div style="padding-bottom: 10px;">
-          <?php if (in_array('Ver papelera de pacientes', $_SESSION["permisos"])) : ?>
-            <a href="papelera/pacientes_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color:gray;"> Papelera </a>
-          <?php endif; ?>
-          <p class="pull-right" style="width:5px;"></p>
-          <?php if (in_array('Generar Reportes de Pacientes', $_SESSION["permisos"])) : ?>
-            <a href="#" class="btn-sm btn-info pull-right reporte"><i class="fa fa-book"></i> Generar Reporte </a>
-          <?php endif; ?>
-          <p class="pull-right" style="width:5px;"></p>
-          <?php if (in_array('Crear Pacientes', $_SESSION["permisos"])) : ?>
-            <a href="pacientes_agregar.php" class="btn-sm btn-success pull-right"><i class="fa fa-user-plus"></i> Añadir Un Nuevo Paciente </a>
-          <?php endif; ?>
           <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
         </div>
         <br><br>
@@ -110,9 +99,6 @@
               <th>Edad</th>
               <th>Telefono</th>
               <th>Tipo De Paciente</th>
-              <?php if (in_array('Gestionar acciones de pacientes', $_SESSION["permisos"])) : ?>
-                <th>Acciones</th>
-              <?php endif; ?>
             </thead>
             <tbody class="tbody" width="100%" style="font-size: 12px;">
               <?php
@@ -123,7 +109,7 @@
               $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
               // Filtro base para pacientes mayores de edad y activos
-              $donde = "WHERE r.Id_rol = 3 AND TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE()) >= 18 AND p.estatus = 1";
+              $donde = "WHERE r.Id_rol = 3 AND p.estatus = 1";
 
               if ($busqueda != '') {
                 $donde .= " AND (p.cedula LIKE '%$busqueda%' OR p.nombre LIKE '%$busqueda%' OR p.apellido LIKE '%$busqueda%')";
@@ -140,9 +126,22 @@
               $total_paginas = ceil($total_pacientes / $registros_por_pagina);
 
               // Consulta para obtener los registros de la página actual
-              $sql = "SELECT r.Id_rol, pt.prefijo, t.telefono, p.id, p.tipo_cedula, p.cedula, p.nombre, p.apellido, p.genero, p.fecha_nacimiento, p.estatus, dp.tipo_paciente 
+              $sql = "SELECT 
+              r.Id_rol, 
+              pt.prefijo, 
+              t.telefono, 
+              p.id, 
+              p.tipo_cedula, 
+              p.cedula, 
+              p.nombre, 
+              p.apellido, 
+              p.genero, 
+              p.fecha_nacimiento, 
+              p.estatus, 
+              COALESCE(dp.tipo_paciente, dpm.tipo_paciente) AS tipo_paciente 
               FROM persona p 
-              JOIN detalle_paciente dp ON p.id = dp.Id_persona
+              LEFT JOIN detalle_paciente dp ON p.id = dp.Id_persona
+              LEFT JOIN detalle_paciente_menor dpm ON p.id = dpm.id_persona
               JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
               JOIN rol r ON dpr.Id_rol = r.Id_rol
               LEFT JOIN telefonos_personas t ON p.id = t.Id_persona
@@ -164,21 +163,12 @@
                     <td class=""><span class="text-row text-white"><?= ($row['nombre']) . " " . ($row['apellido']); ?></span></td>
                     <td class=""><span class="text-row text-white"><?= ($row['genero']); ?></span></td>
                     <td class=""><span class="text-row text-white"><?= $edad; ?></span></td>
-                    <td class=""><span class="text-row text-white"><?= ($row['prefijo']) . "-" . ($row['telefono']); ?></span></td>
+                    <td class="">
+                      <span class="text-row text-white">
+                        <?= (!empty($row['prefijo']) && !empty($row['telefono'])) ? $row['prefijo'] . "-" . $row['telefono'] : "No Asignado"; ?>
+                      </span>
+                    </td>
                     <td class=""><span class="text-row text-white"><?= ($row['tipo_paciente']); ?></span></td>
-                    <?php if (in_array('Gestionar acciones de pacientes', $_SESSION["permisos"])) : ?>
-                      <td>
-                        <?php if (in_array('Ver Pacientes', $_SESSION["permisos"])) : ?>
-                          <a href="pacientes_info.php?Id=<?php echo $row['id'] ?>" class="btn-sm btn-info" title="Ver Informacion"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
-                        <?php endif; ?>
-                        <?php if (in_array('Editar Pacientes', $_SESSION["permisos"])) : ?>
-                          <a href="pacientes_editar.php?Id=<?php echo $row['id'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
-                        <?php endif; ?>
-                        <?php if (in_array('Desactivar Pacientes', $_SESSION["permisos"])) : ?>
-                          <a href="#" data-id="<?php echo $row['id'] ?>" class="btn-sm btn-danger btn-desactivar" title="Desactivar"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
-                        <?php endif; ?>
-                      </td>
-                    <?php endif; ?>
                   </tr>
               <?php
                 }
@@ -190,7 +180,7 @@
           </table>
         </div>
       <?php endif; ?>
-       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+      <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

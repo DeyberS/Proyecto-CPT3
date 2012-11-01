@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Recursos Humanos | Areas</title>
+  <title>Recursos Humanos | Áreas</title>
   <?php
   include('includes/headerNav2.php');
   ?>
@@ -73,7 +73,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-        Areas (<?php echo $total_area; ?>)
+        Áreas (<?php echo $total_area; ?>)
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
@@ -102,7 +102,7 @@
       <div id="contenedorTabla">
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
-            <th>Nombre del area</th>
+            <th>Nombre del área</th>
             <th>Empleados</th>
             <?php if (in_array('Gestionar acciones de areas', $_SESSION["permisos"])) : ?>
               <th>Acciones</th>
@@ -145,7 +145,10 @@
               ?>
             </tr>
             <tr>
-              <?php while ($row = $resultado->fetch_assoc()) { ?>
+            <?php
+              if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) { 
+            ?>
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_departamento']; ?></span></td>
@@ -161,11 +164,14 @@
                 </td>
               <?php endif; ?>
             </tr>
-          <?php }  ?>
+            <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron áreas registradas.</td></tr>";
+            } ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

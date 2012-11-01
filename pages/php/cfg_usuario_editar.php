@@ -279,7 +279,10 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            <a href="cfg_usuario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+            <?php
+              $ruta_regreso = (isset($_SESSION['rol']) && $_SESSION['rol'] == 1) ? 'cfg_usuario_listado.php' : '../../inicio.php';
+            ?>
+            <a href="<?php echo $ruta_regreso; ?>" class="btn btn-danger">Abandonar Formulario</a>
           </div>
         </div>
       </div>

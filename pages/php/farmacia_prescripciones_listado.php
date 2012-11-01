@@ -329,8 +329,10 @@
                   ";
 
                   $resultado = mysqli_query($conexion, $query);
-
-                  while ($row = mysqli_fetch_assoc($resultado)) {
+          
+                  if ($resultado->num_rows > 0) {
+                  while ($row = $resultado->fetch_assoc()) { 
+          
 
                     // Definir etiqueta del tipo de receta
                     if ($row['tipo_receta'] === 'Interna') {
@@ -411,7 +413,10 @@
                         </td>
                       <?php endif; ?>
                     </tr>
-                  <?php } ?>
+                    <?php }
+                      } else {
+                        echo "<tr><td colspan='6'>No se encontraron recetas registradas.</td></tr>";
+                      } ?>
                 </tbody>
               </table>
             </div>

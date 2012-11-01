@@ -278,14 +278,14 @@
             <?php
               }
             } else {
-              echo '<tr><td colspan="8" class="text-center">No hay movimientos registrados.</td></tr>';
+              echo '<tr><td colspan="8">No hay movimientos registrados.</td></tr>';
             }
             ?>
           </tbody>
         </table>
       </div>
 
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           // Mantener el término de búsqueda en los enlaces de paginación

@@ -120,7 +120,7 @@
 
     <section class="content-header">
       <h1>
-        Gestión de Pedidos <small>(<?php echo $total_registros; ?> Registros)</small>
+        Pedidos (<?php echo $total_registros; ?> Registros)
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
@@ -193,14 +193,14 @@
             <?php
               }
             } else {
-              echo '<tr><td colspan="6" class="text-center">No hay pedidos registrados o que coincidan con la búsqueda.</td></tr>';
+              echo '<tr><td colspan="6">No hay pedidos registrados o que coincidan con la búsqueda.</td></tr>';
             }
             ?>
           </tbody>
         </table>
       </div>
 
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

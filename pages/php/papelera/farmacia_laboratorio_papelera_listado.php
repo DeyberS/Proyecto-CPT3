@@ -94,7 +94,7 @@
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Nombre del laboratorio</th>
             <th>Medicamentos asociados</th>
-            <?php if (in_array('Gestionar acciones de roles', $_SESSION["permisos"])) : ?>
+            <?php if (in_array('Gestionar acciones de laboratorios', $_SESSION["permisos"])) : ?>
               <th>Acciones</th>
             <?php endif; ?>
           </thead>
@@ -133,27 +133,33 @@
               ?>
             </tr>
             <tr>
-              <?php while ($row = $resultado->fetch_assoc()) { ?>
+              <?php
+              if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) { 
+              ?>
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_laboratorio']; ?></span></td>
               <td class=""><span class="text-row text-white"><?= $row['total_medicamentos']; ?></span></td>
-              <?php if (in_array('Gestionar acciones de roles', $_SESSION["permisos"])) : ?>
+              <?php if (in_array('Gestionar acciones de laboratorios', $_SESSION["permisos"])) : ?>
                 <td>
-                  <?php if (in_array('Reactivar Permisos', $_SESSION["permisos"])) : ?>
+                  <?php if (in_array('Reactivar Laboratorios', $_SESSION["permisos"])) : ?>
                     <a href="#" data-id="<?php echo $row['Id'] ?>" class="btn-sm btn-success btn-reactivar" title="Reactivar"><img src="../../../recursos/imagenes/iconos/reactivar.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
-                  <?php if (in_array('Eliminar Permisos', $_SESSION["permisos"])) : ?>
+                  <?php if (in_array('Eliminar Laboratorios', $_SESSION["permisos"])) : ?>
                     <a href="#" data-id="<?php echo $row['Id'] ?>" class="btn-sm btn-danger btn-eliminar" title="Eliminar"><img src="../../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
                 </td>
               <?php endif; ?>
             </tr>
-          <?php }  ?>
+            <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron laboratorios inactivos.</td></tr>";
+            } ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           // Mantener el parámetro de búsqueda en los enlaces

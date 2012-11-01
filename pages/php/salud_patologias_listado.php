@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Salud | Patologias</title>
+  <title>Salud | Patologías</title>
   <?php
   include('includes/headerNav2.php');
   ?>
@@ -73,11 +73,11 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-        Patologias (<?php echo $total_patologia; ?>)
+        Patologías (<?php echo $total_patologia; ?>)
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
-        <li><a href="#"><i class="fa fa-user"></i>Patologias</a></li>
+        <li><a href="#"><i class="fa fa-user"></i>Patologías</a></li>
         <li><a href="#"><i class="fa fa-book"></i>Listado</a></li>
       </ol>
     </section>
@@ -102,8 +102,8 @@
       <div id="contenedorTabla">
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
-            <th>Nombre de la Patologia</th>
-            <th>Codigo CIE-10</th>
+            <th>Nombre de la Patología</th>
+            <th>Código CIE-10</th>
             <th>Pacientes</th>
             <th>Contagioso</th>
             <?php if (in_array('Gestionar acciones de patologias', $_SESSION["permisos"])) : ?>
@@ -148,7 +148,10 @@
               ?>
             </tr>
             <tr>
-              <?php while ($row = $resultado->fetch_assoc()) { ?>
+              <?php
+              if ($resultado->num_rows > 0) {
+              while ($row = $resultado->fetch_assoc()) { 
+              ?>
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_patologia']; ?></span></td>
@@ -169,11 +172,14 @@
                 </td>
               <?php endif; ?>
             </tr>
-          <?php }  ?>
+          <?php }
+            } else {
+              echo "<tr><td colspan='6'>No se encontraron patologías registradas.</td></tr>";
+            } ?>
           </tbody>
         </table>
       </div>
-      <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+       <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
         <ul class="pagination">
           <?php
           $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
