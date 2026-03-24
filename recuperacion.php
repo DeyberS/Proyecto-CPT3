@@ -84,6 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Recuperar Contraseña | CPT3</title>
@@ -95,13 +96,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background-image: url('recursos/imagenes/fondo_cpt3_4.jpg');
             background-repeat: no-repeat;
             background-size: cover;
-            background-attachment: fixed; /* Fondo oscuro igual a tu index */
+            background-attachment: fixed;
+            /* Fondo oscuro igual a tu index */
             color: white;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
         .login-container {
             background: #112;
             padding: 30px;
@@ -111,10 +114,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             width: 100%;
             max-width: 400px;
         }
+
         .form-group {
             position: relative;
             margin-bottom: 25px;
         }
+
         .form-control {
             background: transparent;
             border: none;
@@ -123,12 +128,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: white;
             padding: 10px 5px;
         }
+
         .form-control:focus {
             background: transparent;
             color: white;
             border-color: crimson;
             box-shadow: none;
         }
+
         .form-group label {
             position: absolute;
             top: -10px;
@@ -137,6 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 0 6px;
             font-size: 14px;
         }
+
         .btn-primary {
             background: crimson;
             border: none;
@@ -144,11 +152,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 10px;
             font-weight: bold;
         }
+
         .btn-primary:hover {
             background: darkred;
         }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-container {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .form-group input:focus {
+            border-color: #00ffff;
+            /* Color cian que ya usas */
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .form-group label {
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus+label {
+            color: #00ffff;
+        }
+
+        .alert-danger {
+            animation: pulseError 2s infinite;
+        }
+
+        @keyframes pulseError {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
+
 <body class="text-center">
     <div id="full_loader">
         <div id="loader"></div>
@@ -157,34 +216,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
             <h1 class="h3 mb-3 fw-normal">Recuperar Contraseña</h1>
             <hr>
-            
-            <?php 
-                if(!empty($success_msg)) echo '<div class="alert alert-success" style="font-size: 12px;">'.$success_msg.'</div>';
-                if(!empty($email_err)) echo '<div class="alert alert-danger" style="font-size: 12px;">'.$email_err.'</div>';
+
+            <?php
+            if (!empty($success_msg)) echo '<div class="alert alert-success" style="font-size: 12px;">' . $success_msg . '</div>';
+            if (!empty($email_err)) echo '<div class="alert alert-danger" style="font-size: 12px;">' . $email_err . '</div>';
             ?>
 
             <div class="form-group">
                 <label>Ingrese su Email</label>
                 <input type="email" name="email" class="form-control" value="<?php echo $email; ?>" required>
-            </div>    
+            </div>
 
             <div class="form-group">
                 <input type="submit" class="btn btn-primary" value="Enviar Enlace">
             </div>
-            
+
             <p><a href="index.php" style="color: crimson; text-decoration: none;">Volver al Inicio</a></p>
         </form>
     </div>
 </body>
 <script>
     window.onload = function() {
-        const full_loader = document.getElementById('full_loader'); 
-        
+        const full_loader = document.getElementById('full_loader');
         if (full_loader) {
-            setTimeout(function(){
+            full_loader.style.transition = 'opacity 0.5s ease';
+            full_loader.style.opacity = '0';
+            setTimeout(function() {
                 full_loader.style.display = 'none';
-            },500);
+            }, 500);
         }
     };
 </script>
+
 </html>

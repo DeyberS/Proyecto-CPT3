@@ -5,6 +5,7 @@ $id_pres_auto = isset($_GET['id_pres']) ? $_GET['id_pres'] : '';
 $id_med_auto  = isset($_GET['id_med']) ? $_GET['id_med'] : '';
 $cedula_auto  = isset($_GET['pac']) ? $_GET['pac'] : '';
 $es_menor_auto = isset($_GET['menor']) ? $_GET['menor'] : 0;
+$origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
 ?>
 
 <!DOCTYPE html>
@@ -225,7 +226,7 @@ $es_menor_auto = isset($_GET['menor']) ? $_GET['menor'] : 0;
                         </select>
                       </div>
                       <div class="col-sm-4">
-                        <label id="label_busqueda">Ingrese Cédula:</label>
+                        <label id="label_busqueda">Ingrese Los Datos:</label>
                         <input type="text" id="input_busqueda_paciente" class="form-control" onkeypress="return validarEntradaDinamica(event)" required>
                       </div>
                       <div class="col-sm-5">
@@ -351,7 +352,7 @@ $es_menor_auto = isset($_GET['menor']) ? $_GET['menor'] : 0;
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-          <a href="farmacia_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+          <a href="<?php echo ($origen === 'prescripciones') ? 'farmacia_prescripciones_listado.php' : 'farmacia_inventario_listado.php'; ?>" class="btn btn-danger">Abandonar Formulario</a>
         </div>
       </div>
     </div>
@@ -537,9 +538,11 @@ $es_menor_auto = isset($_GET['menor']) ? $_GET['menor'] : 0;
 
         if (val === 'Entrega a Paciente' || val === 'Entrega a Representante') {
           if (val === 'Entrega a Representante') {
-            $('#seccion_interna h4').html('<i class="fa fa-child"></i> Buscar Paciente Menor (Requiere Representante)');
+            $('#seccion_interna h4').html('<i class="fa fa-users"></i> Buscar por Datos del Representante');
+            $('#label_busqueda').text('Ingrese Datos del Representante:'); // <-- Indicación clara
           } else {
             $('#seccion_interna h4').html('<i class="fa fa-user"></i> Vincular Receta del Sistema');
+            $('#label_busqueda').text('Ingrese Los Datos del Paciente:'); // <-- Indicación original
           }
 
           $('#seccion_interna').slideDown();

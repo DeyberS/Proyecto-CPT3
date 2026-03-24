@@ -80,8 +80,23 @@
         ?>
 
         <?php
+        // 1. Primero corregimos el conteo para la paginación
+        $donde = "";
+        if ($id_desc_med > 0) {
+            // Filtramos por el ID del medicamento que viene por GET
+            $donde = " WHERE m.Id_medicamento = $id_desc_med";
+        }
 
-        // Consulta principal del Kardex
+        $sql_conteo = "SELECT COUNT(*) as total 
+               FROM medicamentos_detalle_inventario mdi
+               JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
+               JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+               $donde";
+
+        $total_registros = $conexion->query($sql_conteo)->fetch_assoc()['total'];
+        $total_paginas = ceil($total_registros / $registros_por_pagina);
+
+        // 2. Luego corregimos la consulta principal
         $sql_kardex = "SELECT 
         di.fecha, 
         m.nombre_medicamento, 
@@ -96,7 +111,8 @@
         JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
         JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
         JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
-        JOIN tipo_movimiento tm ON di.Id_TipoMovimiento = tm.Id_tipo_movimiento
+        JOIN tipo_movimiento tm ON di.Id_tipoMovimiento = tm.Id_tipo_movimiento
+        $donde
         ORDER BY di.fecha DESC 
         LIMIT $inicio, $registros_por_pagina";
 
@@ -153,12 +169,37 @@
                 </div>
 
                 <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
-                    <ul class="pagination justify-content-center">
-                        <?php for ($i = 1; $i <= $total_paginas; $i++) { ?>
-                            <li class="page-item <?= ($i === $pagina_actual) ? 'active' : ''; ?>">
-                                <a class="page-link" href="?pagina=<?= $i; ?>"><?= $i; ?></a>
+                    <ul class="pagination">
+                        <?php
+                        // Mantener el ID del medicamento en los enlaces
+                        $query_string = ($id_desc_med > 0) ? "&id=" . $id_desc_med : "";
+
+                        // Botón Primero y Anterior
+                        if ($pagina_actual > 1) : ?>
+                            <li><a href="?pagina=1<?php echo $query_string; ?>" title="Primero">&laquo;&laquo;</a></li>
+                            <li><a href="?pagina=<?php echo ($pagina_actual - 1) . $query_string; ?>">&laquo;</a></li>
+                        <?php endif;
+
+                        // --- CONFIGURACIÓN DE LA VENTANA DE NÚMEROS ---
+                        $rango = 1;
+                        $inicio_ventana = max(1, $pagina_actual - $rango);
+                        $fin_ventana = min($total_paginas, $pagina_actual + $rango);
+
+                        // Ajuste para mostrar siempre al menos 3 botones si existen
+                        if ($pagina_actual == 1) $fin_ventana = min($total_paginas, 3);
+                        if ($pagina_actual == $total_paginas) $inicio_ventana = max(1, $total_paginas - 2);
+
+                        for ($i = $inicio_ventana; $i <= $fin_ventana; $i++) : ?>
+                            <li class="<?php echo ($i == $pagina_actual) ? 'active' : ''; ?>">
+                                <a href="?pagina=<?php echo $i . $query_string; ?>"><?php echo $i; ?></a>
                             </li>
-                        <?php } ?>
+                        <?php endfor;
+
+                        // Botón Siguiente y Último
+                        if ($pagina_actual < $total_paginas) : ?>
+                            <li><a href="?pagina=<?php echo ($pagina_actual + 1) . $query_string; ?>">&raquo;</a></li>
+                            <li><a href="?pagina=<?php echo $total_paginas . $query_string; ?>" title="Último">&raquo;&raquo;</a></li>
+                        <?php endif; ?>
                     </ul>
                 </nav>
         </section>

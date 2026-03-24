@@ -48,10 +48,19 @@ if (!empty($id_medicamento)) {
 }
 
 // Filtro de búsqueda
-$sql .= " AND (per.cedula LIKE '%$busqueda%' 
-           OR per.nombre LIKE '%$busqueda%' 
-           OR per.apellido LIKE '%$busqueda%')
-        ORDER BY c.fecha_consulta DESC LIMIT 15";
+if ($es_menor) {
+    // Si es menor, buscamos por los datos del REPRESENTANTE (alias 'rep')
+    $sql .= " AND (rep.cedula LIKE '%$busqueda%' 
+               OR rep.nombre LIKE '%$busqueda%' 
+               OR rep.apellido LIKE '%$busqueda%') ";
+} else {
+    // Si es adulto, buscamos por los datos del PACIENTE (alias 'per')
+    $sql .= " AND (per.cedula LIKE '%$busqueda%' 
+               OR per.nombre LIKE '%$busqueda%' 
+               OR per.apellido LIKE '%$busqueda%') ";
+}
+
+$sql .= " ORDER BY c.fecha_consulta DESC LIMIT 15";
 
 $resultado = mysqli_query($conexion, $sql);
 

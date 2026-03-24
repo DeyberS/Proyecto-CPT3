@@ -19,12 +19,18 @@
 
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="content-wrapper">
+    <?php
+    include('../../cfg/conexion.php');
+    $sqlRecipe = ("SELECT * FROM prescripcion_medicamentos ORDER BY Id ASC");
+    $queryData   = mysqli_query($conexion, $sqlRecipe);
+    $total_recipe = mysqli_num_rows($queryData);
+    ?>
     <section class="content-header">
-      <h1>Farmacia <small>Control de Despacho de Medicamentos</small></h1>
+      <h1>Control de Despacho de Medicamentos (<?php echo $total_recipe; ?> Recipes)</h1>
     </section>
 
     <?php
-  // --- LÓGICA DE PAGINACIÓN (Basada en medico_listado.php) ---
+    // --- LÓGICA DE PAGINACIÓN (Basada en medico_listado.php) ---
     $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
     $registros_por_pagina = 14;
     $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
@@ -33,7 +39,7 @@
     // 1. Definir el filtro base (Estado pendiente por defecto o según tu lógica)
     $donde = "WHERE pm.estatus != 'eliminado'"; // Ajusta según tus estados reales
     if ($busqueda != '') {
-        $donde .= " AND (paciente.nombre LIKE '%$busqueda%' 
+      $donde .= " AND (paciente.nombre LIKE '%$busqueda%' 
                      OR paciente.apellido LIKE '%$busqueda%' 
                      OR paciente.cedula LIKE '%$busqueda%' 
                      OR m.nombre_medicamento LIKE '%$busqueda%')";
@@ -96,6 +102,7 @@
                               paciente.nombre AS nom_pac, 
                               paciente.apellido AS ape_pac, 
                               paciente.cedula AS cedula_pac,
+                              rep.cedula AS cedula_representante,
                               
                               -- Datos del Médico
                               medico.nombre AS nom_med,
@@ -103,7 +110,7 @@
 
                               -- Datos del Medicamento
                               m.nombre_medicamento,
-                              pres.tipo_presentacion,
+                              pres.tipo_presentacion,                 
                               TIMESTAMPDIFF(YEAR, paciente.fecha_nacimiento, CURDATE()) < 18 AS es_menor,
                               
                               -- Cálculo de Stock (Suma de lotes disponibles)
@@ -119,6 +126,9 @@
                             INNER JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
                             INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
                             LEFT JOIN presentacion pres ON dm.Id_presentacion = pres.Id_presentacion
+                            -- Uniones para llegar al representante
+                            LEFT JOIN detalle_paciente_menor dpm ON paciente.id = dpm.id_persona
+                            LEFT JOIN persona rep ON dpm.id_representante = rep.id
                             $donde
                             -- FILTRO: Solo mostramos lo que falta por entregar
                             ORDER BY c.fecha_consulta ASC LIMIT $inicio, $registros_por_pagina";
@@ -171,7 +181,12 @@
 
                       <td class="text-center">
                         <?php if ($row['estado_entrega'] == 'pendiente') : ?>
-                          <a href="farmacia_inventario_movimiento_salida.php?id_pres=<?php echo $row['id_prescripcion']; ?>&id_med=<?php echo $row['Id_descripcion_medicamento']; ?>&pac=<?php echo urlencode($row['cedula_pac']); ?>&menor=<?php echo urlencode($row['es_menor']); ?>" class="btn <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Despachar Medicamento">
+                          <?php
+                          // Si es menor, enviamos la cédula del representante, si no, la del paciente
+                          $cedula_a_enviar = ($row['es_menor'] == 1) ? $row['cedula_representante'] : $row['cedula_pac'];
+                          ?>
+
+                          <a href="farmacia_inventario_movimiento_salida.php?id_pres=<?php echo $row['id_prescripcion']; ?>&id_med=<?php echo $row['Id_descripcion_medicamento']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&from=prescripciones" class="btn <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Despachar Medicamento">
                             <img src="../../recursos/imagenes/iconos/enviar.png" style="width:15px; height:15px;">
                           </a>
                           <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></button>
@@ -194,7 +209,7 @@
     <ul class="pagination">
       <?php
       $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
-      
+
       if ($pagina_actual > 1) : ?>
         <li><a href="?pagina=1<?php echo $query_string; ?>">&laquo;&laquo;</a></li>
         <li><a href="?pagina=<?php echo ($pagina_actual - 1) . $query_string; ?>">&laquo;</a></li>
