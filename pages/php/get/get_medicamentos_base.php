@@ -1,39 +1,41 @@
 <?php
 // get/get_medicamentos_base.php
-include("../../../cfg/conexion.php"); // Reutiliza tu conexión
+include("../../../cfg/conexion.php"); 
 
 header('Content-Type: application/json');
 $response = ['success' => false, 'data' => [], 'error' => ''];
 
 if (isset($conexion)) {
-    try {
-        // Adaptar la consulta para obtener ID y Nombre del medicamento base
-        $sql = "SELECT dm.Id_medicamento, m.nombre_medicamento, p.tipo_presentacion
-        FROM descripcion_medicamento dm
-        INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-        INNER JOIN presentacion p ON dm.Id_presentacion  = p.Id_presentacion
-        ORDER BY m.nombre_medicamento ASC";
-        $result = $conexion->query($sql);
+    $sql = "SELECT 
+                dm.Id AS Id_descripcion, 
+                m.nombre_medicamento, 
+                dm.presentacion AS presentacion_comercial,
+                dm.via_aplicacion,
+                tm.nombre_tipo,
+                GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
+            FROM descripcion_medicamento dm
+            INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+            LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+            LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+            LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+            LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+            WHERE dm.estatus = '1'
+            GROUP BY dm.Id
+            ORDER BY m.nombre_medicamento ASC";
 
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $response['data'][] = $row;
-            }
-            $response['success'] = true;
-            $result->free();
-        } else {
-            $response['error'] = "Error al ejecutar la consulta: " . $conexion->error;
+    $result = $conexion->query($sql);
+
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $response['data'][] = $row;
         }
-
-    } catch (\mysqli_sql_exception $e) {
-        $response['error'] = "Error de conexión o consulta: " . $e->getMessage();
+        $response['success'] = true;
+    } else {
+        $response['error'] = "Error SQL: " . $conexion->error;
     }
 } else {
-    $response['error'] = "No se estableció la conexión a la base de datos.";
+    $response['error'] = "Error de conexión: No se encontró la variable \$conexion";
 }
 
 echo json_encode($response);
-// No cierres la conexión aquí si está en un entorno donde se maneja globalmente. 
-// Si la abres aquí, ciérrala.
-// if (isset($conexion)) $conexion->close();
-?>
+// NO PONGAS NADA MÁS AQUÍ

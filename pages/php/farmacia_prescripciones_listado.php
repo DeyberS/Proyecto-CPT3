@@ -79,7 +79,6 @@
                     <th>Paciente</th>
                     <th>Médico Tratante</th>
                     <th>Medicamento Solicitado</th>
-                    <th>Dosis Indicada</th>
                     <th class="text-center">Stock Disponible</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Acciones</th>
@@ -91,7 +90,6 @@
                   $query = "SELECT 
                               -- Identificadores
                               pm.Id AS id_prescripcion,
-                              pm.dosis,
                               pm.estatus AS estado_entrega,
                               pm.Id_descripcion_medicamento,
                               
@@ -110,7 +108,8 @@
 
                               -- Datos del Medicamento
                               m.nombre_medicamento,
-                              pres.tipo_presentacion,                 
+                              tm.nombre_tipo,       
+                              GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpmc.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,          
                               TIMESTAMPDIFF(YEAR, paciente.fecha_nacimiento, CURDATE()) < 18 AS es_menor,
                               
                               -- Cálculo de Stock (Suma de lotes disponibles)
@@ -125,13 +124,17 @@
                             INNER JOIN persona medico ON c.Id_medico = medico.id
                             INNER JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
                             INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-                            LEFT JOIN presentacion pres ON dm.Id_presentacion = pres.Id_presentacion
+                            LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+                            LEFT JOIN detalle_principio_medicamento dpmc ON dm.Id = dpmc.id_medicamento
+                            LEFT JOIN unidad_medida um ON dpmc.id_tipo_unidad_medida = um.Id_unidad_medida
+                            LEFT JOIN principio_activo pa ON dpmc.id_principio_activo = pa.Id_principio_activo
                             -- Uniones para llegar al representante
                             LEFT JOIN detalle_paciente_menor dpm ON paciente.id = dpm.id_persona
                             LEFT JOIN persona rep ON dpm.id_representante = rep.id
                             $donde
                             -- FILTRO: Solo mostramos lo que falta por entregar
-                            ORDER BY c.fecha_consulta ASC LIMIT $inicio, $registros_por_pagina";
+                            GROUP BY pm.Id -- <--- ESTA LÍNEA ES VITAL
+                            ORDER BY c.fecha_consulta ASC LIMIT $inicio, $registros_por_pagina";                      
 
                   $resultado = mysqli_query($conexion, $query);
 
@@ -139,7 +142,7 @@
                     // Lógica visual para el Stock
                     $stock = $row['stock_total'];
                     $badgeClass = ($stock > 0) ? 'label-success' : 'label-danger';
-                    $btnClass = ($stock > 0) ? 'btn-info' : 'btn-disabled';
+                    $btnClass = ($stock > 0) ? 'btn-success' : 'btn-disabled';
                     $disabled = ($stock > 0) ? '' : 'disabled';
                   ?>
                     <tr>
@@ -155,11 +158,9 @@
                       </td>
 
                       <td>
-                        <span class="text-blue"><?php echo $row['nombre_medicamento']; ?></span><br>
-                        <small class="">(<?php echo $row['tipo_presentacion']; ?>)</small>
+                        <span class="text-blue"><?= htmlspecialchars($row['nombre_medicamento'] . " (" . $row['componentes'] . ")"); ?></span><br>
                       </td>
 
-                      <td><?php echo $row['dosis']; ?></td>
 
                       <td class="text-center">
                         <span class="">
@@ -185,13 +186,16 @@
                           // Si es menor, enviamos la cédula del representante, si no, la del paciente
                           $cedula_a_enviar = ($row['es_menor'] == 1) ? $row['cedula_representante'] : $row['cedula_pac'];
                           ?>
-
+                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Ver Informarcion">
+                            <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
+                          </a>
                           <a href="farmacia_inventario_movimiento_salida.php?id_pres=<?php echo $row['id_prescripcion']; ?>&id_med=<?php echo $row['Id_descripcion_medicamento']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&from=prescripciones" class="btn <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Despachar Medicamento">
                             <img src="../../recursos/imagenes/iconos/enviar.png" style="width:15px; height:15px;">
                           </a>
                           <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></button>
+                          
                         <?php else : ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Ver Informarcion">
+                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Ver Informarcion">
                             <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
                           </a>
                         <?php endif; ?>

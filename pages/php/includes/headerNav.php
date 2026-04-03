@@ -208,6 +208,9 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
                     <li><a href="pages/php/farmacia_prescripciones_listado.php"><i class="fa fa-user-plus"></i>Lista de Recipes</a></li>
                   <?php endif; ?>
+                  <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
+                    <li><a href="pages/php/farmacia_laboratorio_listado.php"><i class="fa fa-user-plus"></i>Laboratorios</a></li>
+                  <?php endif; ?>
                   <?php if (in_array('Ver Lotes', $_SESSION["permisos"])) : ?>
                     <li><a href="pages/php/farmacia_lotes_listado.php"><i class="fa fa-user-plus"></i>Lista de Lotes</a></li>
                   <?php endif; ?>

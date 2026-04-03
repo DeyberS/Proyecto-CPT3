@@ -105,11 +105,12 @@
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Medicamento</th>
+            <th>Tipo</th>
             <th>Presentación</th>
-            <th>U. Medida</th>
             <th>Via de Aplicacion</th>
+            <th>Codigo de Barras</th> 
             <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
-              <th>Acciones</th>
+            <th>Acciones</th>
             <?php endif; ?>
           </thead>
           <tbody class="tbody" width="100%" style="font-size: 12px;">
@@ -125,7 +126,7 @@
               $donde = "WHERE m.estatus = 1";
               if ($busqueda != '') {
                   $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' 
-                              OR p.tipo_presentacion LIKE '%$busqueda%' 
+                              OR tp.nombre_tipo LIKE '%$busqueda%' 
                               OR dm.via_aplicacion LIKE '%$busqueda%')";
               }
 
@@ -133,7 +134,7 @@
               $sql_conteo = "SELECT COUNT(*) as total 
                             FROM medicamento m
                             JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                            JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+                            JOIN tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo
                             $donde";
               $resultado_conteo = mysqli_query($conexion, $sql_conteo);
               $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
@@ -144,21 +145,25 @@
                         m.Id_medicamento AS Id_medicamento,
                         m.nombre_medicamento,
                         dm.Id, 
-                        dm.Id_presentacion, 
-                        dm.Id_unidad, 
-                        dm.cantidad_unidad_medida,
+                        dm.Id_tipo,
+                        dm.presentacion, 
                         dm.via_aplicacion,
-                        p.tipo_presentacion,
-                        um.unidad,
+                        tp.nombre_tipo,
+                        dm.codigo_barras,
+                        GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
                         m.estatus
                     FROM 
                         medicamento m
                     JOIN 
                         descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                    JOIN
-                        presentacion p ON dm.Id_presentacion = p.Id_presentacion
-                    JOIN
-                        unidad_medida um ON dm.Id_unidad = um.Id_unidad_medida
+                    INNER JOIN 
+                        tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo     
+                    INNER JOIN 
+                        detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+                    INNER JOIN 
+                        unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+                    INNER JOIN 
+                        principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
                     $donde    
                     ORDER BY 
                         m.Id_medicamento ASC
@@ -170,15 +175,19 @@
               <?php while ($row = $resultado->fetch_assoc()) { ?>
             </tr>
             <tr>
-              <td class=""><span class="text-row text-white"><?= $row['nombre_medicamento']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['tipo_presentacion']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['cantidad_unidad_medida']; ?><?= $row['unidad']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['via_aplicacion']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['nombre_medicamento']; ?> (<?= $row['componentes']; ?>)</span></td>
+              <td class=""><span class="text-row text-white"><?= $row['nombre_tipo']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['presentacion']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['via_aplicacion']; ?></span></td>     
+              <td class=""><span class="text-row text-white"><?= $row['codigo_barras']; ?></span></td>
               <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
                 <td>
+                  <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
+                    <a href="farmacia_medicamentos_info.php?Id=<?php echo $row['Id'] ?>" class="btn-sm btn-info" title="Ver"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
+                  <?php endif; ?>
                   <?php if (in_array('Editar Medicamentos', $_SESSION["permisos"])) : ?>
                     <a href="farmacia_medicamentos_editar.php?Id=<?php echo $row['Id'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
-                  <?php endif; ?>
+                  <?php endif; ?>      
                   <?php if (in_array('Desactivar Medicamentos', $_SESSION["permisos"])) : ?>
                     <a href="#" data-id="<?php echo $row['Id_medicamento'] ?>" class="btn-sm btn-danger btn-desactivar" title="Desactivar"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>

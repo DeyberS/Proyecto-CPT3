@@ -1,84 +1,100 @@
 <?php
 session_start();
-// Asegúrate de que 'conexion.php' incluya la variable $conexion
-require_once "../conexion.php";
+include('../conexion.php');
 
-// 1. Recolección y Sanitización de Datos del Formulario
-// Se usa mysqli_real_escape_string para prevenir inyecciones SQL
-$nombre_medicamento = mysqli_real_escape_string($conexion, $_POST['medicamento']);             // Nombre base (Ibuprofeno)
-$descripcion_presentacion = mysqli_real_escape_string($conexion, $_POST['presentacion']);     // Descripción específica (400mg)
-$tipo_unidad_medida = mysqli_real_escape_string($conexion, $_POST['tipo_unidad_medida']);             // FK a unidad_medida
-$cantidad_unidad_medida = mysqli_real_escape_string($conexion, $_POST['cantidad_unidad_medida']);           // Cantidad (ej. 400)
-$via_aplicacion = mysqli_real_escape_string($conexion, $_POST['via']);
-$almacenamiento = mysqli_real_escape_string($conexion, $_POST['almacenamiento']);
-$composicion = mysqli_real_escape_string($conexion, $_POST['composicion']);
-
-// Se asume que el formulario envía el ID del tipo de presentación general (FK a la tabla 'presentacion').
-$id_presentacion_tipo = isset($_POST['presentacion']) ? mysqli_real_escape_string($conexion, $_POST['presentacion']) : 1; 
-
-$estatus = 1;
-$success = true;
-
-// 2. Iniciar Transacción para asegurar la integridad de los datos
-mysqli_begin_transaction($conexion);
-
-// 3. (A) BUSCAR si el medicamento base ya existe
-$sql_check_medicamento = "SELECT Id_medicamento FROM medicamento WHERE nombre_medicamento = '$nombre_medicamento'";
-$resultado_check = mysqli_query($conexion, $sql_check_medicamento);
-
-if (mysqli_num_rows($resultado_check) > 0) {
-    // Caso 3.a: Medicamento EXISTE - Obtener su ID
-    $fila = mysqli_fetch_assoc($resultado_check);
-    $id_medicamento = $fila['Id_medicamento'];
-} else {
-    // Caso 3.b: Medicamento NO EXISTE - Insertar nuevo y obtener el ID
-    $sql_insert_medicamento = "INSERT INTO medicamento (nombre_medicamento, estatus) VALUES ('$nombre_medicamento', '$estatus')";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // 1. Recolección de datos del formulario
+    $nombre_medicamento = $_POST['medicamento'];
+    $id_tipo            = $_POST['tipo']; // ID de tipo_medicamento
+    $via_aplicacion     = $_POST['via'];
+    $presentacion       = $_POST['presentacion'];
+    $almacenamiento     = $_POST['almacenamiento'];
+    $composicion_texto  = $_POST['composicion']; // Resumen textual
+    $id_laboratorio = !empty($_POST['laboratorio']) ? $_POST['laboratorio'] : null;
     
-    if (mysqli_query($conexion, $sql_insert_medicamento)) {
-        $id_medicamento = mysqli_insert_id($conexion);
-    } else {
-        $success = false;
+    // Si el código de barras viene vacío, le ponemos un 0 para que no choque con el INT de la BD
+    $codigo_barras      = !empty($_POST['codigo_barras']) ? (string)$_POST['codigo_barras'] : "Ninguno";
+
+    // Datos detallados de principios activos (viene separado por | y ,)
+    $principios_raw     = $_POST['composicion_detallada']; 
+
+    // Iniciar Transacción
+    $conexion->begin_transaction();
+
+    try {
+        // PASO 1: Insertar en la tabla 'medicamento'
+        $stmt1 = $conexion->prepare("INSERT INTO medicamento (nombre_medicamento, estatus) VALUES (?, 1)");
+        $stmt1->bind_param("s", $nombre_medicamento);
+        if (!$stmt1->execute()) {
+            throw new Exception("Error al guardar el medicamento: " . $stmt1->error);
+        }
+        $id_medicamento_generado = $stmt1->insert_id;
+
+        // PASO 2: Insertar en 'descripcion_medicamento'
+        $stmt2 = $conexion->prepare("INSERT INTO descripcion_medicamento 
+            (via_aplicacion, almacenamiento, composicion, stock_minimo, stock_maximo, codigo_barras, presentacion, Id_laboratorio, Id_tipo, Id_medicamento, estatus) 
+            VALUES (?, ?, ?, '0', '0', ?, ?, ?, ?, ?, '1')");
+        
+        // Se cambió la primera 's' de codigo_barras por 'i' ya que ahora nos aseguramos de que sea entero
+        $stmt2->bind_param("sssssiii", 
+            $via_aplicacion, 
+            $almacenamiento, 
+            $composicion_texto, 
+            $codigo_barras, 
+            $presentacion, 
+            $id_laboratorio, 
+            $id_tipo, 
+            $id_medicamento_generado
+        );
+        
+        if (!$stmt2->execute()) {
+            throw new Exception("Error al guardar la descripción: " . $stmt2->error);
+        }
+        $id_descripcion_generada = $stmt2->insert_id;
+
+        // PASO 3: Decodificar e Insertar Principios Activos Detallados
+        if (!empty($principios_raw)) {
+            $stmt3 = $conexion->prepare("INSERT INTO detalle_principio_medicamento 
+                (id_medicamento, id_principio_activo, id_tipo_unidad_medida, cantidad_unidad_medida) 
+                VALUES (?, ?, ?, ?)");
+
+            // Separamos la cadena ej: "1,500,2|3,10,1"
+            $filas_pa = explode('|', $principios_raw);
+            
+            foreach ($filas_pa as $fila) {
+                $columnas = explode(',', $fila);
+                
+                // Asegurarnos de que vengan los 3 datos (id_pa, cantidad, id_unidad)
+                if (count($columnas) == 3) {
+                    $id_pa = (int)$columnas[0];
+                    $cantidad = (int)$columnas[1];
+                    $id_unidad = (int)$columnas[2];
+
+                    $stmt3->bind_param("iiii", 
+                        $id_descripcion_generada, 
+                        $id_pa, 
+                        $id_unidad, 
+                        $cantidad
+                    );
+                    
+                    if (!$stmt3->execute()) {
+                         throw new Exception("Error al guardar principio activo: " . $stmt3->error);
+                    }
+                }
+            }
+        }
+
+        // Si todo salió bien, confirmar cambios
+        $conexion->commit();
+        $_SESSION['mensaje_user_exito'] = '✅ Éxito: El medicamento fue agregado correctamente.';
+        header("location: ../../pages/php/farmacia_medicamentos_listado.php");
+        exit();
+
+    } catch (Exception $e) {
+        $conexion->rollback();
+        error_log("Error de transacción al agregar el area: " . $e->getMessage()); 
+        $_SESSION['mensaje_user_error'] = '❌ Error de Registro: No se pudo registrar el area. Detalle: ' . $e->getMessage();
+        header("location: ../../pages/php/farmacia_medicamentos_listado.php");
     }
 }
-
-// 4. (B) Insertar datos de la Presentación Detallada (Descripcion_Medicamento)
-if ($success && isset($id_medicamento)) {
-    // Insertar en descripcion_medicamento (Detalles, Stock y Unidades)
-    
-    $sql_insert_desc_med = "INSERT INTO descripcion_medicamento (
-                                cantidad_unidad_medida, via_aplicacion, almacenamiento, composicion,
-                                Id_unidad, Id_presentacion, Id_medicamento, estatus
-                            )
-                            VALUES (
-                                '$cantidad_unidad_medida', '$via_aplicacion', '$almacenamiento', '$composicion',
-                                '$tipo_unidad_medida', '$id_presentacion_tipo', '$id_medicamento', '$estatus'
-                            )";
-    if (!mysqli_query($conexion, $sql_insert_desc_med)) {
-        $success = false;
-        // Opcionalmente, puedes loggear el error aquí:
-        // error_log("Error al insertar descripcion_medicamento: " . mysqli_error($conexion));
-    }
-} else {
-    $success = false; // Falló la obtención/inserción del medicamento base
-}
-
-// 5. Finalizar Transacción
-if ($success) {
-    mysqli_commit($conexion);
-    // Redireccionar al éxito
-     $_SESSION['mensaje_user_exito'] = '✅ Éxito: El medicamento fue agregado correctamente.';
-    header("location: ../../pages/php/farmacia_medicamentos_listado.php");
-    exit();
-} else {
-    // Revertir y redirigir con error
-    mysqli_rollback($conexion);
-    // Nota: Es importante mostrar el error al usuario o loggearlo
-    error_log("Error de transacción al agregar el medicamento: " . $e->getMessage()); 
-    $_SESSION['mensaje_user_error'] = '❌ Error de Registro: No se pudo registrar el medicamento. Detalle: ' . $e->getMessage();
-    header("location: ../../pages/php/farmacia_medicamentos_listado.php");
-    exit();
-}
-
-// 6. Cerrar Conexión
-mysqli_close($conexion);
 ?>

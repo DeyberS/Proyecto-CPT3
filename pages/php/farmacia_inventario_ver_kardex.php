@@ -100,7 +100,6 @@
         $sql_kardex = "SELECT 
         di.fecha, 
         m.nombre_medicamento, 
-        dm.cantidad_unidad_medida, 
         l.Lote, 
         tm.nombre as tipo,
         mdi.cantidad, 
@@ -151,7 +150,7 @@
                                 <?php while ($row = $resultado->fetch_assoc()) : ?>
                                     <tr>
                                         <td><?php echo date('d/m/Y H:i', strtotime($row['fecha'])); ?></td>
-                                        <td><?php echo $row['nombre_medicamento'] . " (" . $row['cantidad_unidad_medida'] . ")"; ?></td>
+                                        <td><?php echo $row['nombre_medicamento'] . " "; ?></td>
                                         <td><?php echo $row['Lote']; ?></td>
                                         <td>
                                             <span class="label <?php echo ($row['tipo'] == 'Entrada') ? 'label-success' : 'label-danger'; ?>">

@@ -11,6 +11,23 @@ $query_alergias = $conexion->query("SELECT Id_alergias_conocidas, nombre_alergia
 // Consultar Patologías existentes
 $query_patologias = $conexion->query("SELECT Id_patologia, nombre_patologia, codigo_cie FROM patologias WHERE estatus = 1 ORDER BY nombre_patologia ASC");
 
+$sql_medicamentos = "SELECT 
+    dm.Id, 
+    m.nombre_medicamento, 
+    dm.presentacion, 
+    dm.via_aplicacion,
+    dpm.cantidad_unidad_medida, 
+    um.unidad,
+    tm.nombre_tipo
+FROM descripcion_medicamento dm
+INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+LEFT JOIN detalle_principio_medicamento dpm ON m.Id_medicamento = dpm.id_medicamento
+LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+WHERE dm.estatus = 1 
+ORDER BY m.nombre_medicamento ASC";
+
+$query_medicamentos = $conexion->query($sql_medicamentos);
 // Solo manejamos la cédula para fines iniciales, si viene en el GET (ej: desde un listado)
 $cedula = $_GET['cedula'] ?? '';
 $id_cita = $_GET['Id'] ?? '';
@@ -277,102 +294,102 @@ if (!empty($cedula) && isset($conexion)) {
                     <input type="hidden" id="id_historial_global" value="">
 
                     <label class="control-label"></label>
-                      <div class="col-sm-1 pull-left" style="margin-top: 30px;">
-                        <select name="tipo_cedula_paciente" id="tipo_cedula_paciente" class="form-control" style="width: 60px; <?php echo !empty($cedula) ? 'pointer-events: none; background-color: #eee;' : ''; ?>" <?php echo !empty($cedula) ? 'tabindex="-1"' : ''; ?>>
-                          <option value="PN" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'PN') ? 'selected' : ''; ?>>PN-</option>
-                          <option value="V" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'V' || (isset($tipo_cedula) && $tipo_cedula == 'V') || !isset($_GET['tipo_cedula'])) ? 'selected' : ''; ?>>V-</option>
-                          <option value="E" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'E' || (isset($tipo_cedula) && $tipo_cedula == 'E')) ? 'selected' : ''; ?>>E-</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-3">
-                        <p>Cedula/Documento (*)</p>
-                        <input type="text" class="form-control" name="cedula_paciente" id="cedula_paciente" placeholder="N° de Cedula" value="<?php echo htmlspecialchars($cedula); ?>" <?php echo !empty($cedula) ? 'readonly' : ''; ?> required>
-                      </div>
-                      <div class="col-sm-4">
-                        <p>Nombre del Paciente (*)</p>
-                        <input type="text" id="nombre_paciente" class="form-control" name="nombre_paciente" readonly placeholder="Nombre del Paciente" value="<?php echo htmlspecialchars($datos_paciente['nombre'] ?? '') . ' ' . htmlspecialchars($datos_paciente['apellido'] ?? ''); ?>" require>
-                      </div>
-                      <label class="control-label"></label>
-                      <div class="col-sm-3">
-                        <p>Fecha de nacimiento (*):</p>
-                        <input type="date" class="form-control pull-right" id="fecha_nacimiento_paciente" name="fecha_nacimiento_paciente" onchange="calcularEdadPaciente();" max="" required readonly value="<?php echo htmlspecialchars($datos_paciente['fecha_nacimiento'] ?? ''); ?>">
-                      </div>
-                      <div class="col-sm-1" style="margin-top: 0px; margin-left:-5px;">
-                        <p>Edad:</p>
-                        <input type="text" class="form-control pull-right" id="edad_paciente" name="edad_paciente" readonly>
-                      </div>
-                      <br><br><br><br>
-                      <div class="col-sm-4">
-                        <p>Medico (*):</p>
-                        <select name="medico" id="medico" class="form-control" <?php if (!empty($id_medico_cita)) : ?> style="pointer-events: none; background-color: #eee;" tabindex="-1" <?php endif; ?> required>
-                          <option value="">--- Seleccione el medico ---</option>
-                          <?php
-                          $sql_medico = "SELECT p.id, p.nombre, p.apellido 
+                    <div class="col-sm-1 pull-left" style="margin-top: 30px;">
+                      <select name="tipo_cedula_paciente" id="tipo_cedula_paciente" class="form-control" style="width: 60px; <?php echo !empty($cedula) ? 'pointer-events: none; background-color: #eee;' : ''; ?>" <?php echo !empty($cedula) ? 'tabindex="-1"' : ''; ?>>
+                        <option value="PN" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'PN') ? 'selected' : ''; ?>>PN-</option>
+                        <option value="V" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'V' || (isset($tipo_cedula) && $tipo_cedula == 'V') || !isset($_GET['tipo_cedula'])) ? 'selected' : ''; ?>>V-</option>
+                        <option value="E" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'E' || (isset($tipo_cedula) && $tipo_cedula == 'E')) ? 'selected' : ''; ?>>E-</option>
+                      </select>
+                    </div>
+                    <div class="col-sm-3">
+                      <p>Cedula/Documento (*)</p>
+                      <input type="text" class="form-control" name="cedula_paciente" id="cedula_paciente" placeholder="N° de Cedula" value="<?php echo htmlspecialchars($cedula); ?>" <?php echo !empty($cedula) ? 'readonly' : ''; ?> required>
+                    </div>
+                    <div class="col-sm-4">
+                      <p>Nombre del Paciente (*)</p>
+                      <input type="text" id="nombre_paciente" class="form-control" name="nombre_paciente" readonly placeholder="Nombre del Paciente" value="<?php echo htmlspecialchars($datos_paciente['nombre'] ?? '') . ' ' . htmlspecialchars($datos_paciente['apellido'] ?? ''); ?>" require>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3">
+                      <p>Fecha de nacimiento (*):</p>
+                      <input type="date" class="form-control pull-right" id="fecha_nacimiento_paciente" name="fecha_nacimiento_paciente" onchange="calcularEdadPaciente();" max="" required readonly value="<?php echo htmlspecialchars($datos_paciente['fecha_nacimiento'] ?? ''); ?>">
+                    </div>
+                    <div class="col-sm-1" style="margin-top: 0px; margin-left:-5px;">
+                      <p>Edad:</p>
+                      <input type="text" class="form-control pull-right" id="edad_paciente" name="edad_paciente" readonly>
+                    </div>
+                    <br><br><br><br>
+                    <div class="col-sm-4">
+                      <p>Medico (*):</p>
+                      <select name="medico" id="medico" class="form-control" <?php if (!empty($id_medico_cita)) : ?> style="pointer-events: none; background-color: #eee;" tabindex="-1" <?php endif; ?> required>
+                        <option value="">--- Seleccione el medico ---</option>
+                        <?php
+                        $sql_medico = "SELECT p.id, p.nombre, p.apellido 
                         FROM persona p
                         JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona
                         WHERE dpr.Id_rol = 4 
                         ORDER BY p.nombre ASC";
 
-                          $resultado_medico = $conexion->query($sql_medico);
+                        $resultado_medico = $conexion->query($sql_medico);
 
-                          while ($row_medico = $resultado_medico->fetch_assoc()) {
-                            $id_db = (int)$row_medico['id'];
-                            $id_objetivo = (int)$id_medico_cita;
+                        while ($row_medico = $resultado_medico->fetch_assoc()) {
+                          $id_db = (int)$row_medico['id'];
+                          $id_objetivo = (int)$id_medico_cita;
 
-                            // Si coinciden, añade el atributo 'selected'
-                            $selected = ($id_db === $id_objetivo) ? 'selected="selected"' : '';
+                          // Si coinciden, añade el atributo 'selected'
+                          $selected = ($id_db === $id_objetivo) ? 'selected="selected"' : '';
 
-                            echo '<option value="' . $id_db . '" ' . $selected . '>' .
-                              htmlspecialchars($row_medico['nombre'] . ' ' . $row_medico['apellido']) .
-                              '</option>';
-                          }
-                          ?>
-                        </select>
+                          echo '<option value="' . $id_db . '" ' . $selected . '>' .
+                            htmlspecialchars($row_medico['nombre'] . ' ' . $row_medico['apellido']) .
+                            '</option>';
+                        }
+                        ?>
+                      </select>
 
-                      </div>
-                      <div class="col-sm-4">
-                        <p>Fecha de consulta (*):</p>
-                        <input type="date" name="fecha_consulta" id="fecha_consulta" class="form-control" value="<?php echo !empty($fecha_cita) ? $fecha_cita : date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" <?php echo !empty($fecha_cita) ? 'readonly' : ''; ?> required>
-                      </div>
-                      <div class="col-sm-4">
-                        <p>Peso (kg)</p>
-                        <input type="text" step="0.1" id="peso" class="form-control" name="peso" placeholder="Ej: 70.5">
-                      </div>
-                      <br><br><br><br>
-                      <div class="col-sm-4">
-                        <p>Talla (cm)</p>
-                        <input type="text" id="talla" class="form-control" name="talla" placeholder="Ej: 172">
-                      </div>
-                      <div class="col-sm-4">
-                        <p>Temperatura (°C)</p>
-                        <input type="text" step="0.1" id="temperatura" class="form-control" name="temperatura" placeholder="Ej: 36.7">
-                      </div>
-                      <div class="col-sm-4">
-                        <p>Tensión (mmHg)</p>
-                        <input type="text" id="tension" class="form-control" name="tension" placeholder="Ej: 120/80">
-                      </div>
-                      <br><br><br><br>
-                      <div class="col-sm-4">
-                        <p>Frecuencia Cardíaca (lpm)</p>
-                        <input type="text" id="frecuencia_cardiaca" class="form-control" name="frecuencia_cardiaca" placeholder="Ej: 72">
-                      </div>
-                      <div class="col-sm-4">
-                        <p>Saturación de Oxígeno (%)</p>
-                        <input type="text" id="saturacion" class="form-control" name="saturacion" placeholder="Ej: 98">
-                      </div>
-                      <div class="col-sm-4">
-                        <p>Frecuencia Respiratoria (rpm)</p>
-                        <input type="text" id="frecuencia_respiratoria" class="form-control" name="frecuencia_respiratoria" placeholder="Ej: 16">
-                      </div>
-                      <br><br><br><br>
-                      <div class="col-sm-12">
-                        <p>Motivo de la consulta (*)</p>
-                        <textarea id="motivo_consulta" name="motivo_consulta" class="form-control" rows="3" placeholder="Motivo principal o queja del paciente" <?php echo !empty($motivo_cita) ? 'readonly' : ''; ?> required><?php echo htmlspecialchars($motivo_cita); ?></textarea>
-                      </div>
-                      <div style="float:right; margin-top:2%;">
-                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalConfirmarRegresoConsulta">Regresar</button>
-                        <button type="button" class="btn btn-primary next-table" id="consulta_button" data-table-actual="consulta" data-table-siguiente="historial">Siguiente</button>
-                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <p>Fecha de consulta (*):</p>
+                      <input type="date" name="fecha_consulta" id="fecha_consulta" class="form-control" value="<?php echo !empty($fecha_cita) ? $fecha_cita : date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" <?php echo !empty($fecha_cita) ? 'readonly' : ''; ?> required>
+                    </div>
+                    <div class="col-sm-4">
+                      <p>Peso (kg)</p>
+                      <input type="text" step="0.1" id="peso" class="form-control" name="peso" placeholder="Ej: 70.5">
+                    </div>
+                    <br><br><br><br>
+                    <div class="col-sm-4">
+                      <p>Talla (cm)</p>
+                      <input type="text" id="talla" class="form-control" name="talla" placeholder="Ej: 172">
+                    </div>
+                    <div class="col-sm-4">
+                      <p>Temperatura (°C)</p>
+                      <input type="text" step="0.1" id="temperatura" class="form-control" name="temperatura" placeholder="Ej: 36.7">
+                    </div>
+                    <div class="col-sm-4">
+                      <p>Tensión (mmHg)</p>
+                      <input type="text" id="tension" class="form-control" name="tension" placeholder="Ej: 120/80">
+                    </div>
+                    <br><br><br><br>
+                    <div class="col-sm-4">
+                      <p>Frecuencia Cardíaca (lpm)</p>
+                      <input type="text" id="frecuencia_cardiaca" class="form-control" name="frecuencia_cardiaca" placeholder="Ej: 72">
+                    </div>
+                    <div class="col-sm-4">
+                      <p>Saturación de Oxígeno (%)</p>
+                      <input type="text" id="saturacion" class="form-control" name="saturacion" placeholder="Ej: 98">
+                    </div>
+                    <div class="col-sm-4">
+                      <p>Frecuencia Respiratoria (rpm)</p>
+                      <input type="text" id="frecuencia_respiratoria" class="form-control" name="frecuencia_respiratoria" placeholder="Ej: 16">
+                    </div>
+                    <br><br><br><br>
+                    <div class="col-sm-12">
+                      <p>Motivo de la consulta (*)</p>
+                      <textarea id="motivo_consulta" name="motivo_consulta" class="form-control" rows="3" placeholder="Motivo principal o queja del paciente" <?php echo !empty($motivo_cita) ? 'readonly' : ''; ?> required><?php echo htmlspecialchars($motivo_cita); ?></textarea>
+                    </div>
+                    <div style="float:right; margin-top:2%;">
+                      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalConfirmarRegresoConsulta">Regresar</button>
+                      <button type="button" class="btn btn-primary next-table" id="consulta_button" data-table-actual="consulta" data-table-siguiente="historial">Siguiente</button>
+                    </div>
                 </section>
               </div>
 
@@ -512,14 +529,17 @@ if (!empty($cedula) && isset($conexion)) {
                     <p>Hora):</p>
                     <input type="time" name="hora_cita" id="hora_cita" class="form-control pull-right">
                   </div>
-                  <label class="control-label"></label>
-                  <div class="col-sm-5">
-                    <p>Medicamentos (*):</p>
-                    <input type="text" class="form-control pull-right" id="medicamento" name="medicamento" required readonly placeholder="Seleccione los medicamentos">
-                    <input type="hidden" id="medicamento_full_data" name="medicamento_full_data" value="">
-                  </div>
-                  <div class="col-sm-1" style="margin-top: 30px; margin-left:-20px;">
-                    <button type="button" class="form-control pull-right bt-sm btn-primary" id="medicamento_agg" data-toggle="modal" data-target="#modalSeleccionMedicamentos">+</button>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="control-label">Medicamentos:</label>
+
+                      <button type="button" class="btn btn-info btn-md btn-block" id="medicamento_agg" data-toggle="modal" data-target="#modalSeleccionMedicamentos" data-placement="top" title="Ningún medicamento agregado">
+                        <i>Asignar Medicamento</i>
+                      </button>
+
+                      <input type="hidden" id="medicamento" name="medicamento_full_data" class="form-control" value="" readonly placeholder="Medicamentos seleccionados aparecerán aquí...">
+                      <div id="inputs_medicamentos_ocultos"></div>
+                    </div>
                   </div>
 
                   <br><br><br><br>
@@ -584,45 +604,64 @@ if (!empty($cedula) && isset($conexion)) {
   <div class="modal" id="modalSeleccionMedicamentos" tabindex="-1" role="dialog" aria-labelledby="modalSeleccionMedicamentosLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="modalSeleccionMedicamentosLabel"><i class="fa fa-pills"></i> Seleccionar Medicamentos</h4>
+        <div class="modal-header" style="background-color: #3c8dbc; color: white; border-top-left-radius: 4px; border-top-right-radius: 4px;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="modalSeleccionMedicamentosLabel">
+            <i class="fa fa-medkit"></i> Seleccionar Medicamentos
+          </h4>
         </div>
+
         <div class="modal-body">
-          <p class="text-info" id="mensajeMedicamentos">Seleccione un medicamento, ingrese la dosis y unidad, luego presione 'Añadir'.</p>
+          <div class="row">
+            <div class="col-xs-9">
+              <div class="form-group">
+                <label for="selectMedicamentos">Medicamento:</label>
+                <div class="input-group">
+                  <select id="selectMedicamentos" class="form-control select2" style="width: 100%;">
+                    <option value="">Seleccione un medicamento...</option>
+                    <?php while ($row = $query_medicamentos->fetch_assoc()) : ?>
+                      <option value="<?php echo $row['Id']; ?>" data-nombre="<?php echo $row['nombre_medicamento']; ?>" data-via="<?php echo $row['via_aplicacion']; ?>" data-presentacion="<?php echo $row['presentacion']; ?>" data-tipo="<?php echo $row['nombre_tipo']; ?>">
+                        <?php echo $row['nombre_medicamento'] . " (" . $row['cantidad_unidad_medida'] . " " . $row['unidad'] . ")"; ?>
+                      </option>
+                    <?php endwhile; ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button class="btn btn-info" type="button" id="btnInfoMedicamento" data-toggle="tooltip" title="Detalles" style="height: 34px;">
+                      <i><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"</i>
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xs-3">
+              <div class="form-group">
+                <label>&nbsp;</label> <button type="button" class="btn btn-primary btn-block" id="btnAnadirMedicamento">
+                  <i class="fa fa-plus"></i> Añadir
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <hr style="margin: 10px 0;">
 
           <div class="row">
-            <div class="col-xs-6">
-              <p>Medicamento:</p>
-              <select id="selectMedicamentos" class="form-control">
-                <option value="">Cargando medicamentos...</option>
-              </select>
-            </div>
-            <div class="col-xs-3">
-              <p>Dosis:</p>
-              <input type="text" class="form-control" name="inputDosisCantidad" id="inputDosisCantidad" placeholder="ej. 800">
-            </div>
-            <div class="col-xs-3">
-              <p>Unidad:</p>
-              <select class="form-control" name="selectDosisMedicamentosUnidad" id="selectDosisMedicamentosUnidad" required>
-                <option value="">Cargando dosis...</option>
-              </select>
-            </div>
-            <br><br><br><br>
-            <div class="col-xs-2 pull-right">
-              <button type="button" class="btn btn-info btn-block" id="btnAnadirMedicamento">Añadir</button>
+            <div class="col-xs-12">
+              <h5 style="font-weight: bold; color: #555;">Medicamentos Seleccionados:</h5>
+              <div id="contenedorMedicamentosSeleccionados" style="min-height: 80px; border: 2px dashed #ddd; padding: 15px; border-radius: 6px; background-color: #f9f9f9;">
+                <p class="text-muted text-center" id="textoVacio">No hay medicamentos añadidos aún.</p>
+              </div>
             </div>
           </div>
-
-          <hr>
-          <h5>Medicamentos Seleccionados:</h5>
-          <div id="contenedorMedicamentosSeleccionados" style="min-height: 40px; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
-          </div>
-
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success" id="aplicarSeleccionMedicamentos">Aplicar Selección</button>
+
+        <div class="modal-footer" style="background-color: #f4f4f4;">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="aplicarSeleccionMedicamentos">
+            <i class="fa fa-check"></i> Aplicar Selección
+          </button>
         </div>
       </div>
     </div>
@@ -871,6 +910,10 @@ if (!empty($cedula) && isset($conexion)) {
     }
     $avisoModalConsulta.modal('show');
   }
+
+  $(document).ready(function() {
+    $('#medicamento_agg').tooltip();
+  });
 
 
   /**
@@ -1558,7 +1601,7 @@ if (!empty($cedula) && isset($conexion)) {
 
   function cargarMedicamentosBaseAjax() {
     $.ajax({
-      url: 'get/get_medicamentos_base.php', // Asegúrate de que este endpoint exista
+      url: 'get/get_medicamentos_base.php',
       method: 'GET',
       dataType: 'json',
       success: function(response) {
@@ -1566,118 +1609,175 @@ if (!empty($cedula) && isset($conexion)) {
         $select.empty().append('<option value="">--- Seleccione un Medicamento ---</option>');
 
         if (response.success && response.data.length > 0) {
-          listaMedicamentosBase = response.data;
           response.data.forEach(med => {
-            $select.append(`<option value="${med.Id_medicamento}" data-nombre="${med.nombre_medicamento}" data-presentacion="${med.tipo_presentacion}">${med.nombre_medicamento} (${med.tipo_presentacion})</option>`);
+            // El texto que verá el médico
+            let textoMostrar = med.nombre_medicamento + " (" + (med.nombre_tipo || 'N/A') + ")";
+
+            // El value debe ser Id_descripcion (el ID de la tabla descripcion_medicamento)
+            $select.append(`
+            <option value="${med.Id_descripcion}" 
+                    data-nombre="${med.nombre_medicamento}" 
+                    data-via="${med.via_aplicacion || 'No definida'}"
+                    data-presentacion="${med.presentacion_comercial || 'No definida'}"
+                    data-nombre_tipo="${med.nombre_tipo || 'No definida'}"
+                    data-componentes="${med.componentes || 'Sin componentes'}">
+                ${textoMostrar}
+            </option>`);
           });
+
+          // Si usas Select2, esto es vital para refrescarlo
+          if ($.fn.select2 && $select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy').select2();
+          }
         } else {
-          $select.append('<option value="">No se encontraron medicamentos.</option>');
+          console.warn("No se cargaron datos:", response.error);
+          $select.append('<option value="">No hay medicamentos disponibles</option>');
         }
       },
-      error: function() {
-        $('#selectMedicamentos').empty().append('<option value="">Error al cargar medicamentos.</option>');
-        mostrarAviso('Error de conexión al cargar la lista de medicamentos.');
+      error: function(xhr) {
+        console.error("Error en la petición AJAX:", xhr.responseText);
       }
     });
   }
 
-  /**
-   * Carga las unidades de medida asociadas a un medicamento base seleccionado.
-   * @param {number} idMedicamentoBase ID del medicamento base.
-   */
-  function cargarUnidadesPorMedicamento(idMedicamentoBase) {
-    const $selectUnidad = $('#selectDosisMedicamentosUnidad');
-    $selectUnidad.empty().append('<option value="">--- Unidad ---</option>');
+  // Lógica del Tooltip al cambiar el select
+  $('#selectMedicamentos').on('change', function() {
+    let option = $(this).find('option:selected');
 
-    if (!idMedicamentoBase) {
+    if (option.val() !== "") {
+      // Obtenemos los datos de los data-attributes que llenamos en el paso anterior
+      let via = option.data('via') || 'No especificada';
+      let pres = option.data('presentacion') || 'No definida';
+      let comp = option.data('componentes') || 'Sin detalles';
+
+      let info = `<strong>Vía:</strong> ${via}<br>
+                    <strong>Pres:</strong> ${pres}<br>
+                    <strong>Principio Activo:</strong> ${comp}`;
+
+      // Actualizamos el tooltip del botón
+      $('#btnInfoMedicamento')
+        .attr('data-original-title', info)
+        .tooltip('hide') // Cerramos el anterior
+        .attr('title', info)
+        .tooltip('fixTitle'); // Refrescamos
+    }
+  });
+
+  $('#btnAnadirMedicamento').on('click', function() {
+    const $select = $('#selectMedicamentos');
+    const selected = $select.find('option:selected');
+
+    if ($select.val() === "") {
+      mostrarAviso("Por favor seleccione un medicamento");
       return;
     }
 
-    $.ajax({
-      url: 'get/get_unidades_por_medicamento.php', // Asegúrate de que este endpoint exista
-      method: 'GET',
-      dataType: 'json',
-      data: {
-        id: idMedicamentoBase
-      },
-      success: function(response) {
-        $selectUnidad.empty();
-        if (response.success && response.data.length > 0) {
-          response.data.forEach(uni => {
-            // El value debe ser la unidad (ej: "mg") y el data-id-descripcion el ID de descripcion_medicamento
-            $selectUnidad.append(`<option value="${uni.unidad}" data-id-descripcion="${uni.Id_descripcion_medicamento}">${uni.unidad}</option>`);
-          });
-        } else {
-          $selectUnidad.append('<option value="">No hay unidades asociadas.</option>');
-        }
-      },
-      error: function() {
-        $selectUnidad.empty().append('<option value="">Error unidades.</option>');
-      }
-    });
-  }
+    // CAPTURA SEGURA DE DATOS
+    const idMedicamento = selected.val(); // El value del option (Debe ser el ID)
+    const nombreMedicamento = selected.data('nombre'); // Del atributo data-nombre
 
+    // Validación para no guardar nombres en lugar de IDs
+    if (isNaN(idMedicamento)) {
+      console.error("Error: Se está capturando un nombre en lugar de un ID:", idMedicamento);
+    }
 
-  /**
-   * Renderiza la lista de medicamentos en el modal (Columna derecha).
-   */
-  function renderizarMedicamentosModal() {
-    const $contenedor = $('#contenedorMedicamentosSeleccionados');
-    $contenedor.empty();
+    // Evitar duplicados
+    if (medicamentosSeleccionados.find(m => m.id === idMedicamento)) {
+      mostrarAviso("Este medicamento ya ha sido añadido");
+      return;
+    }
+
+    const medObj = {
+      id: idMedicamento,
+      nombre: nombreMedicamento,
+      detalles: selected.data('via') + " - " + selected.data('presentacion'),
+      tipo: selected.data('nombre_tipo')
+    };
+
+    medicamentosSeleccionados.push(medObj);
+    renderizarListaMedicamentos();
+    $select.val('').trigger('change');
+    actualizarTooltipMedicamentos();
+  });
+
+  function renderizarListaMedicamentos() {
+    const contenedor = $('#contenedorMedicamentosSeleccionados');
+    contenedor.empty();
 
     if (medicamentosSeleccionados.length === 0) {
-      $contenedor.html('<p class="text-muted" style="margin-bottom:0;">Ningún medicamento seleccionado.</p>');
+      contenedor.append('<p class="text-muted text-center">No hay medicamentos añadidos aún.</p>');
       return;
     }
 
     medicamentosSeleccionados.forEach((med, index) => {
-      // Generar HTML para las indicaciones solo si existe
-
-      const tag = `
-        <span class="medicamento-tag" data-index="${index}">
-          ${med.nombre} (${med.presentacion}) (${med.dosis} ${med.unidad})
-          <span class="close-btn" data-index="${index}">&times;</span>
-        </span>
-      `;
-      $contenedor.append(tag);
-    });
-
-    // Agregar evento para quitar medicamento
-    $('.medicamento-tag .close-btn').off('click').on('click', function() {
-      const index = $(this).data('index');
-      quitarMedicamentoPorIndice(index);
+      contenedor.append(`
+            <div class="alert alert-info alert-dismissible" style="margin-bottom: 5px; padding: 8px;">
+                <button type="button" class="close" onclick="eliminarMed(${index})">&times;</button>
+                <strong>${med.nombre}</strong> - <small>${med.detalles} (${med.tipo})</small>
+                <input type="hidden" name="medicamentos[]" value="${med.id}">
+            </div>
+        `);
     });
   }
 
-  /**
-   * Quita un medicamento de la lista temporal y re-renderiza.
-   * @param {number} index Índice del medicamento en el array temporal.
-   */
-  function quitarMedicamentoPorIndice(index) {
+  function eliminarMed(index) {
     medicamentosSeleccionados.splice(index, 1);
-    renderizarMedicamentosModal();
+    renderizarListaMedicamentos();
+    actualizarTooltipMedicamentos();
   }
 
-  /**
-   * Actualiza los campos de texto visible y el campo hidden JSON del formulario principal.
-   */
-  function actualizarCamposFormularioMedicamentos() {
-    let textoVisible = '';
-    let datosJSON = JSON.stringify(medicamentosSeleccionados);
+  let idsSeleccionados = [];
+  let nombresSeleccionados = [];
 
-    if (medicamentosSeleccionados.length > 0) {
-      // Mostrar solo los primeros 2 y el contador si hay más
-      const visibles = medicamentosSeleccionados.slice(0, 2).map(med => `${med.nombre} (${med.presentacion}) (${med.dosis} ${med.unidad})`);
-      textoVisible = visibles.join(', ');
+  function confirmarSeleccion() {
+    const $select = $('#selectMedicamentos');
+    const selected = $select.find('option:selected');
 
-      if (medicamentosSeleccionados.length > 2) {
-        textoVisible += `, +${medicamentosSeleccionados.length - 2} más.`;
-      }
+    const id = $select.val();
+    const nombre = selected.data('nombre');
+    const tipo = selected.data('nombre_tipo') || 'N/A';
+
+    if (id && !idsSeleccionados.includes(id)) {
+      // 1. Guardar datos en los arreglos
+      idsSeleccionados.push(id);
+      nombresSeleccionados.push(nombre);
+
+      // 2. Actualizar los inputs del formulario
+      $('#medicamento_full_data').val(nombresSeleccionados.join(', '));
+
+      // 3. ACTUALIZAR EL TOOLTIP CORRECTAMENTE
+      const nuevoTexto = "Agregados: " + nombresSeleccionados.length + " medicamento(s)";
+
+      $('#medicamento_agg')
+        .attr('title', nuevoTexto) // Cambia el título base
+        .attr('data-original-title', nuevoTexto) // Cambia el título de Bootstrap
+        .tooltip('fixTitle') // Fuerza a Bootstrap a reconocer el cambio
+        .tooltip('show'); // Muestra el mensaje al médico
+
+      // 4. Limpieza y cierre
+      $('#modalSeleccionMedicamentos').modal('hide');
+      $select.val('').trigger('change');
     }
+  }
 
-    $('#medicamento').val(textoVisible);
-    $('#medicamento_full_data').val(datosJSON);
-    $('#medicamento').removeClass('input-error'); // Limpiar error si se añade algo
+  function actualizarTooltipMedicamentos() {
+    var boton = $('#medicamento_agg');
+
+    // Revisamos si el arreglo global tiene elementos
+    if (medicamentosSeleccionados.length > 0) {
+      // Extraemos solo los nombres de los medicamentos usando map
+      var nombres = medicamentosSeleccionados.map(function(med) {
+        return med.nombre;
+      });
+
+      var nuevoTexto = "Medicamentos: " + nombres.join(", ");
+
+      // Actualizamos y refrescamos el tooltip
+      boton.attr('data-original-title', nuevoTexto).tooltip('fixTitle');
+    } else {
+      // Si el arreglo está vacío, mostramos el mensaje por defecto
+      boton.attr('data-original-title', "Ningún medicamento agregado").tooltip('fixTitle');
+    }
   }
 
   $('#hora_cita').on('change', function() {
@@ -1817,83 +1917,79 @@ if (!empty($cedula) && isset($conexion)) {
   // =====================================================================
 
   $(document).ready(function() {
+    // Inicializar Tooltip de Bootstrap
+    $('#btnInfoMedicamento').tooltip({
+      html: true
+    });
+
+    // Cuando cambie el medicamento seleccionado
+    $('#selectMedicamentos').on('change', function() {
+      var selected = $(this).find('option:selected');
+
+      if (selected.val() != "") {
+        // Extraer datos de los atributos data-
+        var dosis = selected.data('dosis');
+        var via = selected.data('via');
+        var presentacion = selected.data('presentacion');
+        var tipo = selected.data('tipo');
+
+        // Crear el contenido del Tooltip
+        var info = "<strong>Detalles Técnicos:</strong><br>" +
+          "Dosis: " + dosis + "<br>" +
+          "Tipo: " + tipo + "<br>" +
+          "Vía: " + via + "<br>" +
+          "Pres: " + presentacion;
+
+        // Actualizar el botón
+        $('#btnInfoMedicamento')
+          .attr('data-original-title', info)
+          .tooltip('show'); // Mostrarlo brevemente para que el médico lo vea
+      } else {
+        $('#btnInfoMedicamento').attr('data-original-title', "Seleccione para ver detalles");
+      }
+    });
+  });
+
+  $(document).ready(function() {
     // 🛑 ATENCIÓN: Se omite la carga de medicamentos guardados, ya que es un formulario de AGREGAR.
 
     // EVENTO: Al abrir el modal, cargamos la lista de medicamentos y renderizamos la lista (que estará vacía al inicio).
     $('#modalSeleccionMedicamentos').on('show.bs.modal', function(e) {
       cargarMedicamentosBaseAjax();
-      renderizarMedicamentosModal();
-    });
-
-    // EVENTO: Al seleccionar un medicamento en el modal, cargamos sus unidades.
-    $('#selectMedicamentos').on('change', function() {
-      const idMedicamentoBase = $(this).val();
-      cargarUnidadesPorMedicamento(idMedicamentoBase);
-    });
-
-    // EVENTO: Añadir medicamento a la lista temporal
-    $('#btnAnadirMedicamento').on('click', function() {
-      const $selectMed = $('#selectMedicamentos');
-      const idMedicamentoBase = $selectMed.val();
-      const nombreMedicamento = $selectMed.find('option:selected').data('nombre');
-      const tipo_presentacion = $selectMed.find('option:selected').data('presentacion');
-      const dosis = $('#inputDosisCantidad').val();
-      const unidad = $('#selectDosisMedicamentosUnidad').val();
-      const idDescripcion = $('#selectDosisMedicamentosUnidad').find('option:selected').data('id-descripcion');
-
-      if (!idMedicamentoBase || !dosis || !unidad) {
-        mostrarAviso('Por favor, seleccione un **Medicamento**, ingrese la **Dosis** y seleccione la **Unidad**.');
-        return;
-      }
-      if (isNaN(parseFloat(dosis)) || parseFloat(dosis) <= 0) {
-        mostrarAviso('La dosis debe ser un número positivo.');
-        return;
-      }
-
-      // SOLO busca duplicados EXACTOS por (Medicamento, Unidad, Dosis, Indicaciones)
-      const existente = medicamentosSeleccionados.find(m =>
-        m.id_medicamento_base == idMedicamentoBase &&
-        m.presentacion == tipo_presentacion &&
-        m.unidad === unidad &&
-        m.dosis === dosis
-      );
-
-      if (existente) {
-        mostrarAviso(`Ya existe una prescripción idéntica: "${nombreMedicamento} (${dosis} ${unidad})" con esas indicaciones. No es necesario añadirla de nuevo.`);
-        return;
-      }
-
-      const nuevoMedicamento = {
-        id: idDescripcion,
-        id_medicamento_base: idMedicamentoBase,
-        nombre: nombreMedicamento,
-        presentacion: tipo_presentacion,
-        dosis: dosis,
-        unidad: unidad,
-        indicaciones: indicaciones
-      };
-
-      medicamentosSeleccionados.push(nuevoMedicamento);
-
-      // Limpiar los campos del modal después de añadir
-      $selectMed.val('');
-      $('#inputDosisCantidad').val('');
-      cargarUnidadesPorMedicamento(null);
-
-      renderizarMedicamentosModal();
     });
 
     // EVENTO: Aplicar la selección al formulario principal
     $('#aplicarSeleccionMedicamentos').on('click', function() {
+      // 1. Validar si hay algo seleccionado (Opcional)
       if (medicamentosSeleccionados.length === 0) {
-        // En el formulario de agregar, es válido no seleccionar medicamentos, 
-        // pero puedes poner una validación si es obligatorio:
-        // mostrarAviso('Debe seleccionar al menos un medicamento para aplicar la selección.');
+        $('#medicamento').val(''); // Vaciar si no hay nada
+        $('#medicamento_agg').attr('data-original-title', 'Ningún medicamento agregado');
+        $('#inputs_medicamentos_ocultos').empty();
+        $('#modalSeleccionMedicamentos').modal('hide');
+        return;
       }
-      actualizarCamposFormularioMedicamentos();
-      // Asegúrate de tener una función closeCustomModal o usa el método de bootstrap
-      $('#modalSeleccionMedicamentos').modal('hide');
+
+      // 2. Crear el string de nombres para el Tooltip y guardarlo en el input de validación
+      var id = medicamentosSeleccionados.map(function(m) {
+        return m.id;
+      }).join(', ');
+      $('#medicamento').val(id); // Esto llena el input oculto de nombres
+
+      var nombre = medicamentosSeleccionados.map(function(m) {
+        return m.nombre;
+      }).join(', ');
+
+      var nuevoTexto = "Medicamentos: " + nombres;
+
+      // 3. Actualizar el Tooltip del botón
+      $('#medicamento_agg').attr('data-original-title', nuevoTexto).tooltip('fixTitle');
+
     });
+
+    // 5. Cerrar el modal
+    $('#modalSeleccionMedicamentos').modal('hide');
+
+    console.log("Medicamentos listos para enviarse:", medicamentosSeleccionados);
   });
 
   // =====================================================================

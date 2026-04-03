@@ -19,7 +19,7 @@ $sql = "SELECT
             di.*, 
             mdi.cantidad, 
             m.nombre_medicamento, 
-            p.tipo_presentacion,
+            tpm.nombre_tipo,
             l.Lote as nombre_lote,
             l.fecha_vencimiento,
             -- Datos del funcionario que registró
@@ -31,7 +31,7 @@ $sql = "SELECT
         INNER JOIN medicamentos_detalle_inventario mdi ON di.Id_detalle_inventario = mdi.Id_detalle_inventario
         INNER JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
         INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-        INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+        INNER JOIN tipo_medicamento tpm ON dm.Id_tipo = tpm.Id_tipo
         INNER JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
         -- El registro de quién lo hizo se cruza con persona
         INNER JOIN persona u ON di.Id_persona = u.id 
@@ -221,7 +221,7 @@ $esEntrada = $tipoMovimiento === 1;
                             <h4 class="page-header text-blue-custom"><i class="fa fa-medkit"></i> Datos del Medicamento</h4>
                             <div class="well-custom">
                                 <span class="info-label">Nombre y Presentación</span>
-                                <div class="info-data"><?php echo $mov['nombre_medicamento']; ?> <small>(<?php echo $mov['tipo_presentacion']; ?>)</small></div>
+                                <div class="info-data"><?php echo $mov['nombre_medicamento']; ?> <small>(<?php echo $mov['nombre_tipo']; ?>)</small></div>
 
                                 <div class="row">
                                     <div class="col-md-6">

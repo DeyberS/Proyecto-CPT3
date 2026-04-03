@@ -42,19 +42,36 @@ $datos_consulta = mysqli_fetch_assoc($res_consulta);
 
 
 // Obtener Récipes/Prescripciones (Medicamentos)
-$sql_receta = "
-    SELECT 
-        m.nombre_medicamento,
-        u.unidad,
-        pm.dosis,
-        ps.tipo_presentacion
-    FROM prescripcion_medicamentos pm
-    JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
-    JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-    JOIN unidad_medida u ON dm.Id_unidad = u.Id_unidad_medida
-    JOIN presentacion ps ON dm.Id_presentacion = ps.Id_presentacion
-    WHERE pm.Id_consulta = $id_consulta;
-";
+    $sql_receta = "SELECT 
+    m.nombre_medicamento AS nombre, 
+
+    -- 1. Nombres de los principios activos separados por coma
+    GROUP_CONCAT(pa.nombre SEPARATOR ' + ') AS nombre_principio_activo,
+
+    ps.nombre_tipo AS presentacion,
+
+    -- 2. Dosis formateadas: (200mg) o (200mg + 400mg)
+    CONCAT('(', GROUP_CONCAT(CONCAT(dpm.cantidad_unidad_medida, ' ', um_pa.unidad) SEPARATOR ' + '), ')') AS dosis,
+
+    -- Otros datos necesarios
+    dm.presentacion AS detalle_empaque,
+    dm.via_aplicacion,
+    dm.almacenamiento,
+    l.nombre_laboratorio
+
+    FROM prescripcion_medicamentos p
+    INNER JOIN descripcion_medicamento dm ON p.Id_descripcion_medicamento = dm.Id 
+    INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
+    LEFT JOIN tipo_medicamento ps ON dm.Id_tipo = ps.Id_tipo 
+
+    -- Relación corregida con dm.Id según tu estructura
+    LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+    LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+    LEFT JOIN unidad_medida um_pa ON dpm.id_tipo_unidad_medida = um_pa.Id_unidad_medida
+    LEFT JOIN laboratorio l ON dm.Id_laboratorio = l.Id_laboratorio
+
+    WHERE p.Id_consulta = $id_consulta
+    GROUP BY dm.Id";
 
 $res_receta = mysqli_query($conexion, $sql_receta);
 $recetas = [];
@@ -143,8 +160,8 @@ if (!empty($recetas)) {
     foreach ($recetas as $receta) {
         $html_receta .= '
             <tr>
-                <td>' . htmlspecialchars($receta['nombre_medicamento']) . " " . "(" . " " . htmlspecialchars($receta['tipo_presentacion']) . " " . ")" . '</td>
-                <td>' . htmlspecialchars($receta['dosis'] . $receta['unidad']) . '</td>
+                <td>' . htmlspecialchars($receta['nombre']) . " - " .  htmlspecialchars($receta['nombre_principio_activo']) . "(" . " " . htmlspecialchars($receta['detalle_empaque']) . " " . ")" . '</td>
+                <td>' . htmlspecialchars($receta['dosis']) . '</td>
             </tr>';
     }
     
@@ -157,7 +174,7 @@ $html_indicaciones = '
     <br>
     <h3 style="color:#0056b3; border-bottom: 1px solid #0056b3;">Indicaciones Generales y Tratamiento</h3>
     <p style="font-size: 10pt;">' . nl2br(htmlspecialchars($datos_consulta['tratamiento_indicado'])) . '</p>
-    <p style="font-size: 10pt;"><b>Recibido por:</b>' . nl2br(htmlspecialchars($datos_consulta['entregado_a'])) . '</p>
+    <p style="font-size: 10pt;"><b>Recibido por: </b>' . nl2br(htmlspecialchars($datos_consulta['entregado_a'])) . '</p>
     <br><br>
 ';
 
@@ -188,7 +205,7 @@ $pdf->writeHTML($html_firma, true, false, true, false, '');
 // 4. SALIDA DEL PDF (Stream: mostrar en navegador)
 // ---------------------------------------------------------
 // 'I' para salida en el navegador (Inline)
-$pdf->Output("Recipe Medico " . $datos_consulta['tipo_cedula_paciente'] . "-" . $datos_consulta['cedula_paciente'] . ".pdf", 'D'); 
+$pdf->Output("Recipe Medico " . $datos_consulta['tipo_cedula_paciente'] . "-" . $datos_consulta['cedula_paciente'] . ".pdf", 'I'); 
 
 exit;
 ?>

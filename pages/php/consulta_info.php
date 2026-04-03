@@ -63,24 +63,49 @@ if (!$id_consulta || !is_numeric($id_consulta)) {
 
 
             $medicamentos_lista = [];
+            // Usamos una consulta que respeta las llaves foráneas de tu archivo .sql
             $sql_med = "SELECT 
-                m.nombre_medicamento AS nombre, 
-                p.dosis, 
-                um.unidad,
-                ps.tipo_presentacion AS presentacion  
+            m.nombre_medicamento AS nombre, 
+            
+            -- 1. Nombres de los principios activos separados por coma
+            GROUP_CONCAT(pa.nombre SEPARATOR ' + ') AS nombre_principio_activo,
+            
+            ps.nombre_tipo AS presentacion,
+            
+            -- 2. Dosis formateadas: (200mg) o (200mg + 400mg)
+            CONCAT('(', GROUP_CONCAT(CONCAT(dpm.cantidad_unidad_medida, ' ', um_pa.unidad) SEPARATOR ' + '), ')') AS dosis,
+            
+            -- Otros datos necesarios
+            dm.presentacion AS detalle_empaque,
+            dm.via_aplicacion,
+            dm.almacenamiento,
+            l.nombre_laboratorio
+            
             FROM prescripcion_medicamentos p
-            LEFT JOIN descripcion_medicamento dm ON p.Id_descripcion_medicamento = dm.Id 
-            LEFT JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
-            LEFT JOIN unidad_medida um ON dm.Id_unidad = um.Id_unidad_medida
-            LEFT JOIN presentacion ps ON dm.Id_presentacion = ps.Id_presentacion 
-            WHERE p.Id_consulta = '$safe_id'";
-
+            INNER JOIN descripcion_medicamento dm ON p.Id_descripcion_medicamento = dm.Id 
+            INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
+            LEFT JOIN tipo_medicamento ps ON dm.Id_tipo = ps.Id_tipo 
+            
+            -- Relación corregida con dm.Id según tu estructura
+            LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+            LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+            LEFT JOIN unidad_medida um_pa ON dpm.id_tipo_unidad_medida = um_pa.Id_unidad_medida
+            LEFT JOIN laboratorio l ON dm.Id_laboratorio = l.Id_laboratorio
+            
+            WHERE p.Id_consulta = '$safe_id'
+            
+            -- Agrupamos para que los principios del mismo medicamento se junten
+            GROUP BY dm.Id";
+            
             $res_med = $conexion->query($sql_med);
-
+            
             if ($res_med && $res_med->num_rows > 0) {
                 while ($row = $res_med->fetch_assoc()) {
                     $medicamentos_lista[] = $row;
                 }
+            } else {
+                // Si sigue sin salir nada, imprime el error para debug
+                echo "Error o sin datos: " . $conexion->error;
             }
 
             // Extraemos el tratamiento general de la consulta maestra para usarlo en la tabla
@@ -335,9 +360,9 @@ if (!$id_consulta || !is_numeric($id_consulta)) {
                             <?php if (!empty($medicamentos_lista)) : ?>
                                 <?php foreach ($medicamentos_lista as $med) : ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($med['nombre']); ?> (<?php echo htmlspecialchars($med['presentacion']); ?>)</td>
+                                        <td><?php echo htmlspecialchars($med['nombre']); ?> - <?php echo htmlspecialchars($med['nombre_principio_activo']); ?> (<?php echo htmlspecialchars($med['presentacion']); ?>)</td>
 
-                                        <td><?php echo htmlspecialchars($med['dosis'] . " " . $med['unidad']); ?></td>
+                                        <td><?php echo htmlspecialchars($med['dosis']); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else : ?>

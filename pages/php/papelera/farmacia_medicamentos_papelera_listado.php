@@ -95,9 +95,10 @@
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Medicamento</th>
+            <th>Tipo</th>
             <th>Presentación</th>
-            <th>U. Medida</th>
             <th>Via de Aplicacion</th>
+            <th>Codigo de Barras</th> 
             <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
               <th>Acciones</th>
             <?php endif; ?>
@@ -112,7 +113,7 @@
               $donde = "WHERE m.estatus = 0";
               if ($busqueda != '') {
                 $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' 
-                              OR p.tipo_presentacion LIKE '%$busqueda%' 
+                              OR tp.nombre_tipo LIKE '%$busqueda%' 
                               OR dm.via_aplicacion LIKE '%$busqueda%')";
               }
 
@@ -124,7 +125,7 @@
               $sql_conteo = "SELECT COUNT(*) as total 
                              FROM medicamento m 
                              JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                             JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+                             JOIN tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo
                              $donde";
               $resultado_conteo = mysqli_query($conexion, $sql_conteo);
               $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
@@ -132,24 +133,21 @@
               $total_paginas = ceil($total_permisos / $registros_por_pagina);
               // Consulta principal con JOIN para obtener los datos paginados
               $sql = "SELECT 
-                        m.Id_medicamento, 
+                        m.Id_medicamento AS Id_medicamento,
                         m.nombre_medicamento,
                         dm.Id, 
-                        dm.Id_presentacion, 
-                        dm.Id_unidad, 
-                        dm.cantidad_unidad_medida,
+                        dm.Id_tipo,
+                        dm.presentacion, 
                         dm.via_aplicacion,
-                        p.tipo_presentacion,
-                        um.unidad,
+                        tp.nombre_tipo,
+                        dm.codigo_barras,
                         m.estatus
                     FROM 
                         medicamento m
                     JOIN 
                         descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
                     JOIN
-                        presentacion p ON dm.Id_presentacion = p.Id_presentacion
-                    JOIN
-                        unidad_medida um ON dm.Id_unidad = um.Id_unidad_medida
+                        tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo
                     $donde
                     ORDER BY 
                         m.Id_medicamento ASC
@@ -162,9 +160,10 @@
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_medicamento']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['tipo_presentacion']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['cantidad_unidad_medida']; ?><?= $row['unidad']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['via_aplicacion']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['nombre_tipo']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['presentacion']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['via_aplicacion']; ?></span></td>     
+              <td class=""><span class="text-row text-white"><?= $row['codigo_barras']; ?></span></td>
               <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
                 <td>
                   <?php if (in_array('Reactivar Medicamentos', $_SESSION["permisos"])) : ?>

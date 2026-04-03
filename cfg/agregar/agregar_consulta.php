@@ -101,10 +101,6 @@ $parentesco_representante   = mysqli_real_escape_string($conexion, $_POST['paren
 
 $id_cita_atendida = $_POST['id_cita_atendida'] ?? '';
 
-// Medicamentos (Cadena completa)
-$medicamento_full_data = $_POST['medicamento_full_data'] ?? '';
-
-
 // ==========================================================
 // 3. LÓGICA DE TRANSACCIÓN (GUARDADO)
 // ==========================================================
@@ -203,31 +199,45 @@ verificar_y_guardar_antecedente($conexion, $id_historial, $familiares, 'antecede
 verificar_y_guardar_antecedente($conexion, $id_historial, $sexualidad, 'antecedentes_sexuales_reproductivos', 'historial_antecedentes_sexuales_reproductivos');
 verificar_y_guardar_antecedente($conexion, $id_historial, $estilo_vida, 'tipos_estilos_de_vida', 'estilos_de_vida_paciente', 'Id_tipo');
 
-// D. PROCESAR MEDICAMENTOS (SOLO DOSIS)
-
-// ==========================================================
-// 3. GUARDADO DE MEDICAMENTOS (CORREGIDO)
+/// ==========================================================
+// SECCIÓN DE PRESCRIPCIÓN DE MEDICAMENTOS
 // ==========================================================
 
-if (!empty($medicamento_full_data)) {
-    // Decodificamos el JSON que enviamos desde el JS
-    $medicamentos = json_decode($medicamento_full_data, true);
+// 1. Recibimos el dato
+$medicamento_input = $_POST['medicamento_full_data'] ?? '';
 
-    if (is_array($medicamentos)) {
-        foreach ($medicamentos as $med) {
-            $id_desc_med = (int)$med['id']; 
-            $dosis_info  = sanitizar($conexion, $med['dosis']);
+// 2. Verificamos que no esté vacío
+if (!empty($medicamento_input)) {
+    
+    // Intentamos decodificar por si acaso viene como JSON puro desde el frontend
+    $medicamentos = json_decode($medicamento_input, true);
 
-            if ($id_desc_med > 0) {
-                // INSERTAMOS DIRECTAMENTE usando el ID, sin buscar por nombre
-                $sql_presc = "INSERT INTO prescripcion_medicamentos 
-                              (Id_consulta, Id_descripcion_medicamento, dosis) 
-                              VALUES ($id_consulta, $id_desc_med, '$dosis_info')";
-                
-                if (!mysqli_query($conexion, $sql_presc)) {
-                    // Si falla, hacemos rollback para no guardar una consulta sin medicinas
-                    handle_error($conexion, "Error al insertar medicamento ID: $id_desc_med", $sql_presc);
-                }
+    // Si NO es un JSON (es decir, es una cadena como "5, 12, 8")
+    if (!is_array($medicamentos)) {
+        $medicamentos = [];
+        // Separamos la cadena de texto usando la coma como delimitador
+        $ids_separados = explode(',', $medicamento_input);
+        
+        // Creamos el arreglo con la estructura que espera el ciclo foreach
+        foreach ($ids_separados as $id_val) {
+            $id_limpio = trim($id_val); // Quitamos espacios en blanco accidentales
+            if (!empty($id_limpio)) {
+                $medicamentos[] = ['id' => $id_limpio];
+            }
+        }
+    }
+
+    // 3. Ahora recorremos el array (que ya tiene cada ID separado correctamente)
+    foreach ($medicamentos as $med) {
+        $id_desc_med = isset($med['id']) ? (int)$med['id'] : 0;
+
+        if ($id_desc_med > 0) {
+            $sql_presc = "INSERT INTO prescripcion_medicamentos 
+                          (Id_consulta, Id_descripcion_medicamento) 
+                          VALUES ($id_consulta, $id_desc_med)";
+
+            if (!mysqli_query($conexion, $sql_presc)) {
+                handle_error($conexion, "Error al insertar medicamento ID: $id_desc_med", $sql_presc);
             }
         }
     }

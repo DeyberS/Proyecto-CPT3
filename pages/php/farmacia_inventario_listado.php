@@ -170,7 +170,8 @@
                 m.Id_medicamento, 
                 m.nombre_medicamento,
                 p.nombre,
-                pm.tipo_presentacion,
+                tdm.nombre_tipo,
+                GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
                 l.Lote,
                 tm.nombre as tipo_nom,
                 mdi.cantidad,
@@ -184,10 +185,14 @@
             INNER JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
             INNER JOIN descripcion_medicamento dm ON l.Id_descripcion_medicamento = dm.Id
             INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-            INNER JOIN presentacion pm ON dm.Id_presentacion = pm.Id_presentacion
+            INNER JOIN tipo_medicamento tdm ON dm.Id_tipo = tdm.Id_tipo
+            INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+            INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+            INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
             INNER JOIN tipo_movimiento tm ON di.Id_tipoMovimiento = tm.Id_tipo_movimiento
             INNER JOIN persona p ON di.Id_persona = p.Id
             $donde
+            GROUP BY mdi.Id
             ORDER BY di.fecha DESC
             LIMIT $inicio, $registros_por_pagina";
 
@@ -196,16 +201,19 @@
             if ($resultado && $resultado->num_rows > 0) {
               while ($row = $resultado->fetch_assoc()) {
                 $clase_badge = (strcasecmp($row['tipo_nom'], 'Entrada') == 0) ? 'bg-green' : 'bg-crimson';
+                $es_entrada = (strcasecmp($row['tipo_nom'], 'Entrada') == 0);
+                $simbolo = $es_entrada ? '+' : '-';
+                $color_texto = $es_entrada ? 'text-green' : 'text-red'; // Opcional: para dar color al número
             ?>
                 <tr>
-                  <td><span class="text-row text-white"><?= htmlspecialchars($row['nombre']); ?></span></td>
-                  <td><span class="text-row text-white"><?= htmlspecialchars($row['nombre_medicamento'] . " (" . $row['tipo_presentacion'] . ")"); ?></span></td>
-                  <td><span class="text-row text-white"><?= htmlspecialchars($row['stock_momento']); ?></span></td>
-                  <td><span class="text-row text-white"><?= "Min: " . $row['stock_minimo'] . " / Max: " . $row['stock_maximo']; ?></span></td>
-                  <td><span class="text-row text-white"><?= htmlspecialchars($row['Lote']); ?></span></td>
-                  <td><span class="text-row text-white"><strong><?= $row['cantidad']; ?></strong></span></td>
-                  <td><span class="badge <?= $clase_badge; ?>"><?= htmlspecialchars($row['tipo_nom']); ?></span></td>
-                  <td><span class="text-row text-white"><?= date("d/m/Y H:i", strtotime($row['fecha'])); ?></span></td>
+                  <td><small class="text-row text-white"><?= htmlspecialchars($row['nombre']); ?></small></td>
+                  <td><small class="text-row text-white"><?= htmlspecialchars($row['nombre_medicamento'] . " (" . $row['componentes'] . ")"); ?></small></td>
+                  <td><small class="text-row text-white"><?= htmlspecialchars($row['stock_momento']); ?></small></td>
+                  <td><small class="text-row text-white"><?= "Min: " . $row['stock_minimo'] . " / Max: " . $row['stock_maximo']; ?></small></td>
+                  <td><small class="text-row text-white"><?= htmlspecialchars($row['Lote']); ?></small></td>
+                  <td><small class="text-row text-white"><strong><?= $simbolo . $row['cantidad']; ?></strong></small></td>
+                  <td><small class="badge <?= $clase_badge; ?>"><?= htmlspecialchars($row['tipo_nom']); ?></small></td>
+                  <td><small class="text-row text-white"><?= date("d/m/Y H:i", strtotime($row['fecha'])); ?></small></td>
                   <?php if (in_array('Gestionar acciones de inventario', $_SESSION["permisos"])) : ?>
                     <td>
                       <?php if (in_array('Ver Consultas', $_SESSION["permisos"])) : ?>

@@ -41,7 +41,7 @@ mysqli_begin_transaction($conexion);
 // Datos de consulta
 $id_consulta = sanitizar($conexion, $_POST['Id_Consulta']);
 $id_historial = sanitizar($conexion, $_POST['Id_historial']);
-$id_medico = sanitizar($conexion, $_POST['medico']); // Se asume que el input se llama 'medico'
+$id_medico = sanitizar($conexion, $_POST['medico']);
 $fecha_consulta = sanitizar($conexion, $_POST['fecha_consulta']);
 $motivo_consulta = sanitizar($conexion, $_POST['motivo_consulta']);
 $peso = sanitizar($conexion, $_POST['peso']);
@@ -123,66 +123,22 @@ if (!mysqli_query($conexion, $sql_delete_prescripcion)) {
 }
 
 // B. INSERTAR NUEVAS PRESCRIPCIONES
-if (!empty($medicamentos)) {
+if (!empty($medicamentos) && is_array($medicamentos)) {
     
     foreach ($medicamentos as $med) {
-        $id_medicamento_base = sanitizar($conexion, $med['id_medicamento_base']);
-        $dosis = sanitizar($conexion, $med['dosis']);
-        $unidad = sanitizar($conexion, $med['unidad']);
+        // Ahora el ID viene directo como 'id' (es el ID de la tabla descripcion_medicamento)
+        $id_descripcion_medicamento = mysqli_real_escape_string($conexion, $med['id']);
 
-        // ----------------------------------------------------
-        // LÓGICA CLAVE: BUSCAR/CREAR Id_descripcion_medicamento
-        // ----------------------------------------------------
-        
-        $id_unidad_medida = 0;
-        
-        // 1. Buscar el Id de la Unidad de Medida (Necesario para insertar en descripcion_medicamento)
-        $sql_get_unidad = "SELECT Id_unidad_medida FROM unidad_medida WHERE unidad = '$unidad'";
-        $res_unidad = mysqli_query($conexion, $sql_get_unidad);
-        if ($res_unidad && $row_unidad = mysqli_fetch_assoc($res_unidad)) {
-            $id_unidad_medida = $row_unidad['Id_unidad_medida'];
-        } else {
-            // Error crítico si la unidad no existe (debería venir del SELECT de unidades)
-            handle_error($conexion, "Verificación de Unidad de Medida", $sql_get_unidad, "La unidad '$unidad' no se encontró en la tabla unidad_medida.");
-        }
-
-        // 2. Buscar si ya existe una descripción con esta combinación
-        $sql_check_desc = "
-            SELECT Id FROM descripcion_medicamento 
-            WHERE Id_medicamento = '$id_medicamento_base' 
-            AND Id_unidad = '$id_unidad_medida'
-        ";
-        $res_check = mysqli_query($conexion, $sql_check_desc);
-        $id_descripcion_medicamento = 0;
-
-        if ($res_check && $row_desc = mysqli_fetch_assoc($res_check)) {
-            // La descripción existe, usamos su ID
-            $id_descripcion_medicamento = $row_desc['Id'];
-        } else {
-            // La descripción NO existe, debemos crearla
-            $sql_insert_desc = "
-                INSERT INTO descripcion_medicamento (Id_medicamento, Id_unidad) 
-                VALUES ('$id_medicamento_base', '$id_unidad_medida')
+        // Validamos que el ID no sea vacío para evitar errores de FK
+        if (!empty($id_descripcion_medicamento)) {
+            $sql_insert_prescripcion = "
+                INSERT INTO prescripcion_medicamentos (Id_consulta, Id_descripcion_medicamento, dosis)
+                VALUES ('$id_consulta', '$id_descripcion_medicamento', '$dosis')
             ";
-            if (!mysqli_query($conexion, $sql_insert_desc)) {
-                handle_error($conexion, "Inserción de Descripcion_Medicamento", $sql_insert_desc);
+
+            if (!mysqli_query($conexion, $sql_insert_prescripcion)) {
+                handle_error($conexion, "Inserción de Prescripcion_Medicamentos", $sql_insert_prescripcion);
             }
-            // Obtener el ID recién insertado
-            $id_descripcion_medicamento = mysqli_insert_id($conexion);
-        }
-
-        // ----------------------------------------------------
-        // 3. Insertar en prescripcion_medicamentos
-        // ----------------------------------------------------
-        
-        $sql_insert_prescripcion = "
-            INSERT INTO prescripcion_medicamentos (Id_consulta, Id_descripcion_medicamento, dosis)
-            VALUES ('$id_consulta', '$id_descripcion_medicamento', '$dosis')
-        ";
-
-        if (!mysqli_query($conexion, $sql_insert_prescripcion)) {
-             // Este es el punto donde falla la FK si Id_descripcion_medicamento no existe o es 0
-            handle_error($conexion, "Inserción de Prescripcion_Medicamentos", $sql_insert_prescripcion);
         }
     }
 }

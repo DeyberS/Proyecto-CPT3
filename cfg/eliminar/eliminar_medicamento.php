@@ -1,81 +1,66 @@
 <?php
 session_start();
-// Incluye el archivo de conexión a la base de datos
 include('../conexion.php'); 
 
 if (isset($_GET['Id']) && is_numeric($_GET['Id'])) {
     
-    // 1. Obtener y sanitizar el ID de la descripción
-    // IMPORTANTE: Asumimos que el ID pasado por la URL (?Id=) es el Id único de la descripción.
-    $id_descripcion = $conexion->real_escape_string($_GET['Id']);
-
-    $eliminacion_exitosa = true;
-    $mensaje_error = '';
-
-    // Iniciar transacción para asegurar que todas las operaciones se completen o ninguna
+    $id_descripcion = $_GET['Id'];
     $conexion->begin_transaction();
 
     try {
-        // PASO 1: Obtener el Id_medicamento asociado antes de eliminar la descripción
-        $sql_select = "SELECT Id_medicamento FROM descripcion_medicamento WHERE Id = '$id_descripcion'";
-        $resultado = $conexion->query($sql_select);
+        // 1. Obtener datos necesarios
+        $sql_select = "SELECT Id_medicamento FROM descripcion_medicamento WHERE Id = ?";
+        $stmt_sel = $conexion->prepare($sql_select);
+        $stmt_sel->bind_param("i", $id_descripcion);
+        $stmt_sel->execute();
+        $res = $stmt_sel->get_result();
 
-        if ($resultado->num_rows === 0) {
-            throw new Exception("Error: No se encontró el registro de descripción con ID: $id_descripcion.");
+        if ($res->num_rows === 0) {
+            throw new Exception("No se encontró el registro.");
         }
 
-        $row = $resultado->fetch_assoc();
-        $id_medicamento = $row['Id_medicamento'];
-        $resultado->free();
+        $row = $res->fetch_assoc();
+        $id_medicamento_principal = $row['Id_medicamento'];
 
-        // PASO 2: Eliminar la descripción específica del medicamento
-        $sql_delete_descripcion = "DELETE FROM descripcion_medicamento WHERE Id = '$id_descripcion'";
-        if (!$conexion->query($sql_delete_descripcion)) {
-            throw new Exception("Error al eliminar la descripción: " . $conexion->error);
+        // 2. ELIMINAR DETALLES (Principios Activos)
+        $sql_del_det = "DELETE FROM detalle_principio_medicamento WHERE id_medicamento = ?";
+        $stmt_det = $conexion->prepare($sql_del_det);
+        $stmt_det->bind_param("i", $id_descripcion);
+        if (!$stmt_det->execute()) {
+            throw new Exception("Error en principios activos: " . $conexion->error);
         }
 
-        // PASO 3: Verificar si quedan otras descripciones para ese Id_medicamento
-        $sql_check_other_desc = "SELECT COUNT(*) FROM descripcion_medicamento WHERE Id_medicamento = '$id_medicamento'";
-        $count_result = $conexion->query($sql_check_other_desc);
-        $count_row = $count_result->fetch_row();
-        $remaining_descriptions = $count_row[0];
-        $count_result->free();
-
-        // PASO 4: Si no quedan descripciones, eliminar el registro principal de la tabla 'medicamento'
-        if ($remaining_descriptions == 0) {
-            $sql_delete_medicamento = "DELETE FROM medicamento WHERE Id_medicamento = '$id_medicamento'";
-            if (!$conexion->query($sql_delete_medicamento)) {
-                throw new Exception("Error al eliminar el medicamento principal: " . $conexion->error);
-            }
+        // 3. ELIMINAR LA DESCRIPCIÓN
+        $sql_del_desc = "DELETE FROM descripcion_medicamento WHERE Id = ?";
+        $stmt_desc = $conexion->prepare($sql_del_desc);
+        $stmt_desc->bind_param("i", $id_descripcion);
+        if (!$stmt_desc->execute()) {
+            // Aquí es donde saltará si el medicamento está en una receta/consulta
+            throw new Exception("No se puede eliminar: Este medicamento ya está vinculado a una historia médica o consulta.");
         }
-        
-        // Si todo va bien, confirmar la transacción (COMMIT)
+
+        // 4. VERIFICAR SI QUEDAN OTRAS PRESENTACIONES
+        $sql_check = "SELECT COUNT(*) as total FROM descripcion_medicamento WHERE Id_medicamento = ?";
+        $stmt_check = $conexion->prepare($sql_check);
+        $stmt_check->bind_param("i", $id_medicamento_principal);
+        $stmt_check->execute();
+        $count = $stmt_check->get_result()->fetch_assoc()['total'];
+
+        if ($count == 0) {
+            $conexion->query("DELETE FROM medicamento WHERE Id_medicamento = $id_medicamento_principal");
+        }
+
         $conexion->commit();
+        $_SESSION['mensaje_user_exito'] = "✅ Eliminado permanentemente.";
 
     } catch (Exception $e) {
-        // Si hay un error, revertir todos los cambios (ROLLBACK)
         $conexion->rollback();
-        $eliminacion_exitosa = false;
-        $mensaje_error = $e->getMessage();
+        // Mandamos el mensaje de error exacto a la sesión
+        $_SESSION['mensaje_user_error'] = "❌ " . $e->getMessage();
     }
-    
-    // Cierre de la conexión
-    $conexion->close();
-
-    // Redirección con mensaje de estado
-    if ($eliminacion_exitosa) {
-        $_SESSION['mensaje_user_exito'] = "✅ Éxito: El medicamento fue eliminado correctamente.";
-        header("Location: ../../pages/php/papelera/farmacia_medicamentos_papelera_listado.php");
-        exit();
-    } else {
-        $_SESSION['mensaje_user_error'] = "❌ Error de Eliminación: " . $e->getMessage();
-        header("Location: ../../pages/php/papelera/farmacia_medicamentos_papelera_listado.php");
-        exit();
-    }
-
-} else {
-    // Si no se proporciona un ID válido en la URL
-    header("Location: ../../pages/php/papelera/armacia_medicamentos_papelera_listado.php?status=error&message=ID de registro no proporcionado.");
-    exit();
 }
+
+// Redirigir siempre de vuelta a la papelera
+header("location: ../../pages/php/papelera/farmacia_medicamentos_papelera_listado.php");
+exit;
 ?>

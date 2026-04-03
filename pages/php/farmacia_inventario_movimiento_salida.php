@@ -56,6 +56,7 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
     .modal.in .modal-dialog,
     #avisoModal,
     #modalSalidaGuardar,
+    #modalBúsquedaAvanzadaMedicamento,
     #modalRegresarInventario {
       animation: fadeIn 0.4s ease-out;
     }
@@ -176,20 +177,37 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
                     </div>
 
                     <div class="col-sm-8">
-                      <label>Seleccione el Medicamento (*):</label>
-                      <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control select2" style="width: 100%;" required>
-                        <option value="">--- Buscar Medicamento ---</option>
-                        <?php
-                        $sql = "SELECT dm.Id, m.nombre_medicamento, t.tipo_presentacion FROM descripcion_medicamento dm 
-                                INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
-                                INNER JOIN presentacion t ON dm.Id_presentacion = t.Id_presentacion 
-                                WHERE m.estatus = 1 AND dm.estatus = 1 ORDER BY m.nombre_medicamento ASC";
-                        $res = $conexion->query($sql);
-                        while ($row = $res->fetch_assoc()) {
-                          echo "<option value='{$row['Id']}'>{$row['nombre_medicamento']} ({$row['tipo_presentacion']})</option>";
-                        }
-                        ?>
-                      </select>
+                      <label>Medicamento (*):</label>
+                      <div class="input-group">
+                        <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control" required>
+                          <option value="">--- Seleccione un Medicamento ---</option>
+                          <?php
+                          $sql = "SELECT dm.Id, 
+                          m.nombre_medicamento, 
+                          t.nombre_tipo,
+                          GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
+                          FROM descripcion_medicamento dm                     
+                          INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
+                          INNER JOIN tipo_medicamento t ON dm.Id_tipo = t.Id_tipo 
+                          INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+                          INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+                          INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+                          WHERE m.estatus = 1 AND dm.estatus = 1 
+                          GROUP BY dm.Id
+                          ORDER BY m.nombre_medicamento ASC";
+                          $res = $conexion->query($sql);
+                          while ($row = $res->fetch_assoc()) {
+                            echo '<option value="' . $row['Id'] . '">' . htmlspecialchars($row['nombre_medicamento']) . " " . "(" . htmlspecialchars($row['componentes']) . ")" . " - " . "[" . htmlspecialchars($row['nombre_tipo']) . "]" . '</option>';
+                          }
+                          ?>
+                        </select>
+
+                        <span class="input-group-btn">
+                          <button class="btn btn-info" type="button" id="btnBuscarFiltrar" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada de Medicamentos" style="height: 34px;">
+                            <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                          </button>
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -305,6 +323,154 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
     </section>
   </div>
 
+  <div class="modal" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel" style="color: white;">Filtros de Búsqueda Avanzada</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltroModal">
+            <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_nombre">Nombre (o ID):</label>
+                  <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre o ID...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_tipo">Tipo:</label>
+                  <select id="filtro_tipo" name="filtro_tipo" class="form-control">
+                    <option value="">-- Todos --</option>
+                    <?php
+                    // Cargar tipos de medicamento dinámicamente
+                    include("../../cfg/conexion.php"); // Asegura la conexión
+                    $sql_tipos = "SELECT Id_tipo, nombre_tipo FROM tipo_medicamento WHERE estatus = 1 ORDER BY nombre_tipo DESC";
+                    $res_tipos = $conexion->query($sql_tipos);
+                    while ($row_t = $res_tipos->fetch_assoc()) {
+                      echo '<option value="' . $row_t['Id_tipo'] . '">' . $row_t['nombre_tipo'] . '</option>';
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_principios">Principios activos (contiene):</label>
+                  <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Ibuprofeno">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <input type="text" id="filtro_presentacion" name="filtro_presentacion" class="form-control" placeholder="Ej: 20 Capsulas">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_via">Vía de aplicación:</label>
+                  <select id="filtro_via" name="filtro_via" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="Oral">Oral</option>
+                    <option value="Sublingual">Sublingual</option>
+                    <option value="Rectal">Rectal</option>
+                    <option value="Intravenosa">Intravenosa</option>
+                    <option value="Intramuscular">Intramuscular</option>
+                    <option value="Subcutanea">Subcutanea</option>
+                    <option value="Intradermica">Intradermica</option>
+                    <option value="Topica">Topica</option>
+                    <option value="Transdermica">Transdermica</option>
+                    <option value="Inhalatoria">Inhalatoria</option>
+                    <option value="Oftalmica">Oftalmica</option>
+                    <option value="Otica">Otica</option>
+                    <option value="Nasal">Nasal</option>
+                    <option value="Vaginal">Vaginal</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_almacenamiento">C. de almacenamiento:</label>
+                  <select id="filtro_almacenamiento" name="filtro_almacenamiento" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="-25_a_-10">Congelacion (-25°C a -10°C)</option>
+                    <option value="2_a_8">Refrigeracion (2°C a 8°C)</option>
+                    <option value="8_a_15">Lugar Fresco (8°C a 15°C)</option>
+                    <option value="15_a_25">Temperatura Ambiente (15°C a 25°C)</option>
+                    <option value="max_30">Temperatura Maxima (30°C)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_laboratorio">Laboratorio:</label>
+                  <select id="filtro_laboratorio" name="filtro_laboratorio" class="form-control">
+                    <option value="">-- Todos --</option>
+                    <?php
+                    // Cargar laboratorios dinámicamente
+                    $sql_labs = "SELECT Id_laboratorio, nombre_laboratorio FROM laboratorio WHERE estatus = 1 ORDER BY nombre_laboratorio ASC";
+                    $res_labs = $conexion->query($sql_labs);
+                    while ($row_l = $res_labs->fetch_assoc()) {
+                      echo '<option value="' . $row_l['Id_laboratorio'] . '">' . $row_l['nombre_laboratorio'] . '</option>';
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_composicion">Composición (contiene):</label>
+                  <input type="text" id="filtro_composicion" name="filtro_composicion" class="form-control" placeholder="Escriba texto de composición...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_barcode">Código de barras:</label>
+                  <input type="text" id="filtro_barcode" name="filtro_barcode" class="form-control" placeholder="Escriba código de barras exacto...">
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-warning" id="btnLimpiarFiltros">Limpiar Filtros</button>
+          <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title" id="avisoModalLabel" style="color: white;">Aviso de Validación</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="avisoModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -374,6 +540,72 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
     function validarEntradaDinamica(evt) {
       return ($('#metodo_busqueda').val() === 'cedula') ? isNumberKey(evt) : isTextKey(evt);
     }
+
+    const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
+
+    // 1. Lógica para botón Limpiar Filtros dentro del Modal
+    $('#btnLimpiarFiltros').on('click', function() {
+      // Resetea el formulario del modal (formFiltroModal)
+      $('#formFiltroModal')[0].reset();
+      // Opcionalmente, podrías ejecutar el filtrado vacío para cargar todos
+    });
+
+    // 2. Lógica principal: Clic en "Aplicar Filtros" dentro del Modal
+    $('#btnAplicarFiltros').on('click', function() {
+      // Serializar los datos del formulario del modal
+      const datosFiltro = $('#formFiltroModal').serialize();
+
+      // Mostrar un indicador de carga en el botón si es necesario
+
+      // Realizar la llamada AJAX al nuevo backend
+      $.ajax({
+        url: '../../cfg/ajax/filtrar_medicamentos_completo.php', // El nuevo backend
+        type: 'POST',
+        data: datosFiltro, // Envía los valores de los filtros del modal
+        dataType: 'json',
+        success: function(response) {
+          // 1. Limpiar el select principal
+          medicamentoSelectPrincipal.empty();
+
+          // 2. Añadir la opción inicial por defecto
+          medicamentoSelectPrincipal.append('<option value="">--- Seleccione un Medicamento ---</option>');
+
+          // 3. Repoblar el select con los nuevos resultados filtrados
+          if (response.length > 0) {
+            // Iterar sobre el array de medicamentos devuelto por PHP
+            response.forEach(function(item) {
+              // Crear el nuevo <option value="id_desc">nombre completo descriptivo</option>
+              medicamentoSelectPrincipal.append('<option value="' + item.id_desc + '">' + item.nombre_completo + '</option>');
+            });
+
+            // Opcionalmente: Si hay un solo resultado, seleccionarlo automáticamente
+            /* if (response.length === 1) {
+                medicamentoSelectPrincipal.val(response[0].id_desc).trigger('change');
+            } */
+          } else {
+            // Si no hay resultados
+            medicamentoSelectPrincipal.append('<option value="" disabled>🛑 No se encontraron medicamentos que coincidan con los filtros aplicados.</option>');
+          }
+
+          // 4. Cerrar el modal animadamente usando tu lógica existente
+          $('#modalBúsquedaAvanzadaMedicamento').removeClass('in').addClass('out');
+          setTimeout(function() {
+            $('#modalBúsquedaAvanzadaMedicamento').modal('hide');
+            $('#modalBúsquedaAvanzadaMedicamento').removeClass('out');
+          }, 400);
+
+          // 5. Opcional: Mostrar un aviso si hay resultados
+          /* if (response.length > 0) {
+             // alert('Se encontraron ' + response.length + ' medicamentos. Busque en la lista principal.');
+          } */
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.error("Error en AJAX de filtrado avanzado: ", textStatus, errorThrown);
+          // Mostrar aviso de error si tienes una función para ello
+          // mostrarAviso('🛑 Error al intentar filtrar los medicamentos desde el modal.');
+        }
+      });
+    });
 
     $(document).ready(function() {
       function cargarLotesMedicamento(id, callback = null) {

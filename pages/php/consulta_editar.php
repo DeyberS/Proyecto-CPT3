@@ -87,53 +87,46 @@ if (!$id_consulta || !is_numeric($id_consulta)) {
       }
     }
 
-    // B. OBTENER DIAGNÓSTICOS ASOCIADOS (ASUMIENDO QUE diagnostico_text tiene el texto plano)
-    // Ya que consulta_nueva.php solo usa un textarea 'diagnostico_text',
-    // nos basaremos en el campo de la tabla 'consulta' para el texto.
-
-    // C. OBTENER MEDICAMENTOS PRESCRITOS
-    // Para pre-cargar la lista de medicamentos en el input hidden (Requiere adaptación JS)
-    // El formato de salida debe ser el que tu JavaScript espera para el campo medicamento_full_data
     $sql_medicamentos = "
         SELECT 
-            m.nombre_medicamento as nombre,  /* Nombre del medicamento desde la tabla 'medicamento' */
-            p.dosis, 
-            dm.Id as id_descripcion_medicamento, /* ID del descriptor usado en la prescripción */
-            dm.Id_medicamento, /* ID del medicamento base */
-            ps.Id_presentacion,
-            ps.tipo_presentacion  AS presentacion,
-            um.unidad /* Unidad de medida */
+            dm.Id as id, 
+            m.nombre_medicamento as nombre, 
+            dm.presentacion, 
+            dm.via_aplicacion,
+            dpm.cantidad_unidad_medida, 
+            um.unidad,
+            tm.nombre_tipo
         FROM prescripcion_medicamentos p
-        JOIN descripcion_medicamento dm ON p.Id_descripcion_medicamento = dm.Id 
-        JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento /* Se asume el enlace entre dm y m */
-        JOIN unidad_medida um ON dm.Id_unidad = um.Id_unidad_medida /* Asumiendo que Id_unidad_medida está en descripcion_medicamento */
-        JOIN presentacion ps ON dm.Id_presentacion = ps.Id_presentacion
-        WHERE p.Id_consulta = '$safe_id'
-        ";
+        INNER JOIN descripcion_medicamento dm ON p.Id_descripcion_medicamento = dm.Id
+        INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+        LEFT JOIN detalle_principio_medicamento dpm ON m.Id_medicamento = dpm.id_medicamento
+        LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+        LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+        WHERE p.Id_consulta = '$safe_id'";
+
     $result_medicamentos = $conexion->query($sql_medicamentos);
     $medicamentos_para_json = [];
-    $medicamentos_cargados = []; // Reiniciamos el array para la visualización
+    $medicamentos_cargados = [];
 
     while ($row = $result_medicamentos->fetch_assoc()) {
-      // Se guarda toda la información necesaria para que el JavaScript pueda manejar la edición
-      // IMPORTANTE: Asegúrate de que el ID del medicamento base sea único si lo usas para la clave de lista.
+      // Estructura idéntica a la de consulta_agregar.php para que el JS no falle
       $medicamentos_para_json[] = [
-        // Usamos el ID de la tabla intermedia que guarda la descripción
-        'id' => $row['id_descripcion_medicamento'],
-        'id_medicamento_base' => $row['Id_medicamento'],
+        'id' => $row['id'],
         'nombre' => $row['nombre'],
         'presentacion' => $row['presentacion'],
-        'dosis' => $row['dosis'],
-        'unidad' => $row['unidad']
+        'via_aplicacion' => $row['via_aplicacion'],
+        'cantidad_unidad_medida' => $row['cantidad_unidad_medida'],
+        'unidad' => $row['unidad'],
+        'nombre_tipo' => $row['nombre_tipo']
       ];
-      // Formato para la visualización en el input de texto del formulario
-      $medicamentos_cargados[] = "{$row['nombre']} ({$row['dosis']} {$row['unidad']})";
+
+      // Texto que aparecerá en el input visible al cargar
+      $medicamentos_cargados[] = $row['nombre'];
     }
 
-    // Convertir el array a una cadena JSON para el input hidden que usa JavaScript
-    $medicamentos_json_data = json_encode($medicamentos_para_json);
-    $medicamentos_cargados_text = implode(', ', $medicamentos_cargados); // Para el input visible
-
+    // Variables listas para los inputs del formulario
+    $medicamentos_json_data = htmlspecialchars(json_encode($medicamentos_para_json), ENT_QUOTES, 'UTF-8');
+    $medicamentos_cargados_text = implode(', ', $medicamentos_cargados);
   } catch (\mysqli_sql_exception $e) {
     $error_busqueda = "Error al conectar o buscar los datos: " . $e->getMessage();
   }
@@ -211,7 +204,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
   #avisoModal,
   #modalGuardarConsulta,
   #modalPatologiaRapida,
-  #modalAlergiaRapida, 
+  #modalAlergiaRapida,
   #modalTimelineCompleta {
     animation: fadeIn 0.4s ease-out;
   }
@@ -555,14 +548,17 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
                     <input type="text" class="form-control" name="examenes_solicitados" value="<?php echo htmlspecialchars($consulta['examenes_solicitados'] ?? ''); ?>" id="examenes_solicitados" placeholder="Ej: Hematología completa, Eco Renal...">
                   </div>
 
-                  <label class="control-label"></label>
-                  <div class="col-sm-5">
-                    <p>Medicamentos (*):</p>
-                    <input type="text" class="form-control pull-right" id="medicamento" name="medicamento" readonly placeholder="Seleccione los medicamentos" value="<?php echo htmlspecialchars($medicamentos_cargados_text ?? ''); ?>" required>
-                    <input type="hidden" id="medicamento_full_data" name="medicamento_full_data" value='<?php echo htmlspecialchars($medicamentos_json_data, ENT_QUOTES, 'UTF-8'); ?>'>
-                  </div>
-                  <div class="col-sm-1" style="margin-top: 30px; margin-left:-20px;">
-                    <button type="button" class="form-control pull-right bt-sm btn-primary" id="medicamento_agg" data-toggle="modal" data-target="#modalSeleccionMedicamentos">+</button>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="control-label">Medicamentos:</label>
+
+                      <button type="button" class="btn btn-info btn-md btn-block has-tooltip" id="medicamento_agg" data-toggle="modal" data-target="#modalSeleccionMedicamentos" data-placement="top" title="<?php echo !empty($medicamentos_cargados_text) ? htmlspecialchars($medicamentos_cargados_text) : 'Ningún medicamento agregado'; ?>">
+                        <i>Asignar Medicamento</i>
+                      </button>
+
+                      <input type="hidden" id="medicamento_full_data" name="medicamento_full_data" value='<?php echo $medicamentos_json_data; ?>'>
+                      <div id="inputs_medicamentos_ocultos"></div>
+                    </div>
                   </div>
 
                   <br><br><br><br>
@@ -621,42 +617,73 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
   <div class="modal" id="modalSeleccionMedicamentos" tabindex="-1" role="dialog" aria-labelledby="modalSeleccionMedicamentosLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="modalSeleccionMedicamentosLabel"><i class="fa fa-pills"></i> Seleccionar Medicamentos</h4>
+        <div class="modal-header" style="background-color: #3c8dbc; color: white; border-top-left-radius: 4px; border-top-right-radius: 4px;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="modalSeleccionMedicamentosLabel">
+            <i class="fa fa-medkit"></i> Seleccionar Medicamentos
+          </h4>
         </div>
+
         <div class="modal-body">
-          <p class="text-info" id="mensajeMedicamentos">Seleccione un medicamento, ingrese la dosis y unidad, luego presione 'Añadir'.</p>
           <div class="row">
-            <div class="col-xs-6">
-              <p>Medicamento:</p>
-              <select id="selectMedicamentos" class="form-control">
-                <option value="">Cargando medicamentos...</option>
-              </select>
+            <div class="col-xs-9">
+              <div class="form-group">
+                <label for="selectMedicamentos">Medicamento:</label>
+                <div class="input-group">
+                  <select id="selectMedicamentos" class="form-control select2" style="width: 100%;">
+                    <option value="">Seleccione un medicamento...</option>
+                    <?php
+                    // Reiniciar el puntero del resultado por si se usó antes
+                    if (isset($query_medicamentos)) {
+                      $query_medicamentos->data_seek(0);
+                      while ($row = $query_medicamentos->fetch_assoc()) :
+                    ?>
+                        <option value="<?php echo $row['Id']; ?>" data-nombre="<?php echo htmlspecialchars($row['nombre_medicamento']); ?>" data-via="<?php echo htmlspecialchars($row['via_aplicacion']); ?>" data-presentacion="<?php echo htmlspecialchars($row['presentacion']); ?>" data-tipo="<?php echo htmlspecialchars($row['nombre_tipo']); ?>" data-unidad="<?php echo htmlspecialchars($row['unidad']); ?>" data-cantidad="<?php echo htmlspecialchars($row['cantidad_unidad_medida']); ?>">
+                          <?php echo $row['nombre_medicamento'] . " (" . $row['cantidad_unidad_medida'] . " " . $row['unidad'] . ")"; ?>
+                        </option>
+                    <?php
+                      endwhile;
+                    }
+                    ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button class="btn btn-info" type="button" id="btnInfoMedicamento" data-toggle="tooltip" title="Detalles" style="height: 34px;">
+                      <i><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></i>
+                    </button>
+                  </span>
+                </div>
+              </div>
             </div>
+
             <div class="col-xs-3">
-              <p>Dosis:</p>
-              <input type="text" class="form-control" name="inputDosisCantidad" id="inputDosisCantidad" placeholder="ej. 800">
-            </div>
-            <div class="col-xs-3">
-              <p>Unidad:</p>
-              <select class="form-control" name="selectMedicamentosUnidad" id="selectMedicamentosUnidad" required>
-                <option value="">Cargando unidad...</option>
-              </select>
-            </div>
-            <br><br><br><br>
-            <div class="col-xs-2 pull-right">
-              <button type="button" class="btn btn-info btn-block" id="btnAnadirMedicamento">Añadir</button>
+              <div class="form-group">
+                <label>&nbsp;</label>
+                <button type="button" class="btn btn-primary btn-block" id="btnAnadirMedicamento">
+                  <i class="fa fa-plus"></i> Añadir
+                </button>
+              </div>
             </div>
           </div>
-          <hr>
-          <h5>Medicamentos Seleccionados:</h5>
-          <div id="contenedorMedicamentosSeleccionados" style="min-height: 40px; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
+
+          <hr style="margin: 10px 0;">
+
+          <div class="row">
+            <div class="col-xs-12">
+              <h5 style="font-weight: bold; color: #555;">Medicamentos Seleccionados:</h5>
+              <div id="contenedorMedicamentosSeleccionados" style="min-height: 80px; border: 2px dashed #ddd; padding: 15px; border-radius: 6px; background-color: #f9f9f9;">
+                <p class="text-muted text-center" id="textoVacio">No hay medicamentos añadidos aún.</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success" id="aplicarSeleccionMedicamentos">Aplicar Selección</button>
+
+        <div class="modal-footer" style="background-color: #f4f4f4;">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="aplicarSeleccionMedicamentos">
+            <i class="fa fa-check"></i> Aplicar Selección
+          </button>
         </div>
       </div>
     </div>
@@ -1050,7 +1077,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
     function abrirModalAlergia() {
       const cedula = $('#cedula_paciente').val();
       if (!cedula || cedula === "") {
-        alert("Por favor, cargue o ingrese la cédula de un paciente primero.");
+        mostrarAviso("Por favor, cargue o ingrese la cédula de un paciente primero.");
         return;
       }
       // Reiniciamos el select y mostramos
@@ -1061,7 +1088,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
     function abrirModalPatologia() {
       const cedula = $('#cedula_paciente').val();
       if (!cedula || cedula === "") {
-        alert("Por favor, cargue o ingrese la cédula de un paciente primero.");
+        mostrarAviso("Por favor, cargue o ingrese la cédula de un paciente primero.");
         return;
       }
       // Reiniciamos el select y mostramos
@@ -1080,7 +1107,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
       const idHistorial = $('#id_historial_global').val();
 
       if (!idItem || !fecha || !cedula) {
-        alert("Por favor complete todos los datos de la alergia.");
+        mostrarAviso("Por favor complete todos los datos de la alergia.");
         return;
       }
 
@@ -1103,13 +1130,13 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
           if (response.status === "success" || response.status === "ok") {
             $('#modalAlergiaRapida').modal('hide');
             // Aquí podrías recargar la lista de alergias visualmente
-            alert("Alergia guardada correctamente.");
+            mostrarAviso("Alergia guardada correctamente.");
           } else {
-            alert("Error: " + response.message);
+            mostrarAviso("Error: " + response.message);
           }
         },
         error: function() {
-          alert("Error de conexión al guardar la alergia.");
+          mostrarAviso("Error de conexión al guardar la alergia.");
         }
       });
     }
@@ -1121,7 +1148,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
       const idHistorial = $('#Id_historial').val();
 
       if (!idItem || !fecha || !cedula) {
-        alert("Por favor complete todos los datos de la patología.");
+        mostrarAviso("Por favor complete todos los datos de la patología.");
         return;
       }
 
@@ -1138,13 +1165,13 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
         success: function(response) {
           if (response.status === "success" || response.status === "ok") {
             $('#modalPatologiaRapida').modal('hide');
-            alert("Patología guardada correctamente.");
+            mostrarAviso("Patología guardada correctamente.");
           } else {
-            alert("Error: " + response.message);
+            mostrarAviso("Error: " + response.message);
           }
         },
         error: function() {
-          alert("Error de conexión al guardar la patología.");
+          mostrarAviso("Error de conexión al guardar la patología.");
         }
       });
     }
@@ -1154,7 +1181,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
       var cedula = $('#cedula_paciente').val();
 
       if (!cedula) {
-        alert("Por favor, ingrese o busque un paciente primero.");
+        mostrarAviso("Por favor, ingrese o busque un paciente primero.");
         return;
       }
 
@@ -1311,11 +1338,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
 
       if (tabName === 'indicacion_tratamiento') {
         // Validación de medicamentos (mínimo 1)
-        if ($('#medicamento').val().trim() === '') {
-          isValid = false;
-          $('#medicamento').addClass('input-error');
-          mostrarAviso('Debe seleccionar al menos un medicamento para el tratamiento.');
-        }
+    
         if ($('#indicaciones').val().trim() === '') {
           isValid = false;
           $('#indicaciones').addClass('input-error');
@@ -1720,240 +1743,190 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
     // GESTIÓN DE MEDICAMENTOS (AJAX, Modal y Formulario)
     // =====================================================================
 
-    let medicamentosSeleccionados = []; // Array temporal para guardar los objetos {id, id_medicamento_base, nombre, dosis, unidad}
-    let listaMedicamentosBase = []; // Array para guardar todos los medicamentos con sus IDs
+    // 1. Declaración global del arreglo (IMPORTANTE)
+    let medicamentosSeleccionados = [];
 
-    /**
-     * Carga la lista completa de medicamentos en el select del modal.
-     */
-    function cargarMedicamentosBaseAjax() {
-      $.ajax({
-        url: 'get/get_medicamentos_base.php', // *** ASEGÚRATE DE CREAR ESTE ARCHIVO AJAX ***
-        method: 'GET',
-        dataType: 'json',
-        success: function(response) {
-          const $select = $('#selectMedicamentos');
-          $select.empty().append('<option value="">--- Seleccione un Medicamento ---</option>');
+    $(document).ready(function() {
+      // =====================================================================
+      // CARGA INICIAL DE DATOS (ESPECÍFICO PARA EDITAR)
+      // =====================================================================
 
-          if (response.success && response.data.length > 0) {
-            listaMedicamentosBase = response.data; // Guardamos el listado
-            response.data.forEach(med => {
-              $select.append(`<option value="${med.Id_medicamento}" data-nombre="${med.nombre_medicamento}" data-presentacion="${med.tipo_presentacion}">${med.nombre_medicamento} (${med.tipo_presentacion})</option>`);
-            });
-          } else {
-            $select.append('<option value="">No se encontraron medicamentos.</option>');
-          }
-        },
-        error: function() {
-          $('#selectMedicamentos').empty().append('<option value="">Error al cargar medicamentos.</option>');
-          mostrarAviso('Error de conexión al cargar la lista de medicamentos.');
-        }
+      $('#modalSeleccionMedicamentos').on('show.bs.modal', function() {
+        cargarMedicamentosBaseAjax();
+        // También renderizamos la lista de lo que ya está seleccionado
+        renderizarListaMedicamentos();
       });
-    }
 
-    /**
-     * Carga las unidades de medida asociadas a un medicamento base seleccionado.
-     * @param {number} idMedicamentoBase ID del medicamento base.
-     */
-    function cargarUnidadesPorMedicamento(idMedicamentoBase) {
-      const $selectUnidad = $('#selectMedicamentosUnidad');
-      $selectUnidad.empty();
+      function cargarMedicamentosBaseAjax() {
+        $.ajax({
+          url: 'get/get_medicamentos_base.php', // Asegúrate de que la ruta sea correcta
+          type: 'GET',
+          dataType: 'json',
+          success: function(response) {
+            const $select = $('#selectMedicamentos');
+            $select.empty().append('<option value="">Seleccione un medicamento...</option>');
 
-      if (!idMedicamentoBase) {
-        $selectUnidad.append('<option value="">--- Unidad ---</option>');
-        return;
+            // Según tu PHP, la respuesta viene en response.data y usa success (booleano)
+            if (response.success && response.data) {
+              response.data.forEach(function(item) {
+
+                $select.append(`<option value="${item.Id_descripcion}" 
+                        data-nombre="${item.nombre_medicamento}" 
+                        data-via="${item.via_aplicacion}" 
+                        data-presentacion="${item.presentacion_comercial}" 
+                        data-tipo="${item.nombre_tipo}"
+                        data-componentes="${item.componentes}">
+                        ${item.nombre_medicamento} (${item.presentacion_comercial})
+                    </option>`);
+              });
+
+              // Refrescar Select2 si lo usas
+              if ($select.hasClass('select2-hidden-accessible')) {
+                $select.trigger('change.select2');
+              }
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Error al cargar el catálogo:", error);
+          }
+        });
       }
 
-      // *** ASEGÚRATE DE CREAR ESTE ARCHIVO AJAX O DE ADAPTAR LA LÓGICA PHP ***
-      // Si la unidad es la misma para todos, puedes saltar el AJAX y solo rellenar con el PHP existente:
-      //
-      // Si necesitas las unidades específicas:
-      $.ajax({
-        url: 'get/get_unidades_por_medicamento.php', // *** CREAR ESTE ENDPOINT ***
-        method: 'GET',
-        dataType: 'json',
-        data: {
-          id: idMedicamentoBase
-        },
-        success: function(response) {
-          $selectUnidad.empty();
-          if (response.success && response.data.length > 0) {
-            response.data.forEach(uni => {
-              // El value debe ser el ID de descripcion_medicamento (dm.Id) si lo vas a usar para la prescripción final,
-              // pero para el formulario de selección, usaremos un value combinado para obtener la unidad de texto más fácilmente.
-              // Para simplificar, usaremos el valor de la unidad (ej: "mg")
-              $selectUnidad.append(`<option value="${uni.unidad}" data-id-descripcion="${uni.Id_descripcion_medicamento}">${uni.unidad}</option>`);
-            });
-          } else {
-            $selectUnidad.append('<option value="">No hay unidades asociadas.</option>');
-          }
-        },
-        error: function() {
-          $selectUnidad.empty().append('<option value="">Error unidades.</option>');
+      // Leemos el JSON que pusimos en el input oculto desde PHP
+      const datosIniciales = $('#medicamento_full_data').val();
+
+      if (datosIniciales && datosIniciales !== "" && datosIniciales !== "[]") {
+        try {
+          // Convertimos el JSON de la base de datos al arreglo de trabajo
+          medicamentosSeleccionados = JSON.parse(datosIniciales);
+
+          // Refrescamos la visualización inicial
+          renderizarListaMedicamentos();
+          actualizarTooltipMedicamentos();
+
+          console.log("Medicamentos cargados para edición:", medicamentosSeleccionados);
+        } catch (e) {
+          console.error("Error al parsear medicamentos iniciales:", e);
+        }
+      }
+
+      // Inicializar Tooltips
+      $('.has-tooltip, #btnInfoMedicamento, #medicamento_agg').tooltip({
+        html: true
+      });
+
+      // =====================================================================
+      // EVENTOS DEL MODAL
+      // =====================================================================
+
+      // Mostrar detalles al cambiar selección en el select
+      $('#selectMedicamentos').on('change', function() {
+        let option = $(this).find('option:selected');
+        if (option.val() !== "") {
+          let via = option.data('via') || 'N/A';
+          let pres = option.data('presentacion') || 'N/A';
+          let tipo = option.data('tipo') || 'N/A';
+
+          let info = `<strong>Vía:</strong> ${via}<br>
+                        <strong>Pres:</strong> ${pres}<br>
+                        <strong>Tipo:</strong> ${tipo}`;
+
+          $('#btnInfoMedicamento')
+            .attr('data-original-title', info)
+            .tooltip('hide')
+            .attr('title', info)
+            .tooltip('fixTitle');
         }
       });
-    }
 
+      // Añadir nuevo medicamento al listado temporal
+      $('#btnAnadirMedicamento').on('click', function() {
+        const $select = $('#selectMedicamentos');
+        const selected = $select.find('option:selected');
+        const idMedicamento = selected.val();
 
-    /**
-     * Renderiza la lista de medicamentos en el modal.
-     */
-    function renderizarMedicamentosModal() {
-      const $contenedor = $('#contenedorMedicamentosSeleccionados');
-      $contenedor.empty();
+        if (idMedicamento === "") {
+          mostrarAviso("Por favor seleccione un medicamento");
+          return;
+        }
+
+        // Evitar duplicados
+        if (medicamentosSeleccionados.find(m => m.id == idMedicamento)) {
+          mostrarAviso("Este medicamento ya ha sido añadido");
+          return;
+        }
+
+        const medObj = {
+          id: idMedicamento,
+          nombre: selected.data('nombre'),
+          presentacion: selected.data('presentacion'),
+          via_aplicacion: selected.data('via'),
+          nombre_tipo: selected.data('tipo')
+        };
+
+        medicamentosSeleccionados.push(medObj);
+        renderizarListaMedicamentos();
+        $select.val('').trigger('change');
+      });
+
+      // Aplicar la selección definitiva al formulario
+      $('#aplicarSeleccionMedicamentos').on('click', function() {
+        if (medicamentosSeleccionados.length === 0) {
+          $('#medicamento').val('');
+          $('#medicamento_full_data').val('[]');
+        } else {
+          // Lista de nombres para el input visible
+          const nombres = medicamentosSeleccionados.map(m => m.nombre).join(', ');
+          $('#medicamento').val(nombres);
+
+          // Guardamos el JSON actualizado en el hidden para el POST de PHP
+          $('#medicamento_full_data').val(JSON.stringify(medicamentosSeleccionados));
+        }
+
+        actualizarTooltipMedicamentos();
+        $('#modalSeleccionMedicamentos').modal('hide');
+      });
+    });
+
+    // =====================================================================
+    // FUNCIONES DE APOYO
+    // =====================================================================
+
+    function renderizarListaMedicamentos() {
+      const contenedor = $('#contenedorMedicamentosSeleccionados');
+      contenedor.empty();
 
       if (medicamentosSeleccionados.length === 0) {
-        $contenedor.html('<p class="text-muted" style="margin-bottom:0;">Ningún medicamento seleccionado.</p>');
+        contenedor.append('<p class="text-muted text-center" id="textoVacio">No hay medicamentos añadidos aún.</p>');
         return;
       }
 
       medicamentosSeleccionados.forEach((med, index) => {
-        const tag = `
-        <span class="medicamento-tag" data-index="${index}">
-          ${med.nombre} (${med.presentacion}) (${med.dosis} ${med.unidad})
-          <span class="close-btn" data-index="${index}">&times;</span>
-        </span>
-      `;
-        $contenedor.append(tag);
-      });
-
-      // Agregar evento para quitar medicamento
-      $('.medicamento-tag .close-btn').on('click', function() {
-        const index = $(this).data('index');
-        quitarMedicamentoPorIndice(index);
+        contenedor.append(`
+            <div class="alert alert-info alert-dismissible" style="margin-bottom: 5px; padding: 8px;">
+                <button type="button" class="close" onclick="eliminarMed(${index})">&times;</button>
+                <strong>${med.nombre}</strong> - <small>${med.presentacion} (${med.nombre_tipo})</small>
+                <input type="hidden" name="medicamentos_ids[]" value="${med.id}">
+            </div>
+        `);
       });
     }
 
-    /**
-     * Quita un medicamento de la lista temporal y re-renderiza.
-     * @param {number} index Índice del medicamento en el array temporal.
-     */
-    function quitarMedicamentoPorIndice(index) {
+    function eliminarMed(index) {
       medicamentosSeleccionados.splice(index, 1);
-      renderizarMedicamentosModal();
+      renderizarListaMedicamentos();
     }
 
-    /**
-     * Actualiza los campos de texto y el campo hidden del formulario principal.
-     */
-    function actualizarCamposFormularioMedicamentos() {
-      let textoVisible = '';
-      let datosJSON = JSON.stringify(medicamentosSeleccionados);
-
+    function actualizarTooltipMedicamentos() {
+      const boton = $('#medicamento_agg');
       if (medicamentosSeleccionados.length > 0) {
-        // Mostrar solo los primeros 2 y el contador si hay más
-        const visibles = medicamentosSeleccionados.slice(0, 2).map(med => `${med.nombre} (${med.presentacion}) (${med.dosis} ${med.unidad})`);
-        textoVisible = visibles.join(', ');
-
-        if (medicamentosSeleccionados.length > 2) {
-          textoVisible += `, +${medicamentosSeleccionados.length - 2} más.`;
-        }
+        const nombres = medicamentosSeleccionados.map(m => m.nombre).join(", ");
+        const texto = "Medicamentos: " + nombres;
+        boton.attr('data-original-title', texto).attr('title', texto).tooltip('fixTitle');
+      } else {
+        boton.attr('data-original-title', "Ningún medicamento agregado").attr('title', "Ningún medicamento agregado").tooltip('fixTitle');
       }
-
-      $('#medicamento').val(textoVisible);
-      $('#medicamento_full_data').val(datosJSON);
-      $('#medicamento').removeClass('input-error'); // Limpiar error si se añade algo
     }
-
-    // =====================================================================
-    // INICIALIZACIÓN Y EVENTOS DEL MODAL DE MEDICAMENTOS
-    // =====================================================================
-
-    $(document).ready(function() {
-      // 1. CARGAR MEDICAMENTOS GUARDADOS (DESDE PHP)
-      const jsonCargado = $('#medicamento_full_data').val();
-      if (jsonCargado) {
-        try {
-          // Parsear el JSON cargado por PHP al array JS temporal
-          medicamentosSeleccionados = JSON.parse(jsonCargado);
-          // El input visible ya está cargado por PHP, pero lo regeneramos para asegurar consistencia
-          actualizarCamposFormularioMedicamentos();
-        } catch (e) {
-          console.error("Error al parsear el JSON de medicamentos guardados:", e);
-          medicamentosSeleccionados = [];
-        }
-      }
-
-
-      // EVENTO: Al abrir el modal, cargamos la lista de medicamentos y renderizamos los seleccionados.
-      $('#modalSeleccionMedicamentos').on('show.bs.modal', function(e) {
-        cargarMedicamentosBaseAjax();
-        renderizarMedicamentosModal(); // Muestra los que ya vienen guardados (o un array vacío)
-      });
-
-      // EVENTO: Al seleccionar un medicamento en el modal, cargamos sus unidades.
-      $('#selectMedicamentos').on('change', function() {
-        const idMedicamentoBase = $(this).val();
-        cargarUnidadesPorMedicamento(idMedicamentoBase);
-      });
-
-      // EVENTO: Añadir medicamento a la lista temporal
-      $('#btnAnadirMedicamento').on('click', function() {
-        const $selectMed = $('#selectMedicamentos');
-        const idMedicamentoBase = $selectMed.val();
-        const nombreMedicamento = $selectMed.find('option:selected').data('nombre');
-        const tipo_presentacion = $selectMed.find('option:selected').data('presentacion');
-        const dosis = $('#inputDosisCantidad').val();
-        const unidad = $('#selectMedicamentosUnidad').val();
-        // Obtenemos el ID de la descripción para la prescripción final (Id_descripcion_medicamento)
-        const idDescripcion = $('#selectMedicamentosUnidad').find('option:selected').data('id-descripcion');
-
-        if (!idMedicamentoBase || !dosis || !unidad) {
-          mostrarAviso('Por favor, seleccione un **Medicamento**, ingrese la **Dosis** y seleccione la **Unidad**.');
-          return;
-        }
-        if (isNaN(parseFloat(dosis)) || parseFloat(dosis) <= 0) {
-          mostrarAviso('La dosis debe ser un número positivo.');
-          return;
-        }
-        // Buscar si ya existe la misma combinación medicamento/unidad
-        const existente = medicamentosSeleccionados.find(m =>
-          m.id_medicamento_base == idMedicamentoBase &&
-          m.presentacion == tipo_presentacion &&
-          m.unidad === unidad &&
-          m.dosis === dosis // <-- ¡NUEVA REGLA! Incluye la dosis en la comprobación
-        );
-
-        if (existente) {
-          mostrarAviso(`El medicamento "${nombreMedicamento} (${unidad})" ya está en la lista. Por favor, elimínelo antes de modificar la dosis.`);
-          return;
-        }
-
-        const nuevoMedicamento = {
-          // En edición, usamos el ID de descripcion_medicamento (si existe) o un valor temporal
-          // Para la edición, si viene de PHP, ya tiene un 'id'. Si es nuevo, usamos el ID de la descripción.
-          // Aquí simplificamos usando el ID de la descripción como 'id' para la lógica de guardado posterior.
-          id: idDescripcion,
-          id_medicamento_base: idMedicamentoBase,
-          nombre: nombreMedicamento,
-          presentacion: tipo_presentacion,
-          dosis: dosis,
-          unidad: unidad
-        };
-
-        medicamentosSeleccionados.push(nuevoMedicamento);
-
-        // Limpiar los campos del modal después de añadir
-        $selectMed.val('');
-        $('#inputDosisCantidad').val('');
-        cargarUnidadesPorMedicamento(null);
-
-        renderizarMedicamentosModal();
-      });
-
-      // EVENTO: Aplicar la selección al formulario principal
-      $('#aplicarSeleccionMedicamentos').on('click', function() {
-        if (medicamentosSeleccionados.length === 0) {
-          mostrarAviso('Debe seleccionar al menos un medicamento para aplicar la selección.', () => {
-            // Si falla, no cerramos el modal para que el usuario pueda corregir
-          });
-          return;
-        }
-        actualizarCamposFormularioMedicamentos();
-        closeCustomModal($('#modalSeleccionMedicamentos'));
-      });
-    });
-
 
     // =====================================================================
     // INICIALIZACIÓN Y EVENT LISTENERS

@@ -46,7 +46,9 @@
       }
     }
 
-    .modal.in .modal-dialog, #avisoModal, #modalGuardar {
+    .modal.in .modal-dialog,
+    #avisoModal,
+    #modalGuardar {
       animation: fadeIn 0.4s ease-out;
     }
 
@@ -62,9 +64,11 @@
     /* ESTILOS DE VALIDACIÓN */
     .has-error input[type="text"],
     .has-error #tipo_unidad_medida,
-    .has-error #presentacion,
+    .has-error #tipo,
     .has-error #via_aplicacion,
+    .has-error #presentacion,
     .has-error #almacenamiento,
+    .has-error .select-pa,
     .input-error {
       border: 2px solid crimson !important;
       box-shadow: 0 0 5px crimson;
@@ -73,6 +77,20 @@
     #display_sintomas_seleccionados.input-error {
       border: 2px solid crimson !important;
       box-shadow: 0 0 5px crimson;
+    }
+
+    .tooltip-inner {
+      max-width: 300px;
+      /* Para que no sea un hilo largo */
+      background-color: #3c8dbc !important;
+      /* Color azul como tu header */
+      color: white;
+      font-weight: bold;
+      border: 1px solid #fff;
+    }
+
+    .tooltip.right .tooltip-arrow {
+      border-right-color: #3c8dbc !important;
     }
 
     /* Modales por encima */
@@ -123,31 +141,34 @@
                       <input id="medicamento" name="medicamento" class="form-control" type="text" maxlength="100" required>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_presentacion">
-                      <p>Presentacion (*):</p>
-                      <select class="form-control" name="presentacion" id="presentacion" required>
-                        <option selected value="">Seleccione Una Presentacion</option>
+                    <div class="col-sm-4 form-group" id="group_tipo">
+                      <p>Tipo (*):</p>
+                      <select class="form-control" name="tipo" id="tipo" required>
+                        <option selected value="">Seleccione el Tipo de Medicamento</option>
                         <?php
                         include('../../cfg/conexion.php');
 
-                        $sql = $conexion->query("SELECT * FROM presentacion");
+                        $sql = $conexion->query("SELECT * FROM tipo_medicamento");
                         while ($resultado = $sql->fetch_assoc()) {
-                          echo "<option value='" . $resultado['Id_presentacion'] . "'>" . $resultado['tipo_presentacion'] . "</option>";
+                          echo "<option value='" . $resultado['Id_tipo'] . "'>" . $resultado['nombre_tipo'] . "</option>";
                         }
                         ?>
                       </select>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-2 form-group" id="group_unidad">
-                      <p>U. Medida (*):</p>
-                      <input type="text" class="form-control" name="cantidad_unidad_medida" id="u_medida" placeholder="800" inputmode="numeric" required>
+                    <div class="col-sm-3 form-group" id="group_principio_activo">
+                      <p>Principios activos (*):</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pa" data-toggle="modal" data-placement="top" title="Ninguno seleccionado" data-target="#modalPrincipios">
+                        <i></i> Gestionar Principios Activos
+                      </button>
                     </div>
-                    <div class="col-lg-1 pull-left form-group" id="group_tipo_unidad" style="margin-top: 30px; margin-left:-20px;">
-                      <select class="form-control" name="tipo_unidad_medida" id="tipo_unidad_medida" required>
-                        <option selected value="">Primero Seleccione una Presentacion</option>
-                      </select>
-                    </div>
+                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" id="principio_activo" required>
                     <br><br><br><br>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_presentacion">
+                      <p>Presentacion (*):</p>
+                      <input id="presentacion" name="presentacion" class="form-control" type="text" maxlength="100" required>
+                    </div>
                     <label class="control-label"></label>
                     <div class="col-sm-4 form-group" id="group_via">
                       <p>Via de aplicacion (*):</p>
@@ -170,21 +191,49 @@
                       </select>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_almacenamiento">
+                    <div class="col-sm-3 form-group" id="group_almacenamiento">
                       <p>C. de almacenamiento (*):</p>
                       <select name="almacenamiento" id="almacenamiento" class="form-control" required>
                         <option value="">Seleccione una Condicion</option>
-                        <option value="-25_a_-10">Congelacion (-25*C a -10*C)</option>
-                        <option value="2_a_8">Refrigeracion (2*C a 8*C)</option>
-                        <option value="8_a_15">Lugar Fresco (8*C a 15*C)</option>
-                        <option value="15_a_25">Temperatura Ambiente (15*C a 25*C)</option>
-                        <option value="max_30">Temperatura Maxima (30*C)</option>
+                        <option value="-25_a_-10">Congelacion (-25°C a -10°C)</option>
+                        <option value="2_a_8">Refrigeracion (2°C a 8°C)</option>
+                        <option value="8_a_15">Lugar Fresco (8°C a 15°C)</option>
+                        <option value="15_a_25">Temperatura Ambiente (15°C a 25°C)</option>
+                        <option value="max_30">Temperatura Maxima (30°C)</option>
                       </select>
                     </div>
+                    <br><br><br><br>
                     <label class="control-label"></label>
-                    <div class="col-sm-3 form-group" id="group_composicion">
+                    <div class="col-sm-4" id="group_laboratorio">
+                      <p>Laboratorio:</p>
+                      <div class="input-group">
+                        <select id="laboratorio" name="laboratorio" class="form-control">
+                          <option value="">Seleccione un Laboratorio</option>
+                          <?php
+                          include('../../cfg/conexion.php');
+                          $sql = $conexion->query("SELECT * FROM laboratorio");
+                          while ($resultado = $sql->fetch_assoc()) {
+                            echo "<option value='" . $resultado['Id_laboratorio'] . "'>" . $resultado['nombre_laboratorio'] . "</option>";
+                          }
+                          ?>
+                        </select>
+
+                        <span class="input-group-btn">
+                          <button class="btn btn-info" type="button" id="btnInfoMedicamento" data-toggle="modal" data-target="#modalNuevoLaboratorio" title="Agregar Laboratorio" style="height: 34px;">
+                            <i><img src="../../recursos/imagenes/iconos/agregar.png" style="width:10px; height:10px;"></i>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_composicion">
                       <p>Composicion:</p>
                       <input type="text" id="composicion" name="composicion" class="form-control">
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3 form-group" id="group_codigo_barras">
+                      <p>Codigo de barras:</p>
+                      <input type="text" id="codigo_barras" name="codigo_barras" class="form-control">
                     </div>
                     <br><br><br><br>
                     <div style="float:right; margin-top: 2%;">
@@ -199,6 +248,73 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <div class="modal fade" id="modalPrincipios" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title">Agregar Principios Activos</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_principios">
+            <div class="row fila-pa" style="margin-bottom: 10px;">
+              <div class="col-sm-6">
+                <select class="form-control select-pa" id="principio_activo">
+                  <option value="" name="id_pa">Seleccione un Principio Activo</option>
+                  <?php
+                  $sql_pa = $conexion->query("SELECT * FROM principio_activo");
+                  while ($r = $sql_pa->fetch_assoc()) {
+                    echo "<option value='" . $r['id_principio_activo'] . "' data-nombre='" . $r['nombre'] . "'>" . $r['nombre'] . "</option>";
+                  }
+                  ?>
+                </select>
+              </div>
+              <div class="col-sm-2 form-group" id="group_unidad">
+                <input type="text" class="form-control cant-pa" name="cantidad_unidad_medida" id="u_medida" placeholder="Cant." inputmode="numeric" required>
+              </div>
+              <div class="col-lg-2 pull-left form-group" id="group_tipo_unidad" style="margin-left:-20px;">
+                <select class="form-control uni-pa" name="tipo_unidad_medida" id="tipo_unidad_medida" required>
+                  <option selected value="">Primero Seleccione una Presentacion</option>
+                </select>
+              </div>
+              <div class="col-sm-2">
+                <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-success btn-sm" id="btn_add_pa">
+            <i class="fa fa-plus"></i> Añadir otro
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" id="guardar_pa_temp">Listo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevoLaboratorio" tabindex="-1" role="dialog" aria-labelledby="labelLaboratorio">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="labelLaboratorio"><i class="fa fa-building"></i>Nuevo Laboratorio</h4>
+        </div>
+        <div class="modal-body">
+          <form id="formNuevoLaboratorio">
+            <div class="form-group">
+              <label>Nombre del Laboratorio:</label>
+              <input type="text" id="nombre_lab_nuevo" class="form-control" placeholder="Ej: Bayer" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarLab">Guardar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="modal" id="avisoModal" tabindex="-1" role="dialog">
@@ -305,42 +421,126 @@
 
 
       // --- 2. Validación para U. MEDIDA (Solo números, incluyendo decimales) ---
-      uMedidaInput.addEventListener('input', function() {
+      // Validación para CANTIDAD (Solo números y decimales) - Delegación de eventos
+      $(document).on('input', '.cant-pa', function() {
         let valor = this.value;
-        // Permitir solo números y el punto decimal
         valor = valor.replace(/[^0-9.]/g, '');
-
-        // Asegurar que solo haya un punto decimal
         const partes = valor.split('.');
         if (partes.length > 2) {
-          // Si hay más de un punto, mantiene la parte entera y solo el primer punto
           valor = partes[0] + '.' + partes.slice(1).join('');
         }
-
         this.value = valor;
       });
 
-      document.getElementById('presentacion').addEventListener('change', function() {
-        const idPresentacion = this.value;
-        const selectUnidad = document.getElementById('tipo_unidad_medida');
+      // --- Lógica de Principios Activos en Modal ---
 
-        // Limpiar el select de unidades
-        selectUnidad.innerHTML = '<option value="">Cargando...</option>';
+      // Agregar nueva fila dentro del modal
+      $('#btn_add_pa').on('click', function() {
+        var nuevaFila = $('.fila-pa:first').clone();
+        nuevaFila.find('input').val('');
+        nuevaFila.find('select').val('');
+        $('#contenedor_filas_principios').append(nuevaFila);
+      });
+
+      // Quitar fila
+      $('#contenedor_filas_principios').on('click', '.btn-remove-pa', function() {
+        if ($('.fila-pa').length > 1) {
+          $(this).closest('.fila-pa').remove();
+        } else {
+          mostrarAviso("Debe haber al menos un espacio para principio activo.");
+        }
+      });
+
+      // 1. Inicializar el tooltip manualmente por ID para evitar conflictos
+      $('#btn_modal_pa').tooltip();
+
+      // 2. Actualizar la función de guardado del modal
+      $('#guardar_pa_temp').on('click', function() {
+        var resumen = [];
+        var datos_para_db = [];
+
+        $('.fila-pa').each(function() {
+          var nombre = $(this).find('.select-pa option:selected').data('nombre');
+          var id_pa = $(this).find('.select-pa').val();
+          var cantidad = $(this).find('.cant-pa').val();
+          var unidad = $(this).find('.uni-pa option:selected').text();
+          var id_unidad = $(this).find('.uni-pa').val();
+
+          if (nombre && cantidad && id_unidad) {
+            resumen.push(nombre + " " + cantidad + " " + unidad);
+            datos_para_db.push(id_pa + "," + cantidad + "," + id_unidad);
+          }
+        });
+
+        var boton = $('#btn_modal_pa');
+
+        if (resumen.length > 0) {
+          var listaTexto = resumen.join(', ');
+          $('#resumen_principios').html("<strong>Incluye:</strong> " + listaTexto);
+          $('#composicion_detallada').val(datos_para_db.join('|'));
+
+          // Actualizamos el tooltip correctamente
+          boton.attr('data-original-title', listaTexto).tooltip('fixTitle');
+        } else {
+          $('#resumen_principios').html("<em>Ninguno seleccionado</em>");
+          $('#composicion_detallada').val('');
+          boton.attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle');
+        }
+      });
+
+      // Actualizar unidades en el modal según el Tipo seleccionado
+      document.getElementById('tipo').addEventListener('change', function() {
+        const idPresentacion = this.value;
+        // Buscamos todos los selects de unidades por su clase
+        const selectsUnidad = document.querySelectorAll('.uni-pa');
 
         if (idPresentacion !== "") {
-          // Llamada AJAX al servidor
           fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idPresentacion)
             .then(response => response.text())
             .then(data => {
-              selectUnidad.innerHTML = data;
+              selectsUnidad.forEach(select => {
+                select.innerHTML = data;
+              });
             })
             .catch(error => {
               console.error('Error:', error);
-              selectUnidad.innerHTML = '<option value="">Error al cargar</option>';
             });
         } else {
-          selectUnidad.innerHTML = '<option value="">---</option>';
+          selectsUnidad.forEach(select => {
+            select.innerHTML = '<option value="">---</option>';
+          });
         }
+      });
+
+      // Al hacer clic en el botón guardar del modal
+      $('#btnGuardarLab').click(function() {
+        var nombre = $('#nombre_lab_nuevo').val();
+
+        if (nombre.trim() === "") {
+          mostrarAviso("Por favor ingrese un nombre");
+          return;
+        }
+
+        $.ajax({
+          url: '../../cfg/ajax/guardar_laboratorio.php', // Ruta donde crearás el PHP
+          type: 'POST',
+          data: {
+            nombre: nombre
+          },
+          success: function(response) {
+            if (response != "error") {
+              // 1. Cerramos modal
+              $('#modalNuevoLaboratorio').modal('hide');
+              // 2. Limpiamos input
+              $('#nombre_lab_nuevo').val('');
+              // 3. Agregamos el nuevo lab al select y lo seleccionamos
+              $('#laboratorio').append('<option value="' + response + '" selected>' + nombre + '</option>');
+              mostrarAviso("Laboratorio guardado correctamente");
+            } else {
+              mostrarAviso("Error al guardar el laboratorio");
+            }
+          }
+        });
       });
 
       // =====================================================================
@@ -398,9 +598,15 @@
           $('#group_nombre').addClass('has-error');
         }
 
-        if ($('#presentacion').val().trim() === "") {
-          errores.push("Falta el tipo de presentacion.");
-          $('#group_presentacion').addClass('has-error');
+        if ($('#tipo').val().trim() === "") {
+          errores.push("Falta el tipo de medicamento.");
+          $('#group_tipo').addClass('has-error');
+        }
+
+        // Validación de los principios activos (revisando el campo oculto que llena el modal)
+        if ($('#composicion_detallada').val().trim() === "") {
+          errores.push("Debe gestionar al menos un principio activo en el modal.");
+          $('#group_principio_activo').addClass('has-error');
         }
 
         if ($('#u_medida').val().trim() === "") {
@@ -411,6 +617,11 @@
         if ($('#tipo_unidad_medida').val().trim() === "") {
           errores.push("Falta el tipo de unidad de medida.");
           $('#group_tipo_unidad').addClass('has-error');
+        }
+
+        if ($('#presentacion').val().trim() === "") {
+          errores.push("Falta la presentacion del medicamento.");
+          $('#group_presentacion').addClass('has-error');
         }
 
         if ($('#via_aplicacion').val().trim() === "") {

@@ -1,3 +1,40 @@
+<?php
+include("../../cfg/conexion.php");
+$id_url = isset($_GET['Id']) ? (int)$_GET['Id'] : 0;
+
+// Consulta extendida para traer Laboratorio, Tipo y Código de barras
+$sql = "SELECT m.*, dm.* FROM medicamento m 
+        JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento 
+        WHERE dm.Id = $id_url";
+$resultado = $conexion->query($sql);
+$row = $resultado->fetch_assoc();
+
+if (!$row) die("Error: Registro no encontrado.");
+
+// --- LÓGICA DE PRINCIPIOS ACTIVOS (Movida aquí arriba) ---
+$resumen_tooltip = [];
+$datos_hidden = [];
+
+$sql_actuales = $conexion->query("SELECT * FROM detalle_principio_medicamento WHERE id_medicamento = " . $row['Id']);
+
+if ($sql_actuales->num_rows > 0) {
+  while ($temp = $sql_actuales->fetch_assoc()) {
+    $id_p = $temp['id_principio_activo'];
+    $nom_p = $conexion->query("SELECT nombre FROM principio_activo WHERE id_principio_activo = $id_p")->fetch_assoc()['nombre'];
+
+    $id_u = $temp['id_tipo_unidad_medida'];
+    $uni_p = $conexion->query("SELECT unidad FROM unidad_medida WHERE Id_unidad_medida = $id_u")->fetch_assoc()['unidad'];
+
+    $resumen_tooltip[] = $nom_p . " " . $temp['cantidad_unidad_medida'] . " " . $uni_p;
+    $datos_hidden[] = $id_p . "," . $temp['cantidad_unidad_medida'] . "," . $id_u;
+  }
+  // Devolvemos el puntero al inicio para que el bucle del modal funcione más abajo
+  $sql_actuales->data_seek(0);
+}
+
+$texto_tooltip = !empty($resumen_tooltip) ? implode(', ', $resumen_tooltip) : 'Ninguno seleccionado';
+$valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
+?>
 <!DOCTYPE html>
 <html>
 
@@ -9,9 +46,7 @@
   include('includes/headerNav2.php');
   ?>
   <style>
-    /* ---------------------------------------------------------------------- */
-    /* ANIMACIONES Y ESTILOS DE MODALES */
-    /* ---------------------------------------------------------------------- */
+    /* Manteniendo tus animaciones y estilos originales */
     @keyframes pulse-opacity {
       0% {
         opacity: 0;
@@ -46,7 +81,10 @@
       }
     }
 
-    .modal.in .modal-dialog, #avisoModal, #modalGuardar {
+    .modal.in .modal-dialog,
+    #avisoModal,
+    #modalRegresar,
+    #modalGuardar {
       animation: fadeIn 0.4s ease-out;
     }
 
@@ -59,23 +97,27 @@
       animation: pulse-opacity 0.3s forwards;
     }
 
-    /* ESTILOS DE VALIDACIÓN */
     .has-error input[type="text"],
+    .has-error select,
     .has-error #tipo_unidad_medida,
-    .has-error #presentacion,
+    .has-error #tipo,
     .has-error #via_aplicacion,
+    .has-error #presentacion,
     .has-error #almacenamiento,
+    .has-error .select-pa,
     .input-error {
       border: 2px solid crimson !important;
       box-shadow: 0 0 5px crimson;
     }
 
-    #display_sintomas_seleccionados.input-error {
-      border: 2px solid crimson !important;
-      box-shadow: 0 0 5px crimson;
+    .tooltip-inner {
+      max-width: 300px;
+      background-color: #3c8dbc !important;
+      color: white;
+      font-weight: bold;
+      border: 1px solid #fff;
     }
 
-    /* Modales por encima */
     .modal {
       position: fixed !important;
       z-index: 99999 !important;
@@ -95,145 +137,141 @@
 <body>
   <div class="content-wrapper">
     <section class="content-header">
-      <h1>
-        Editar Medicamento
-      </h1>
+      <h1>Editar Medicamento</h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
         <li><a href="#"><i class="fa fa-archive"></i>Medicamento</a></li>
-        <li class="active"><a href="#"><i class="fa fa-plus-circle"></i>Editar</a></li>
+        <li class="active">Editar</li>
       </ol>
     </section>
 
     <section class="content">
-
       <div class="row">
         <div class="col-md-12">
           <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-              <li class="active"><a href="#tab_1" data-toggle="tab">Detalles de La Operacion</a></li>
+              <li class="active"><a href="#tab_1" data-toggle="tab">Detalles de La Operación</a></li>
             </ul>
             <div class="tab-content">
               <div class="tab-pane active" id="tab_1">
                 <div class="box-body">
-                  <form id="formularioMedicamento" style="margin-bottom:6%;" method="POST" action="../../cfg/editar/editar_medicamento.php" novalidate>
+                  <form id="formularioMedicamento" style="margin-bottom:14%;" method="POST" action="../../cfg/editar/editar_medicamento.php" novalidate>
                     <?php
-                    // Incluye la conexión y obtiene los datos del medicamento
                     include("../../cfg/conexion.php");
+                    $id_url = isset($_GET['Id']) ? (int)$_GET['Id'] : 0;
 
-                    // Validación básica para Id_descripcion
-                    $id_descripcion_url = isset($_GET['Id']) ? (int)$_GET['Id'] : 0;
-
-                    // Consulta principal con JOIN para obtener UN solo dato usando el ID ÚNICO de la descripción
-                    $sql = "SELECT 
-                      m.Id_medicamento, 
-                      m.nombre_medicamento, 
-                      dm.Id,      /* <--- Seleccionamos el ID único de la descripción */
-                      dm.Id_presentacion, 
-                      dm.Id_unidad, 
-                      dm.cantidad_unidad_medida,
-                      dm.via_aplicacion,
-                      dm.almacenamiento,
-                      dm.composicion
-                      FROM 
-                      medicamento m
-                      JOIN 
-                      descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                      JOIN 
-                      unidad_medida um ON dm.Id_unidad = um.Id_unidad_medida
-                      WHERE dm.Id = " . $id_descripcion_url;
-
+                    // Consulta extendida para traer Laboratorio, Tipo y Código de barras
+                    $sql = "SELECT m.*, dm.* FROM medicamento m 
+                            JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento 
+                            WHERE dm.Id = $id_url";
                     $resultado = $conexion->query($sql);
                     $row = $resultado->fetch_assoc();
 
-                    // Si no se encuentra el registro, se podría redirigir o mostrar un error
-                    if (!$row) {
-                      die("Error: No se encontró el medicamento con esa descripción.");
-                    }
-
-                    // Definición de variables para preselección
-                    $presentacion_db_id = $row['Id_presentacion'];
-                    $unidad_medida_db_id = $row['Id_unidad'];
-                    $via_db = $row['via_aplicacion'];
-                    $almacenamiento_db = $row['almacenamiento'];
+                    if (!$row) die("Error: Registro no encontrado.");
                     ?>
 
                     <input type="hidden" name="Id" value="<?= $row['Id']; ?>">
                     <input type="hidden" name="Id_medicamento" value="<?= $row['Id_medicamento']; ?>">
-                    <label class="control-label"></label>
+
                     <div class="col-sm-4 form-group" id="group_nombre">
                       <p>Nombre (*):</p>
-                      <input id="medicamento" name="medicamento" class="form-control" type="text" maxlength="100" required value="<?php echo $row['nombre_medicamento']; ?>">
+                      <input id="medicamento" name="medicamento" class="form-control" type="text" maxlength="100" required value="<?= $row['nombre_medicamento']; ?>">
                     </div>
-                    <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_presentacion">
-                      <p>Presentacion:</p>
-                      <select class="form-control" name="presentacion" id="presentacion" required>
-                        <option value="">Seleccione Una Presentacion</option>
+
+                    <div class="col-sm-4 form-group" id="group_tipo">
+                      <p>Tipo (*):</p>
+                      <select class="form-control" name="tipo" id="tipo" required>
+                      <option selected value="">Seleccione el Tipo de Medicamento</option>
                         <?php
-                        // Consulta para cargar las presentaciones
-                        $sql_presentacion = $conexion->query("SELECT * FROM presentacion");
-                        while ($resultado_pres = $sql_presentacion->fetch_assoc()) {
-                          // Seleccionar la opción si su Id_presentacion coincide con el valor guardado
-                          $selected = ($resultado_pres['Id_presentacion'] == $presentacion_db_id) ? 'selected' : '';
-                          echo "<option value='" . $resultado_pres['Id_presentacion'] . "' " . $selected . ">" . $resultado_pres['tipo_presentacion'] . "</option>";
+                        $sql_t = $conexion->query("SELECT * FROM tipo_medicamento");
+                        while ($r_t = $sql_t->fetch_assoc()) {
+                          $sel = ($r_t['Id_tipo'] == $row['Id_tipo']) ? 'selected' : '';
+                          echo "<option value='" . $r_t['Id_tipo'] . "' $sel>" . $r_t['nombre_tipo'] . "</option>";
                         }
                         ?>
                       </select>
                     </div>
-                    <label class="control-label"></label>
-                    <div class="col-sm-2 form-group" id="group_unidad">
-                      <p>U. Medida (*):</p>
-                      <input type="text" class="form-control" value="<?php echo $row['cantidad_unidad_medida']; ?>" name="cantidad_unidad_medida" id="u_medida" placeholder="800" inputmode="numeric" required>
+
+                    <div class="col-sm-3 form-group" id="group_principio_activo">
+                      <p>Principios activos (*):</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pa" data-toggle="modal" data-target="#modalPrincipios" title="<?= $texto_tooltip ?>" data-original-title="<?= $texto_tooltip ?>">
+                        Gestionar Principios Activos
+                      </button>
                     </div>
-                    <div class="col-lg-1 pull-left form-group" id="group_tipo_unidad" style="margin-top: 30px; margin-left:-20px;">
-                      <select class="form-control" name="tipo_medida" id="tipo_unidad_medida" required>
-                        <option value disabled="">---</option>
-                      </select>
+                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" value="<?= $valor_hidden ?>" required>
+
+                    <div class="clearfix"></div><br>
+
+                    <div class="col-sm-4 form-group" id="group_presentacion">
+                      <p>Presentación (*):</p>
+                      <input id="presentacion" name="presentacion" class="form-control" type="text" required value="<?= $row['presentacion']; ?>">
                     </div>
-                    <br><br><br><br>
-                    <label class="control-label"></label>
+
                     <div class="col-sm-4 form-group" id="group_via">
-                      <p>Via de aplicacion (*):</p>
+                      <p>Vía de aplicación (*):</p>
                       <select name="via" id="via_aplicacion" class="form-control">
-                        <option value="">Selecione una Via de Aplicacion</option>
-                        <option value="Oral" <?php if ($via_db == 'Oral') echo 'selected'; ?>>Oral</option>
-                        <option value="Sublingual" <?php if ($via_db == 'Sublingual') echo 'selected'; ?>>Sublingual</option>
-                        <option value="Rectal" <?php if ($via_db == 'Rectal') echo 'selected'; ?>>Rectal</option>
-                        <option value="Intravenosa" <?php if ($via_db == 'Intravenosa') echo 'selected'; ?>>Intravenosa</option>
-                        <option value="Intramuscular" <?php if ($via_db == 'Intramuscular') echo 'selected'; ?>>Intramuscular</option>
-                        <option value="Subcutanea" <?php if ($via_db == 'Subcutanea') echo 'selected'; ?>>Subcutanea</option>
-                        <option value="Intradermica" <?php if ($via_db == 'Intradermica') echo 'selected'; ?>>Intradermica</option>
-                        <option value="Topica" <?php if ($via_db == 'Topica') echo 'selected'; ?>>Topica</option>
-                        <option value="Transdermica" <?php if ($via_db == 'Transdermica') echo 'selected'; ?>>Transdermica</option>
-                        <option value="Inhalatoria" <?php if ($via_db == 'Inhalatoria') echo 'selected'; ?>>Inhalatoria</option>
-                        <option value="Oftalmica" <?php if ($via_db == 'Oftalmica') echo 'selected'; ?>>Oftalmica</option>
-                        <option value="Otica" <?php if ($via_db == 'Otica') echo 'selected'; ?>>Otica</option>
-                        <option value="Nasal" <?php if ($via_db == 'Nasal') echo 'selected'; ?>>Nasal</option>
-                        <option value="Vaginal" <?php if ($via_db == 'Vaginal') echo 'selected'; ?>>Vaginal</option>
+                      <option value="">Selecione una Via de Aplicacion</option>
+                        <?php
+                        $vias = ["Oral", "Sublingual", "Rectal", "Intravenosa", "Intramuscular", "Subcutanea", "Intradermica", "Topica", "Transdermica", "Inhalatoria", "Oftalmica", "Otica", "Nasal", "Vaginal"];
+                        foreach ($vias as $v) {
+                          $sel = ($row['via_aplicacion'] == $v) ? 'selected' : '';
+                          echo "<option value='$v' $sel>$v</option>";
+                        }
+                        ?>
                       </select>
                     </div>
-                    <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_almacenamiento">
-                      <p>C. de almacenamiento (*):</p>
+
+                    <div class="col-sm-3 form-group" id="group_almacenamiento">
+                      <p>C. Almacenamiento (*):</p>
                       <select name="almacenamiento" id="almacenamiento" class="form-control" required>
-                        <option value="">Seleccione una Condicion</option>
-                        <option value="-25_a_-10" <?php if ($almacenamiento_db == '-25_a_-10') echo 'selected'; ?>>Congelacion (-25*C a -10*C)</option>
-                        <option value="2_a_8" <?php if ($almacenamiento_db == '2_a_8') echo 'selected'; ?>>Refrigeracion (2*C a 8*C)</option>
-                        <option value="8_a_15" <?php if ($almacenamiento_db == '8_a_15') echo 'selected'; ?>>Lugar Fresco (8*C a 15*C)</option>
-                        <option value="15_a_25" <?php if ($almacenamiento_db == '15_a_25') echo 'selected'; ?>>Temperatura Ambiente (15*C a 25*C)</option>
-                        <option value="max_30" <?php if ($almacenamiento_db == 'max_30') echo 'selected'; ?>>Temperatura Maxima (30*C)</option>
+                      <option value="">Seleccione una Condicion</option>
+                        <option value="-25_a_-10" <?= ($row['almacenamiento'] == '-25_a_-10') ? 'selected' : '' ?>>Congelación (-25°C a -10°C)</option>
+                        <option value="2_a_8" <?= ($row['almacenamiento'] == '2_a_8') ? 'selected' : '' ?>>Refrigeración (2°C a 8°C)</option>
+                        <option value="8_a_15" <?= ($row['almacenamiento'] == '8_a_15') ? 'selected' : '' ?>>Lugar Fresco (8°C a 15°C)</option>
+                        <option value="15_a_25" <?= ($row['almacenamiento'] == '15_a_25') ? 'selected' : '' ?>>Temperatura Ambiente (15°C a 25°C)</option>
+                        <option value="max_30" <?= ($row['almacenamiento'] == 'max_30') ? 'selected' : '' ?>>Temperatura Maxima (30°C)</option>
                       </select>
                     </div>
-                    <label class="control-label"></label>
-                    <div class="col-sm-3">
-                      <p>Composicion:</p>
-                      <input type="text" id="composicion" value="<?php echo $row['composicion']; ?>" name="composicion" class="form-control">
+
+                    <div class="clearfix"></div><br>
+
+                    <div class="col-sm-4" id="group_laboratorio">
+                      <p>Laboratorio:</p>
+                      <div class="input-group">
+                        <select id="laboratorio" name="laboratorio" class="form-control">
+                          <option value="">Seleccione un Laboratorio</option>
+                          <?php
+                          $sql_l = $conexion->query("SELECT * FROM laboratorio");
+                          while ($r_l = $sql_l->fetch_assoc()) {
+                            $sel = ($r_l['Id_laboratorio'] == $row['Id_laboratorio']) ? 'selected' : '';
+                            echo "<option value='" . $r_l['Id_laboratorio'] . "' $sel>" . $r_l['nombre_laboratorio'] . "</option>";
+                          }
+                          ?>
+                        </select>
+
+                        <span class="input-group-btn">
+                          <button class="btn btn-info" type="button" id="btnInfoMedicamento" data-toggle="modal" data-target="#modalNuevoLaboratorio" title="Agregar Laboratorio" style="height: 34px;">
+                            <i><img src="../../recursos/imagenes/iconos/agregar.png" style="width:10px; height:10px;"></i>
+                          </button>
+                        </span>
+                      </div>
                     </div>
-                    <br><br><br><br>
-                    <div style="float:right; margin-top: 2%;">
-                      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalRegresar">Regresar</button>
-                      <button type="submit" class="btn btn-success" id="btnGuardar">Guardar</button>
+
+                    <div class="col-sm-4 form-group">
+                      <p>Composición:</p>
+                      <input type="text" name="composicion" class="form-control" value="<?= $row['composicion'] ?>">
+                    </div>
+
+                    <div class="col-sm-3 form-group">
+                      <p>Código de Barras:</p>
+                      <input type="text" name="codigo_barras" class="form-control" value="<?= $row['codigo_barras'] ?>">
+                    </div>
+
+                    <div class="col-sm-12" style="margin-top: 2%;">
+                      <div style="float:right;">
+                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalRegresar">Regresar</button>
+                        <button type="submit" class="btn btn-success" id="btnGuardar">Actualizar</button>
+                      </div>
                     </div>
                   </form>
                 </div>
@@ -243,6 +281,103 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <div class="modal fade" id="modalPrincipios" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title">Editar Principios Activos</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_principios">
+            <?php
+            if ($sql_actuales->num_rows > 0) {
+              while ($pa = $sql_actuales->fetch_assoc()) {
+            ?>
+                <div class="row fila-pa" style="margin-bottom: 10px;">
+                  <div class="col-sm-6">
+                    <select class="form-control select-pa">
+                    <option value="" id="pa">Seleccione un Principio Activo</option>
+                      <?php
+                      $sql_p = $conexion->query("SELECT * FROM principio_activo");
+                      while ($rp = $sql_p->fetch_assoc()) {
+                        // Corrección del nombre de la columna aquí: id_principio_activo
+                        $s = ($rp['id_principio_activo'] == $pa['id_principio_activo']) ? 'selected' : '';
+                        echo "<option value='" . $rp['id_principio_activo'] . "' data-nombre='" . $rp['nombre'] . "' $s>" . $rp['nombre'] . "</option>";
+                      }
+                      ?>
+                    </select>
+                  </div>
+                  <div class="col-sm-2">
+                    <input type="text" class="form-control cant-pa" id="u_medida" value="<?= $pa['cantidad_unidad_medida'] ?>" placeholder="Cant.">
+                  </div>
+                  <div class="col-sm-2">
+                    <select class="form-control uni-pa" id="tipo_unidad_medida" data-unidad-actual="<?= $pa['id_tipo_unidad_medida'] ?>"></select>
+                  </div>
+                  <div class="col-sm-2">
+                    <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
+                  </div>
+                </div>
+              <?php
+              }
+            } else {
+              // Si no hay ninguno, mostrar una fila vacía base
+              ?>
+              <div class="row fila-pa" style="margin-bottom: 10px;">
+                <div class="col-sm-6">
+                  <select class="form-control select-pa">
+                    <option value="">Seleccione un Principio Activo</option>
+                    <?php
+                    $sql_p = $conexion->query("SELECT * FROM principio_activo");
+                    while ($rp = $sql_p->fetch_assoc()) {
+                      echo "<option value='" . $rp['id_principio_activo'] . "' data-nombre='" . $rp['nombre'] . "'>" . $rp['nombre'] . "</option>";
+                    }
+                    ?>
+                  </select>
+                </div>
+                <div class="col-sm-2">
+                  <input type="text" class="form-control cant-pa" placeholder="Cant.">
+                </div>
+                <div class="col-sm-2">
+                  <select class="form-control uni-pa" data-unidad-actual=""></select>
+                </div>
+                <div class="col-sm-2">
+                  <button type="button" class="btn btn-danger btn-remove-pa"><i></i></button>
+                </div>
+              </div>
+            <?php } ?>
+          </div>
+          <button type="button" class="btn btn-success btn-sm" id="btn_add_pa"><i class="fa fa-plus"></i> Añadir otro</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" id="guardar_pa_temp">Listo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevoLaboratorio" tabindex="-1" role="dialog" aria-labelledby="labelLaboratorio">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="labelLaboratorio"><i class="fa fa-building"></i>Nuevo Laboratorio</h4>
+        </div>
+        <div class="modal-body">
+          <form id="formNuevoLaboratorio">
+            <div class="form-group">
+              <label>Nombre del Laboratorio:</label>
+              <input type="text" id="nombre_lab_nuevo" class="form-control" placeholder="Ej: Bayer" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarLab">Guardar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="modal" id="avisoModal" tabindex="-1" role="dialog">
@@ -260,7 +395,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="modalRegresar" tabindex="-1" role="dialog">
+  <div class="modal" id="modalRegresar" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header bg-crimson" style="color: white;">
@@ -286,117 +421,156 @@
           <h4 class="modal-title">Confirmación de Guardado</h4>
         </div>
         <div class="modal-body">
-          <p>¿Está seguro de que desea actualizar la informacion del medicamento?</p>
+          <p>¿Está seguro de que desea guardar el nuevo medicamento?</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success" id="confirmarGuardar">Actualizar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardar">Guardar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <?php
-  include('includes/footer.php');
-  ?>
+  <?php include('includes/footer.php'); ?>
 
   <script>
     $(document).ready(function() {
+      // Capturamos el ID de tipo inicial para cargar las unidades
+      const tipoInicial = $("#tipo").val();
 
-      const medicamentoInput = document.getElementById('medicamento');
-      const uMedidaInput = document.getElementById('u_medida');
-      const selectPresentacion = document.getElementById('presentacion');
-      const selectUnidad = document.getElementById('tipo_unidad_medida');
-
-      // Capturamos el ID que viene de la base de datos desde PHP
-      const unidadGuardada = "<?php echo $unidad_medida_db_id; ?>";
-
-      // =====================================================================
-      // FUNCIONES DE VISUALIZACIÓN
-      // =====================================================================
-
+      // --- FUNCIONES CORE ---
       function mostrarAviso(mensaje) {
         $('#avisoTexto').html(mensaje);
         $('#avisoModal').modal('show');
       }
 
       function limpiarErrores() {
-        $('input, select').removeClass('input-error');
         $('.form-group').removeClass('has-error');
+        $('.form-control').removeClass('input-error');
       }
 
-      // Función que bloquea números (solo texto)
-      function bloquearNumeros(e) {
-        const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
-        if (teclasPermitidas.includes(e.key)) return;
-        if (e.key >= "0" && e.key <= "9") {
-          e.preventDefault();
-        }
-      }
-      // Función que limpia números pegados (solo texto)
-      function limpiarNumeros(e) {
-        e.target.value = e.target.value.replace(/[0-9]/g, "");
+      function closeCustomModal(modalElement) {
+        modalElement.removeClass('in').addClass('out');
+        setTimeout(() => {
+          modalElement.modal('hide').removeClass('out');
+        }, 100); // Duración de la animación
       }
 
-      function cargarUnidades(idPresentacion, valorASeleccionar = null) {
-        if (!idPresentacion) {
-          selectUnidad.innerHTML = '<option value="">---</option>';
+      // CORRECCIÓN: Eventos para cerrar el modal de aviso
+      $('#avisoModal .close, #avisoModal .btn-secondary').on('click', function() {
+        closeCustomModal($('#avisoModal'));
+      });
+
+      $('#modalGuardar .close, #modalGuardar .btn-secondary').on('click', function() {
+        closeCustomModal($('#modalGuardar'));
+      });
+
+      // --- LÓGICA DE PRINCIPIOS ACTIVOS (Igual a agregar.php) ---
+      $('#btn_add_pa').on('click', function() {
+        var nuevaFila = $('.fila-pa:first').clone();
+        nuevaFila.find('input').val('');
+        nuevaFila.find('select').val('');
+        $('#contenedor_filas_principios').append(nuevaFila);
+      });
+
+      $('#contenedor_filas_principios').on('click', '.btn-remove-pa', function() {
+        if ($('.fila-pa').length > 1) $(this).closest('.fila-pa').remove();
+      });
+
+      // Guardar composición en el input hidden
+      $('#guardar_pa_temp').on('click', function() {
+        var resumen = [];
+        var datos_para_db = [];
+
+        $('.fila-pa').each(function() {
+          var nombre = $(this).find('.select-pa option:selected').data('nombre');
+          var id_pa = $(this).find('.select-pa').val();
+          var cantidad = $(this).find('.cant-pa').val();
+          var unidad = $(this).find('.uni-pa option:selected').text();
+          var id_unidad = $(this).find('.uni-pa').val();
+
+          if (id_pa && cantidad && id_unidad) {
+            resumen.push(nombre + " " + cantidad + " " + unidad);
+            datos_para_db.push(id_pa + "," + cantidad + "," + id_unidad);
+          }
+        });
+
+        $('#composicion_detallada').val(datos_para_db.join('|'));
+        $('#btn_modal_pa').attr('data-original-title', resumen.join(', ') || 'Ninguno seleccionado').tooltip('fixTitle');
+      });
+
+      // Al hacer clic en el botón guardar del modal
+      $('#btnGuardarLab').click(function() {
+        var nombre = $('#nombre_lab_nuevo').val();
+
+        if (nombre.trim() === "") {
+          mostrarAviso("Por favor ingrese un nombre");
           return;
         }
 
-        fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idPresentacion)
-          .then(response => response.text())
-          .then(data => {
-            // Insertamos las opciones filtradas que vienen del PHP
-            selectUnidad.innerHTML = data;
-
-            // Si tenemos un valor guardado (al cargar la página), lo seleccionamos
-            if (valorASeleccionar) {
-              selectUnidad.value = valorASeleccionar;
+        $.ajax({
+          url: '../../cfg/ajax/guardar_laboratorio.php', // Ruta donde crearás el PHP
+          type: 'POST',
+          data: {
+            nombre: nombre
+          },
+          success: function(response) {
+            if (response != "error") {
+              // 1. Cerramos modal
+              $('#modalNuevoLaboratorio').modal('hide');
+              // 2. Limpiamos input
+              $('#nombre_lab_nuevo').val('');
+              // 3. Agregamos el nuevo lab al select y lo seleccionamos
+              $('#laboratorio').append('<option value="' + response + '" selected>' + nombre + '</option>');
+              mostrarAviso("Laboratorio guardado correctamente");
+            } else {
+              mostrarAviso("Error al guardar el laboratorio");
             }
-
-            console.log("Unidades cargadas para presentación: " + idPresentacion);
-          })
-          .catch(error => {
-            console.error('Error en AJAX:', error);
-            selectUnidad.innerHTML = '<option value="">Error</option>';
-          });
-      }
-
-      // 1. Ejecución inmediata al cargar la página para EDICIÓN
-      if (selectPresentacion.value !== "") {
-        cargarUnidades(selectPresentacion.value, unidadGuardada);
-      }
-
-      // 2. Ejecución cuando el usuario CAMBIA la presentación manualmente
-      selectPresentacion.addEventListener('change', function() {
-        cargarUnidades(this.value); // Aquí no pasamos el segundo parámetro para que quede en blanco
-      });
-
-      // --- VALIDACIONES EXISTENTES ---
-      medicamentoInput.addEventListener('input', function() {
-        let valor = this.value;
-        valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-        if (valor.length > 50) valor = valor.substring(0, 50);
-        this.value = valor;
-      });
-
-      const numericInputs = [uMedidaInput];
-      numericInputs.forEach(input => {
-        input.addEventListener('input', function() {
-          let valor = this.value;
-          valor = valor.replace(/[^0-9.]/g, '');
-          const partes = valor.split('.');
-          if (partes.length > 2) valor = partes[0] + '.' + partes.slice(1).join('');
-          this.value = valor;
+          }
         });
       });
 
-      // =====================================================================
-      // LÓGICA DE VERIFICACIÓN AJAX (CONEXIÓN A BD REAL)
-      // =====================================================================
+      // Cargar unidades por AJAX según el Tipo (Igual a agregar.php)
+      function actualizarUnidades(idTipo) {
+        if (idTipo) {
+          fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idTipo)
+            .then(r => r.text())
+            .then(data => {
+              $('.uni-pa').each(function() {
+                // 1. Insertamos las opciones que trajo el AJAX
+                $(this).html(data);
 
-      // 3. ENVÍO DEL FORMULARIO
+                // 2. Recuperamos el ID que guardamos en el atributo data-unidad-actual
+                const unidadGuardada = $(this).data('unidad-actual');
+
+                // 3. Si existe un valor guardado, lo seleccionamos automáticamente
+                if (unidadGuardada) {
+                  $(this).val(unidadGuardada);
+                }
+              });
+            })
+            .catch(error => console.error('Error al cargar unidades:', error));
+        }
+      }
+
+      $('#tipo').on('change', function() {
+        actualizarUnidades($(this).val());
+      });
+
+      // Inicialización
+      actualizarUnidades(tipoInicial);
+      $('#btn_modal_pa').tooltip();
+
+      // --- VALIDACIONES DE CAMPOS ---
+      $(document).on('input', '#medicamento', function() {
+        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').substring(0, 50);
+      });
+
+      $(document).on('input', '.cant-pa', function() {
+        this.value = this.value.replace(/[^0-9.]/g, '');
+      });
+
+      // --- ENVÍO DEL FORMULARIO ---
       $('#formularioMedicamento').on('submit', function(e) {
         e.preventDefault();
         limpiarErrores();
@@ -407,9 +581,15 @@
           $('#group_nombre').addClass('has-error');
         }
 
-        if ($('#presentacion').val().trim() === "") {
-          errores.push("Falta el tipo de presentacion.");
-          $('#group_presentacion').addClass('has-error');
+        if ($('#tipo').val().trim() === "") {
+          errores.push("Falta el tipo de medicamento.");
+          $('#group_tipo').addClass('has-error');
+        }
+
+        // Validación de los principios activos (revisando el campo oculto que llena el modal)
+        if ($('#composicion_detallada').val().trim() === "") {
+          errores.push("Debe gestionar al menos un principio activo en el modal.");
+          $('#group_principio_activo').addClass('has-error');
         }
 
         if ($('#u_medida').val().trim() === "") {
@@ -420,6 +600,11 @@
         if ($('#tipo_unidad_medida').val().trim() === "") {
           errores.push("Falta el tipo de unidad de medida.");
           $('#group_tipo_unidad').addClass('has-error');
+        }
+
+        if ($('#presentacion').val().trim() === "") {
+          errores.push("Falta la presentacion del medicamento.");
+          $('#group_presentacion').addClass('has-error');
         }
 
         if ($('#via_aplicacion').val().trim() === "") {
@@ -440,42 +625,7 @@
       });
 
       $('#confirmarGuardar').on('click', function() {
-        $('#modalGuardar').modal('hide');
-
         $('#formularioMedicamento').off('submit').submit();
-      });
-
-      // --- Aplicar validaciones a campos de solo texto ---
-      const campos = [document.getElementById("medicamento")];
-      campos.forEach(campo => {
-        if (campo) {
-          campo.addEventListener("keydown", bloquearNumeros);
-          campo.addEventListener("input", limpiarNumeros);
-        }
-      });
-
-      // FIX DE MODALES (Cierre suave)
-      $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
-        e.stopPropagation();
-        var $modal = $(this).closest('.modal');
-        if ($modal.hasClass('in')) {
-          $modal.removeClass('in').addClass('out');
-          setTimeout(function() {
-            $modal.modal('hide');
-            $modal.removeClass('out');
-          }, 400);
-        } else {
-          $modal.modal('hide');
-        }
-      });
-
-      $('.modal').on('hidden.bs.modal', function() {
-        if (!$('.modal.in').length) {
-          $('body').removeClass('modal-open');
-          $('.modal-backdrop').remove();
-        } else {
-          $('body').addClass('modal-open');
-        }
       });
     });
   </script>
