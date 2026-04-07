@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-04-2026 a las 18:38:42
+-- Tiempo de generación: 07-04-2026 a las 23:08:36
 -- Versión del servidor: 10.4.22-MariaDB
 -- Versión de PHP: 7.3.33
 
@@ -234,8 +234,8 @@ CREATE TABLE `detalle_inventario` (
 --
 
 INSERT INTO `detalle_inventario` (`Id_detalle_inventario`, `Id_TipoMovimiento`, `Id_Persona`, `Id_prescripcion`, `comprobante`, `fecha`, `observaciones`) VALUES
-(130, 1, 189, NULL, NULL, '2026-04-06 10:46:07', 'Entrega'),
-(131, 2, 189, 213, 'comp_1775486852_69d3c7848cae4.png', '2026-04-06 10:47:32', 'Entrega a Representante');
+(130, 1, 189, NULL, NULL, '2026-04-06 10:46:07', 'Entrega desde guanare'),
+(135, 2, 189, 213, 'comp_1775595956_69d571b4a55b7.png', '2026-04-07 17:05:56', 'Entrega a Representante');
 
 -- --------------------------------------------------------
 
@@ -550,7 +550,7 @@ CREATE TABLE `existencias_stock` (
 --
 
 INSERT INTO `existencias_stock` (`Id_existencia`, `Id_descripcion_medicamento`, `Id_lote`, `cantidad_actual`, `ultima_actualizacion`) VALUES
-(67, 71, 52, 15, '2026-04-06 14:47:32');
+(67, 71, 52, 15, '2026-04-07 21:05:56');
 
 -- --------------------------------------------------------
 
@@ -790,7 +790,7 @@ CREATE TABLE `medicamentos_detalle_inventario` (
 
 INSERT INTO `medicamentos_detalle_inventario` (`Id`, `Id_detalle_inventario`, `Id_descripcion_medicamento`, `Id_lote`, `cantidad`, `stock_momento`) VALUES
 (109, 130, 71, 52, 16, 16),
-(110, 131, 71, 52, 1, 15);
+(114, 135, 71, 52, 1, 15);
 
 -- --------------------------------------------------------
 
@@ -1505,15 +1505,16 @@ CREATE TABLE `prescripcion_medicamentos` (
   `Id` int(11) NOT NULL,
   `Id_consulta` int(11) NOT NULL,
   `Id_descripcion_medicamento` int(11) NOT NULL,
-  `estatus` enum('pendiente','entregado','parcial','no entregado') COLLATE utf8_spanish_ci NOT NULL
+  `estado_prescripcion` enum('pendiente','entregado','parcial','no entregado') COLLATE utf8_spanish_ci NOT NULL DEFAULT 'pendiente',
+  `estatus` int(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Volcado de datos para la tabla `prescripcion_medicamentos`
 --
 
-INSERT INTO `prescripcion_medicamentos` (`Id`, `Id_consulta`, `Id_descripcion_medicamento`, `estatus`) VALUES
-(213, 110, 71, 'entregado');
+INSERT INTO `prescripcion_medicamentos` (`Id`, `Id_consulta`, `Id_descripcion_medicamento`, `estado_prescripcion`, `estatus`) VALUES
+(213, 110, 71, 'entregado', 1);
 
 -- --------------------------------------------------------
 
@@ -3477,7 +3478,7 @@ ALTER TABLE `descripcion_medicamento`
 -- AUTO_INCREMENT de la tabla `detalle_inventario`
 --
 ALTER TABLE `detalle_inventario`
-  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
+  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_medico`
@@ -3621,7 +3622,7 @@ ALTER TABLE `medicamento`
 -- AUTO_INCREMENT de la tabla `medicamentos_detalle_inventario`
 --
 ALTER TABLE `medicamentos_detalle_inventario`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
 
 --
 -- AUTO_INCREMENT de la tabla `medicos_departamentos`
@@ -3675,7 +3676,7 @@ ALTER TABLE `prefijos_telefonos`
 -- AUTO_INCREMENT de la tabla `prescripcion_medicamentos`
 --
 ALTER TABLE `prescripcion_medicamentos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=214;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=215;
 
 --
 -- AUTO_INCREMENT de la tabla `presentacion`

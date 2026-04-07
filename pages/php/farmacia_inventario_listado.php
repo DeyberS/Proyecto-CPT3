@@ -313,7 +313,7 @@
     <div class="modal fade" id="modalError" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
-          <div class="modal-header bg-red">
+          <div class="modal-header bg-crimson">
             <h5 class="modal-title" style="color: white;">Error en la Operación</h5>
           </div>
           <div class="modal-body">

@@ -39,6 +39,21 @@ try {
         $id_lote = $datos_ant['Id_lote'];
         $cantidad_anterior = $datos_ant['cantidad'];
 
+        // VALIDACIÓN PREVENTIVA
+        if ($cantidad_nueva <= 0) { throw new Exception("La cantidad debe ser mayor a cero."); }
+
+        // Obtener stock actual para comparar
+        $res_stk = $conexion->query("SELECT cantidad_actual FROM existencias_stock WHERE Id_lote = $id_lote");
+        $stock_global = $res_stk->fetch_assoc()['cantidad_actual'];
+
+        $diferencia = $cantidad_nueva - $cantidad_anterior;
+
+        // Si la diferencia es negativa (estás quitando medicina) 
+        // y esa resta es mayor a lo que hay en stock...
+        if (($stock_global + $diferencia) < 0) {
+            throw new Exception("No puedes reducir tanto la entrada porque ya se ha despachado parte de ese stock. Stock actual: $stock_global");
+        }
+
         // 3. ACTUALIZAR TABLA DE LOTES
         $stmt1 = $conexion->prepare("UPDATE lotes_medicamentos SET Id_proveedor = ?, Lote = ?, fecha_fabricacion = ?, fecha_vencimiento = ? WHERE Id = ?");
         $stmt1->bind_param("isssi", $proveedor, $lote_nombre, $f_fab, $f_ven, $id_lote);
@@ -82,6 +97,19 @@ try {
         $cantidad_anterior = $datos_ant['cantidad'];
         $id_lote = $datos_ant['Id_lote'];
 
+        if ($cantidad_nueva <= 0) { throw new Exception("La cantidad debe ser mayor a cero."); }
+
+        $res_stk = $conexion->query("SELECT cantidad_actual FROM existencias_stock WHERE Id_lote = $id_lote");
+        $stock_global = $res_stk->fetch_assoc()['cantidad_actual'];
+
+        // En las salidas, la diferencia se resta del stock global
+        $diferencia_salida = $cantidad_anterior - $cantidad_nueva; 
+        // (Si nueva es 20 y anterior era 5, diferencia es -15)
+
+        if (($stock_global + $diferencia_salida) < 0) {
+            throw new Exception("No hay suficiente stock para registrar esta salida. Stock disponible: $stock_global");
+        }
+
         // Actualizar tablas
         $stmt1 = $conexion->prepare("UPDATE detalle_inventario SET observaciones = ? WHERE Id_detalle_inventario = ?");
         $stmt1->bind_param("si", $razon, $id_detalle);
@@ -109,6 +137,41 @@ try {
         $stmt3->bind_param("ii", $stock_momento, $id_detalle);
         $stmt3->execute();
     }
+
+    $sql_recalculo = "SELECT mdi.Id_detalle_inventario, mdi.cantidad, di.Id_TipoMovimiento 
+                      FROM medicamentos_detalle_inventario mdi
+                      INNER JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
+                      WHERE mdi.Id_lote = ?
+                      ORDER BY di.fecha ASC, di.Id_detalle_inventario ASC";
+
+    $stmt_recal = $conexion->prepare($sql_recalculo);
+    $stmt_recal->bind_param("i", $id_lote);
+    $stmt_recal->execute();
+    $res_movimientos = $stmt_recal->get_result();
+
+    $acumulado = 0;
+    $stmt_upd_momento = $conexion->prepare("UPDATE medicamentos_detalle_inventario SET stock_momento = ? WHERE Id_detalle_inventario = ?");
+
+    while ($mov = $res_movimientos->fetch_assoc()) {
+        if ($mov['Id_TipoMovimiento'] == 1) { // Entrada
+            $acumulado += $mov['cantidad'];
+        } else if ($mov['Id_TipoMovimiento'] == 2) { // Salida
+            $acumulado -= $mov['cantidad'];
+        }
+
+        // Si en algún punto el stock baja de 0, lanzamos error para que el catch haga rollback
+        if ($acumulado < 0) {
+            throw new Exception("Error: La edición causaría un stock negativo en el historial (Stock: $acumulado).");
+        }
+
+        $stmt_upd_momento->bind_param("ii", $acumulado, $mov['Id_detalle_inventario']);
+        $stmt_upd_momento->execute();
+    }
+
+    // Sincronizar el stock final real con la tabla de existencias para evitar desajustes
+    $stmt_sync = $conexion->prepare("UPDATE existencias_stock SET cantidad_actual = ? WHERE Id_lote = ?");
+    $stmt_sync->bind_param("ii", $acumulado, $id_lote);
+    $stmt_sync->execute();
 
     $conexion->commit();
     $_SESSION['mensaje_user_exito'] = '✅ Éxito: El movimiento y el stock han sido actualizados correctamente.';

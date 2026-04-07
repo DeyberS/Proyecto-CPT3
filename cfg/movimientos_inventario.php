@@ -270,9 +270,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($esSalida && $id_presc> 0) {
             // Cambiamos el estatus a una cadena de texto, por ejemplo: 'Entregado'
-            $nuevo_estado = "Entregado"; 
+            $nuevo_estado = "entregado"; 
             
-            $sql_update_presc = "UPDATE prescripcion_medicamentos SET estatus = ? WHERE Id = ?";
+            $sql_update_presc = "UPDATE prescripcion_medicamentos SET estado_prescripcion = ? WHERE Id = ?";
             $stmt_p = $conexion->prepare($sql_update_presc);
             
             // "s" es para string (cadena), "i" es para integer (entero)

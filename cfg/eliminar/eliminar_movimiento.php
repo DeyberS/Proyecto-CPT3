@@ -9,7 +9,7 @@ if (isset($_GET['id'])) {
 
     try {
         // 1. Obtener datos para revertir el stock antes de borrar nada
-        $sql_info = "SELECT mdi.Id_descripcion_medicamento, mdi.Id_lote, mdi.cantidad, di.Id_TipoMovimiento 
+        $sql_info = "SELECT mdi.Id_descripcion_medicamento, mdi.Id_lote, mdi.cantidad, di.Id_TipoMovimiento, di.Id_prescripcion 
                      FROM medicamentos_detalle_inventario mdi
                      INNER JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
                      WHERE di.Id_detalle_inventario = ?";
@@ -23,6 +23,7 @@ if (isset($_GET['id'])) {
             $id_lote = $movimiento['Id_lote'];
             $cantidad = $movimiento['cantidad'];
             $tipo = $movimiento['Id_TipoMovimiento']; 
+            $id_prescripcion = $movimiento['Id_prescripcion'];
 
             // 2. REVERTIR EL STOCK (Antes de borrar los registros)
             // Si era Entrada (1), restamos. Si era Salida (2), sumamos.
@@ -36,6 +37,13 @@ if (isset($_GET['id'])) {
             $stmt_rev = $conexion->prepare($sql_revertir);
             $stmt_rev->bind_param("iii", $cantidad, $id_desc, $id_lote);
             $stmt_rev->execute();
+
+            if ($tipo == 2 && !empty($id_prescripcion)) {
+                $sql_prescripcion = "UPDATE prescripcion_medicamentos SET estado_prescripcion = 'pendiente' WHERE Id = ?";
+                $stmt_presc = $conexion->prepare($sql_prescripcion);
+                $stmt_presc->bind_param("i", $id_prescripcion);
+                $stmt_presc->execute();
+            }
 
             // 3. ELIMINAR PRIMERO EL DETALLE (La tabla hija que causa el error)
             $sql_del_hija = "DELETE FROM medicamentos_detalle_inventario WHERE Id_detalle_inventario = ?";

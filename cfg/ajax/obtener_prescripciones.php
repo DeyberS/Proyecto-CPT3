@@ -33,14 +33,14 @@ if ($es_menor) {
              INNER JOIN persona per ON c.Id_paciente = per.id
              LEFT JOIN detalle_paciente_menor dpm ON per.id = dpm.id_persona
              LEFT JOIN persona rep ON dpm.id_representante = rep.id
-             WHERE pm.estatus = 'pendiente' 
+             WHERE pm.estado_prescripcion = 'pendiente' 
              AND TIMESTAMPDIFF(YEAR, per.fecha_nacimiento, CURDATE()) < 18"; 
 } else {
     // FILTRO ESTRICTO: Solo mayores o iguales a 18 años (Paciente Interno)
     $sql .= " FROM prescripcion_medicamentos pm
              INNER JOIN consulta c ON pm.Id_consulta = c.Id_consulta
              INNER JOIN persona per ON c.Id_paciente = per.id
-             WHERE pm.estatus = 'pendiente'
+             WHERE pm.estado_prescripcion = 'pendiente'
              AND TIMESTAMPDIFF(YEAR, per.fecha_nacimiento, CURDATE()) >= 18";
 }
 

@@ -184,8 +184,8 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                           $res_meds = $conexion->query($sql_meds);
                           while ($m = $res_meds->fetch_assoc()) {
                             $selected = ($m['id_desc'] == $row['id_desc']) ? 'selected' : '';
-                            echo '<option value="' . $m['id_desc'] . '" ' . $selected . '>' 
-                            . htmlspecialchars($m['nombre_medicamento']) . ' (' . htmlspecialchars($m['componentes']) . ') - ' . '[' . htmlspecialchars($m['nombre_presentacion']) . ']' . '</option>';
+                            echo '<option value="' . $m['id_desc'] . '" ' . $selected . '>'
+                              . htmlspecialchars($m['nombre_medicamento']) . ' (' . htmlspecialchars($m['componentes']) . ') - ' . '[' . htmlspecialchars($m['nombre_presentacion']) . ']' . '</option>';
                           }
                           ?>
                         </select>
@@ -238,7 +238,7 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
                     <div class="col-sm-4">
                       <label>Lote (*):</label>
-                      <input type="text" name="lote" id="lote" class="form-control" list="lista_lotes" placeholder="Escriba o seleccione..." value="<?= $row['Lote'] ?>" required>
+                      <input type="text" name="lote" id="lote" class="form-control" list="lista_lotes" placeholder="Escriba o seleccione..." value="<?= $row['Lote'] ?>" readonly required>
                       <datalist id="lista_lotes">
                       </datalist>
                     </div>
@@ -671,7 +671,6 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       });
 
       // --- AL ESCRIBIR O SELECCIONAR UN LOTE ---
-      // --- AL ESCRIBIR O SELECCIONAR UN LOTE ---
       $('#lote').on('input change', function() {
         const loteEscrito = $(this).val().trim();
 
@@ -686,12 +685,10 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
           // Llenamos los campos de fecha
           $('#fecha_fabricacion').val(loteEncontrado.fecha_fabricacion);
-
-          // Importante: primero habilitar para poder asignar el valor, luego poner readonly
           $('#fecha_vencimiento').prop('readonly', false).val(loteEncontrado.fecha_vencimiento);
 
           // Bloqueamos para evitar que modifiquen datos de un lote que ya existe en BD
-          $('#fecha_fabricacion, #fecha_vencimiento').prop('readonly', true);
+          $('#lote, #fecha_fabricacion, #fecha_vencimiento').prop('readonly', true);
 
           // Agregamos una clase visual para saber que es un lote existente
           $(this).css('border-color', '#28a745');
@@ -796,6 +793,26 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
       if ($('#Id_descripcion_medicamento').val()) {
         $('#Id_descripcion_medicamento').trigger('change');
+      }
+
+      // Al final de tu script, justo antes de cerrar });
+      if ($('#op').val() === 'editar_entrada') {
+        // Bloqueo estricto para edición
+        $('#Id_descripcion_medicamento').prop('disabled', true); // Los select usan disabled
+        $('#lote, #fecha_fabricacion, #fecha_vencimiento').prop('readonly', true);
+
+        // Si deshabilitas el select, añade un campo oculto porque los 'disabled' no se envían por POST
+        if ($('#Id_descripcion_medicamento').prop('disabled')) {
+          $('<input>').attr({
+            type: 'hidden',
+            name: 'Id_descripcion_medicamento',
+            value: $('#Id_descripcion_medicamento').val()
+          }).appendTo('#formularioEntrada');
+        }
+      }
+
+      if ($('#lote').val() !== "") {
+        $('#lote').prop('readonly', true);
       }
     });
   </script>

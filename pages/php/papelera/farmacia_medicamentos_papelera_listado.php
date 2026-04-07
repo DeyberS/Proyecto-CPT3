@@ -351,7 +351,6 @@
           $('#EliminarMedicamento').modal('show');
         })
 
-
         // Script para mostrar los modales de sesión
         <?php if ($mostrar_modal_exito) : ?>
           $('#modalExito').modal('show');

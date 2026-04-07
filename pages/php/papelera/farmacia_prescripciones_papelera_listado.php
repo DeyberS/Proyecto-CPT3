@@ -1,12 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
   <meta charset="utf-8">
-  <title>Farmacia | Lista de Recipes</title>
+  <title>Papelera | Lista de Recipes</title>
   <?php
-  include('includes/headerNav2.php');
-  include("../../cfg/conexion.php");
+  include('../includes/headerPapelera.php');
+  include("../../../cfg/conexion.php");
   ?>
 </head>
 
@@ -49,8 +49,8 @@
   }
 
   .modal.in .modal-dialog,
-  #DesactivarPrescripcion,
-  #ModalReportePrescripcion {
+  #ReactivarPrescripcion,
+  #EliminarPrescripcion {
     animation: fadeIn 0.4s ease-out;
   }
 
@@ -72,13 +72,13 @@
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="content-wrapper">
     <?php
-    include('../../cfg/conexion.php');
-    $sqlRecipe = ("SELECT * FROM prescripcion_medicamentos WHERE estatus = 1 ORDER BY Id ASC");
+    include('../../../cfg/conexion.php');
+    $sqlRecipe = ("SELECT * FROM prescripcion_medicamentos WHERE estatus = 0 ORDER BY Id ASC");
     $queryData   = mysqli_query($conexion, $sqlRecipe);
     $total_recipe = mysqli_num_rows($queryData);
     ?>
     <section class="content-header">
-      <h1>Control de Despacho de Medicamentos (<?php echo $total_recipe; ?> Recipes)</h1>
+      <h1>Total de Recipes Inactivos (<?php echo $total_recipe; ?>)</h1>
     </section>
 
     <?php
@@ -89,7 +89,7 @@
     $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
     // 1. Definir el filtro base (Estado pendiente por defecto o según tu lógica)
-    $donde = "WHERE pm.estatus = 1"; // Ajusta según tus estados reales
+    $donde = "WHERE pm.estatus = 0"; // Ajusta según tus estados reales
     if ($busqueda != '') {
       $donde .= " AND (paciente.nombre LIKE '%$busqueda%' 
                      OR paciente.apellido LIKE '%$busqueda%' 
@@ -116,9 +116,7 @@
         <div class="col-xs-12">
           <div class="box box-primary">
             <div class="box-header with-border">
-              <a href="papelera/farmacia_prescripciones_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color:gray;"> Papelera </a>
-              <p class="pull-right" style="width:5px;"></p>
-              <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"> <i class="fa fa-cubes"></i> Ver Inventario General</a>
+              <a href="../farmacia_prescripciones_listado.php" class="btn-sm btn-primary pull-right"> Regresar al Listado </a>
               <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
             </div>
           </div>
@@ -133,7 +131,6 @@
                     <th>Paciente</th>
                     <th>Médico Tratante</th>
                     <th>Medicamento Solicitado</th>
-                    <th class="text-center">Stock Disponible</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Acciones</th>
                   </tr>
@@ -216,13 +213,6 @@
                         <span class="text-blue"><?= htmlspecialchars($row['nombre_medicamento'] . " (" . $row['componentes'] . ")"); ?></span><br>
                       </td>
 
-
-                      <td class="text-center">
-                        <span class="">
-                          <?php echo $stock; ?>
-                        </span>
-                      </td>
-
                       <td class="text-center">
                         <?php
                         if ($row['estado_entrega'] == 'pendiente') {
@@ -235,33 +225,16 @@
                         ?>
                       </td>
 
-                      <td class="text-center">
-                        <?php if ($row['estado_entrega'] == 'pendiente') : ?>
-                          <?php
-                          // Si es menor, enviamos la cédula del representante, si no, la del paciente
-                          $cedula_a_enviar = ($row['es_menor'] == 1) ? $row['cedula_representante'] : $row['cedula_pac'];
-                          ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info btn-sm" title="Ver Informarcion">
-                            <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
-                          </a>
-                          <a href="farmacia_inventario_movimiento_salida.php?id_pres=<?php echo $row['id_prescripcion']; ?>&id_med=<?php echo $row['Id_descripcion_medicamento']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&from=prescripciones" class="btn btn-success btn-sm" title="Despachar Medicamento">
-                            <img src="../../recursos/imagenes/iconos/enviar.png" style="width:15px; height:15px;">
-                          </a>
-                          <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></button>
-
-                        <?php elseif ($row['estado_entrega'] == 'no entregado') : ?>
-                          <a href="#" data-id="<?php echo $row['id_prescripcion'] ?>" class="btn btn-sm btn-danger btn-desactivar" title="Desactivar">
-                            <img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;">
-                          </a>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Ver Informarcion">
-                            <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
-                          </a>
-                        <?php else : ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Ver Informarcion">
-                            <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
-                          </a>
-                        <?php endif; ?>
-                      </td>
+                      <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
+                        <td>
+                          <?php if (in_array('Reactivar Medicamentos', $_SESSION["permisos"])) : ?>
+                            <a href="#" data-id="<?php echo $row['id_prescripcion'] ?>" class="btn-sm btn-success btn-reactivar" title="Reactivar"><img src="../../../recursos/imagenes/iconos/reactivar.png" style="width:15px; height:15px;"></a>
+                          <?php endif; ?>
+                          <?php if (in_array('Eliminar Medicamentos', $_SESSION["permisos"])) : ?>
+                            <a href="#" data-id="<?php echo $row['id_prescripcion'] ?>" class="btn-sm btn-danger btn-eliminar" title="Eliminar"><img src="../../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
+                          <?php endif; ?>
+                        </td>
+                      <?php endif; ?>
                     </tr>
                   <?php } ?>
                 </tbody>
@@ -336,88 +309,101 @@
     </div>
   </div>
 
-  <div class="modal" id="DesactivarPrescripcion" tabindex="-1" role="dialog" aria-labelledby="DesactivarPreescripcionLabel">
+  <div class="modal" id="ReactivarPrescripcion" tabindex="-1" role="dialog" aria-labelledby="ReactivarPrescripcionLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header" style="background-color: #dc3545; color: white;">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="DesactivarPrescripcionLabel">Confirmar Desactivacion</h4>
+          <h4 class="modal-title" id="ReactivarPrescripcionLabel">Confirmar Desactivacion</h4>
         </div>
         <div class="modal-body">
-          <p>¿Está seguro de que desea desactivar esta receta? Esta acción solo se puede revertir en la papelera.</p>
+          <p>¿Está seguro de que desea reactivar esta prescripcion?</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-          <a href="#" id="desactivar" class="btn btn-danger">Aceptar</a>
+          <a href="#" class="btn btn-danger" id="reactivar">Aceptar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="EliminarPrescripcion" tabindex="-1" role="dialog" aria-labelledby="EliminarPrescripcionLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #dc3545; color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="EliminarPrescripcionLabel">Confirmar Desactivacion</h4>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea eliminar esta prescripcion? Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="#" class="btn btn-danger" id="eliminar">Aceptar</a>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-  $(document).ready(function() {
-    function cambiarEstado(id, nuevoEstado) {
-      if (confirm('¿Confirmar cambio a ' + nuevoEstado + '?')) {
-        $.post('../../cfg/ajax/actualizar_estado_receta.php', {
-          id: id,
-          estado_entrega: nuevoEstado
-        }, function(data) {
-          if (data.trim() == 'ok') {
-            location.reload();
-          } else {
-            alert('Error al actualizar');
-          }
-        });
+    $(document).ready(function() {
+      function cambiarEstado(id, nuevoEstado) {
+        if (confirm('¿Confirmar cambio a ' + nuevoEstado + '?')) {
+          $.post('../../cfg/ajax/actualizar_estado_receta.php', {
+            id: id,
+            estado_entrega: nuevoEstado
+          }, function(data) {
+            if (data.trim() == 'ok') {
+              location.reload();
+            } else {
+              alert('Error al actualizar');
+            }
+          });
+        }
       }
-    }
 
-    function closeCustomModal(modalElement) {
-      modalElement.removeClass('in').addClass('out');
-      setTimeout(() => {
-        modalElement.modal('hide').removeClass('out');
-      }, 100); // Duración de la animación
-    }
+      function closeCustomModal(modalElement) {
+        modalElement.removeClass('in').addClass('out');
+        setTimeout(() => {
+          modalElement.modal('hide').removeClass('out');
+        }, 100); // Duración de la animación
+      }
 
-    $('#DesactivarPrescripcion .close, #DesactivarPrescripcion .btn-second').on('click', function() {
-      closeCustomModal($('#DesactivarPrescripcion'));
+      // CORRECCIÓN: Eventos para cerrar el modal de aviso
+      $('#ReactivarPrescripcion .close, #ReactivarPrescripcion .btn-second').on('click', function() {
+        closeCustomModal($('#ReactivarPrescripcion'));
+      });
+
+      $('#EliminarPrescripcion .close, #EliminarPrescripcion .btn-second').on('click', function() {
+        closeCustomModal($('#EliminarPrescripcion'));
+      });
+
+      $(document).on('click', '.btn-reactivar', function(e) {
+        e.preventDefault();
+        var IdPrescripcion = $(this).data('id');
+        var urlReactivar = "../../../cfg/reactivar/reactivar_prescripcion.php?Id=" + IdPrescripcion;
+        $('#reactivar').attr('href', urlReactivar);
+        $('#ReactivarPrescripcion').modal('show');
+      })
+
+      $(document).on('click', '.btn-eliminar', function(e) {
+        e.preventDefault();
+        var IdPrescripcion = $(this).data('id');
+        var urlEliminar = "../../../cfg/eliminar/eliminar_prescripcion.php?Id=" + IdPrescripcion;
+        $('#eliminar').attr('href', urlEliminar);
+        $('#EliminarPrescripcion').modal('show');
+      })
+
+      <?php if ($mostrar_modal_exito) : ?>
+        $('#modalExito').modal('show');
+      <?php elseif ($mostrar_modal_error) : ?>
+        $('#modalError').modal('show');
+      <?php endif; ?>
     });
-
-    $('.reporte').on('click', function(e) {
-      e.preventDefault();
-      $('#ModalReportePrescripcion').modal('show');
-    });
-
-    // Cerrar el modal usando tu función closeCustomModal
-    $('#ModalReportePrescripcion .close, #ModalReportePrescripcion .btn-second').on('click', function() {
-      closeCustomModal($('#ModalReportePrescripcion'));
-    });
-
-    // Función para redirigir al generador PDF
-    $('#btnEjecutarReportePrescripcion').on('click', function() {
-      var tipo = $('#tipo_reporte_Prescripcion').val();
-      window.open('../../cfg/reportes/generar_pdf_Prescripciones.php?tipo=' + tipo, '_blank');
-      $('#ModalReportePrescripcion').modal('hide');
-    });
-
-
-    $(document).on('click', '.btn-desactivar', function(e) {
-      e.preventDefault();
-      var IdPrescripcion = $(this).data('id');
-      var urlDesactivar = "../../cfg/desactivar/desactivar_prescripcion.php?Id=" + IdPrescripcion;
-      $('#desactivar').attr('href', urlDesactivar);
-      $('#DesactivarPrescripcion').modal('show');
-    })
-
-    <?php if ($mostrar_modal_exito) : ?>
-      $('#modalExito').modal('show');
-    <?php elseif ($mostrar_modal_error) : ?>
-      $('#modalError').modal('show');
-    <?php endif; ?>
-  });
   </script>
 
   <?php
-  include("includes/footer.php");
+  include("../includes/footer.php");
   ?>
 
 </body>

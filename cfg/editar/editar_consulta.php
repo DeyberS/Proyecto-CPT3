@@ -132,8 +132,8 @@ if (!empty($medicamentos) && is_array($medicamentos)) {
         // Validamos que el ID no sea vacío para evitar errores de FK
         if (!empty($id_descripcion_medicamento)) {
             $sql_insert_prescripcion = "
-                INSERT INTO prescripcion_medicamentos (Id_consulta, Id_descripcion_medicamento, dosis)
-                VALUES ('$id_consulta', '$id_descripcion_medicamento', '$dosis')
+                INSERT INTO prescripcion_medicamentos (Id_consulta, Id_descripcion_medicamento)
+                VALUES ('$id_consulta', '$id_descripcion_medicamento')
             ";
 
             if (!mysqli_query($conexion, $sql_insert_prescripcion)) {

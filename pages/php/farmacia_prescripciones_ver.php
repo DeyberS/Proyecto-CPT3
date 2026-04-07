@@ -59,10 +59,10 @@ $texto_almacenamiento = [
     "max_30"    => "Temperatura Máxima (30°C)"
 ];
 
-// Configuración visual del estatus
+// Configuración visual del estado_prescripcion
 $status_color = "";
 $status_icon = "";
-switch (strtolower($data['estatus'])) {
+switch (strtolower($data['estado_prescripcion'])) {
     case 'pendiente':
         $status_color = "#f39c12"; // Naranja
         $status_icon = "fa-clock-o";
@@ -225,7 +225,7 @@ switch (strtolower($data['estatus'])) {
                 <div class="main-container">
                     <div class="hero-header">
                         <div class="hero-status-badge">
-                            <i class="fa <?php echo $status_icon; ?>"></i> <?php echo $data['estatus']; ?>
+                            <i class="fa <?php echo $status_icon; ?>"></i> <?php echo $data['estado_prescripcion']; ?>
                         </div>
                         <h4 style="margin:0; opacity: 0.8; font-weight: 300;">Expediente de Prescripción #<?php echo $data['Id']; ?></h4>
                         <p style="margin-top:5px; font-size: 16px; opacity: 0.9;">
@@ -314,7 +314,7 @@ switch (strtolower($data['estatus'])) {
                             <div class="col-xs-12">
                                 <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalConfirmarRegreso" id="abrirModalRegresar">Regresar</button>
 
-                                <?php if (strtolower($data['estatus']) == 'pendiente') : ?>
+                                <?php if (strtolower($data['estado_prescripcion']) == 'pendiente') : ?>
                                     <a class="btn btn-success" href="farmacia_inventario_movimiento_salida.php?id_pres=<?php echo $data['Id']; ?>&id_med=<?php echo $data['Id_descripcion_medicamento']; ?>&pac=<?php echo $data['cedula_pac']; ?>" class="btn btn-success btn-lg-custom pull-right shadow">
                                         <i class="fa fa-check-circle"></i> Procesar y Despachar
                                     </a>
