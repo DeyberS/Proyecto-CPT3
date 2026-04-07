@@ -5,11 +5,11 @@ include('../conexion.php');
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 1. Recolección de datos del formulario
     $nombre_medicamento = $_POST['medicamento'];
-    $id_tipo            = $_POST['tipo']; // ID de tipo_medicamento
+    $id_presentacion            = $_POST['presentacion']; // ID de tipo_medicamento
     $via_aplicacion     = $_POST['via'];
-    $presentacion       = $_POST['presentacion'];
+    $contenido_neto       = $_POST['contenido_neto'];
     $almacenamiento     = $_POST['almacenamiento'];
-    $composicion_texto  = $_POST['composicion']; // Resumen textual
+    $excipientes  = $_POST['excipientes']; // Resumen textual
     $id_laboratorio = !empty($_POST['laboratorio']) ? $_POST['laboratorio'] : null;
     
     // Si el código de barras viene vacío, le ponemos un 0 para que no choque con el INT de la BD
@@ -32,18 +32,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // PASO 2: Insertar en 'descripcion_medicamento'
         $stmt2 = $conexion->prepare("INSERT INTO descripcion_medicamento 
-            (via_aplicacion, almacenamiento, composicion, stock_minimo, stock_maximo, codigo_barras, presentacion, Id_laboratorio, Id_tipo, Id_medicamento, estatus) 
+            (via_aplicacion, almacenamiento, excipientes, stock_minimo, stock_maximo, codigo_barras, contenido_neto, Id_laboratorio, Id_presentacion, Id_medicamento, estatus) 
             VALUES (?, ?, ?, '0', '0', ?, ?, ?, ?, ?, '1')");
         
         // Se cambió la primera 's' de codigo_barras por 'i' ya que ahora nos aseguramos de que sea entero
         $stmt2->bind_param("sssssiii", 
             $via_aplicacion, 
             $almacenamiento, 
-            $composicion_texto, 
+            $excipientes, 
             $codigo_barras, 
-            $presentacion, 
+            $contenido_neto, 
             $id_laboratorio, 
-            $id_tipo, 
+            $id_presentacion, 
             $id_medicamento_generado
         );
         

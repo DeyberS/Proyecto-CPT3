@@ -9,13 +9,13 @@ $response = array();
 $sql = "SELECT 
             dm.Id AS id_desc,
             m.nombre_medicamento,
-            tm.nombre_tipo,
+            p.nombre_presentacion,
             l.nombre_laboratorio,
-            dm.presentacion,
+            dm.contenido_neto,
             GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes 
         FROM descripcion_medicamento dm
         INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-        INNER JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+        INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
         LEFT JOIN laboratorio l ON dm.Id_laboratorio = l.Id_laboratorio
         -- Joins adicionales para los componentes --
         INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
@@ -41,10 +41,10 @@ if (!empty($_POST['filtro_nombre'])) {
 }
 
 // Filtro por Tipo de Medicamento (coincidencia exacta por ID)
-if (!empty($_POST['filtro_tipo'])) {
-    $condiciones[] = "dm.Id_tipo = ?";
+if (!empty($_POST['filtro_presentacion'])) {
+    $condiciones[] = "dm.Id_presentacion = ?";
     $tipos_params .= "i";
-    $params[] = $_POST['filtro_tipo'];
+    $params[] = $_POST['filtro_presentacion'];
 }
 
 // Filtro por Principios Activos (contiene texto)
@@ -62,9 +62,9 @@ if (!empty($_POST['filtro_principios'])) {
 }
 
 // Filtro por Presentación
-if (!empty($_POST['filtro_presentacion'])) {
-    $busqueda = '%' . $_POST['filtro_presentacion'] . '%';
-    $condiciones[] = "dm.presentacion LIKE ?";
+if (!empty($_POST['filtro_contenido_neto'])) {
+    $busqueda = '%' . $_POST['filtro_contenido_neto'] . '%';
+    $condiciones[] = "dm.contenido_neto LIKE ?";
     $tipos_params .= "s";
     $params[] = $busqueda;
 }
@@ -91,9 +91,9 @@ if (!empty($_POST['filtro_laboratorio'])) {
 }
 
 // Filtro por Composición (contiene texto)
-if (!empty($_POST['filtro_composicion'])) {
-    $busqueda = '%' . $_POST['filtro_composicion'] . '%';
-    $condiciones[] = "dm.composicion LIKE ?";
+if (!empty($_POST['filtro_excipientes'])) {
+    $busqueda = '%' . $_POST['filtro_excipientes'] . '%';
+    $condiciones[] = "dm.excipientes LIKE ?";
     $tipos_params .= "s";
     $params[] = $busqueda;
 }
@@ -137,7 +137,7 @@ while ($row = $resultado->fetch_assoc()) {
     // Formato: Nombre (Componente 1 + Componente 2) - [Tipo]
     $nombre = $row['nombre_medicamento'];
     $componentes = !empty($row['componentes']) ? $row['componentes'] : 'Sin componentes';
-    $tipo = $row['nombre_tipo'];
+    $tipo = $row['nombre_presentacion'];
     
     $nombre_completo = "$nombre ($componentes) - [$tipo]";
     

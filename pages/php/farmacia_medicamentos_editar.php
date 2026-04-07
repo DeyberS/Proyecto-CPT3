@@ -100,9 +100,9 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
     .has-error input[type="text"],
     .has-error select,
     .has-error #tipo_unidad_medida,
-    .has-error #tipo,
-    .has-error #via_aplicacion,
     .has-error #presentacion,
+    .has-error #via_aplicacion,
+    .has-error #contenido_neto,
     .has-error #almacenamiento,
     .has-error .select-pa,
     .input-error {
@@ -178,15 +178,15 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
                       <input id="medicamento" name="medicamento" class="form-control" type="text" maxlength="100" required value="<?= $row['nombre_medicamento']; ?>">
                     </div>
 
-                    <div class="col-sm-4 form-group" id="group_tipo">
-                      <p>Tipo (*):</p>
-                      <select class="form-control" name="tipo" id="tipo" required>
-                      <option selected value="">Seleccione el Tipo de Medicamento</option>
+                    <div class="col-sm-4 form-group" id="group_presentacion">
+                      <p>Presentacion (*):</p>
+                      <select class="form-control" name="presentacion" id="presentacion" required>
+                      <option selected value="">--- Seleccione la presentacion del medicamento ---</option>
                         <?php
-                        $sql_t = $conexion->query("SELECT * FROM tipo_medicamento");
+                        $sql_t = $conexion->query("SELECT * FROM presentacion");
                         while ($r_t = $sql_t->fetch_assoc()) {
-                          $sel = ($r_t['Id_tipo'] == $row['Id_tipo']) ? 'selected' : '';
-                          echo "<option value='" . $r_t['Id_tipo'] . "' $sel>" . $r_t['nombre_tipo'] . "</option>";
+                          $sel = ($r_t['Id_presentacion'] == $row['Id_presentacion']) ? 'selected' : '';
+                          echo "<option value='" . $r_t['Id_presentacion'] . "' $sel>" . $r_t['nombre_presentacion'] . "</option>";
                         }
                         ?>
                       </select>
@@ -202,15 +202,15 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
 
                     <div class="clearfix"></div><br>
 
-                    <div class="col-sm-4 form-group" id="group_presentacion">
-                      <p>Presentación (*):</p>
-                      <input id="presentacion" name="presentacion" class="form-control" type="text" required value="<?= $row['presentacion']; ?>">
+                    <div class="col-sm-4 form-group" id="group_contenido_neto">
+                      <p>Contenido neto (*):</p>
+                      <input id="contenido_neto" name="contenido_neto" class="form-control" type="text" required value="<?= $row['contenido_neto']; ?>">
                     </div>
 
                     <div class="col-sm-4 form-group" id="group_via">
                       <p>Vía de aplicación (*):</p>
                       <select name="via" id="via_aplicacion" class="form-control">
-                      <option value="">Selecione una Via de Aplicacion</option>
+                      <option value="">--- Seleccione una via de aplicación ---</option>
                         <?php
                         $vias = ["Oral", "Sublingual", "Rectal", "Intravenosa", "Intramuscular", "Subcutanea", "Intradermica", "Topica", "Transdermica", "Inhalatoria", "Oftalmica", "Otica", "Nasal", "Vaginal"];
                         foreach ($vias as $v) {
@@ -224,7 +224,7 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
                     <div class="col-sm-3 form-group" id="group_almacenamiento">
                       <p>C. Almacenamiento (*):</p>
                       <select name="almacenamiento" id="almacenamiento" class="form-control" required>
-                      <option value="">Seleccione una Condicion</option>
+                      <option value="">--- Seleccione una condición ---</option>
                         <option value="-25_a_-10" <?= ($row['almacenamiento'] == '-25_a_-10') ? 'selected' : '' ?>>Congelación (-25°C a -10°C)</option>
                         <option value="2_a_8" <?= ($row['almacenamiento'] == '2_a_8') ? 'selected' : '' ?>>Refrigeración (2°C a 8°C)</option>
                         <option value="8_a_15" <?= ($row['almacenamiento'] == '8_a_15') ? 'selected' : '' ?>>Lugar Fresco (8°C a 15°C)</option>
@@ -239,7 +239,7 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
                       <p>Laboratorio:</p>
                       <div class="input-group">
                         <select id="laboratorio" name="laboratorio" class="form-control">
-                          <option value="">Seleccione un Laboratorio</option>
+                          <option value="">--- Seleccione un laboratorio ---</option>
                           <?php
                           $sql_l = $conexion->query("SELECT * FROM laboratorio");
                           while ($r_l = $sql_l->fetch_assoc()) {
@@ -258,8 +258,8 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
                     </div>
 
                     <div class="col-sm-4 form-group">
-                      <p>Composición:</p>
-                      <input type="text" name="composicion" class="form-control" value="<?= $row['composicion'] ?>">
+                      <p>Excipientes:</p>
+                      <input type="text" name="excipientes" class="form-control" value="<?= $row['excipientes'] ?>">
                     </div>
 
                     <div class="col-sm-3 form-group">
@@ -298,7 +298,7 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
                 <div class="row fila-pa" style="margin-bottom: 10px;">
                   <div class="col-sm-6">
                     <select class="form-control select-pa">
-                    <option value="" id="pa">Seleccione un Principio Activo</option>
+                    <option value="" id="pa">--- Seleccione un principio activo ---</option>
                       <?php
                       $sql_p = $conexion->query("SELECT * FROM principio_activo");
                       while ($rp = $sql_p->fetch_assoc()) {
@@ -327,7 +327,7 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
               <div class="row fila-pa" style="margin-bottom: 10px;">
                 <div class="col-sm-6">
                   <select class="form-control select-pa">
-                    <option value="">Seleccione un Principio Activo</option>
+                    <option value="">--- Seleccione un principio activo ---</option>
                     <?php
                     $sql_p = $conexion->query("SELECT * FROM principio_activo");
                     while ($rp = $sql_p->fetch_assoc()) {
@@ -436,7 +436,7 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
   <script>
     $(document).ready(function() {
       // Capturamos el ID de tipo inicial para cargar las unidades
-      const tipoInicial = $("#tipo").val();
+      const tipoInicial = $("#presentacion").val();
 
       // --- FUNCIONES CORE ---
       function mostrarAviso(mensaje) {
@@ -553,7 +553,7 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
         }
       }
 
-      $('#tipo').on('change', function() {
+      $('#presentacion').on('change', function() {
         actualizarUnidades($(this).val());
       });
 
@@ -581,9 +581,9 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
           $('#group_nombre').addClass('has-error');
         }
 
-        if ($('#tipo').val().trim() === "") {
-          errores.push("Falta el tipo de medicamento.");
-          $('#group_tipo').addClass('has-error');
+        if ($('#presentacion').val().trim() === "") {
+          errores.push("Falta la presentacion del medicamento.");
+          $('#group_presentacion').addClass('has-error');
         }
 
         // Validación de los principios activos (revisando el campo oculto que llena el modal)
@@ -602,9 +602,9 @@ $valor_hidden = !empty($datos_hidden) ? implode('|', $datos_hidden) : '';
           $('#group_tipo_unidad').addClass('has-error');
         }
 
-        if ($('#presentacion').val().trim() === "") {
-          errores.push("Falta la presentacion del medicamento.");
-          $('#group_presentacion').addClass('has-error');
+        if ($('#contenido_neto').val().trim() === "") {
+          errores.push("Falta el contenido neto del medicamento.");
+          $('#group_contenido_neto').addClass('has-error');
         }
 
         if ($('#via_aplicacion').val().trim() === "") {

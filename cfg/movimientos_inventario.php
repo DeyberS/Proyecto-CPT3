@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($esEntrada) {
 
             $lote_nombre = trim($_POST['lote']);
+            $proveedor = trim($_POST['proveedor']);
             $f_fab = $_POST['fecha_fabricacion'];
             $f_ven = $_POST['fecha_vencimiento'];
 
@@ -78,11 +79,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $sql = "
                     INSERT INTO lotes_medicamentos
-                    (Id_descripcion_medicamento,Lote,fecha_fabricacion,fecha_vencimiento,estado_lote)
-                    VALUES (?,?,?,?,1)";
+                    (Id_descripcion_medicamento,Id_proveedor,Lote,fecha_fabricacion,fecha_vencimiento,estado_lote)
+                    VALUES (?,?,?,?,?,1)";
 
                 $stmt = $conexion->prepare($sql);
-                $stmt->bind_param("isss",$id_desc,$lote_nombre,$f_fab,$f_ven);
+                $stmt->bind_param("iisss",$id_desc,$proveedor,$lote_nombre,$f_fab,$f_ven);
                 $stmt->execute();
 
                 $id_lote = $conexion->insert_id;
@@ -138,8 +139,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             /* =====================================================
-   ================= VALIDACIÓN DETALLADA ============
-======================================================*/
+            ================= VALIDACIÓN DETALLADA ============
+            ======================================================*/
             // 1. Verificamos si el lote existe por sí solo
             $sql_test = "SELECT Id_descripcion_medicamento, estatus FROM lotes_medicamentos WHERE Id = ?";
             $stmt_t = $conexion->prepare($sql_test);
@@ -204,13 +205,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             : $stk_previo - $cantidad;
 
         /* =====================================================
-           ================= CABECERA ==========================
+        ================= CABECERA UNIFICADA ================
         ======================================================*/
 
-        /* =====================================================
-   ================= CABECERA UNIFICADA ================
-======================================================*/
-        // Capturamos el ID de prescripción: si está vacío o es 0, enviamos NULL
         $id_prescripcion_final = (!empty($_POST['id_prescripcion'])) ? intval($_POST['id_prescripcion']) : null;
 
         $obs_final = $_POST['observaciones'] ?? '';
@@ -225,15 +222,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $obs_final .= " | Médico: $med | Paciente: $pac $pac_tce $ce  | Receta Ext: $num";
         }
 
+        $foto_base64 = $_POST['foto_base64'] ?? '';
+        $nombre_archivo_final = null;
+
+        if (!empty($foto_base64)) {
+            if (preg_match('/^data:image\/(\w+);base64,/', $foto_base64, $type)) {
+                $data = substr($foto_base64, strpos($foto_base64, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+
+                $nombre_archivo_final = "comp_" . time() . "_" . uniqid() . "." . $type;
+                $ruta_carpeta = "../recursos/comprobantes/";
+
+                if (!is_dir($ruta_carpeta)) {
+                    mkdir($ruta_carpeta, 0777, true);
+                }
+
+                file_put_contents($ruta_carpeta . $nombre_archivo_final, $data);
+            }
+        }
+
+        // 1. Preparamos el SQL
         $sql = "INSERT INTO detalle_inventario 
-        (Id_TipoMovimiento, Id_Persona, fecha, observaciones, Id_prescripcion) 
-        VALUES (?, ?, NOW(), ?, ?)";
+        (Id_TipoMovimiento, Id_Persona, fecha, observaciones, Id_prescripcion, comprobante) 
+        VALUES (?, ?, NOW(), ?, ?, ?)";
 
         $stmt = $conexion->prepare($sql);
-        // Usamos "iisi": el último parámetro 'i' acepta NULL si la variable es null
-        $stmt->bind_param("iisi", $tipo_mov, $id_usuario, $obs_final, $id_prescripcion_final);
-        $stmt->execute();
 
+        // 2. Vinculamos parámetros
+        $stmt->bind_param(
+            "iisis",
+            $tipo_mov,
+            $id_usuario,
+            $obs_final,
+            $id_prescripcion_final,
+            $nombre_archivo_final
+        );
+
+        // 3. ¡IMPORTANTE! Ejecutar la sentencia antes de pedir el ID
+        if (!$stmt->execute()) {
+            throw new Exception("Error al insertar en detalle_inventario: " . $stmt->error);
+        }
+
+        // 4. Ahora sí obtenemos el ID generado
         $id_mov = $conexion->insert_id;
 
 

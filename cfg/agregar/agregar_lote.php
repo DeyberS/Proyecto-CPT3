@@ -7,6 +7,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fecha_fabricacion = trim($_POST['fecha_fabricacion']);
     $fecha_vencimiento = trim($_POST['fecha_vencimiento']);
     $medicamento = trim($_POST['medicamento']);
+    $proveedor = trim($_POST['proveedor']);
 
     // Iniciar Transacción para asegurar integridad
     $conexion->begin_transaction();
@@ -17,8 +18,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // Insertar en tabla departamento (estatus 1 = Activo)
-        $stmt_lote = $conexion->prepare("INSERT INTO lotes_medicamentos (Id_descripcion_medicamento, Lote, fecha_fabricacion, fecha_vencimiento, estado_lote, estatus) VALUES (?, ?, ?, ?, 'Disponible', '1')");
-        $stmt_lote->bind_param("isss", $medicamento, $nombre, $fecha_fabricacion, $fecha_vencimiento);        
+        $stmt_lote = $conexion->prepare("INSERT INTO lotes_medicamentos (Id_descripcion_medicamento, Id_proveedor, Lote, fecha_fabricacion, fecha_vencimiento, estado_lote, estatus) VALUES (?, ?, ?, ?, ?, 'Disponible', '1')");
+        $stmt_lote->bind_param("iisss", $medicamento, $proveedor, $nombre, $fecha_fabricacion, $fecha_vencimiento);        
         
         if (!$stmt_lote->execute()) {
             throw new Exception("Error interno al registrar el área.");

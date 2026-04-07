@@ -138,6 +138,7 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                         m.Id_medicamento,
                         dm.Id AS id_desc,
                         m.nombre_medicamento,
+                        l.Id_proveedor,
                         l.Lote,
                         l.fecha_fabricacion,
                         l.fecha_vencimiento,
@@ -170,11 +171,11 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                           <?php
                           $sql_meds = "SELECT dm.Id AS id_desc, 
                           m.nombre_medicamento,
-                          tp.nombre_tipo,
+                          p.nombre_presentacion,
                           GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes 
                           FROM descripcion_medicamento dm 
                           INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
-                          INNER JOIN tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo
+                          INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
                           INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
                           INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
                           INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
@@ -184,7 +185,7 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                           while ($m = $res_meds->fetch_assoc()) {
                             $selected = ($m['id_desc'] == $row['id_desc']) ? 'selected' : '';
                             echo '<option value="' . $m['id_desc'] . '" ' . $selected . '>' 
-                            . htmlspecialchars($m['nombre_medicamento']) . ' (' . htmlspecialchars($m['componentes']) . ') - ' . '[' . htmlspecialchars($m['nombre_tipo']) . ']' . '</option>';
+                            . htmlspecialchars($m['nombre_medicamento']) . ' (' . htmlspecialchars($m['componentes']) . ') - ' . '[' . htmlspecialchars($m['nombre_presentacion']) . ']' . '</option>';
                           }
                           ?>
                         </select>
@@ -212,9 +213,27 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
                     <br><br><br><br>
 
-                    <div class="col-sm-4">
-                      <label>Existencia (Actual):</label>
-                      <input type="text" id="existencia_actual" class="form-control" value="<?php echo $row['existencia'] ?>" readonly readonly>
+                    <div class="col-sm-4 form-group" id="group_proveedor">
+                      <label>Proveedor (*):</label>
+                      <select id="proveedor" name="proveedor" class="form-control" required>
+                        <option value="">--- Seleccione un proveedor ---</option>
+                        <?php
+                        include("../../cfg/conexion.php");
+                        $sql_proveedor = "SELECT Id_proveedor, nombre_proveedor FROM proveedor ORDER BY nombre_proveedor ASC";
+                        $resultado_proveedor = $conexion->query($sql_proveedor);
+
+                        if ($resultado_proveedor && $resultado_proveedor->num_rows > 0) {
+                          while ($row_pro = $resultado_proveedor->fetch_assoc()) {
+                            // Ahora $row['Id_proveedor'] sí tendrá el valor de la base de datos
+                            $selected = ($row_pro['Id_proveedor'] == $row['Id_proveedor']) ? 'selected' : '';
+
+                            echo '<option value="' . $row_pro['Id_proveedor'] . '" ' . $selected . '>'
+                              . htmlspecialchars($row_pro['nombre_proveedor']) .
+                              '</option>';
+                          }
+                        }
+                        ?>
+                      </select>
                     </div>
 
                     <div class="col-sm-4">
@@ -238,6 +257,12 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                       <label>F. Vencimiento (*):</label>
                       <input type="date" id="fecha_vencimiento" name="fecha_vencimiento" class="form-control" value="<?= $row['fecha_vencimiento'] ?>" required readonly>
                     </div>
+
+                    <div class="col-sm-4">
+                      <label>Existencia (Actual):</label>
+                      <input type="text" id="existencia_actual" class="form-control" value="<?php echo $row['existencia'] ?>" readonly readonly>
+                    </div>
+
                     <div class="col-sm-4">
                       <label>Unidades a ingresar (*):</label>
                       <input type="text" id="cantidad" name="cantidad" class="form-control" inputmode="numeric" value="<?= $row['cantidad'] ?>" required>
@@ -245,6 +270,8 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
                     <div class="col-sm-1">
                     </div>
+
+                    <br><br><br><br>
 
                     <div class="col-sm-4">
                       <label>Observaciones:</label>
@@ -289,16 +316,16 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_tipo">Tipo:</label>
-                  <select id="filtro_tipo" name="filtro_tipo" class="form-control">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
                     <option value="">-- Todos --</option>
                     <?php
                     // Cargar tipos de medicamento dinámicamente
                     include("../../cfg/conexion.php"); // Asegura la conexión
-                    $sql_tipos = "SELECT Id_tipo, nombre_tipo FROM tipo_medicamento WHERE estatus = 1 ORDER BY nombre_tipo DESC";
+                    $sql_tipos = "SELECT Id_presentacion, nombre_presentacion FROM presentacion WHERE estatus = 1 ORDER BY nombre_presentacion DESC";
                     $res_tipos = $conexion->query($sql_tipos);
                     while ($row_t = $res_tipos->fetch_assoc()) {
-                      echo '<option value="' . $row_t['Id_tipo'] . '">' . $row_t['nombre_tipo'] . '</option>';
+                      echo '<option value="' . $row_t['Id_presentacion'] . '">' . $row_t['nombre_presentacion'] . '</option>';
                     }
                     ?>
                   </select>
@@ -315,8 +342,8 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_presentacion">Presentación:</label>
-                  <input type="text" id="filtro_presentacion" name="filtro_presentacion" class="form-control" placeholder="Ej: 20 Capsulas">
+                  <label for="filtro_contenido_neto">Contenido neto:</label>
+                  <input type="text" id="filtro_contenido_neto" name="filtro_contenido_neto" class="form-control" placeholder="Ej: 20 Capsulas">
                 </div>
               </div>
               <div class="col-md-4">
@@ -375,8 +402,8 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_composicion">Composición (contiene):</label>
-                  <input type="text" id="filtro_composicion" name="filtro_composicion" class="form-control" placeholder="Escriba texto de composición...">
+                  <label for="filtro_excipientes">Excipientes (contiene):</label>
+                  <input type="text" id="filtro_excipientes" name="filtro_excipientes" class="form-control" placeholder="Escriba texto de excipientes...">
                 </div>
               </div>
               <div class="col-md-4">
@@ -619,7 +646,8 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
             url: '../../cfg/ajax/obtener_descripcion_medicamento.php',
             type: 'POST',
             data: {
-              id: medicamentoId
+              id: medicamentoId,
+              modo: 'entrada'
             },
             dataType: 'json',
             success: function(data) {

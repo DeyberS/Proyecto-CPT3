@@ -7,8 +7,10 @@ if (!isset($_POST['busqueda']) || empty(trim($_POST['busqueda']))) {
 }
 
 $busqueda = mysqli_real_escape_string($conexion, $_POST['busqueda']);
+$tipo_cedula = isset($_POST['tipo_cedula']) ? mysqli_real_escape_string($conexion, $_POST['tipo_cedula']) : '';
 $id_medicamento = isset($_POST['id_medicamento']) ? mysqli_real_escape_string($conexion, $_POST['id_medicamento']) : '';
 $es_menor = isset($_POST['es_menor']) && ($_POST['es_menor'] == 1 || $_POST['es_menor'] == '1' || $_POST['es_menor'] === 'true');
+$metodo = isset($_POST['metodo']) ? mysqli_real_escape_string($conexion, $_POST['metodo']) : '';
 
 
 
@@ -16,8 +18,8 @@ $es_menor = isset($_POST['es_menor']) && ($_POST['es_menor'] == 1 || $_POST['es_
 // Base de la consulta
 $sql = "SELECT 
             pm.Id AS id_prescripcion_medicamento,
-            pm.dosis,
             c.fecha_consulta,
+            per.tipo_cedula AS tipo_cedula_paciente,
             per.cedula AS cedula_paciente,
             per.nombre AS nombre_paciente,
             per.apellido AS apellido_paciente,
@@ -25,7 +27,7 @@ $sql = "SELECT
 
 if ($es_menor) {
     // FILTRO ESTRICTO: Solo menores de 18 años
-    $sql .= ", rep.nombre AS nombre_rep, rep.apellido AS apellido_rep, rep.cedula AS cedula_rep 
+    $sql .= ", rep.nombre AS nombre_rep, rep.apellido AS apellido_rep, rep.tipo_cedula AS tipo_cedula_rep, rep.cedula AS cedula_rep 
              FROM prescripcion_medicamentos pm
              INNER JOIN consulta c ON pm.Id_consulta = c.Id_consulta
              INNER JOIN persona per ON c.Id_paciente = per.id
@@ -49,15 +51,19 @@ if (!empty($id_medicamento)) {
 
 // Filtro de búsqueda
 if ($es_menor) {
-    // Si es menor, buscamos por los datos del REPRESENTANTE (alias 'rep')
-    $sql .= " AND (rep.cedula LIKE '%$busqueda%' 
-               OR rep.nombre LIKE '%$busqueda%' 
-               OR rep.apellido LIKE '%$busqueda%') ";
+    if ($metodo === 'cedula') {
+        // Solo filtramos por tipo_cedula si el método es cédula
+        $sql .= " AND rep.cedula LIKE '%$busqueda%' AND rep.tipo_cedula = '$tipo_cedula'";
+    } else {
+        $sql .= " AND (rep.nombre LIKE '%$busqueda%' OR rep.apellido LIKE '%$busqueda%')";
+    }
 } else {
-    // Si es adulto, buscamos por los datos del PACIENTE (alias 'per')
-    $sql .= " AND (per.cedula LIKE '%$busqueda%' 
-               OR per.nombre LIKE '%$busqueda%' 
-               OR per.apellido LIKE '%$busqueda%') ";
+    if ($metodo === 'cedula') {
+        // Solo filtramos por tipo_cedula si el método es cédula
+        $sql .= " AND per.cedula LIKE '%$busqueda%' AND per.tipo_cedula = '$tipo_cedula'";
+    } else {
+        $sql .= " AND (per.nombre LIKE '%$busqueda%' OR per.apellido LIKE '%$busqueda%')";
+    }
 }
 
 $sql .= " ORDER BY c.fecha_consulta DESC LIMIT 15";
@@ -65,20 +71,25 @@ $sql .= " ORDER BY c.fecha_consulta DESC LIMIT 15";
 $resultado = mysqli_query($conexion, $sql);
 
 if ($resultado && mysqli_num_rows($resultado) > 0) {
-    echo '<option value="">-- Seleccione la Prescripción --</option>';
+    echo '<option value="">-- Seleccione una prescripción --</option>';
     while ($fila = mysqli_fetch_assoc($resultado)) {
         $paciente_completo = "{$fila['nombre_paciente']} {$fila['apellido_paciente']}";
         $rep_completo = isset($fila['nombre_rep']) ? "{$fila['nombre_rep']} {$fila['apellido_rep']}" : "";
-        $rep_cedula = $fila['cedula_rep'] ?? "";
+        $tipo_ced_p = $fila['tipo_cedula_paciente'] ?? '';
+        $ced_p      = $fila['cedula_paciente'] ?? '';
+        $tipo_ced_r = $fila['tipo_cedula_rep'] ?? '';
+        $ced_r      = $fila['cedula_rep'] ?? '';
     
         echo "<option value='{$fila['id_prescripcion_medicamento']}' 
                 data-cantidad='".htmlspecialchars($fila['dosis'])."'
                 data-paciente='{$paciente_completo}'
-                data-cedula-p='{$fila['cedula_paciente']}'
+                data-tipo-cedula-p='{$tipo_ced_p}'
+                data-cedula-p='{$ced_p}'
                 data-representante='{$rep_completo}'
-                data-cedula-r='{$rep_cedula}'>";
+                data-tipo-cedula-r='{$tipo_ced_r}'
+                data-cedula-r='{$ced_r}'>";
         
-        echo "CI: {$fila['cedula_paciente']} | {$paciente_completo} | Edad: {$fila['edad']} años";
+        echo "{$tipo_ced_p}-{$fila['cedula_paciente']} - {$paciente_completo} - Edad: {$fila['edad']} años";
         echo "</option>";
     }
 } else {

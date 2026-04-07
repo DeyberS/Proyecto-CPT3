@@ -9,13 +9,13 @@ if (isset($conexion)) {
     $sql = "SELECT 
                 dm.Id AS Id_descripcion, 
                 m.nombre_medicamento, 
-                dm.presentacion AS presentacion_comercial,
+                dm.contenido_neto,
                 dm.via_aplicacion,
-                tm.nombre_tipo,
+                p.nombre_presentacion,
                 GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
             FROM descripcion_medicamento dm
             INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-            LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+            LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
             LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
             LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
             LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo

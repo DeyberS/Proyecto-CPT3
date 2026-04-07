@@ -17,6 +17,7 @@ try {
     if ($op == 'editar_entrada') {
         // 1. Capturar datos del formulario
         $id_desc = $_POST['Id_descripcion_medicamento'];
+        $proveedor = $_POST['proveedor'];
         $lote_nombre = $_POST['lote'];
         $cantidad_nueva = intval($_POST['cantidad']);
         $f_fab = $_POST['fecha_fabricacion'];
@@ -39,8 +40,8 @@ try {
         $cantidad_anterior = $datos_ant['cantidad'];
 
         // 3. ACTUALIZAR TABLA DE LOTES
-        $stmt1 = $conexion->prepare("UPDATE lotes_medicamentos SET Lote = ?, fecha_fabricacion = ?, fecha_vencimiento = ? WHERE Id = ?");
-        $stmt1->bind_param("sssi", $lote_nombre, $f_fab, $f_ven, $id_lote);
+        $stmt1 = $conexion->prepare("UPDATE lotes_medicamentos SET Id_proveedor = ?, Lote = ?, fecha_fabricacion = ?, fecha_vencimiento = ? WHERE Id = ?");
+        $stmt1->bind_param("isssi", $proveedor, $lote_nombre, $f_fab, $f_ven, $id_lote);
         $stmt1->execute();
 
         // 4. ACTUALIZAR CABECERA (Observaciones)

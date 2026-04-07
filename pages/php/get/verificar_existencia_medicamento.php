@@ -1,49 +1,43 @@
 <?php
-// ARCHIVO: cfg/verificar_existencia_patologia.php
-
-// 1. Incluir archivo de conexión (AJUSTA LA RUTA SEGÚN TU PROYECTO)
 require '../../../cfg/conexion.php'; 
-// Asegúrate de que $conexion es la variable de tu conexión mysqli
-
-// 2. Configurar cabecera JSON
 header('Content-Type: application/json');
 
-$response = [
-    'existe_nombre' => false,
-    'error' => false,
-    'mensaje' => ''
-];
+$response = ['existe_duplicado' => false, 'tipo_error' => '', 'error' => false];
 
-// Validar que lleguen los datos
-if (isset($_POST['nombre'])) {
-    
+if (isset($_POST['nombre'], $_POST['id_presentacion'], $_POST['codigo_barras'])) {
     $nombre = trim($_POST['nombre']);
+    $id_presentacion = (int)$_POST['id_presentacion'];
+    $codigo_barras = trim($_POST['codigo_barras']);
 
     try {
-        // --- A. VERIFICAR NOMBRE (Insensible a mayúsculas/minúsculas) ---
-        $sql_nombre = "SELECT Id_medicamento FROM medicamento WHERE LOWER(nombre_medicamento) = LOWER(?) LIMIT 1";
+        // Buscamos si existe el mismo medicamento+presentación O si el código ya está en uso
+        $sql = "SELECT m.nombre_medicamento, d.codigo_barras 
+                FROM descripcion_medicamento d
+                JOIN medicamento m ON d.Id_medicamento = m.Id_medicamento
+                WHERE (LOWER(m.nombre_medicamento) = LOWER(?) AND d.Id_presentacion = ?)
+                OR (d.codigo_barras = ? AND d.codigo_barras != '') 
+                LIMIT 1";
         
-        if ($stmt = $conexion->prepare($sql_nombre)) {
-            $stmt->bind_param("s", $nombre);
-            $stmt->execute();
-            $stmt->store_result();
+        $stmt = $conexion->prepare($sql);
+        $stmt->bind_param("sis", $nombre, $id_presentacion, $codigo_barras);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($fila = $result->fetch_assoc()) {
+            $response['existe_duplicado'] = true;
             
-            if ($stmt->num_rows > 0) {
-                $response['existe_nombre'] = true;
+            // Identificamos qué causó el conflicto
+            if ($fila['codigo_barras'] === $codigo_barras && $codigo_barras !== '') {
+                $response['tipo_error'] = 'codigo';
+                $response['detalle'] = $fila['nombre_medicamento']; // Para decir a quién pertenece el código
+            } else {
+                $response['tipo_error'] = 'medicamento';
             }
-            $stmt->close();
-        } else {
-            throw new Exception("Error al preparar consulta de nombre.");
         }
+        $stmt->close();
 
     } catch (Exception $e) {
         $response['error'] = true;
-        $response['mensaje'] = $e->getMessage();
     }
-} else {
-    $response['error'] = true;
-    $response['mensaje'] = "Datos incompletos.";
 }
-
 echo json_encode($response);
-?>

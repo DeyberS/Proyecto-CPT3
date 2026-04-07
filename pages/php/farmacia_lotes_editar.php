@@ -46,7 +46,9 @@
       }
     }
 
-    .modal.in .modal-dialog, #avisoModal, #modalGuardar {
+    .modal.in .modal-dialog,
+    #avisoModal,
+    #modalGuardar {
       animation: fadeIn 0.4s ease-out;
     }
 
@@ -109,7 +111,7 @@
             <ul class="nav nav-tabs">
               <li class="active"><a href="#tab_1" data-toggle="tab">Informacion del Lote</a></li>
             </ul>
-            <div class="tab-content" style="padding-bottom:10%;">
+            <div class="tab-content" style="padding-bottom:11%;">
               <div class="tab-pane active" id="tab_1">
                 <div class="box-body">
                   <form action="../../cfg/editar/editar_lote.php" id="formularioLote" class="form-group" method="POST" novalidate>
@@ -117,7 +119,7 @@
                     include("../../cfg/conexion.php");
                     // 1. Cargar datos de la patología a editar
                     $lotes_id = $_GET['Id'] ?? 0;
-                    $sql = "SELECT lm.Id AS Id_lote, m.nombre_medicamento AS medicamento, m.Id_medicamento AS Id_medicamento, 
+                    $sql = "SELECT lm.Id AS Id_lote, lm.Id_proveedor, m.nombre_medicamento AS medicamento, m.Id_medicamento AS Id_medicamento, 
                     lm.Lote AS nombre_lote, lm.fecha_fabricacion, lm.fecha_vencimiento, 
                     ex.cantidad_actual AS existencia, lm.estado_lote
                     FROM lotes_medicamentos lm
@@ -132,24 +134,24 @@
                     <input type="hidden" name="Id" value="<?= $row['Id_lote']; ?>">
 
                     <div class="col-sm-4 form-group" id="group_nombre">
-                      <label>Nombre del lote (*):</label>
-                      <input type="text" class="form-control" name="nombre_lote" id="nombre_lote" value="<?php echo $row['nombre_lote']?>" required>
+                      <p>Nombre del lote (*):</p>
+                      <input type="text" class="form-control" name="nombre_lote" id="nombre_lote" value="<?php echo $row['nombre_lote'] ?>" required>
                     </div>
 
                     <div class="col-sm-4 form-group" id="group_fabricacion">
-                      <label>F. Fabricacion (*):</label>
-                      <input type="date" class="form-control" id="fecha_fabricacion" name="fecha_fabricacion" value="<?php echo $row['fecha_fabricacion']?>" required>
+                      <p>F. Fabricacion (*):</p>
+                      <input type="date" class="form-control" id="fecha_fabricacion" name="fecha_fabricacion" value="<?php echo $row['fecha_fabricacion'] ?>" required>
                     </div>
 
                     <div class="col-sm-4 form-group" id="group_vencimiento">
-                      <label>F. Vencimiento (*):</label>
-                      <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" value="<?php echo $row['fecha_vencimiento']?>" required>
+                      <p>F. Vencimiento (*):</p>
+                      <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" value="<?php echo $row['fecha_vencimiento'] ?>" required>
                     </div>
 
                     <br><br><br><br><br>
 
                     <div class="col-sm-4">
-                      <label>Estado del Lote (*):</label>
+                      <p>Estado del Lote (*):</p>
                       <select name="estado_lote" id="estado_lote" class="form-control">
                         <option value="Disponible" <?php echo ($row['estado_lote'] == 'Disponible' ? 'selected' : ''); ?>>Disponible</option>
                         <option value="Cuarentena" <?php echo ($row['estado_lote'] == 'Cuarentena' ? 'selected' : ''); ?>>Cuarentena</option>
@@ -160,9 +162,9 @@
                     </div>
 
                     <div class="col-sm-4 form-group" id="group_medicamento">
-                      <label>Medicamento (*):</label>
+                      <p>Medicamento (*):</p>
                       <select id="medicamento" name="medicamento" class="form-control" required>
-                        <option value="">--- Seleccione un Medicamento ---</option>
+                        <option value="">--- Seleccione un medicamento ---</option>
                         <?php
                         // 2. Cargar Medicamentos
                         include("../../cfg/conexion.php");
@@ -186,9 +188,32 @@
                       </select>
                     </div>
 
+                    <div class="col-sm-4 form-group" id="group_proveedor">
+                      <p>Proveedor (*):</p>
+                      <select id="proveedor" name="proveedor" class="form-control" required>
+                        <option value="">--- Seleccione un proveedor ---</option>
+                        <?php
+                        include("../../cfg/conexion.php");
+                        $sql_proveedor = "SELECT Id_proveedor, nombre_proveedor FROM proveedor ORDER BY nombre_proveedor ASC";
+                        $resultado_proveedor = $conexion->query($sql_proveedor);
+
+                        if ($resultado_proveedor && $resultado_proveedor->num_rows > 0) {
+                          while ($row_pro = $resultado_proveedor->fetch_assoc()) {
+                            // Ahora $row['Id_proveedor'] sí tendrá el valor de la base de datos
+                            $selected = ($row_pro['Id_proveedor'] == $row['Id_proveedor']) ? 'selected' : '';
+
+                            echo '<option value="' . $row_pro['Id_proveedor'] . '" ' . $selected . '>'
+                              . htmlspecialchars($row_pro['nombre_proveedor']) .
+                              '</option>';
+                          }
+                        }
+                        ?>
+                      </select>
+                    </div>
+
                     <div class="col-sm-4 form-group" id="group_existencia">
                       <label>Existencia (Actual):</label>
-                      <input type="text" class="form-control" id="existencia_actual" name="existencia_actual" value="<?php echo $row['existencia']?>" disabled>
+                      <input type="text" class="form-control" id="existencia_actual" name="existencia_actual" value="<?php echo $row['existencia'] ?>" disabled>
                     </div>
 
                     <br>

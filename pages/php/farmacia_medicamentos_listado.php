@@ -105,12 +105,12 @@
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Medicamento</th>
-            <th>Tipo</th>
             <th>Presentación</th>
-            <th>Via de Aplicacion</th>
-            <th>Codigo de Barras</th> 
+            <th>Contenido N.</th>
+            <th>Via de Aplicación</th>
+            <th>Código de Barras</th>
             <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
-            <th>Acciones</th>
+              <th>Acciones</th>
             <?php endif; ?>
           </thead>
           <tbody class="tbody" width="100%" style="font-size: 12px;">
@@ -125,8 +125,8 @@
               // 1. Definir el filtro base
               $donde = "WHERE m.estatus = 1";
               if ($busqueda != '') {
-                  $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' 
-                              OR tp.nombre_tipo LIKE '%$busqueda%' 
+                $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' 
+                              OR p.nombre_presentacion LIKE '%$busqueda%' 
                               OR dm.via_aplicacion LIKE '%$busqueda%')";
               }
 
@@ -134,7 +134,7 @@
               $sql_conteo = "SELECT COUNT(*) as total 
                             FROM medicamento m
                             JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                            JOIN tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo
+                            JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
                             $donde";
               $resultado_conteo = mysqli_query($conexion, $sql_conteo);
               $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
@@ -145,10 +145,10 @@
                         m.Id_medicamento AS Id_medicamento,
                         m.nombre_medicamento,
                         dm.Id, 
-                        dm.Id_tipo,
-                        dm.presentacion, 
+                        dm.Id_presentacion,
+                        dm.contenido_neto, 
                         dm.via_aplicacion,
-                        tp.nombre_tipo,
+                        p.nombre_presentacion,
                         dm.codigo_barras,
                         GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
                         m.estatus
@@ -157,14 +157,16 @@
                     JOIN 
                         descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
                     INNER JOIN 
-                        tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo     
+                        presentacion p ON dm.Id_presentacion = p.Id_presentacion     
                     INNER JOIN 
                         detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
                     INNER JOIN 
                         unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
                     INNER JOIN 
                         principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
-                    $donde    
+                    $donde  
+                    GROUP BY 
+                        m.Id_medicamento  
                     ORDER BY 
                         m.Id_medicamento ASC
                     LIMIT $inicio, $registros_por_pagina";
@@ -176,18 +178,21 @@
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_medicamento']; ?> (<?= $row['componentes']; ?>)</span></td>
-              <td class=""><span class="text-row text-white"><?= $row['nombre_tipo']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['presentacion']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['via_aplicacion']; ?></span></td>     
+              <td class=""><span class="text-row text-white"><?= $row['nombre_presentacion']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['contenido_neto']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['via_aplicacion']; ?></span></td>
               <td class=""><span class="text-row text-white"><?= $row['codigo_barras']; ?></span></td>
               <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
                 <td>
+                  <?php if (in_array('Crear Medicamentos', $_SESSION["permisos"])) : ?>
+                    <a href="farmacia_medicamentos_agregar.php?duplicar_id=<?php echo $row['Id'] ?>" class="btn-sm btn-primary" title="Duplicar medicamento" style="background-color: #605ca8; border-color: #605ca8;"><img src="../../recursos/imagenes/iconos/Importar.png" style="width:15px; height:15px;"></a>
+                  <?php endif; ?>
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
                     <a href="farmacia_medicamentos_info.php?Id=<?php echo $row['Id'] ?>" class="btn-sm btn-info" title="Ver"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
                   <?php if (in_array('Editar Medicamentos', $_SESSION["permisos"])) : ?>
                     <a href="farmacia_medicamentos_editar.php?Id=<?php echo $row['Id'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
-                  <?php endif; ?>      
+                  <?php endif; ?>
                   <?php if (in_array('Desactivar Medicamentos', $_SESSION["permisos"])) : ?>
                     <a href="#" data-id="<?php echo $row['Id_medicamento'] ?>" class="btn-sm btn-danger btn-desactivar" title="Desactivar"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>

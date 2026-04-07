@@ -170,7 +170,7 @@
                 m.Id_medicamento, 
                 m.nombre_medicamento,
                 p.nombre,
-                tdm.nombre_tipo,
+                tdm.nombre_presentacion,
                 GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
                 l.Lote,
                 tm.nombre as tipo_nom,
@@ -185,7 +185,7 @@
             INNER JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
             INNER JOIN descripcion_medicamento dm ON l.Id_descripcion_medicamento = dm.Id
             INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-            INNER JOIN tipo_medicamento tdm ON dm.Id_tipo = tdm.Id_tipo
+            INNER JOIN presentacion tdm ON dm.Id_presentacion = tdm.Id_presentacion
             INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
             INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
             INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo

@@ -14,16 +14,16 @@ $query_patologias = $conexion->query("SELECT Id_patologia, nombre_patologia, cod
 $sql_medicamentos = "SELECT 
     dm.Id, 
     m.nombre_medicamento, 
-    dm.presentacion, 
+    dm.contenido_neto, 
     dm.via_aplicacion,
     dpm.cantidad_unidad_medida, 
     um.unidad,
-    tm.nombre_tipo
+    p.nombre_presentacion
 FROM descripcion_medicamento dm
 INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
 LEFT JOIN detalle_principio_medicamento dpm ON m.Id_medicamento = dpm.id_medicamento
 LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
 WHERE dm.estatus = 1 
 ORDER BY m.nombre_medicamento ASC";
 
@@ -557,6 +557,7 @@ if (!empty($cedula) && isset($conexion)) {
                           <div class="col-md-6">
                             <label><b>Parentesco/Relación:</b></label>
                             <select name="parentesco_representante" id="parentesco_representante" class="form-control">
+                              <option selected value="">Ninguno</option>
                               <option value="Padre">Padre</option>
                               <option value="Madre">Madre</option>
                               <option value="Abuelo/a">Abuelo/a</option>
@@ -622,7 +623,7 @@ if (!empty($cedula) && isset($conexion)) {
                   <select id="selectMedicamentos" class="form-control select2" style="width: 100%;">
                     <option value="">Seleccione un medicamento...</option>
                     <?php while ($row = $query_medicamentos->fetch_assoc()) : ?>
-                      <option value="<?php echo $row['Id']; ?>" data-nombre="<?php echo $row['nombre_medicamento']; ?>" data-via="<?php echo $row['via_aplicacion']; ?>" data-presentacion="<?php echo $row['presentacion']; ?>" data-tipo="<?php echo $row['nombre_tipo']; ?>">
+                      <option value="<?php echo $row['Id']; ?>" data-nombre="<?php echo $row['nombre_medicamento']; ?>" data-via="<?php echo $row['via_aplicacion']; ?>" data-contenido="<?php echo $row['contenido_neto']; ?>" data-presentacion="<?php echo $row['nombre_presentacion']; ?>">
                         <?php echo $row['nombre_medicamento'] . " (" . $row['cantidad_unidad_medida'] . " " . $row['unidad'] . ")"; ?>
                       </option>
                     <?php endwhile; ?>
@@ -1611,15 +1612,15 @@ if (!empty($cedula) && isset($conexion)) {
         if (response.success && response.data.length > 0) {
           response.data.forEach(med => {
             // El texto que verá el médico
-            let textoMostrar = med.nombre_medicamento + " (" + (med.nombre_tipo || 'N/A') + ")";
+            let textoMostrar = med.nombre_medicamento + " (" + (med.componentes || 'N/A') + " )" + " [" + (med.nombre_presentacion || 'N/A') + " ]";
 
             // El value debe ser Id_descripcion (el ID de la tabla descripcion_medicamento)
             $select.append(`
             <option value="${med.Id_descripcion}" 
                     data-nombre="${med.nombre_medicamento}" 
                     data-via="${med.via_aplicacion || 'No definida'}"
-                    data-presentacion="${med.presentacion_comercial || 'No definida'}"
-                    data-nombre_tipo="${med.nombre_tipo || 'No definida'}"
+                    data-contenido="${med.contenido_neto || 'No definida'}"
+                    data-presentacion="${med.nombre_presentacion || 'No definida'}"
                     data-componentes="${med.componentes || 'Sin componentes'}">
                 ${textoMostrar}
             </option>`);
@@ -1690,8 +1691,8 @@ if (!empty($cedula) && isset($conexion)) {
     const medObj = {
       id: idMedicamento,
       nombre: nombreMedicamento,
-      detalles: selected.data('via') + " - " + selected.data('presentacion'),
-      tipo: selected.data('nombre_tipo')
+      detalles: selected.data('via') + " - " + selected.data('contenido'),
+      tipo: selected.data('presentacion')
     };
 
     medicamentosSeleccionados.push(medObj);

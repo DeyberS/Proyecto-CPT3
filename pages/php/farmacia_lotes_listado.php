@@ -164,9 +164,9 @@
                 $estatus = $row['estado_lote'];
                 $clase_badge = 'bg-gray'; // Default
 
-                if ($estatus == 'Cuarentena') $clase_badge = 'label-warning';
-                if ($estatus == 'Disponible') $clase_badge = 'label-success';
-                if ($estatus == 'Dañado') $clase_badge = 'label-danger';
+                if ($estatus == 'Cuarentena') $clase_badge = 'bg-yellow';
+                if ($estatus == 'Disponible') $clase_badge = 'bg-green';
+                if ($estatus == 'Dañado') $clase_badge = 'bg-crimson';
                 if ($estatus == 'Vencido') $clase_badge = 'label-default';
                 if ($estatus == 'Retirado') $clase_badge = 'label-default';
 
@@ -178,7 +178,7 @@
               <td class=""><span class="text-row text-white"><?= date('d/m/Y', strtotime($row['fecha_vencimiento'])); ?></span></td>
               <td class=""><span class="text-row text-white"><?= $row['medicamento']; ?></span></td>
               <td class=""><span class="text-row text-white"><?= $row['cantidad_actual']; ?></span></td>
-              <td class=""><span class="label <?= $clase_badge; ?>" style="font-size:11px;"><?= strtoupper($estatus); ?></span></td>
+              <td class=""><span class="badge <?= $clase_badge; ?>" style="font-size:11px;"><?= strtoupper($estatus); ?></span></td>
               <?php if (in_array('Gestionar acciones de lotes', $_SESSION["permisos"])) : ?>
                 <td>
                   <?php if (in_array('Editar Lotes', $_SESSION["permisos"])) : ?>

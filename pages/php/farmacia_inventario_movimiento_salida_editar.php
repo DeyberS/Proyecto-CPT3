@@ -165,9 +165,9 @@ if (strpos($observacion_db, 'Récipe Externo |') !== false) {
 
             <div class="tab-content">
               <div class="tab-pane active" id="tab_1" style="padding:10px;">
-                <form id="formularioSalida" method="POST" action="../../cfg/movimientos_inventario.php" novalidate autocomplete="off">
+                <form id="formularioSalida" method="POST" action="../../cfg/editar/editar_movimiento.php" novalidate autocomplete="off">
                   <input type="hidden" name="op" value="<?= $operacion_actual ?>">
-                  <input type="hidden" name="id_salida" value="<?= $id_salida ?>">
+                  <input type="hidden" name="Id" value="<?= $id_salida ?>">
 
                   <div class="row">
                     <div class="col-sm-4">
@@ -190,11 +190,11 @@ if (strpos($observacion_db, 'Récipe Externo |') !== false) {
                           <?php
                           $sqlMeds = "SELECT dm.Id, 
                           m.nombre_medicamento, 
-                          tm.nombre_tipo,
+                          p.nombre_presentacion,
                           GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
                           FROM descripcion_medicamento dm 
                           INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
-                          INNER JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo 
+                          INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion 
                           INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
                           INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
                           INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
@@ -209,7 +209,7 @@ if (strpos($observacion_db, 'Récipe Externo |') !== false) {
                             // Limpiamos los datos para evitar errores de HTML
                             $nombre = htmlspecialchars($m['nombre_medicamento']);
                             $componentes = htmlspecialchars($m['componentes']);
-                            $tipo = htmlspecialchars($m['nombre_tipo']);
+                            $tipo = htmlspecialchars($m['nombre_presentacion']);
 
                             // Imprimimos la línea unificada
                             echo "<option $sel value='{$m['Id']}'>$nombre ($componentes) - [$tipo]</option>";
@@ -237,7 +237,7 @@ if (strpos($observacion_db, 'Récipe Externo |') !== false) {
                     </div>
                     <div class="col-sm-3">
                       <label>Cantidad a Retirar (*):</label>
-                      <input type="number" id="cantidad" name="cantidad" class="form-control" value="<?= $detalle['cantidad'] ?>" required>
+                      <input type="text" id="cantidad" name="cantidad" class="form-control" value="<?= $detalle['cantidad'] ?>" required>
                     </div>
                     <div class="col-sm-3">
                       <label>Niveles (Mín/Máx):</label>
@@ -322,16 +322,16 @@ if (strpos($observacion_db, 'Récipe Externo |') !== false) {
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_tipo">Tipo:</label>
-                  <select id="filtro_tipo" name="filtro_tipo" class="form-control">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
                     <option value="">-- Todos --</option>
                     <?php
                     // Cargar tipos de medicamento dinámicamente
                     include("../../cfg/conexion.php"); // Asegura la conexión
-                    $sql_tipos = "SELECT Id_tipo, nombre_tipo FROM tipo_medicamento WHERE estatus = 1 ORDER BY nombre_tipo DESC";
+                    $sql_tipos = "SELECT Id_presentacion, nombre_presentacion FROM presentacion WHERE estatus = 1 ORDER BY nombre_presentacion DESC";
                     $res_tipos = $conexion->query($sql_tipos);
                     while ($row_t = $res_tipos->fetch_assoc()) {
-                      echo '<option value="' . $row_t['Id_tipo'] . '">' . $row_t['nombre_tipo'] . '</option>';
+                      echo '<option value="' . $row_t['Id_presentacion'] . '">' . $row_t['nombre_presentacion'] . '</option>';
                     }
                     ?>
                   </select>
@@ -348,8 +348,8 @@ if (strpos($observacion_db, 'Récipe Externo |') !== false) {
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_presentacion">Presentación:</label>
-                  <input type="text" id="filtro_presentacion" name="filtro_presentacion" class="form-control" placeholder="Ej: 20 Capsulas">
+                  <label for="filtro_contenido_neto">Contenido neto:</label>
+                  <input type="text" id="filtro_contenido_neto" name="filtro_contenido_neto" class="form-control" placeholder="Ej: 20 Capsulas">
                 </div>
               </div>
               <div class="col-md-4">
@@ -408,8 +408,8 @@ if (strpos($observacion_db, 'Récipe Externo |') !== false) {
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_composicion">Composición (contiene):</label>
-                  <input type="text" id="filtro_composicion" name="filtro_composicion" class="form-control" placeholder="Escriba texto de composición...">
+                  <label for="filtro_excipientes">Excipientes (contiene):</label>
+                  <input type="text" id="filtro_excipientes" name="filtro_excipientes" class="form-control" placeholder="Escriba texto de excipientes...">
                 </div>
               </div>
               <div class="col-md-4">
@@ -480,6 +480,14 @@ if (strpos($observacion_db, 'Récipe Externo |') !== false) {
 
   <script>
     $(document).ready(function() {
+
+      const cantidadInput = $('#cantidad');
+
+      cantidadInput.on('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value && parseInt(this.value) <= 0) this.value = 1;
+        checkFormValidity();
+      });
 
       const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
 

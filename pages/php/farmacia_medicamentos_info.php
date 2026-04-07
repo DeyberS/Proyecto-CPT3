@@ -5,10 +5,10 @@ $id_url = isset($_GET['Id']) ? (int)$_GET['Id'] : 0;
 if ($id_url <= 0) die("ID no válido.");
 
 // CONSULTA EXTENDIDA
-$sql = "SELECT m.nombre_medicamento, dm.*, tm.nombre_tipo, l.nombre_laboratorio 
+$sql = "SELECT m.nombre_medicamento, dm.*, p.nombre_presentacion, l.nombre_laboratorio 
         FROM descripcion_medicamento dm
         JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
-        LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+        LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
         LEFT JOIN laboratorio l ON dm.Id_laboratorio = l.Id_laboratorio
         WHERE dm.Id = $id_url";
 
@@ -214,16 +214,16 @@ $texto_almacenamiento = [
                                         <td><?php echo $row['codigo_barras']; ?></td>
                                     </tr>
                                     <tr>
-                                        <th>Categoría</th>
-                                        <td><?php echo $row['nombre_tipo'] ?: 'General'; ?></td>
+                                        <th>Presentación</th>
+                                        <td><?php echo $row['nombre_presentacion'] ?: 'General'; ?></td>
                                     </tr>
                                     <tr>
                                         <th>Vía de Aplicación</th>
                                         <td><?php echo $row['via_aplicacion']; ?></td>
                                     </tr>
                                     <tr>
-                                        <th>Presentación</th>
-                                        <td><?php echo $row['presentacion']; ?></td>
+                                        <th>Contenido Neto</th>
+                                        <td><?php echo $row['contenido_neto']; ?></td>
                                     </tr>
                                     <tr>
                                         <th>Almacenamiento</th>
@@ -237,8 +237,8 @@ $texto_almacenamiento = [
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th>Composicion</th>
-                                        <td><?php echo $row['composicion'] ?: 'No especificada'; ?></td>
+                                        <th>Excipientes</th>
+                                        <td><?php echo $row['excipientes'] ?: 'No especificada'; ?></td>
                                     </tr>
                                 </table>
                             </div>

@@ -100,7 +100,10 @@
         $sql_kardex = "SELECT 
         di.fecha, 
         m.nombre_medicamento, 
+        tdm.nombre_presentacion,
+        GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
         l.Lote, 
+        p.nombre_proveedor,
         tm.nombre as tipo,
         mdi.cantidad, 
         mdi.stock_momento,
@@ -109,9 +112,15 @@
         JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
         JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
         JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+        JOIN presentacion tdm ON dm.Id_presentacion = tdm.Id_presentacion
+        JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+        JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+        JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
         JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
+        JOIN proveedor p ON l.Id_proveedor = p.Id_proveedor
         JOIN tipo_movimiento tm ON di.Id_tipoMovimiento = tm.Id_tipo_movimiento
         $donde
+        GROUP BY mdi.Id
         ORDER BY di.fecha DESC 
         LIMIT $inicio, $registros_por_pagina";
 
@@ -125,9 +134,9 @@
         <section class="content">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <a href="#" class="btn-sm btn-info pull-right reporte"><i class="fa fa-book"></i>Reporte Kardex</a>
-                    <p class="pull-right" style="width:5px;"></p>
                     <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-book"></i>Volver al Listado</a>
+                    <p class="pull-right" style="width:5px;"></p>
+                    <a href="#" class="btn-sm btn-info pull-right reporte"><i class="fa fa-book"></i>Reporte Kardex</a>
                     <input type="text" placeholder="Buscar.." class="form-control pull-left" id="buscar" onkeyup="filtro()" style="width: 200px;">
                 </div>
                 <br><br>
@@ -137,29 +146,31 @@
                         <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
                             <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
                                 <tr>
-                                    <th>Fecha</th>
-                                    <th>Medicamento</th>
+                                    <th>Medicamento</th>   
                                     <th>Lote</th>
-                                    <th>Movimiento</th>
+                                    <th>Proveedor</th>      
                                     <th>Cantidad</th>
                                     <th>(Stock)</th>
+                                    <th>Fecha</th>
                                     <th>Observaciones</th>
+                                    <th>Movimiento</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php while ($row = $resultado->fetch_assoc()) : ?>
                                     <tr>
-                                        <td><?php echo date('d/m/Y H:i', strtotime($row['fecha'])); ?></td>
-                                        <td><?php echo $row['nombre_medicamento'] . " "; ?></td>
-                                        <td><?php echo $row['Lote']; ?></td>
+                                        <td><small class="text-row text-white"><?= htmlspecialchars($row['nombre_medicamento'] . " (" . $row['componentes'] . ")"); ?></small></td>
+                                        <td><small class="text-row text-white"><?php echo $row['Lote']; ?></small></td>
+                                        <td><small class="text-row text-white"><?php echo $row['nombre_proveedor']; ?></small></td>             
+                                        <td><small class="text-row text-white"><?php echo $row['cantidad']; ?></small></td>
+                                        <td><small class="text-row text-white"><?php echo $row['stock_momento']; ?></small></td>
+                                        <td><small class="text-row text-white"><?php echo date('d/m/Y H:i', strtotime($row['fecha'])); ?></td>
+                                        <td><small class="text-row text-white"><?php echo $row['observaciones']; ?></small></td>
                                         <td>
-                                            <span class="label <?php echo ($row['tipo'] == 'Entrada') ? 'label-success' : 'label-danger'; ?>">
+                                            <span class="badge <?php echo ($row['tipo'] == 'Entrada') ? 'bg-green' : 'bg-crimson'; ?>">
                                                 <?php echo $row['tipo']; ?>
                                             </span>
                                         </td>
-                                        <td><?php echo $row['cantidad']; ?></td>
-                                        <td><strong><?php echo $row['stock_momento']; ?></strong></td>
-                                        <td><?php echo $row['observaciones']; ?></td>
                                     </tr>
                                 <?php endwhile; ?>
                             </tbody>

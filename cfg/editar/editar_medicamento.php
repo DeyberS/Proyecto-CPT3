@@ -9,11 +9,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 2. Datos generales
     $nombre_medicamento = $_POST['medicamento'];
-    $id_tipo            = $_POST['tipo'];
+    $id_presentacion            = $_POST['presentacion'];
     $via_aplicacion     = $_POST['via'];
-    $presentacion       = $_POST['presentacion'];
+    $contenido_neto       = $_POST['contenido_neto'];
     $almacenamiento     = $_POST['almacenamiento'];
-    $composicion_texto  = $_POST['composicion'];
+    $excipientes  = $_POST['excipientes'];
     $id_laboratorio     = !empty($_POST['laboratorio']) ? (int)$_POST['laboratorio'] : null;
     $codigo_barras      = !empty($_POST['codigo_barras']) ? $_POST['codigo_barras'] : 'Ninguno';
 
@@ -31,24 +31,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // PASO 2: Actualizar todos los detalles en 'descripcion_medicamento'
         // Incluimos laboratorio, código de barras y el resto de campos del formulario
         $sql_desc = "UPDATE descripcion_medicamento SET 
-                        Id_tipo = ?, 
+                        Id_presentacion = ?, 
                         Id_laboratorio = ?, 
                         codigo_barras = ?, 
-                        presentacion = ?, 
+                        contenido_neto = ?, 
                         via_aplicacion = ?, 
                         almacenamiento = ?, 
-                        composicion = ? 
+                        excipientes = ? 
                      WHERE Id = ?";
         
         $stmt2 = $conexion->prepare($sql_desc);
         $stmt2->bind_param("iisssssi", 
-            $id_tipo, 
+            $id_presentacion, 
             $id_laboratorio, 
             $codigo_barras, 
-            $presentacion, 
+            $contenido_neto, 
             $via_aplicacion, 
             $almacenamiento, 
-            $composicion_texto, 
+            $excipientes, 
             $id_descripcion
         );
         $stmt2->execute();

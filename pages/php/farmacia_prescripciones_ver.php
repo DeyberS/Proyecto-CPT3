@@ -13,12 +13,12 @@ if (empty($id_pres)) {
 $query = "SELECT 
             pm.*, 
             c.fecha_consulta, c.tratamiento_indicado,
-            paciente.nombre AS nom_pac, paciente.apellido AS ape_pac, paciente.cedula AS cedula_pac,
+            paciente.nombre AS nom_pac, paciente.apellido AS ape_pac, paciente.tipo_cedula AS tipo_cedula_pac, paciente.cedula AS cedula_pac,
             paciente.fecha_nacimiento, paciente.genero,
             medico.nombre AS nom_med, medico.apellido AS ape_med,
             m.nombre_medicamento,
-            tm.nombre_tipo,
-            dm.Id as id_desc_med, dm.codigo_barras, dm.via_aplicacion, dm.presentacion, dm.almacenamiento, dm.composicion,
+            p.nombre_presentacion,
+            dm.Id as id_desc_med, dm.codigo_barras, dm.via_aplicacion, dm.contenido_neto, dm.almacenamiento, dm.excipientes,
             l.nombre_laboratorio
           FROM prescripcion_medicamentos pm
           INNER JOIN consulta c ON pm.Id_consulta = c.Id_consulta
@@ -26,7 +26,7 @@ $query = "SELECT
           INNER JOIN persona medico ON c.Id_medico = medico.id
           INNER JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
           INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-          LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+          LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
           LEFT JOIN laboratorio l ON dm.Id_laboratorio = l.Id_laboratorio
           WHERE pm.Id = '$id_pres'";
 
@@ -247,7 +247,7 @@ switch (strtolower($data['estatus'])) {
                                         </div>
                                         <div class="col-xs-6">
                                             <p class="label-custom">Cédula</p>
-                                            <p class="value-custom">V-<?php echo $data['cedula_pac']; ?></p>
+                                            <p class="value-custom"><?php echo $data['tipo_cedula_pac']; ?>-<?php echo $data['cedula_pac']; ?></p>
                                         </div>
                                         <div class="col-xs-6">
                                             <p class="label-custom">Género</p>
@@ -277,10 +277,10 @@ switch (strtolower($data['estatus'])) {
                                         <td><?php echo $data['nombre_medicamento'] ?: 'No Especificado'; ?></td>
                                     </tr>
                                     <tr>
-                                        <th>Categoría / Presentación</th>
+                                        <th>Presentación / Contenido Neto</th>
                                         <td>
-                                            <span><?php echo $data['nombre_tipo'] ?: 'General'; ?> / </span>
-                                            <?php echo $data['presentacion']; ?>
+                                            <span><?php echo $data['nombre_presentacion'] ?: 'General'; ?> / </span>
+                                            <?php echo $data['contenido_neto']; ?>
                                         </td>
                                     </tr>
                                     <tr>

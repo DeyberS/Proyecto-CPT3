@@ -1,529 +1,258 @@
+<?php
+include("../../cfg/conexion.php");
+
+$id_medico = isset($_GET['Id']) ? $_GET['Id'] : null;
+
+if (!$id_medico) {
+    echo "Error: ID de médico no especificado.";
+    exit;
+}
+
+$sql = "SELECT p.id, p.nombre, p.apellido, p.tipo_cedula, p.cedula, p.fecha_nacimiento, p.genero, p.email,
+               tp.telefono, pt.prefijo,
+               dm.fecha_ingreso, d.nombre_departamento, e.nombre_especialidad
+        FROM persona p
+        LEFT JOIN telefonos_personas tp ON p.id = tp.Id_persona
+        LEFT JOIN prefijos_telefonos pt ON tp.Id_prefijo = pt.Id
+        LEFT JOIN detalle_medico dm ON p.id = dm.Id_persona
+        LEFT JOIN medicos_departamentos md ON dm.Id_detalle_medico = md.Id_detalle_medico
+        LEFT JOIN departamento d ON md.Id_departamento = d.Id_departamento
+        LEFT JOIN especialidades_medicos em ON dm.Id_detalle_medico = em.Id_detalle_medico
+        LEFT JOIN especialidad e ON em.Id_especialidad = e.Id_especialidad
+        WHERE p.id = '$id_medico' LIMIT 1";
+
+$resultado = $conexion->query($sql);
+
+if ($resultado && $resultado->num_rows > 0) {
+    $row = $resultado->fetch_assoc();
+} else {
+    echo "<div class='alert alert-danger'><h4><i class='icon fa fa-ban'></i> Error</h4>Médico no encontrado.</div>";
+    exit;
+}
+?>
+
 <!DOCTYPE html>
-<html>
+<html lang="es">
 
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Medicos | Informacion</title>
-  <?php
-  include('includes/headerNav2.php');
-  ?>
-  <div class="content-wrapper">
-
+    <meta charset="utf-8">
+    <title>Médico | Informacion</title>
+    <?php include('includes/headerNav2.php'); ?>
     <style>
-      /* --- ESTILOS PARA LA VISTA TIPO CURRÍCULUM --- */
-      .paciente-profile-header {
-        display: flex;
-        align-items: center;
-        padding: 20px;
-        background-color: #d8edf3;
-        /* FONDO AZUL CLARO */
-        border-bottom: 3px solid #007bff;
-        /* Color principal azul para consistencia */
-        margin-bottom: 20px;
-        border-radius: 5px 5px 0 0;
-      }
-
-      .paciente-photo img {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        border: 3px solid whitesmoke;
-        margin-right: 20px;
-        object-fit: cover;
-        filter: grayscale();
-        background-color: transparent;
-      }
-
-      .paciente-main-info h2 {
-        margin: 0 0 5px 0;
-        font-size: 2.2em;
-        color: #333;
-        font-weight: 600;
-      }
-
-      .cedula-info {
-        font-size: 1.1em;
-        color: #666;
-        margin-bottom: 10px;
-      }
-
-      /* Etiquetas de Datos Vitales */
-      .vital-tags span {
-        display: inline-block;
-        background-color: #e3f2fd;
-        color: #007bff;
-        padding: 4px 8px;
-        margin-right: 10px;
-        border-radius: 4px;
-        font-size: 0.9em;
-        font-weight: 600;
-      }
-
-      /* Cuerpo del CV (Contenido de 2 columnas) */
-      .info-cv-body {
-        padding: 0 20px 20px 20px;
-      }
-
-      .cv-sidebar {
-        border-right: 1px solid #eee;
-        padding-right: 25px;
-      }
-
-      .cv-section {
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 1px dashed #eee;
-      }
-
-      .cv-section h4 {
-        color: #2c3e50;
-        border-bottom: 2px solid #ecf0f1;
-        padding-bottom: 5px;
-        margin-bottom: 15px;
-        font-size: 1.2em;
-      }
-
-      .cv-section p {
-        margin-bottom: 5px;
-        font-size: 0.95em;
-      }
-
-      .cv-main-content {
-        padding-left: 25px;
-      }
-
-      .alert-section {
-        background-color: #fcecec;
-        border-left: 4px solid #dd4b39;
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 25px;
-      }
-
-      /* Estilos para Timeline (Consultas) */
-      .timeline {
-        position: relative;
-        padding-left: 20px;
-        margin-left: 10px;
-        border-left: 2px solid #ccc;
-      }
-
-      .timeline-item {
-        margin-bottom: 20px;
-        position: relative;
-      }
-
-      .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -27px;
-        top: 5px;
-        width: 12px;
-        height: 12px;
-        background-color: #007bff;
-        border-radius: 50%;
-        border: 2px solid #fff;
-      }
-
-      .timeline-date {
-        font-weight: 700;
-        font-size: 0.9em;
-        color: #555;
-      }
-
-      .timeline-detail h4 {
-        margin-top: 5px;
-      }
-
-      /* Adaptación para pantallas pequeñas (móviles) */
-      @media (max-width: 991px) {
-        .paciente-profile-header {
-          flex-direction: column;
-          align-items: flex-start;
+        :root {
+            --primary-dark: #2c3e50;
+            --medical-blue: #007bff;
+            --bg-gray: #f4f7f6;
         }
 
-        .paciente-photo {
-          margin-bottom: 15px;
+        body {
+            background-color: var(--bg-gray) !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .cv-sidebar {
-          border-right: none;
-          border-bottom: 1px solid #eee;
-          padding-right: 15px;
-          padding-bottom: 20px;
+        /* BORDES RÍGIDOS Y EXTENSIÓN HACIA ABAJO */
+        .profile-card {
+            background: #fff;
+            border-radius: 0px; /* Bordes rectos */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            border: none;
+            min-height: 80vh; /* Se extiende más hacia abajo */
         }
 
-        .cv-main-content {
-          padding-left: 15px;
-          padding-top: 20px;
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            border-bottom: 5px solid var(--medical-blue);
+            position: relative;
         }
-      }
+
+        /* PERFIL TRANSPARENTE (Sin recuadro blanco) */
+        .doctor-avatar {
+            width: 110px;
+            height: 110px;
+            background: transparent; /* Eliminado el fondo blanco */
+            border-radius: 0px; 
+            padding: 0;
+            box-shadow: none; /* Eliminada la sombra */
+            object-fit: contain;
+        }
+
+        .info-box-custom {
+            background: #f8f9fa;
+            border-radius: 0px; /* Bordes rectos */
+            padding: 20px;
+            border-left: 5px solid var(--medical-blue);
+            height: 100%;
+        }
+
+        .label-custom {
+            font-size: 11px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .val-custom {
+            font-size: 16px;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .section-title {
+            color: var(--medical-blue);
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .obs-box {
+            margin-top: 30px; 
+            background: #fff9e6; 
+            padding: 15px; 
+            border-radius: 0px; 
+            border: 1px dashed #f39c12;
+        }
+
+        .data-item-card {
+            background: #fff; 
+            padding: 15px; 
+            border-radius: 0px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            .profile-card { box-shadow: none; border: 1px solid #eee; }
+        }
     </style>
-    <style>
-      /* ---------------------------------------------------------------------- */
-      /* ANIMACIONES Y ESTILOS DE MODALES (Copiado de pacientes_agregar.php) */
-      /* ---------------------------------------------------------------------- */
-      @keyframes pulse-opacity {
-        0% {
-          opacity: 0;
-        }
+</head>
 
-        100% {
-          opacity: 1;
-        }
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-50px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes fadeOut {
-        from {
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        to {
-          opacity: 0;
-          transform: translateY(-50px);
-        }
-      }
-
-      /* El modal.in y modal.out controlan la animación del modal-dialog */
-      .modal.in .modal-dialog {
-        animation: fadeIn 0.4s ease-out;
-      }
-
-      .modal.out .modal-dialog {
-        animation: fadeOut 0.4s ease-in;
-      }
-
-      /* El backdrop usa pulse-opacity */
-      .modal-open .modal-backdrop {
-        opacity: 0.7 !important;
-        animation: pulse-opacity 0.3s forwards;
-      }
-
-      /* ---------------------------------------------------------------------- */
-      /* ESTILOS DE VALIDACIÓN Y LAYOUT (Copiado de pacientes_agregar.php) */
-      /* ---------------------------------------------------------------------- */
-      /* CAMBIO: Color de error a crimson (rojo fuerte) */
-
-
-      .modal {
-        position: fixed !important;
-        z-index: 99999 !important;
-      }
-
-      .modal-backdrop {
-        z-index: 99998 !important;
-        transition: .5s;
-      }
-
-      /* La clase 'in' es clave para que Bootstrap sepa que el modal está abierto */
-      .modal.in {
-        display: block;
-      }
-
-      /* MODIFICACIÓN SOLICITADA: Bloquear click en las pestañas */
-      /* Esto evita que el usuario pulse las pestañas manualmente */
-      .nav-tabs>li>a {
-      pointer-events: none;
-      cursor: default;
-    }
-
-    /* Estilos para pestañas bloqueadas visualmente */
-      .nav-tabs li.disabled-tab a {
-      color: #b2b2b2 !important;
-       Color: gris para indicar que está bloqueada 
-    }
-
-    /* Estilos de medico_agregar.php (Se mantienen los estilos definidos previamente) */
-      @keyframes open {
-        from {
-          opacity: 1;
-          pointer-events: none;
-        }
-
-        to {
-          opacity: 1;
-          pointer-events: unset;
-        }
-      }
-
-      @keyframes exit {
-        from {
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        to {
-          opacity: 1;
-          pointer-events: unset;
-        }
-      }
-
-      @keyframes b {
-        from {
-          opacity: 0;
-          pointer-events: none;
-          background-color: lightgray;
-          color: black;
-        }
-
-        to {
-          opacity: 1;
-          pointer-events: unset;
-          background-color: lightgray;
-          color: black;
-        }
-      }
-
-      .btn-second {
-        background-color: #00c0ef;
-        border-color: #00acd6;
-        color: white;
-        animation: b;
-        animation-duration: 3s;
-      }
-
-      .pop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        background: #111111bd;
-        opacity: 0;
-        pointer-events: none;
-        animation: open;
-        animation-duration: 10s;
-      }
-
-      .modal__contain {
-        width: 550px;
-        height: 220px;
-        margin-top: 180px;
-        margin-left: 350px;
-        background: #FFF;
-        animation: exit;
-        animation-duration: 1s;
-      }
-
-      .modal-bod {
-        text-align: center;
-      }
-
-      .modal-head {
-        color: white;
-        background-color: green;
-      }
-
-      /* CAMBIO: Estilo para header de aviso de error usando bg-danger color*/
-      .modal-header-danger {
-        background-color: #dc3545;
-        /* Rojo de Bootstrap bg-danger */
-        color: white;
-      }
-    </style>
-    <section class="content">
-      <div class="row">
-        <div class="col-xs-12">
-          <div class="nav-tabs-custom">
-
-            <?php
-            include("../../cfg/conexion.php");
-
-            // CONSULTA SQL CORREGIDA Y AMPLIADA
-            $sql = "SELECT p.id, p.nombre, p.apellido, p.tipo_cedula, p.cedula, p.fecha_nacimiento, p.genero, p.email,
-                tp.telefono, pt.prefijo, tp.Id_prefijo,
-                dm.fecha_ingreso, d.nombre_departamento, e.nombre_especialidad
-
-                FROM persona p
-                LEFT JOIN telefonos_personas tp ON p.id = tp.Id_persona
-                LEFT JOIN prefijos_telefonos pt ON tp.Id_prefijo = pt.Id
-                -- SE REMUEVE EL JOIN A LA TABLA OBSOLETA DE UNA SOLA ALERGIA
-                LEFT JOIN detalle_medico dm ON p.id = dm.Id_persona
-                LEFT JOIN medicos_departamentos md ON dm.Id_detalle_medico = md.Id_detalle_medico
-                LEFT JOIN departamento d ON md.Id_departamento = d.Id_departamento
-                LEFT JOIN especialidades_medicos em ON dm.Id_detalle_medico = em.Id_detalle_medico
-                LEFT JOIN especialidad e ON em.Id_especialidad = e.Id_especialidad
-                
-                WHERE p.id =" . $_GET['Id'];
-
-            $resultado = $conexion->query($sql);
-            $row = $resultado->fetch_assoc();
-            ?>
-
-            <input type="hidden" name="Id" value="<?= $row['id']; ?>">
-
-            <div class="paciente-profile-header">
-              <div class="paciente-photo">
-                <img src="../../recursos/imagenes/iconos/medicos.png" alt="Foto Paciente">
-              </div>
-              <div class="paciente-main-info">
-                <h2><?php echo $row['nombre']; ?> <?php echo $row['apellido']; ?></h2>
-                <p class="cedula-info">Cédula: <?php echo $row['tipo_cedula']; ?>-<?php echo $row['cedula']; ?></p>
-                <div class="vital-tags">
-                  <span><i class="fa fa-birthday-cake"></i> F. Nacimiento: <?php echo $row['fecha_nacimiento']; ?></span>
-                  <span><i class="fa fa-venus-mars"></i> Sexo: <?php echo $row['genero']; ?></span>
-                  <span><i class="fa fa-heartbeat"></i> Fecha de Ingreso: <?php echo $row['fecha_ingreso']; ?> </span>
-                </div>
-              </div>
-            </div>
-
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#info" data-toggle="tab">Datos Personales</a></li>
-            </ul>
-
-            <div class="tab-content">
-
-              <div class="tab-pane active" id="info">
-                <section id="new" style="margin-bottom:1%;">
-                  <div class="row info-cv-body">
-
-                    <div class="col-md-4 cv-sidebar">
-
-                      <div class="cv-section alert-section">
-                        <h4><i class="fa fa-phone"></i> Información de Contacto</h4>
-                        <p><strong>N. Telefono:</strong> <?php echo $row['prefijo']; ?>-<?php echo $row['telefono']; ?></p>
-                        <p><strong>Correo Electrónico:</strong> <?php echo $row['email']; ?></p>
-                      </div>
-
-                      <div class="cv-section">
-                        <h4><i class="fa fa-map-marker"></i> Areas y Especialidades</h4>
-                        <p><strong>Departamento/s:</strong> <?php echo $row['nombre_departamento']; ?> </p>
-                        
-                      </div>
-                      <p><strong>Especialidad/es:</strong> <?php echo $row['nombre_especialidad']; ?> </p>
-                    </div>
-                    <div class="col-md-8 cv-main-content">
-
-                      <div class="cv-section">
-                        <h4><i class="fa fa-user"></i> </h4>
-                        <div class="row">
-                          <div class="col-sm-6">
-
-                          </div>
-                          <div class="col-sm-6">
-                            
-                          </div>
+<body class="hold-transition skin-blue sidebar-mini">
+    <div class="content-wrapper">
+        <section class="content">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="row">
+                        <div class="col-sm-2 text-center">
+                            <img src="../../recursos/imagenes/iconos/medicos.png" class="doctor-avatar" alt="Médico">
                         </div>
-                      </div>
-
+                        <div class="col-sm-10">
+                            <h2 style="margin: 5px 0; font-weight: 800;"><?php echo $row['nombre'] . " " . $row['apellido']; ?></h2>
+                            <p style="font-size: 18px; opacity: 0.9;"><i class="fa fa-user-md"></i> Especialista en <?php echo $row['nombre_especialidad']; ?></p>
+                            <div class="row" style="margin-top: 20px;">
+                                <div class="col-xs-4">
+                                    <span class="label-custom" style="color: #bdc3c7;">Identificación</span>
+                                    <span style="font-size: 18px; font-weight: bold;"><?php echo $row['tipo_cedula'] . "-" . $row['cedula']; ?></span>
+                                </div>
+                                <div class="col-xs-4">
+                                    <span class="label-custom" style="color: #bdc3c7;">Fecha Ingreso</span>
+                                    <span class="val-custom" style="color: #fff;"><?php echo date("d/m/Y", strtotime($row['fecha_ingreso'])); ?></span>
+                                </div>
+                                <div class="col-xs-4">
+                                    <span class="label-custom" style="color: #bdc3c7;">ID Sistema</span>
+                                    <span class="val-custom" style="color: #fff;">#<?php echo str_pad($row['id'], 5, "0", STR_PAD_LEFT); ?></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
-                  <div style="float:right; margin-top:-2%;">
-                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalConfirmarRegreso">Regresar</button>
-                    <!--<button type="button" class="btn btn-primary next-tab" data-tab-actual="#info" data-tab-siguiente="ocupacion_estudios">Siguiente</button>-->
-                  </div>
-                </section>
-              </div>
-              <div class="tab-pane" id="ocupacion_estudios">
-                <section id="new" style="margin-bottom:4%;">
- 
-                  <div style="float:right; margin-top:1%;">
-                    <button type="button" class="btn btn-secondary prev-tab" data-tab-anterior="info">Atras</button>
-                    <button type="button" class="btn btn-primary next-tab" data-tab-actual="#ocupacion_estudios" data-tab-siguiente="salud">Siguiente</button>
-                  </div>
-                </section>
-              </div>
-        </div>        
-      </div>
-    </section>
-  </div>
+                </div>
 
-  <div class="modal" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegresoLabel">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header modal-header-danger">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="modalConfirmarRegresoLabel"><i class="fa fa-sign-out"></i> Confirmacion de Regreso</h4>
+                <div class="card-body" style="padding: 35px 35px 60px 35px;">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <h4 class="section-title"><i class="fa fa-info-circle"></i> Datos Personales y de Contacto</h4>
+                            
+                            <div class="row" style="margin-bottom: 20px;">
+                                <div class="col-sm-6">
+                                    <span class="label-custom">Correo Electrónico</span>
+                                    <span class="val-custom"><?php echo $row['email']; ?></span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="label-custom">Teléfono Movil</span>
+                                    <span class="val-custom"><?php echo $row['prefijo'] . "-" . $row['telefono']; ?></span>
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-bottom: 20px;">
+                                <div class="col-sm-6">
+                                    <span class="label-custom">Género</span>
+                                    <span class="val-custom"><?php echo $row['genero']; ?></span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="label-custom">Fecha de Nacimiento</span>
+                                    <span class="val-custom"><?php echo date("d/m/Y", strtotime($row['fecha_nacimiento'])); ?></span>
+                                </div>
+                            </div>
+
+                            <div class="obs-box">
+                                <span class="label-custom" style="color: #e67e22;">Observaciones Administrativas</span>
+                                <p style="font-size: 13px; font-style: italic; color: #555; margin-bottom: 0;">
+                                    "Personal médico debidamente acreditado para el área de <?php echo $row['nombre_departamento']; ?>."
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="info-box-custom">
+                                <h4 style="border-bottom: 2px solid #d6eaf8; padding-bottom: 10px; color: #2980b9; margin-top: 0;">
+                                    <i class="fa fa-hospital-o"></i> Ubicación Laboral
+                                </h4>
+
+                                <div class="data-item-card">
+                                    <span class="label-custom">Departamento / Área</span>
+                                    <span class="val-custom"><?php echo $row['nombre_departamento']; ?></span>
+                                </div>
+
+                                <div class="data-item-card">
+                                    <span class="label-custom">Especialidad Principal</span>
+                                    <span class="val-custom"><?php echo $row['nombre_especialidad']; ?></span>
+                                </div>
+
+                                <div class="text-center" style="margin-top: 25px; opacity: 0.6;">
+                                    <i class="fa fa-stethoscope fa-4x" style="color: #bdc3c7;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row no-print" style="margin-top: 60px; border-top: 1px solid #eee; padding-top: 20px;">
+                        <div class="col-xs-12 text-right">
+                            <button type="button" class="btn btn-default" style="border-radius: 0px;" data-toggle="modal" data-target="#modalConfirmarRegreso">
+                                <i class="fa fa-chevron-left"></i> Volver al Listado
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content" style="border-radius: 0px;">
+                    <div class="modal-header" style="background-color: #dc3545; color: white;">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title"><i class="fa fa-warning"></i> Confirmación</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Desea cerrar la ficha del médico y regresar al listado principal?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" style="border-radius: 0px;" data-dismiss="modal">Cancelar</button>
+                        <a href="rh_medico_listado.php" class="btn btn-danger" style="border-radius: 0px;">Regresar al inicio</a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="modal-body">
-          <p>Esta apunto de regresar al inicio. ¿Desea continuar?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <a href="rh_medico_listado.php" class="btn btn-danger">Regresar al Inicio</a>
-        </div>
-      </div>
     </div>
-  </div>
 
-
-  <?php
-  include('includes/footer.php');
-  ?>
-
-  </body>
-  <script>
-    // Asegura que al cargar la página, se active la primera pestaña si no hay un hash en la URL.
-    $(document).ready(function() {
-      // 1. Activa la primera pestaña si no hay hash en la URL
-      if (!window.location.hash || window.location.hash === '#info') {
-        $('a[href="#info"]').tab('show');
-      }
-
-      // 2. Limpia el hash de la URL después de la carga para evitar que el navegador recuerde la última pestaña.
-      if (window.history.replaceState) {
-        window.history.replaceState(null, null, window.location.pathname + window.location.search);
-      }
-    });
-
-    $('.next-tab').on('click', async function() {
-      const $btn = $(this);
-      const tabActualSelector = $btn.data('tab-actual');
-      const tabSiguienteName = $btn.data('tab-siguiente');
-      const nextTabLink = $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"] a`);
-
-      const $siguienteTabLi = $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"]`);
-      // 1. Quitar la clase disabled-tab y la clase active
-      $('.nav-tabs li').removeClass('active');
-      $('.tab-content .tab-pane').removeClass('active');
-      $siguienteTabLi.removeClass('disabled-tab').addClass('active');
-
-      // 2. Activar la pestaña siguiente
-      nextTabLink.tab('show');
-      $('#' + tabSiguienteName).addClass('active');
-
-    });
-
-    $('.prev-tab').on('click', function() {
-      const $btn = $(this);
-      const tabActualSelector = $btn.data('tab-actual');
-      const tabAnteriorName = $btn.data('tab-anterior');
-
-      if (tabAnteriorName) {
-        const prevTabLink = $(`.nav-tabs li[data-tab-name="${tabAnteriorName}"] a`);
-        const $anteriorTabLi = $(`.nav-tabs li[data-tab-name="${tabAnteriorName}"]`);
-
-        // 1. Quitar la clase active de la pestaña actual
-        $('.nav-tabs li').removeClass('active');
-        $('.tab-content .tab-pane').removeClass('active');
-
-        // 2. Activar la pestaña anterior
-        $anteriorTabLi.addClass('active');
-        prevTabLink.tab('show');
-        $('#' + tabAnteriorName).addClass('active');
-
-        // Opcional: Re-deshabilitar la pestaña a la que se regresa, si se desea.
-        // En modo edición, las pestañas deberían quedar desbloqueadas una vez visitadas.
-      } else {
-        // En la primera pestaña, el botón Regresar dispara el modal de confirmación de abandono
-        $('#modalConfirmarRegreso').modal('show');
-      }
-    });
-  </script>
-
+    <?php include('includes/footer.php'); ?>
+</body>
 </html>

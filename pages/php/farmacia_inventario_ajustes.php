@@ -138,11 +138,11 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                           $sql_medicamentos = "SELECT 
                               dm.Id AS id_desc, 
                               m.nombre_medicamento, 
-                              tp.nombre_tipo,
+                              p.nombre_presentacion,
                               GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes 
                               FROM descripcion_medicamento dm
                               INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-                              INNER JOIN tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo
+                              INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
                               INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
                               INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
                               INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
@@ -154,7 +154,7 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                           if ($resultado_medicamentos && $resultado_medicamentos->num_rows > 0) {
                             while ($row_med = $resultado_medicamentos->fetch_assoc()) {
                               // Se usa Id_medicamento como value
-                              echo '<option value="' . $row_med['id_desc'] . '">' . htmlspecialchars($row_med['nombre_medicamento']) . " " . "(" . htmlspecialchars($row_med['componentes']) . ")" . " - " . "[" . htmlspecialchars($row_med['nombre_tipo']) . "]" . '</option>';
+                              echo '<option value="' . $row_med['id_desc'] . '">' . htmlspecialchars($row_med['nombre_medicamento']) . " " . "(" . htmlspecialchars($row_med['componentes']) . ")" . " - " . "[" . htmlspecialchars($row_med['nombre_presentacion']) . "]" . '</option>';
                             }
                           }
                           ?>
@@ -234,16 +234,16 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_tipo">Tipo:</label>
-                  <select id="filtro_tipo" name="filtro_tipo" class="form-control">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
                     <option value="">-- Todos --</option>
                     <?php
                     // Cargar tipos de medicamento dinámicamente
                     include("../../cfg/conexion.php"); // Asegura la conexión
-                    $sql_tipos = "SELECT Id_tipo, nombre_tipo FROM tipo_medicamento WHERE estatus = 1 ORDER BY nombre_tipo DESC";
+                    $sql_tipos = "SELECT Id_presentacion, nombre_presentacion FROM presentacion WHERE estatus = 1 ORDER BY nombre_presentacion DESC";
                     $res_tipos = $conexion->query($sql_tipos);
                     while ($row_t = $res_tipos->fetch_assoc()) {
-                      echo '<option value="' . $row_t['Id_tipo'] . '">' . $row_t['nombre_tipo'] . '</option>';
+                      echo '<option value="' . $row_t['Id_presentacion'] . '">' . $row_t['nombre_presentacion'] . '</option>';
                     }
                     ?>
                   </select>
@@ -260,8 +260,8 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_presentacion">Presentación:</label>
-                  <input type="text" id="filtro_presentacion" name="filtro_presentacion" class="form-control" placeholder="Ej: 20 Capsulas">
+                  <label for="filtro_contenido_neto">Contenido neto:</label>
+                  <input type="text" id="filtro_contenido_neto" name="filtro_contenido_neto" class="form-control" placeholder="Ej: 20 Capsulas">
                 </div>
               </div>
               <div class="col-md-4">
@@ -320,8 +320,8 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="filtro_composicion">Composición (contiene):</label>
-                  <input type="text" id="filtro_composicion" name="filtro_composicion" class="form-control" placeholder="Escriba texto de composición...">
+                  <label for="filtro_excipientes">Excipientes (contiene):</label>
+                  <input type="text" id="filtro_excipientes" name="filtro_excipientes" class="form-control" placeholder="Escriba texto de excipientes...">
                 </div>
               </div>
               <div class="col-md-4">

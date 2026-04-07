@@ -70,13 +70,13 @@ if (!$id_consulta || !is_numeric($id_consulta)) {
             -- 1. Nombres de los principios activos separados por coma
             GROUP_CONCAT(pa.nombre SEPARATOR ' + ') AS nombre_principio_activo,
             
-            ps.nombre_tipo AS presentacion,
+            ps.nombre_presentacion AS presentacion,
             
             -- 2. Dosis formateadas: (200mg) o (200mg + 400mg)
             CONCAT('(', GROUP_CONCAT(CONCAT(dpm.cantidad_unidad_medida, ' ', um_pa.unidad) SEPARATOR ' + '), ')') AS dosis,
             
             -- Otros datos necesarios
-            dm.presentacion AS detalle_empaque,
+            dm.contenido_neto AS detalle_empaque,
             dm.via_aplicacion,
             dm.almacenamiento,
             l.nombre_laboratorio
@@ -84,7 +84,7 @@ if (!$id_consulta || !is_numeric($id_consulta)) {
             FROM prescripcion_medicamentos p
             INNER JOIN descripcion_medicamento dm ON p.Id_descripcion_medicamento = dm.Id 
             INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
-            LEFT JOIN tipo_medicamento ps ON dm.Id_tipo = ps.Id_tipo 
+            LEFT JOIN presentacion ps ON dm.Id_presentacion = ps.Id_presentacion 
             
             -- Relación corregida con dm.Id según tu estructura
             LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento

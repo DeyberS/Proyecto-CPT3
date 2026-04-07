@@ -199,16 +199,19 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                     <li><a href="../farmacia_inventario_listado.php"><i class="fa fa-book"></i>Inventario</a></li>
                   <?php endif; ?>
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
-                    <li><a href="../farmacia_medicamentos_listado.php"><i class="fa fa-user-plus"></i>Lista de Medicamentos</a></li>
+                    <li><a href="../farmacia_medicamentos_listado.php"><i class="fa fa-user-plus"></i>Medicamentos</a></li>
                   <?php endif; ?>
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
-                    <li><a href="../farmacia_prescripciones_listado.php"><i class="fa fa-user-plus"></i>Lista de Recipes</a></li>
+                    <li><a href="../farmacia_prescripciones_listado.php"><i class="fa fa-user-plus"></i>Recipes</a></li>
+                  <?php endif; ?>
+                  <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
+                    <li><a href="../farmacia_proveedores_listado.php"><i class="fa fa-user-plus"></i>Proveedores</a></li>
                   <?php endif; ?>
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
                     <li><a href="../farmacia_laboratorio_listado.php"><i class="fa fa-user-plus"></i>Laboratorios</a></li>
                   <?php endif; ?>
                   <?php if (in_array('Ver Lotes', $_SESSION["permisos"])) : ?>
-                    <li><a href="../farmacia_lotes_listado.php"><i class="fa fa-user-plus"></i>Lista de Lotes</a></li>
+                    <li><a href="../farmacia_lotes_listado.php"><i class="fa fa-user-plus"></i>Lotes</a></li>
                   <?php endif; ?>
                 </ul>
               </li>

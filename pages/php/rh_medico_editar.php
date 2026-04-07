@@ -200,7 +200,7 @@
                         ?>
                       </select>
                     </div>
-                    <br><br>
+                    <br><br><br><br>
                     <label class="control-label"></label>
                     <div class="col-sm-4">
                     <p>Especialidad (*):</p>

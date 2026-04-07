@@ -135,25 +135,19 @@
         }
         $stmt_insert_esp->close();
     }
-    
-    
+
+
     // 2.6. UPDATE/REPLACE en TELEFONOS_PERSONAS
-    $sql_telefono = "INSERT INTO telefonos_personas(Id_prefijo, telefono, Id_persona, estatus)
-                     VALUES(?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE Id_prefijo = VALUES(Id_prefijo), telefono = VALUES(telefono), estatus = VALUES(estatus)";
+    $sql_telefono = "UPDATE telefonos_personas 
+    SET Id_prefijo = ?, telefono = ?, estatus = ? 
+    WHERE Id_persona = ?";
     $stmt_telefono = $conexion->prepare($sql_telefono);
-
-    if (!$stmt_telefono) {
-        throw new Exception("Error al preparar UPDATE/INSERT en telefonos_personas: " . $conexion->error);
-    }
-
-    $stmt_telefono->bind_param("sisi", $prefijo, $telefono, $id_medico, $estado);
+    $stmt_telefono->bind_param("isii", $prefijo, $telefono,$estado,$id_medico);
     
     if (!$stmt_telefono->execute()) {
         throw new Exception("Error al actualizar teléfono: " . $stmt_telefono->error);
     }
     $stmt_telefono->close();
-
 
     // --- 3. Commit y Redirección Final ---
     $conexion->commit();

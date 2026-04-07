@@ -1,3 +1,42 @@
+<?php
+include('../../cfg/conexion.php');
+
+$datos_d = null;
+$comp_string = '';
+
+if (isset($_GET['duplicar_id'])) {
+  $id_url = mysqli_real_escape_string($conexion, $_GET['duplicar_id']);
+
+  // 1. Buscamos los datos generales usando el ID de la descripción (el que viene de la URL)
+  $sql_d = "SELECT m.nombre_medicamento, dm.* FROM medicamento m 
+              JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento 
+              WHERE dm.Id = '$id_url'";
+  $res_d = $conexion->query($sql_d);
+  $datos_d = $res_d->fetch_assoc();
+
+  if ($datos_d) {
+    // 2. CORRECCIÓN CLAVE: Usamos dm.Id (que aquí es $id_url) para buscar los principios
+    // ya que detalle_principio_medicamento.id_medicamento apunta a descripcion_medicamento.Id
+    $sql_pa = "SELECT d.id_principio_activo, d.cantidad_unidad_medida, d.id_tipo_unidad_medida, p.nombre 
+               FROM detalle_principio_medicamento d
+               JOIN principio_activo p ON d.id_principio_activo = p.id_principio_activo
+               WHERE d.id_medicamento = '$id_url'";
+
+    $res_pa = $conexion->query($sql_pa);
+
+    $pa_parts = [];
+    $lista_pa_full = []; 
+
+    while ($r_pa = $res_pa->fetch_assoc()) {
+      $pa_parts[] = $r_pa['id_principio_activo'] . "," . $r_pa['cantidad_unidad_medida'] . "," . $r_pa['id_tipo_unidad_medida'];
+      $lista_pa_full[] = $r_pa;
+    }
+
+    $comp_string = implode('|', $pa_parts);
+    $principios_json = json_encode($lista_pa_full); 
+  }
+}
+?>
 <!DOCTYPE html>
 <html>
 
@@ -68,6 +107,7 @@
     .has-error #via_aplicacion,
     .has-error #presentacion,
     .has-error #almacenamiento,
+    .has-error #proveedor,
     .has-error .select-pa,
     .input-error {
       border: 2px solid crimson !important;
@@ -127,6 +167,11 @@
 
       <div class="row">
         <div class="col-md-12">
+          <div style="float:right; margin-top:5px; margin-right:5px;">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalCopiarMedicamento" title="Copiar Medicamento" style="background-color: #605ca8; border-color: #605ca8;">
+              <i><img src="../../recursos/imagenes/iconos/Importar.png" style="width:20px; height:20px;"></i>
+            </button>
+          </div>
           <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
               <li class="active"><a href="#tab_1" data-toggle="tab">Detalles de La Operacion</a></li>
@@ -134,23 +179,23 @@
             <div class="tab-content">
               <div class="tab-pane active" id="tab_1">
                 <div class="box-body">
+
                   <form id="formularioMedicamento" style="margin-bottom:8%;" method="POST" action="../../cfg/agregar/agregar_medicamento.php" novalidate>
                     <label class="control-label"></label>
                     <div class="col-sm-4 form-group" id="group_nombre">
                       <p>Nombre (*):</p>
-                      <input id="medicamento" name="medicamento" class="form-control" type="text" maxlength="100" required>
+                      <input id="medicamento" name="medicamento" class="form-control" type="text" maxlength="100" value="<?php echo $datos_d['nombre_medicamento'] ?? ''; ?>" placeholder="Ej. Ibuprofeno" required>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_tipo">
-                      <p>Tipo (*):</p>
-                      <select class="form-control" name="tipo" id="tipo" required>
-                        <option selected value="">Seleccione el Tipo de Medicamento</option>
+                    <div class="col-sm-4 form-group" id="group_presentacion">
+                      <p>Presentacion (*):</p>
+                      <select class="form-control" name="presentacion" id="presentacion" class="form-control" required>
+                        <option value="">--- Seleccione la presentacion del medicamento ---</option>
                         <?php
-                        include('../../cfg/conexion.php');
-
-                        $sql = $conexion->query("SELECT * FROM tipo_medicamento");
-                        while ($resultado = $sql->fetch_assoc()) {
-                          echo "<option value='" . $resultado['Id_tipo'] . "'>" . $resultado['nombre_tipo'] . "</option>";
+                        $sql = $conexion->query("SELECT * FROM presentacion");
+                        while ($r = $sql->fetch_assoc()) {
+                          $selected = (isset($datos_d['Id_presentacion']) && $datos_d['Id_presentacion'] == $r['Id_presentacion']) ? 'selected' : '';
+                          echo "<option value='{$r['Id_presentacion']}' $selected>{$r['nombre_presentacion']}</option>";
                         }
                         ?>
                       </select>
@@ -162,44 +207,55 @@
                         <i></i> Gestionar Principios Activos
                       </button>
                     </div>
-                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" id="principio_activo" required>
+                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" value="<?php echo $comp_string ?? ''; ?>" required>
                     <br><br><br><br>
                     <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_presentacion">
-                      <p>Presentacion (*):</p>
-                      <input id="presentacion" name="presentacion" class="form-control" type="text" maxlength="100" required>
+                    <div class="col-sm-4 form-group" id="group_contenido_neto">
+                      <p>Contenido neto (*):</p>
+                      <input id="contenido_neto" name="contenido_neto" class="form-control" type="text" value="<?php echo $datos_d['contenido_neto'] ?? ''; ?>" maxlength="100" placeholder="Ej. Capsulas de 20mg" required>
                     </div>
                     <label class="control-label"></label>
                     <div class="col-sm-4 form-group" id="group_via">
-                      <p>Via de aplicacion (*):</p>
+                      <p>Via de aplicación (*):</p>
                       <select name="via" id="via_aplicacion" class="form-control">
-                        <option value="">Selecione una Via de Aplicacion</option>
-                        <option value="Oral">Oral</option>
-                        <option value="Sublingual">Sublingual</option>
-                        <option value="Rectal">Rectal</option>
-                        <option value="Intravenosa">Intravenosa</option>
-                        <option value="Intramuscular">Intramuscular</option>
-                        <option value="Subcutanea">Subcutanea</option>
-                        <option value="Intradermica">Intradermica</option>
-                        <option value="Topica">Topica</option>
-                        <option value="Transdermica">Transdermica</option>
-                        <option value="Inhalatoria">Inhalatoria</option>
-                        <option value="Oftalmica">Oftalmica</option>
-                        <option value="Otica">Otica</option>
-                        <option value="Nasal">Nasal</option>
-                        <option value="Vaginal">Vaginal</option>
+                        <option value="">--- Seleccione una vía de aplicación ---</option>
+                        <?php
+                        // Definimos el array de opciones para hacerlo más limpio
+                        $vias = [
+                          "Oral", "Sublingual", "Rectal", "Intravenosa", "Intramuscular",
+                          "Subcutanea", "Intradermica", "Topica", "Transdermica",
+                          "Inhalatoria", "Oftalmica", "Otica", "Nasal", "Vaginal"
+                        ];
+
+                        foreach ($vias as $via) {
+                          // Si el valor coincide con el del medicamento a duplicar, marcamos 'selected'
+                          $selected = (isset($datos_d['via_aplicacion']) && $datos_d['via_aplicacion'] == $via) ? 'selected' : '';
+                          echo "<option value='$via' $selected>$via</option>";
+                        }
+                        ?>
                       </select>
                     </div>
                     <label class="control-label"></label>
                     <div class="col-sm-3 form-group" id="group_almacenamiento">
                       <p>C. de almacenamiento (*):</p>
                       <select name="almacenamiento" id="almacenamiento" class="form-control" required>
-                        <option value="">Seleccione una Condicion</option>
-                        <option value="-25_a_-10">Congelacion (-25°C a -10°C)</option>
-                        <option value="2_a_8">Refrigeracion (2°C a 8°C)</option>
-                        <option value="8_a_15">Lugar Fresco (8°C a 15°C)</option>
-                        <option value="15_a_25">Temperatura Ambiente (15°C a 25°C)</option>
-                        <option value="max_30">Temperatura Maxima (30°C)</option>
+                        <option value="">--- Seleccione una condición ---</option>
+                        <?php
+                        // Definimos value => etiqueta para mantener la estructura limpia
+                        $condiciones = [
+                          "-25_a_-10" => "Congelacion (-25°C a -10°C)",
+                          "2_a_8"     => "Refrigeracion (2°C a 8°C)",
+                          "8_a_15"    => "Lugar Fresco (8°C a 15°C)",
+                          "15_a_25"   => "Temperatura Ambiente (15°C a 25°C)",
+                          "max_30"    => "Temperatura Maxima (30°C)"
+                        ];
+
+                        foreach ($condiciones as $valor => $etiqueta) {
+                          // Comparamos el valor actual con el que traemos para duplicar
+                          $selected = (isset($datos_d['almacenamiento']) && $datos_d['almacenamiento'] == $valor) ? 'selected' : '';
+                          echo "<option value='$valor' $selected>$etiqueta</option>";
+                        }
+                        ?>
                       </select>
                     </div>
                     <br><br><br><br>
@@ -208,12 +264,15 @@
                       <p>Laboratorio:</p>
                       <div class="input-group">
                         <select id="laboratorio" name="laboratorio" class="form-control">
-                          <option value="">Seleccione un Laboratorio</option>
+                          <option value="">--- Seleccione un laboratorio ---</option>
                           <?php
                           include('../../cfg/conexion.php');
                           $sql = $conexion->query("SELECT * FROM laboratorio");
                           while ($resultado = $sql->fetch_assoc()) {
-                            echo "<option value='" . $resultado['Id_laboratorio'] . "'>" . $resultado['nombre_laboratorio'] . "</option>";
+                            // Comparamos el ID del laboratorio actual con el del medicamento que estamos duplicando
+                            $selected = (isset($datos_d['Id_laboratorio']) && $datos_d['Id_laboratorio'] == $resultado['Id_laboratorio']) ? 'selected' : '';
+
+                            echo "<option value='" . $resultado['Id_laboratorio'] . "' $selected>" . $resultado['nombre_laboratorio'] . "</option>";
                           }
                           ?>
                         </select>
@@ -226,14 +285,14 @@
                       </div>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_composicion">
-                      <p>Composicion:</p>
-                      <input type="text" id="composicion" name="composicion" class="form-control">
+                    <div class="col-sm-4 form-group" id="group_excipientes">
+                      <p>Excipientes:</p>
+                      <input type="text" id="excipientes" name="excipientes" value="<?php echo $datos_d['excipientes'] ?? ''; ?>" placeholder="Ej: Microcristalina celulosa, dióxido de titanio y gelatina." class="form-control">
                     </div>
                     <label class="control-label"></label>
                     <div class="col-sm-3 form-group" id="group_codigo_barras">
                       <p>Codigo de barras:</p>
-                      <input type="text" id="codigo_barras" name="codigo_barras" class="form-control">
+                      <input type="text" id="codigo_barras" name="codigo_barras" placeholder="Ej. 234758383" class="form-control">
                     </div>
                     <br><br><br><br>
                     <div style="float:right; margin-top: 2%;">
@@ -261,7 +320,7 @@
             <div class="row fila-pa" style="margin-bottom: 10px;">
               <div class="col-sm-6">
                 <select class="form-control select-pa" id="principio_activo">
-                  <option value="" name="id_pa">Seleccione un Principio Activo</option>
+                  <option value="" name="id_pa">--- Seleccione un principio activo ---</option>
                   <?php
                   $sql_pa = $conexion->query("SELECT * FROM principio_activo");
                   while ($r = $sql_pa->fetch_assoc()) {
@@ -312,6 +371,24 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
           <button type="button" class="btn btn-primary" id="btnGuardarLab">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalCopiarMedicamento" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><i class="fa fa-search"></i> Buscar Medicamento para Copiar</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="buscar_plantilla" class="form-control" placeholder="Escribe el nombre del medicamento...">
+          <hr>
+          <div id="lista_medicamentos_plantilla" style="max-height: 400px; overflow-y: auto;">
+            <p class="text-center">Cargando medicamentos...</p>
+          </div>
         </div>
       </div>
     </div>
@@ -374,7 +451,6 @@
 
   <script>
     $(document).ready(function() {
-
       // =====================================================================
       // FUNCIONES DE VISUALIZACIÓN
       // =====================================================================
@@ -489,7 +565,7 @@
       });
 
       // Actualizar unidades en el modal según el Tipo seleccionado
-      document.getElementById('tipo').addEventListener('change', function() {
+      document.getElementById('presentacion').addEventListener('change', function() {
         const idPresentacion = this.value;
         // Buscamos todos los selects de unidades por su clase
         const selectsUnidad = document.querySelectorAll('.uni-pa');
@@ -543,14 +619,105 @@
         });
       });
 
+      // 1. Cargar lista al abrir el modal
+      $('#modalCopiarMedicamento').on('shown.bs.modal', function() {
+        cargarPlantillas('');
+      });
+
+      // 2. Buscador en tiempo real
+      $('#buscar_plantilla').on('keyup', function() {
+        cargarPlantillas($(this).val());
+      });
+
+      function cargarPlantillas(filtro) {
+        $.ajax({
+          url: 'get/get_plantilla_medicamentos.php',
+          method: 'POST',
+          data: {
+            busqueda: filtro
+          },
+          success: function(html) {
+            $('#lista_medicamentos_plantilla').html(html);
+          }
+        });
+      }
+
+      // 3. Función para COPIAR los datos al formulario
+      $(document).on('click', '.btn-copiar-datos', function() {
+        const d = $(this).data();
+
+        // Llenar campos básicos
+        $('#medicamento').val(d.nombre);
+        $('#contenido_neto').val(d.contenido);
+        $('#via_aplicacion').val(d.via);
+        $('#almacenamiento').val(d.almacenamiento);
+        $('#laboratorio').val(d.id_lab);
+        $('#excipientes').val(d.excipientes);
+        $('#codigo_barras').val(d.codigo);
+        $('#presentacion').val(d.id_presentacion);
+
+        // PASO CLAVE: Cargar unidades antes de construir las filas
+        if (d.id_presentacion) {
+          fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + d.id_presentacion)
+            .then(response => response.text())
+            .then(htmlUnidades => {
+              // Actualizar todos los selects de unidades
+              $('.uni-pa').html(htmlUnidades);
+
+              if (d.composicion) {
+                $('#composicion_detallada').val(d.composicion);
+                $('#contenedor_filas_principios').empty();
+
+                const filas = d.composicion.split('|');
+                const nombres = d.nombres_pa.split('|');
+
+                filas.forEach((fila, index) => {
+                  const [id_pa, cant, id_uni] = fila.split(',');
+                  const nombrePA = nombres[index];
+
+                  let nuevaFila = `
+                        <div class="row fila-pa" style="margin-bottom: 10px;">
+                          <div class="col-sm-6">
+                            <select class="form-control select-pa">
+                                <option value="${id_pa}" selected data-nombre="${nombrePA}">${nombrePA}</option>
+                            </select>
+                          </div>
+                          <div class="col-sm-2">
+                            <input type="text" class="form-control cant-pa" value="${cant}">
+                          </div>
+                          <div class="col-lg-2">
+                            <select class="form-control uni-pa">${htmlUnidades}</select>
+                          </div>
+                          <div class="col-sm-2">
+                            <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
+                          </div>
+                        </div>`;
+
+                  $('#contenedor_filas_principios').append(nuevaFila);
+                  // Asignar la unidad específica a esta fila
+                  $('#contenedor_filas_principios .fila-pa:last .uni-pa').val(id_uni);
+                });
+
+                // Actualizar UI del botón
+                const textoResumen = nombres.join(', ');
+                $('#btn_modal_pa').attr('data-original-title', textoResumen).tooltip('fixTitle');
+                $('#resumen_principios').html("<strong>Incluye:</strong> " + textoResumen);
+              }
+            });
+        }
+
+        $('#modalCopiarMedicamento').modal('hide');
+      });
+
       // =====================================================================
       // LÓGICA DE VERIFICACIÓN AJAX (CONEXIÓN A BD REAL)
       // =====================================================================
       function verificarMedicamentoYEnviar() {
         const nombre = $('#medicamento').val().trim();
+        const id_presentacion = $('#presentacion').val();
+        const codigo_barras = $('#codigo_barras').val().trim();
         const btnGuardar = $('#confirmarGuardar');
 
-        // Estado de carga
         const textoOriginal = btnGuardar.text();
         btnGuardar.text('Verificando...').attr('disabled', true);
 
@@ -559,30 +726,34 @@
           method: 'POST',
           dataType: 'json',
           data: {
-            nombre: nombre
+            nombre: nombre,
+            id_presentacion: id_presentacion,
+            codigo_barras: codigo_barras
           },
           success: function(response) {
-            let errores_ajax = [];
             limpiarErrores();
             btnGuardar.text(textoOriginal).attr('disabled', false);
 
-            if (response.existe_nombre) {
-              errores_ajax.push(`⚠️ Ya existe un medicamento con el nombre: ${nombre}`);
-              $('#group_nombre').addClass('has-error');
-              $('#medicamento').addClass('input-error');
-            }
+            if (response.existe_duplicado) {
+              let mensaje = "";
 
-            if (errores_ajax.length > 0) {
-              mostrarAviso('🛑 Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
+              if (response.tipo_error === 'codigo') {
+                mensaje = `⚠️ El código de barras ya está registrado para el medicamento: <b>${response.detalle}</b>.`;
+                $('#group_codigo_barras').addClass('has-error');
+              } else {
+                mensaje = `⚠️ Ya existe un registro de <b>${nombre}</b> con esa misma presentación.`;
+                $('#group_nombre, #group_presentacion').addClass('has-error');
+              }
+
+              mostrarAviso('🛑 Error de Duplicidad:<br>' + mensaje);
             } else {
-              // Si no hay errores, ENVIAR FORMULARIO
+              // Si todo está bien, enviamos el formulario
               $('#formularioMedicamento').off('submit').submit();
             }
           },
-          error: function(xhr, status, error) {
+          error: function() {
             btnGuardar.text(textoOriginal).attr('disabled', false);
-            // Fallback visual en caso de error de red (opcional) o mostrar alerta
-            mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos. <br>Detalle: ' + error);
+            mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
           }
         });
       }
@@ -598,9 +769,15 @@
           $('#group_nombre').addClass('has-error');
         }
 
-        if ($('#tipo').val().trim() === "") {
-          errores.push("Falta el tipo de medicamento.");
-          $('#group_tipo').addClass('has-error');
+        if ($('#proveedor').val().trim() === "") {
+          errores.push("Falta el nombre del proveedor.");
+          $('#group_proveedor').addClass('has-error');
+        }
+
+
+        if ($('#presentacion').val().trim() === "") {
+          errores.push("Falta la presentacion del medicamento.");
+          $('#group_presentacion').addClass('has-error');
         }
 
         // Validación de los principios activos (revisando el campo oculto que llena el modal)
@@ -609,19 +786,9 @@
           $('#group_principio_activo').addClass('has-error');
         }
 
-        if ($('#u_medida').val().trim() === "") {
-          errores.push("Falta la cantidad del medicamento.");
-          $('#group_unidad').addClass('has-error');
-        }
-
-        if ($('#tipo_unidad_medida').val().trim() === "") {
-          errores.push("Falta el tipo de unidad de medida.");
-          $('#group_tipo_unidad').addClass('has-error');
-        }
-
-        if ($('#presentacion').val().trim() === "") {
-          errores.push("Falta la presentacion del medicamento.");
-          $('#group_presentacion').addClass('has-error');
+        if ($('#contenido_neto').val().trim() === "") {
+          errores.push("Falta el contenido neto del medicamento.");
+          $('#group_contenido_neto').addClass('has-error');
         }
 
         if ($('#via_aplicacion').val().trim() === "") {
@@ -679,6 +846,56 @@
           $('body').addClass('modal-open');
         }
       });
+
+      // =====================================================================
+      // LÓGICA PARA AUTO-CARGAR PRINCIPIOS ACTIVOS AL DUPLICAR
+      // =====================================================================
+      <?php if (isset($_GET['duplicar_id']) && $datos_d) : ?>
+          (function() {
+            const principiosADuplicar = <?php echo $principios_json; ?>;
+            const idPresentacion = '<?php echo $datos_d['Id_presentacion']; ?>';
+
+            if (principiosADuplicar.length > 0 && idPresentacion) {
+              // 1. Primero obtenemos las unidades de medida correspondientes a la presentación
+              fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idPresentacion)
+                .then(response => response.text())
+                .then(htmlUnidades => {
+
+                  // 2. Limpiamos el contenedor de filas del modal
+                  $('#contenedor_filas_principios').empty();
+
+                  // 3. Reconstruimos cada fila
+                  principiosADuplicar.forEach(pa => {
+                    let nuevaFila = `
+                  <div class="row fila-pa" style="margin-bottom: 10px;">
+                    <div class="col-sm-6">
+                      <select class="form-control select-pa">
+                        <option value="${pa.id_principio_activo}" selected data-nombre="${pa.nombre}">${pa.nombre}</option>
+                      </select>
+                    </div>
+                    <div class="col-sm-2">
+                      <input type="text" class="form-control cant-pa" value="${pa.cantidad_unidad_medida}">
+                    </div>
+                    <div class="col-lg-2">
+                      <select class="form-control uni-pa">${htmlUnidades}</select>
+                    </div>
+                    <div class="col-sm-2">
+                      <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
+                    </div>
+                  </div>`;
+
+                    $('#contenedor_filas_principios').append(nuevaFila);
+
+                    // Asignamos la unidad de medida específica a esta fila recién creada
+                    $('#contenedor_filas_principios .fila-pa:last .uni-pa').val(pa.id_tipo_unidad_medida);
+                  });
+
+                  // 4. Disparamos el clic en "Listo" para que se actualice el tooltip y el campo oculto
+                  $('#guardar_pa_temp').click();
+                });
+            }
+          })();
+      <?php endif; ?>
     });
   </script>
 </body>

@@ -91,17 +91,17 @@ if (!$id_consulta || !is_numeric($id_consulta)) {
         SELECT 
             dm.Id as id, 
             m.nombre_medicamento as nombre, 
-            dm.presentacion, 
+            dm.contenido_neto, 
             dm.via_aplicacion,
             dpm.cantidad_unidad_medida, 
             um.unidad,
-            tm.nombre_tipo
+            ps.nombre_presentacion
         FROM prescripcion_medicamentos p
         INNER JOIN descripcion_medicamento dm ON p.Id_descripcion_medicamento = dm.Id
         INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
         LEFT JOIN detalle_principio_medicamento dpm ON m.Id_medicamento = dpm.id_medicamento
         LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-        LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+        LEFT JOIN presentacion ps ON dm.Id_presentacion = ps.Id_presentacion
         WHERE p.Id_consulta = '$safe_id'";
 
     $result_medicamentos = $conexion->query($sql_medicamentos);
@@ -113,11 +113,11 @@ if (!$id_consulta || !is_numeric($id_consulta)) {
       $medicamentos_para_json[] = [
         'id' => $row['id'],
         'nombre' => $row['nombre'],
-        'presentacion' => $row['presentacion'],
+        'contenido' => $row['contenido_neto'],
         'via_aplicacion' => $row['via_aplicacion'],
         'cantidad_unidad_medida' => $row['cantidad_unidad_medida'],
         'unidad' => $row['unidad'],
-        'nombre_tipo' => $row['nombre_tipo']
+        'nombre_presentacion' => $row['nombre_presentacion']
       ];
 
       // Texto que aparecerá en el input visible al cargar
@@ -576,6 +576,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
                           <div class="col-md-6">
                             <label><b>Parentesco/Relación:</b></label>
                             <select name="parentesco_representante" id="parentesco_representante" class="form-control">
+                              <option selected value="">Ninguno</option>
                               <option value="Padre">Padre</option>
                               <option value="Madre">Madre</option>
                               <option value="Abuelo/a">Abuelo/a</option>
@@ -635,12 +636,13 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
                   <select id="selectMedicamentos" class="form-control select2" style="width: 100%;">
                     <option value="">Seleccione un medicamento...</option>
                     <?php
+
                     // Reiniciar el puntero del resultado por si se usó antes
                     if (isset($query_medicamentos)) {
                       $query_medicamentos->data_seek(0);
                       while ($row = $query_medicamentos->fetch_assoc()) :
                     ?>
-                        <option value="<?php echo $row['Id']; ?>" data-nombre="<?php echo htmlspecialchars($row['nombre_medicamento']); ?>" data-via="<?php echo htmlspecialchars($row['via_aplicacion']); ?>" data-presentacion="<?php echo htmlspecialchars($row['presentacion']); ?>" data-tipo="<?php echo htmlspecialchars($row['nombre_tipo']); ?>" data-unidad="<?php echo htmlspecialchars($row['unidad']); ?>" data-cantidad="<?php echo htmlspecialchars($row['cantidad_unidad_medida']); ?>">
+                        <option value="<?php echo $row['Id']; ?>" data-nombre="<?php echo htmlspecialchars($row['nombre_medicamento']); ?>" data-via="<?php echo htmlspecialchars($row['via_aplicacion']); ?>" data-contenido="<?php echo htmlspecialchars($row['contenido_neto']); ?>" data-presentacion="<?php echo htmlspecialchars($row['nombre_presentacion']); ?>" data-unidad="<?php echo htmlspecialchars($row['unidad']); ?>" data-cantidad="<?php echo htmlspecialchars($row['cantidad_unidad_medida']); ?>">
                           <?php echo $row['nombre_medicamento'] . " (" . $row['cantidad_unidad_medida'] . " " . $row['unidad'] . ")"; ?>
                         </option>
                     <?php
@@ -1338,7 +1340,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
 
       if (tabName === 'indicacion_tratamiento') {
         // Validación de medicamentos (mínimo 1)
-    
+
         if ($('#indicaciones').val().trim() === '') {
           isValid = false;
           $('#indicaciones').addClass('input-error');
@@ -1764,20 +1766,24 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
           dataType: 'json',
           success: function(response) {
             const $select = $('#selectMedicamentos');
-            $select.empty().append('<option value="">Seleccione un medicamento...</option>');
+            $select.empty().append('<option value="">--- Seleccione un medicamento ---</option>');
 
             // Según tu PHP, la respuesta viene en response.data y usa success (booleano)
             if (response.success && response.data) {
-              response.data.forEach(function(item) {
+              response.data.forEach(med => {
+                // El texto que verá el médico
+                let textoMostrar = med.nombre_medicamento + " (" + (med.componentes || 'N/A') + " )" + " [" + (med.nombre_presentacion || 'N/A') + " ]";
 
-                $select.append(`<option value="${item.Id_descripcion}" 
-                        data-nombre="${item.nombre_medicamento}" 
-                        data-via="${item.via_aplicacion}" 
-                        data-presentacion="${item.presentacion_comercial}" 
-                        data-tipo="${item.nombre_tipo}"
-                        data-componentes="${item.componentes}">
-                        ${item.nombre_medicamento} (${item.presentacion_comercial})
-                    </option>`);
+                // El value debe ser Id_descripcion (el ID de la tabla descripcion_medicamento)
+                $select.append(`
+              <option value="${med.Id_descripcion}" 
+                      data-nombre="${med.nombre_medicamento}" 
+                      data-via="${med.via_aplicacion || 'No definida'}"
+                      data-contenido="${med.contenido_neto || 'No definida'}"
+                      data-presentacion="${med.nombre_presentacion || 'No definida'}"
+                      data-componentes="${med.componentes || 'Sin componentes'}">
+                  ${textoMostrar}
+              </option>`);
               });
 
               // Refrescar Select2 si lo usas
@@ -1823,13 +1829,12 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
       $('#selectMedicamentos').on('change', function() {
         let option = $(this).find('option:selected');
         if (option.val() !== "") {
+          // Se usan los nombres exactos definidos en data- del HTML
           let via = option.data('via') || 'N/A';
-          let pres = option.data('presentacion') || 'N/A';
-          let tipo = option.data('tipo') || 'N/A';
+          let contenido = option.data('contenido') || 'N/A';
+          let presentacion = option.data('presentacion') || 'N/A';
 
-          let info = `<strong>Vía:</strong> ${via}<br>
-                        <strong>Pres:</strong> ${pres}<br>
-                        <strong>Tipo:</strong> ${tipo}`;
+          let info = `<strong>Vía:</strong> ${via}<br> <strong>Contenido:</strong> ${contenido}<br> <strong>Presentación:</strong> ${presentacion}`;
 
           $('#btnInfoMedicamento')
             .attr('data-original-title', info)
@@ -1850,23 +1855,30 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
           return;
         }
 
-        // Evitar duplicados
-        if (medicamentosSeleccionados.find(m => m.id == idMedicamento)) {
+        const yaExiste = medicamentosSeleccionados.some(m => m.id === idMedicamento);
+        if (yaExiste) {
           mostrarAviso("Este medicamento ya ha sido añadido");
+
+          // CORRECCIÓN: Limpia el select y el tooltip después del error
+          $select.val('').trigger('change');
+          $('#btnInfoMedicamento').attr('data-original-title', 'Seleccione un medicamento').tooltip('fixTitle');
           return;
         }
 
-        const medObj = {
+        const nuevoMed = {
           id: idMedicamento,
           nombre: selected.data('nombre'),
-          presentacion: selected.data('presentacion'),
-          via_aplicacion: selected.data('via'),
-          nombre_tipo: selected.data('tipo')
+          contenido: selected.data('contenido'), // Debe coincidir con data-contenido
+          nombre_presentacion: selected.data('presentacion') // Debe coincidir con data-presentacion
         };
 
-        medicamentosSeleccionados.push(medObj);
+        medicamentosSeleccionados.push(nuevoMed);
         renderizarListaMedicamentos();
+        actualizarTooltipMedicamentos();
+
+        // Limpia el select y el tooltip tras agregar con éxito
         $select.val('').trigger('change');
+        $('#btnInfoMedicamento').attr('data-original-title', 'Seleccione un medicamento').tooltip('fixTitle');
       });
 
       // Aplicar la selección definitiva al formulario
@@ -1902,13 +1914,16 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
       }
 
       medicamentosSeleccionados.forEach((med, index) => {
+        // Usamos .contenido y .nombre_presentacion que definimos en el paso anterior
+        let textoMostrar = `${med.nombre} - ${med.contenido} (${med.nombre_presentacion})`;
         contenedor.append(`
-            <div class="alert alert-info alert-dismissible" style="margin-bottom: 5px; padding: 8px;">
+
+        <div class="alert alert-info alert-dismissible" style="margin-bottom: 5px; padding: 8px;">
                 <button type="button" class="close" onclick="eliminarMed(${index})">&times;</button>
-                <strong>${med.nombre}</strong> - <small>${med.presentacion} (${med.nombre_tipo})</small>
+                <strong>${med.nombre}</strong> - <small>${med.contenido} (${med.nombre_presentacion})</small>
                 <input type="hidden" name="medicamentos_ids[]" value="${med.id}">
             </div>
-        `);
+      `);
       });
     }
 

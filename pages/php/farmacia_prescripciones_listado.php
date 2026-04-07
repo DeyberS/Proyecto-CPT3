@@ -98,7 +98,8 @@
                               
                               -- Datos del Paciente
                               paciente.nombre AS nom_pac, 
-                              paciente.apellido AS ape_pac, 
+                              paciente.apellido AS ape_pac,
+                              paciente.tipo_cedula AS tipo_cedula_pac, 
                               paciente.cedula AS cedula_pac,
                               rep.cedula AS cedula_representante,
                               
@@ -108,7 +109,7 @@
 
                               -- Datos del Medicamento
                               m.nombre_medicamento,
-                              tm.nombre_tipo,       
+                              p.nombre_presentacion,       
                               GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpmc.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,          
                               TIMESTAMPDIFF(YEAR, paciente.fecha_nacimiento, CURDATE()) < 18 AS es_menor,
                               
@@ -124,7 +125,7 @@
                             INNER JOIN persona medico ON c.Id_medico = medico.id
                             INNER JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
                             INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-                            LEFT JOIN tipo_medicamento tm ON dm.Id_tipo = tm.Id_tipo
+                            LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
                             LEFT JOIN detalle_principio_medicamento dpmc ON dm.Id = dpmc.id_medicamento
                             LEFT JOIN unidad_medida um ON dpmc.id_tipo_unidad_medida = um.Id_unidad_medida
                             LEFT JOIN principio_activo pa ON dpmc.id_principio_activo = pa.Id_principio_activo
@@ -150,7 +151,7 @@
 
                       <td>
                         <strong><?php echo $row['nom_pac'] . " " . $row['ape_pac']; ?></strong><br>
-                        <small>C.I: <?php echo $row['cedula_pac']; ?></small>
+                        <small><?php echo $row['tipo_cedula_pac']; ?>-<?php echo $row['cedula_pac']; ?></small>
                       </td>
 
                       <td>
@@ -186,10 +187,10 @@
                           // Si es menor, enviamos la cédula del representante, si no, la del paciente
                           $cedula_a_enviar = ($row['es_menor'] == 1) ? $row['cedula_representante'] : $row['cedula_pac'];
                           ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Ver Informarcion">
+                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info btn-sm" title="Ver Informarcion">
                             <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
                           </a>
-                          <a href="farmacia_inventario_movimiento_salida.php?id_pres=<?php echo $row['id_prescripcion']; ?>&id_med=<?php echo $row['Id_descripcion_medicamento']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&from=prescripciones" class="btn <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Despachar Medicamento">
+                          <a href="farmacia_inventario_movimiento_salida.php?id_pres=<?php echo $row['id_prescripcion']; ?>&id_med=<?php echo $row['Id_descripcion_medicamento']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&from=prescripciones" class="btn btn-success btn-sm" title="Despachar Medicamento">
                             <img src="../../recursos/imagenes/iconos/enviar.png" style="width:15px; height:15px;">
                           </a>
                           <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></button>

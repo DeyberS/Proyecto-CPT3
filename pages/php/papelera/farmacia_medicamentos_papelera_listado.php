@@ -95,8 +95,8 @@
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Medicamento</th>
-            <th>Tipo</th>
             <th>Presentación</th>
+            <th>Contenido. N</th>
             <th>Via de Aplicacion</th>
             <th>Codigo de Barras</th> 
             <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
@@ -113,7 +113,7 @@
               $donde = "WHERE m.estatus = 0";
               if ($busqueda != '') {
                 $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' 
-                              OR tp.nombre_tipo LIKE '%$busqueda%' 
+                              OR p.nombre_presentacion LIKE '%$busqueda%' 
                               OR dm.via_aplicacion LIKE '%$busqueda%')";
               }
 
@@ -125,7 +125,7 @@
               $sql_conteo = "SELECT COUNT(*) as total 
                              FROM medicamento m 
                              JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                             JOIN tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo
+                             JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
                              $donde";
               $resultado_conteo = mysqli_query($conexion, $sql_conteo);
               $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
@@ -136,19 +136,28 @@
                         m.Id_medicamento AS Id_medicamento,
                         m.nombre_medicamento,
                         dm.Id, 
-                        dm.Id_tipo,
-                        dm.presentacion, 
+                        dm.Id_presentacion,
+                        dm.contenido_neto, 
                         dm.via_aplicacion,
-                        tp.nombre_tipo,
+                        p.nombre_presentacion,
                         dm.codigo_barras,
+                        GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
                         m.estatus
                     FROM 
                         medicamento m
                     JOIN 
                         descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                    JOIN
-                        tipo_medicamento tp ON dm.Id_tipo = tp.Id_tipo
-                    $donde
+                    INNER JOIN 
+                        presentacion p ON dm.Id_presentacion = p.Id_presentacion     
+                    INNER JOIN 
+                        detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+                    INNER JOIN 
+                        unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+                    INNER JOIN 
+                        principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+                    $donde  
+                    GROUP BY 
+                        m.Id_medicamento  
                     ORDER BY 
                         m.Id_medicamento ASC
                     LIMIT $inicio, $registros_por_pagina";
@@ -159,9 +168,9 @@
               <?php while ($row = $resultado->fetch_assoc()) { ?>
             </tr>
             <tr>
-              <td class=""><span class="text-row text-white"><?= $row['nombre_medicamento']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['nombre_tipo']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['presentacion']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['nombre_medicamento']; ?> (<?= $row['componentes']; ?>)</span></td>
+              <td class=""><span class="text-row text-white"><?= $row['nombre_presentacion']; ?></span></td>
+              <td class=""><span class="text-row text-white"><?= $row['contenido_neto']; ?></span></td>
               <td class=""><span class="text-row text-white"><?= $row['via_aplicacion']; ?></span></td>     
               <td class=""><span class="text-row text-white"><?= $row['codigo_barras']; ?></span></td>
               <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
