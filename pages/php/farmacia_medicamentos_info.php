@@ -5,9 +5,10 @@ $id_url = isset($_GET['Id']) ? (int)$_GET['Id'] : 0;
 if ($id_url <= 0) die("ID no válido.");
 
 // CONSULTA EXTENDIDA
-$sql = "SELECT m.nombre_medicamento, dm.*, p.nombre_presentacion, l.nombre_laboratorio 
+$sql = "SELECT m.nombre_medicamento, dm.*, p.nombre_presentacion, l.nombre_laboratorio, u.unidad 
         FROM descripcion_medicamento dm
         JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
+        LEFT JOIN unidad_medida u ON dm.Id_tipo_concentracion = u.Id_unidad_medida
         LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
         LEFT JOIN laboratorio l ON dm.Id_laboratorio = l.Id_laboratorio
         WHERE dm.Id = $id_url";
@@ -25,6 +26,14 @@ $sql_pa = "SELECT pa.nombre, dpm.cantidad_unidad_medida, um.unidad
            WHERE dpm.id_medicamento = " . $row['Id'];
 $res_pa = $conexion->query($sql_pa);
 while ($p = $res_pa->fetch_assoc()) $principios[] = $p;
+
+$patologias = [];
+$sql_pat = "SELECT pat.nombre_patologia
+           FROM detalle_patologia_medicamento dptm
+           JOIN patologias pat ON dptm.Id_patologia = pat.Id_patologia
+           WHERE dptm.Id_medicamento = " . $row['Id'];
+$res_pat = $conexion->query($sql_pat);
+while ($pat = $res_pat->fetch_assoc()) $patologias[] = $pat;
 $texto_almacenamiento = [
     "-25_a_-10" => "Congelación (-25°C a -10°C)",
     "2_a_8"     => "Refrigeración (2°C a 8°C)",
@@ -49,7 +58,7 @@ $texto_almacenamiento = [
         }
 
         .content-custom {
-            padding: 70px 15px;
+            padding: 50px 15px;
         }
 
         .main-container {
@@ -90,6 +99,15 @@ $texto_almacenamiento = [
             background: #fdfdfd;
             border: 1px solid #eee;
             border-left: 4px solid #00a65a;
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+        }
+
+        .pat-item {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-left: 4px solid crimson;
             padding: 10px 15px;
             margin-bottom: 5px;
             border-radius: 3px;
@@ -240,6 +258,10 @@ $texto_almacenamiento = [
                                         <th>Excipientes</th>
                                         <td><?php echo $row['excipientes'] ?: 'No especificada'; ?></td>
                                     </tr>
+                                    <tr>
+                                        <th>Concentración</th>
+                                        <td><?php echo $row['cantidad_concentracion'] ?: 'No especificada'; ?><?php echo $row['unidad']; ?></td>
+                                    </tr>
                                 </table>
                             </div>
 
@@ -252,6 +274,16 @@ $texto_almacenamiento = [
                                         <div class="pa-item">
                                             <strong><?php echo $p['nombre']; ?></strong>
                                             <span class="pull-right badge bg-green"><?php echo $p['cantidad_unidad_medida'] . " " . $p['unidad']; ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                <h4 class="page-header text-crimson"><i class="fa fa-flask"></i> Patologias </h4>
+                                <?php if (empty($patologias)) : ?>
+                                    <p class="text-muted">Sin patologias.</p>
+                                <?php else : ?>
+                                    <?php foreach ($patologias as $pat) : ?>
+                                        <div class="pat-item">
+                                            <strong><?php echo $pat['nombre_patologia']; ?></strong>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>

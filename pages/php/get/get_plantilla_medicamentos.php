@@ -2,30 +2,45 @@
 include('../../../cfg/conexion.php');
 $busqueda = $conexion->real_escape_string($_POST['busqueda'] ?? '');
 
-// Consulta con el formato exacto de componentes: Nombre Cantidad Unidad + ...
 $sql = "SELECT 
             m.nombre_medicamento, 
             d.*,
             p.nombre_presentacion,
-            /* Formato solicitado: Paracetamol 500mg + Cafeína 50mg */
-            GROUP_CONCAT(
-                CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) 
-                SEPARATOR ' + '
-            ) AS componentes,
-            /* IDs para la lógica del sistema */
-            GROUP_CONCAT(
-                CONCAT(dpm.id_principio_activo, ',', dpm.cantidad_unidad_medida, ',', dpm.id_tipo_unidad_medida) 
-                SEPARATOR '|'
-            ) AS composicion_ids
+            
+            /* Componentes para mostrar en la lista (Paracetamol 500mg + Cafeina 50mg) */
+            (SELECT GROUP_CONCAT(CONCAT(IFNULL(pa2.nombre,''), ' ', IFNULL(dpm2.cantidad_unidad_medida,''), IFNULL(um2.unidad,'')) SEPARATOR ' + ') 
+             FROM detalle_principio_medicamento dpm2 
+             LEFT JOIN principio_activo pa2 ON dpm2.id_principio_activo = pa2.Id_principio_activo 
+             LEFT JOIN unidad_medida um2 ON dpm2.id_tipo_unidad_medida = um2.Id_unidad_medida 
+             WHERE dpm2.id_medicamento = d.Id) AS componentes,
+            
+            /* IDs exactos de la composición (id_pa,cant,id_uni | id_pa,cant,id_uni) */
+            (SELECT GROUP_CONCAT(CONCAT(dpm3.id_principio_activo, ',', dpm3.cantidad_unidad_medida, ',', dpm3.id_tipo_unidad_medida) SEPARATOR '|') 
+             FROM detalle_principio_medicamento dpm3 
+             WHERE dpm3.id_medicamento = d.Id) AS composicion_ids,
+             
+            /* Nombres de los PA separados por el pipe (|) para que JS los separe bien */
+            (SELECT GROUP_CONCAT(pa4.nombre SEPARATOR '|') 
+             FROM detalle_principio_medicamento dpm4 
+             LEFT JOIN principio_activo pa4 ON dpm4.id_principio_activo = pa4.Id_principio_activo 
+             WHERE dpm4.id_medicamento = d.Id) AS nombres_pa,
+
+            /* IDs de patologías separados por pipe (|) */
+            (SELECT GROUP_CONCAT(dpm5.Id_patologia SEPARATOR '|') 
+             FROM detalle_patologia_medicamento dpm5 
+             WHERE dpm5.Id_medicamento = d.Id) AS patologias_ids,
+             
+            /* Nombres de patologías separados por pipe (|) */
+            (SELECT GROUP_CONCAT(pato.nombre_patologia SEPARATOR '|') 
+             FROM detalle_patologia_medicamento dpm6 
+             JOIN patologias pato ON dpm6.id_patologia = pato.Id_patologia 
+             WHERE dpm6.id_medicamento = d.Id) AS patologias_nombres
+
         FROM medicamento m 
         JOIN descripcion_medicamento d ON m.Id_medicamento = d.Id_medicamento
         INNER JOIN presentacion p ON d.Id_presentacion = p.Id_presentacion
-        LEFT JOIN detalle_principio_medicamento dpm ON d.Id = dpm.id_medicamento
-        LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
-        LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-        WHERE (m.nombre_medicamento LIKE '%$busqueda%' OR d.codigo_barras LIKE '%$busqueda%' OR p.nombre_presentacion LIKE '%$busqueda%' OR pa.nombre LIKE '%$busqueda%')
+        WHERE (m.nombre_medicamento LIKE '%$busqueda%' OR d.codigo_barras LIKE '%$busqueda%' OR p.nombre_presentacion LIKE '%$busqueda%')
         AND d.estatus = '1'
-        GROUP BY d.Id
         ORDER BY m.nombre_medicamento ASC
         LIMIT 10";
 
@@ -34,7 +49,6 @@ $res = $conexion->query($sql);
 if ($res && $res->num_rows > 0) {
     echo '<table class="table table-hover table-striped" style="margin-bottom:0;">';
     while ($r = $res->fetch_assoc()) {
-        // Si no hay componentes, mostramos un aviso simple
         $componentes_display = !empty($r['componentes']) ? $r['componentes'] : 'Sin componentes registrados';
         
         echo "<tr>
@@ -53,8 +67,12 @@ if ($res && $res->num_rows > 0) {
                         data-id_lab='{$r['Id_laboratorio']}'
                         data-excipientes='{$r['excipientes']}'
                         data-codigo='{$r['codigo_barras']}'
+                        data-cantidad_c='{$r['cantidad_concentracion']}'
+                        data-tipo_c='{$r['Id_tipo_concentracion']}'
                         data-composicion='{$r['composicion_ids']}'
-                        data-nombres_pa='{$r['componentes']}'>
+                        data-nombres_pa='{$r['nombres_pa']}'
+                        data-patologias='{$r['patologias_ids']}'
+                        data-nombres_pat='{$r['patologias_nombres']}'>
                         <i class='fa fa-copy'></i> Copiar Datos
                     </button>
                 </td>

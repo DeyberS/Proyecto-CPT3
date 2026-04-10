@@ -25,7 +25,7 @@ if (isset($_GET['duplicar_id'])) {
     $res_pa = $conexion->query($sql_pa);
 
     $pa_parts = [];
-    $lista_pa_full = []; 
+    $lista_pa_full = [];
 
     while ($r_pa = $res_pa->fetch_assoc()) {
       $pa_parts[] = $r_pa['id_principio_activo'] . "," . $r_pa['cantidad_unidad_medida'] . "," . $r_pa['id_tipo_unidad_medida'];
@@ -33,8 +33,25 @@ if (isset($_GET['duplicar_id'])) {
     }
 
     $comp_string = implode('|', $pa_parts);
-    $principios_json = json_encode($lista_pa_full); 
+    $principios_json = json_encode($lista_pa_full);
   }
+
+  $sql_pat = "SELECT d.id_patologia, p.nombre_patologia 
+            FROM detalle_patologia_medicamento d
+            JOIN patologias p ON d.id_patologia = p.Id_patologia
+            WHERE d.id_medicamento = '$id_url'";
+
+  $res_pat = $conexion->query($sql_pat);
+  $pat_parts = [];
+  $lista_pat_full = [];
+
+  while ($r_pat = $res_pat->fetch_assoc()) {
+    $pat_parts[] = $r_pat['id_patologia'];
+    $lista_pat_full[] = $r_pat;
+  }
+
+  $patologias_string = implode('|', $pat_parts);
+  $patologias_json = json_encode($lista_pat_full);
 }
 ?>
 <!DOCTYPE html>
@@ -107,7 +124,8 @@ if (isset($_GET['duplicar_id'])) {
     .has-error #via_aplicacion,
     .has-error #presentacion,
     .has-error #almacenamiento,
-    .has-error #proveedor,
+    .has-error #cantidad_concentracion,
+    .has-error #tipo_concentracion,
     .has-error .select-pa,
     .input-error {
       border: 2px solid crimson !important;
@@ -201,21 +219,7 @@ if (isset($_GET['duplicar_id'])) {
                       </select>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-3 form-group" id="group_principio_activo">
-                      <p>Principios activos (*):</p>
-                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pa" data-toggle="modal" data-placement="top" title="Ninguno seleccionado" data-target="#modalPrincipios">
-                        <i></i> Gestionar Principios Activos
-                      </button>
-                    </div>
-                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" value="<?php echo $comp_string ?? ''; ?>" required>
-                    <br><br><br><br>
-                    <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_contenido_neto">
-                      <p>Contenido neto (*):</p>
-                      <input id="contenido_neto" name="contenido_neto" class="form-control" type="text" value="<?php echo $datos_d['contenido_neto'] ?? ''; ?>" maxlength="100" placeholder="Ej. Capsulas de 20mg" required>
-                    </div>
-                    <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_via">
+                    <div class="col-sm-3 form-group" id="group_via">
                       <p>Via de aplicación (*):</p>
                       <select name="via" id="via_aplicacion" class="form-control">
                         <option value="">--- Seleccione una vía de aplicación ---</option>
@@ -235,16 +239,35 @@ if (isset($_GET['duplicar_id'])) {
                         ?>
                       </select>
                     </div>
+
+                    <br><br><br><br>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_contenido_neto">
+                      <p>Contenido neto (*):</p>
+                      <input id="contenido_neto" name="contenido_neto" class="form-control" type="text" value="<?php echo $datos_d['contenido_neto'] ?? ''; ?>" maxlength="100" placeholder="Ej. Capsulas de 20mg">
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4" id="group_concentracion">
+                      <p>Concentración:</p>
+                      <div class="input-group">
+                        <input type="text" class="form-control cantidad-pre" name="cantidad_concentracion" id="cantidad_concentracion" placeholder="Cant." value="<?php echo $datos_d['cantidad_concentracion'] ?? ''; ?>" inputmode="numeric">
+                        <div class="input-group-btn" style="width: 60%;">
+                          <select class="form-control uni-concentracion" name="tipo_concentracion" id="tipo_concentracion" required style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0;">
+                            <option selected value="">--- Primero seleccione una presentación --- </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
                     <label class="control-label"></label>
                     <div class="col-sm-3 form-group" id="group_almacenamiento">
-                      <p>C. de almacenamiento (*):</p>
+                      <p>Condición de almacenamiento (*):</p>
                       <select name="almacenamiento" id="almacenamiento" class="form-control" required>
                         <option value="">--- Seleccione una condición ---</option>
                         <?php
                         // Definimos value => etiqueta para mantener la estructura limpia
                         $condiciones = [
-                          "-25_a_-10" => "Congelacion (-25°C a -10°C)",
-                          "2_a_8"     => "Refrigeracion (2°C a 8°C)",
+                          "-25_a_-10" => "Congelación (-25°C a -10°C)",
+                          "2_a_8"     => "Refrigeración (2°C a 8°C)",
                           "8_a_15"    => "Lugar Fresco (8°C a 15°C)",
                           "15_a_25"   => "Temperatura Ambiente (15°C a 25°C)",
                           "max_30"    => "Temperatura Maxima (30°C)"
@@ -258,6 +281,28 @@ if (isset($_GET['duplicar_id'])) {
                         ?>
                       </select>
                     </div>
+                    <br><br><br><br>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_principio_activo">
+                      <p>Principios activos (*):</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pa" data-toggle="modal" data-placement="top" title="Ninguno seleccionado" data-target="#modalPrincipios">
+                        <i></i> Gestionar Principios Activos
+                      </button>
+                    </div>
+                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" value="<?php echo $comp_string ?? ''; ?>" required>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_excipientes">
+                      <p>Excipientes:</p>
+                      <input type="text" id="excipientes" name="excipientes" value="<?php echo $datos_d['excipientes'] ?? ''; ?>" placeholder="Ej: Microcristalina celulosa, dióxido de titanio y gelatina." class="form-control">
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3 form-group" id="group_patologia">
+                      <p>Patologías asociadas:</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pat" data-toggle="modal" data-placement="top" title="Ninguna seleccionada" data-target="#modal_pat">
+                        <i></i> Gestionar Patologías Asociadas
+                      </button>
+                    </div>
+                    <input type="hidden" name="patologias_seleccionadas" id="patologias_seleccionadas" value="<?php echo $patologias_string ?? ''; ?>">
                     <br><br><br><br>
                     <label class="control-label"></label>
                     <div class="col-sm-4" id="group_laboratorio">
@@ -285,12 +330,7 @@ if (isset($_GET['duplicar_id'])) {
                       </div>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_excipientes">
-                      <p>Excipientes:</p>
-                      <input type="text" id="excipientes" name="excipientes" value="<?php echo $datos_d['excipientes'] ?? ''; ?>" placeholder="Ej: Microcristalina celulosa, dióxido de titanio y gelatina." class="form-control">
-                    </div>
-                    <label class="control-label"></label>
-                    <div class="col-sm-3 form-group" id="group_codigo_barras">
+                    <div class="col-sm-4 form-group" id="group_codigo_barras">
                       <p>Codigo de barras:</p>
                       <input type="text" id="codigo_barras" name="codigo_barras" placeholder="Ej. 234758383" class="form-control">
                     </div>
@@ -307,6 +347,26 @@ if (isset($_GET['duplicar_id'])) {
         </div>
       </div>
     </section>
+  </div>
+
+  <div class="modal fade" id="modal_pat" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title">Agregar Patologías</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_patologias">
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" id="add_fila_pat">
+            <i class="fa fa-plus"></i> Añadir otra
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" id="guardar_pat_listo" data-dismiss="modal">Listo</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="modal fade" id="modalPrincipios" tabindex="-1" role="dialog">
@@ -334,7 +394,7 @@ if (isset($_GET['duplicar_id'])) {
               </div>
               <div class="col-lg-2 pull-left form-group" id="group_tipo_unidad" style="margin-left:-20px;">
                 <select class="form-control uni-pa" name="tipo_unidad_medida" id="tipo_unidad_medida" required>
-                  <option selected value="">Primero Seleccione una Presentacion</option>
+                  <option selected value="">--- Primero seleccione una presentación ---</option>
                 </select>
               </div>
               <div class="col-sm-2">
@@ -455,6 +515,9 @@ if (isset($_GET['duplicar_id'])) {
       // FUNCIONES DE VISUALIZACIÓN
       // =====================================================================
 
+      // Capturamos la unidad de concentración guardada (si estamos duplicando)
+      const unidadConcentracionPrevia = '<?php echo $datos_d['id_tipo_concentracion'] ?? ''; ?>';
+
       function mostrarAviso(mensaje) {
         $('#avisoTexto').html(mensaje);
         $('#avisoModal').modal('show');
@@ -508,13 +571,35 @@ if (isset($_GET['duplicar_id'])) {
         this.value = valor;
       });
 
+      $(document).on('input', '#codigo_barras', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
+      $(document).on('input', '.cantidad-pre', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
       // --- Lógica de Principios Activos en Modal ---
 
       // Agregar nueva fila dentro del modal
       $('#btn_add_pa').on('click', function() {
         var nuevaFila = $('.fila-pa:first').clone();
         nuevaFila.find('input').val('');
-        nuevaFila.find('select').val('');
+        if (window.unidadesDisponibles) {
+          nuevaFila.find('.uni-pa').html(window.unidadesDisponibles);
+        }
         $('#contenedor_filas_principios').append(nuevaFila);
       });
 
@@ -535,56 +620,28 @@ if (isset($_GET['duplicar_id'])) {
         var resumen = [];
         var datos_para_db = [];
 
+        // Usamos find para asegurar que buscamos dentro de CADA fila, sin importar cómo se creó
         $('.fila-pa').each(function() {
-          var nombre = $(this).find('.select-pa option:selected').data('nombre');
-          var id_pa = $(this).find('.select-pa').val();
-          var cantidad = $(this).find('.cant-pa').val();
-          var unidad = $(this).find('.uni-pa option:selected').text();
-          var id_unidad = $(this).find('.uni-pa').val();
+          var $fila = $(this);
+          var id_pa = $fila.find('.select-pa').val();
+          var nombre = $fila.find('.select-pa option:selected').data('nombre') || $fila.find('.select-pa option:selected').text();
+          var cantidad = $fila.find('.cant-pa').val();
+          var id_unidad = $fila.find('.uni-pa').val();
+          var nombre_unidad = $fila.find('.uni-pa option:selected').text();
 
-          if (nombre && cantidad && id_unidad) {
-            resumen.push(nombre + " " + cantidad + " " + unidad);
+          if (id_pa && cantidad && id_unidad) {
+            resumen.push(nombre.trim() + " " + cantidad + " " + nombre_unidad.trim());
             datos_para_db.push(id_pa + "," + cantidad + "," + id_unidad);
           }
         });
 
+        // Actualizar el input oculto que va al PHP
+        $('#composicion_detallada').val(datos_para_db.join('|'));
+
+        // Actualizar visualmente el botón
         var boton = $('#btn_modal_pa');
-
         if (resumen.length > 0) {
-          var listaTexto = resumen.join(', ');
-          $('#resumen_principios').html("<strong>Incluye:</strong> " + listaTexto);
-          $('#composicion_detallada').val(datos_para_db.join('|'));
-
-          // Actualizamos el tooltip correctamente
-          boton.attr('data-original-title', listaTexto).tooltip('fixTitle');
-        } else {
-          $('#resumen_principios').html("<em>Ninguno seleccionado</em>");
-          $('#composicion_detallada').val('');
-          boton.attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle');
-        }
-      });
-
-      // Actualizar unidades en el modal según el Tipo seleccionado
-      document.getElementById('presentacion').addEventListener('change', function() {
-        const idPresentacion = this.value;
-        // Buscamos todos los selects de unidades por su clase
-        const selectsUnidad = document.querySelectorAll('.uni-pa');
-
-        if (idPresentacion !== "") {
-          fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idPresentacion)
-            .then(response => response.text())
-            .then(data => {
-              selectsUnidad.forEach(select => {
-                select.innerHTML = data;
-              });
-            })
-            .catch(error => {
-              console.error('Error:', error);
-            });
-        } else {
-          selectsUnidad.forEach(select => {
-            select.innerHTML = '<option value="">---</option>';
-          });
+          boton.attr('data-original-title', resumen.join(', ')).tooltip('fixTitle');
         }
       });
 
@@ -655,14 +712,21 @@ if (isset($_GET['duplicar_id'])) {
         $('#excipientes').val(d.excipientes);
         $('#codigo_barras').val(d.codigo);
         $('#presentacion').val(d.id_presentacion);
+        $('#cantidad_concentracion').val(d.cantidad_c);
+
+        const unidadASeleccionar = d.tipo_c;
+
 
         // PASO CLAVE: Cargar unidades antes de construir las filas
         if (d.id_presentacion) {
           fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + d.id_presentacion)
             .then(response => response.text())
             .then(htmlUnidades => {
-              // Actualizar todos los selects de unidades
-              $('.uni-pa').html(htmlUnidades);
+
+              $('.uni-pa, .uni-concentracion').html(htmlUnidades);
+
+
+              $('#tipo_concentracion').val(unidadASeleccionar);
 
               if (d.composicion) {
                 $('#composicion_detallada').val(d.composicion);
@@ -706,8 +770,54 @@ if (isset($_GET['duplicar_id'])) {
             });
         }
 
+        if (d.patologias) {
+          $('#contenedor_filas_patologias').empty();
+          // Convertimos a string por si viene como número y separamos
+          const idsPat = String(d.patologias).split('|');
+          const nombresPat = d.nombres_pat ? String(d.nombres_pat).split('|') : [];
+
+          idsPat.forEach(id => {
+            // Llamamos a la función global que ya tienes definida en la línea 545
+            if (id) agregarFilaPatologia(id);
+          });
+
+          // Actualizar Tooltip
+          let textoTooltip = nombresPat.length > 0 ? nombresPat.join(', ') : 'Patologías seleccionadas';
+          $('#btn_modal_pat').attr('data-original-title', textoTooltip).tooltip('fixTitle');
+        }
+
+
         $('#modalCopiarMedicamento').modal('hide');
       });
+
+
+      const presentacionCargada = $('#presentacion').val();
+      const unidadCargada = '<?php echo $datos_d['Id_tipo_concentracion'] ?? $datos_d['id_tipo_concentracion'] ?? $datos_d['tipo_concentracion'] ?? $datos_d['id_tipo_unidad_medida'] ?? ''; ?>';
+
+      function inicializarUnidades(idPres, unidadSel) {
+        if (idPres) {
+          $.ajax({
+            url: '../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idPres,
+            success: function(data) {
+              window.unidadesDisponibles = data;
+              $('.uni-pa, .uni-concentracion').html(data);
+
+              if (unidadSel && unidadSel !== "") {
+                $('#tipo_concentracion').val(unidadSel);
+              }
+            }
+          });
+        }
+      }
+
+      if (presentacionCargada) {
+        inicializarUnidades(presentacionCargada, unidadCargada);
+      }
+
+      $('#presentacion').on('change', function() {
+        inicializarUnidades($(this).val(), "");
+      });
+
 
       // =====================================================================
       // LÓGICA DE VERIFICACIÓN AJAX (CONEXIÓN A BD REAL)
@@ -769,12 +879,6 @@ if (isset($_GET['duplicar_id'])) {
           $('#group_nombre').addClass('has-error');
         }
 
-        if ($('#proveedor').val().trim() === "") {
-          errores.push("Falta el nombre del proveedor.");
-          $('#group_proveedor').addClass('has-error');
-        }
-
-
         if ($('#presentacion').val().trim() === "") {
           errores.push("Falta la presentacion del medicamento.");
           $('#group_presentacion').addClass('has-error');
@@ -786,14 +890,14 @@ if (isset($_GET['duplicar_id'])) {
           $('#group_principio_activo').addClass('has-error');
         }
 
-        if ($('#contenido_neto').val().trim() === "") {
-          errores.push("Falta el contenido neto del medicamento.");
-          $('#group_contenido_neto').addClass('has-error');
-        }
-
         if ($('#via_aplicacion').val().trim() === "") {
           errores.push("Falta el tipo de aplicacion.");
           $('#group_via').addClass('has-error');
+        }
+
+        if ($('#contenido_neto').val().trim() === "") {
+          errores.push("Falta el contenido neto del medicamento.");
+          $('#group_contenido_neto').addClass('has-error');
         }
 
         if ($('#almacenamiento').val().trim() === "") {
@@ -847,51 +951,159 @@ if (isset($_GET['duplicar_id'])) {
         }
       });
 
-      // =====================================================================
-      // LÓGICA PARA AUTO-CARGAR PRINCIPIOS ACTIVOS AL DUPLICAR
-      // =====================================================================
+      // --- LÓGICA DE PATOLOGÍAS ---
+
+      // 1. Cargar patologías existentes (si se está duplicando)
+      // 1. Cargar patologías existentes (si se está duplicando)
+      <?php if (isset($patologias_json)) : ?>
+        let patsExistentes = <?php echo $patologias_json; ?>;
+        let nombresPat = [];
+
+        patsExistentes.forEach(p => {
+          agregarFilaPatologia(p.id_patologia);
+
+          // Ya traemos el nombre desde PHP en el JSON, lo usamos directamente (es más rápido y seguro)
+          if (p.nombre_patologia) {
+            nombresPat.push(p.nombre_patologia.trim());
+          }
+        });
+
+        // Como el tooltip aún no se ha inicializado en este punto del script, 
+        // simplemente inyectamos los atributos 'title' y 'data-original-title' listos.
+        if (nombresPat.length > 0) {
+          $('#btn_modal_pat').attr('title', nombresPat.join(', '));
+          $('#btn_modal_pat').attr('data-original-title', nombresPat.join(', '));
+        }
+      <?php endif; ?>
+
+
+      // 2. Función para añadir una fila nueva
+      function agregarFilaPatologia(idSeleccionado = "") {
+        let htmlPat = `
+        <div class="row fila-pat" style="margin-bottom: 10px;">
+            <div class="col-sm-10">
+                <select class="form-control select-pat">
+                    <option value="">--- Seleccione una patología ---</option>
+                    <?php
+                    $q = $conexion->query("SELECT Id_patologia, nombre_patologia FROM patologias WHERE estatus = 1 ORDER BY nombre_patologia ASC");
+                    while ($p = $q->fetch_assoc()) {
+                      echo "<option value='" . $p['Id_patologia'] . "'>" . $p['nombre_patologia'] . "</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-danger btn-remove-pat">
+                    <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
+                </button>
+            </div>
+        </div>`;
+        $('#contenedor_filas_patologias').append(htmlPat);
+        if (idSeleccionado) {
+          $('#contenedor_filas_patologias .fila-pat:last .select-pat').val(idSeleccionado);
+        }
+      }
+
+      // 3. Abrir con una fila por defecto si está vacío
+      $('#btn_modal_pat').click(function() {
+        if ($('#contenedor_filas_patologias').children().length === 0) {
+          agregarFilaPatologia();
+        }
+      });
+
+      // Eventos de botones
+      $('#add_fila_pat').click(() => agregarFilaPatologia());
+
+      $(document).on('click', '.btn-remove-pat', function() {
+        $(this).closest('.fila-pat').remove();
+      });
+
+      $('#btn_modal_pat').tooltip();
+
+      // Guardar y actualizar resumen
+      $('#guardar_pat_listo').click(function() {
+        let ids = [];
+        let nombres = [];
+
+        $('.select-pat').each(function() {
+          let val = $(this).val();
+          // Solo procesamos si hay un valor seleccionado
+          if (val && val !== "") {
+            ids.push(val);
+            let txt = $(this).find('option:selected').text();
+            if (txt) {
+              nombres.push(txt.trim());
+            }
+          }
+        });
+
+        $('#patologias_seleccionadas').val(ids.join('|'));
+
+        if (ids.length > 0) {
+          $('#btn_modal_pat').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
+        } else {
+          $('#btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+        }
+      });
+
+      // --- NUEVO: Validar que el modal no abra vacío ---
+      $('#btn_modal_pat').click(function() {
+        // Si el contenedor no tiene ninguna fila adentro, agregamos una vacía automáticamente
+        if ($('#contenedor_filas_patologias').children().length === 0) {
+          agregarFilaPatologia();
+        }
+      });
+
       <?php if (isset($_GET['duplicar_id']) && $datos_d) : ?>
           (function() {
             const principiosADuplicar = <?php echo $principios_json; ?>;
             const idPresentacion = '<?php echo $datos_d['Id_presentacion']; ?>';
 
+            // CLAVE: Capturamos el HTML de las opciones del select original
+            // Este select (#principio_activo) ya fue cargado por PHP con todos los principios de la base de datos.
+            const opcionesCatalogo = $('#principio_activo').html();
+
             if (principiosADuplicar.length > 0 && idPresentacion) {
-              // 1. Primero obtenemos las unidades de medida correspondientes a la presentación
+              // 1. Obtenemos las unidades de medida
               fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idPresentacion)
                 .then(response => response.text())
                 .then(htmlUnidades => {
 
-                  // 2. Limpiamos el contenedor de filas del modal
+                  // 2. Limpiamos el contenedor
                   $('#contenedor_filas_principios').empty();
 
-                  // 3. Reconstruimos cada fila
+                  // 3. Reconstruimos cada fila con el catálogo COMPLETO
                   principiosADuplicar.forEach(pa => {
                     let nuevaFila = `
-                  <div class="row fila-pa" style="margin-bottom: 10px;">
-                    <div class="col-sm-6">
-                      <select class="form-control select-pa">
-                        <option value="${pa.id_principio_activo}" selected data-nombre="${pa.nombre}">${pa.nombre}</option>
-                      </select>
-                    </div>
-                    <div class="col-sm-2">
-                      <input type="text" class="form-control cant-pa" value="${pa.cantidad_unidad_medida}">
-                    </div>
-                    <div class="col-lg-2">
-                      <select class="form-control uni-pa">${htmlUnidades}</select>
-                    </div>
-                    <div class="col-sm-2">
-                      <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
-                    </div>
-                  </div>`;
+                    <div class="row fila-pa" style="margin-bottom: 10px;">
+                      <div class="col-sm-6">
+                        <select class="form-control select-pa">
+                          ${opcionesCatalogo} 
+                        </select>
+                      </div>
+                      <div class="col-sm-2">
+                        <input type="text" class="form-control cant-pa" value="${pa.cantidad_unidad_medida}">
+                      </div>
+                      <div class="col-lg-2">
+                        <select class="form-control uni-pa">${htmlUnidades}</select>
+                      </div>
+                      <div class="col-sm-2">
+                        <button type="button" class="btn btn-danger btn-remove-pa">
+                          <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
+                        </button>
+                      </div>
+                    </div>`;
 
                     $('#contenedor_filas_principios').append(nuevaFila);
 
-                    // Asignamos la unidad de medida específica a esta fila recién creada
-                    $('#contenedor_filas_principios .fila-pa:last .uni-pa').val(pa.id_tipo_unidad_medida);
+                    // 4. Ahora sí podemos asignar los valores porque las opciones existen
+                    let $ultima = $('#contenedor_filas_principios .fila-pa:last');
+                    $ultima.find('.select-pa').val(pa.id_principio_activo);
+                    $ultima.find('.uni-pa').val(pa.id_tipo_unidad_medida);
                   });
 
-                  // 4. Disparamos el clic en "Listo" para que se actualice el tooltip y el campo oculto
-                  $('#guardar_pa_temp').click();
+                  // 5. Forzamos la actualización de los tooltips y campos ocultos
+                  $('#guardar_pa_temp').trigger('click');
                 });
             }
           })();

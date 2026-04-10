@@ -21,6 +21,13 @@ if (isset($_GET['Id']) && is_numeric($_GET['Id'])) {
 
         $row = $res->fetch_assoc();
         $id_medicamento_principal = $row['Id_medicamento'];
+        
+        $sql_del_det = "DELETE FROM detalle_patologia_medicamento WHERE Id_medicamento = ?";
+        $stmt_det = $conexion->prepare($sql_del_det);
+        $stmt_det->bind_param("i", $id_descripcion);
+        if (!$stmt_det->execute()) {
+            throw new Exception("Error en principios activos: " . $conexion->error);
+        }
 
         // 2. ELIMINAR DETALLES (Principios Activos)
         $sql_del_det = "DELETE FROM detalle_principio_medicamento WHERE id_medicamento = ?";

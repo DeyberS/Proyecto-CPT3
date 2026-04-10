@@ -10,13 +10,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $contenido_neto       = $_POST['contenido_neto'];
     $almacenamiento     = $_POST['almacenamiento'];
     $excipientes  = $_POST['excipientes']; // Resumen textual
-    $id_laboratorio = !empty($_POST['laboratorio']) ? $_POST['laboratorio'] : null;
+    $id_laboratorio     = !empty($_POST['laboratorio']) ? (int)$_POST['laboratorio'] : null;
+    $cantidad_concentracion = !empty($_POST['cantidad_concentracion']) ? $_POST['cantidad_concentracion'] : null;
+    $id_tipo_concentracion = !empty($_POST['tipo_concentracion']) ? $_POST['tipo_concentracion'] : null;
     
     // Si el código de barras viene vacío, le ponemos un 0 para que no choque con el INT de la BD
     $codigo_barras      = !empty($_POST['codigo_barras']) ? (string)$_POST['codigo_barras'] : "Ninguno";
 
     // Datos detallados de principios activos (viene separado por | y ,)
     $principios_raw     = $_POST['composicion_detallada']; 
+    $patologias_raw     = $_POST['patologias_seleccionadas']; 
 
     // Iniciar Transacción
     $conexion->begin_transaction();
@@ -32,16 +35,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // PASO 2: Insertar en 'descripcion_medicamento'
         $stmt2 = $conexion->prepare("INSERT INTO descripcion_medicamento 
-            (via_aplicacion, almacenamiento, excipientes, stock_minimo, stock_maximo, codigo_barras, contenido_neto, Id_laboratorio, Id_presentacion, Id_medicamento, estatus) 
-            VALUES (?, ?, ?, '0', '0', ?, ?, ?, ?, ?, '1')");
+            (via_aplicacion, almacenamiento, excipientes, stock_minimo, stock_maximo, codigo_barras, contenido_neto, cantidad_concentracion, Id_tipo_concentracion, Id_laboratorio, Id_presentacion, Id_medicamento, estatus) 
+            VALUES (?, ?, ?, '0', '0', ?, ?, ?, ?, ?, ?, ?, '1')");
         
         // Se cambió la primera 's' de codigo_barras por 'i' ya que ahora nos aseguramos de que sea entero
-        $stmt2->bind_param("sssssiii", 
+        $stmt2->bind_param("ssssssiiii", 
             $via_aplicacion, 
             $almacenamiento, 
             $excipientes, 
             $codigo_barras, 
-            $contenido_neto, 
+            $contenido_neto,
+            $cantidad_concentracion, 
+            $id_tipo_concentracion,  
             $id_laboratorio, 
             $id_presentacion, 
             $id_medicamento_generado
@@ -79,6 +84,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     
                     if (!$stmt3->execute()) {
                          throw new Exception("Error al guardar principio activo: " . $stmt3->error);
+                    }
+                }
+            }
+        }
+
+        // PASO 4: Decodificar e Insertar Patologías
+        if (!empty($patologias_raw)) {
+            // CORRECCIÓN: Solo 2 columnas, por lo tanto solo 2 signos de interrogación
+            $stmt4 = $conexion->prepare("INSERT INTO detalle_patologia_medicamento 
+            (Id_medicamento, Id_patologia) 
+            VALUES (?, ?)");
+
+            // Las patologías vienen separadas por | (ej: "1|4|15")
+            $filas_pat = explode('|', $patologias_raw);
+
+            foreach ($filas_pat as $id_pat) {
+                // Limpiamos el valor para asegurarnos que sea un número
+                $id_pat_limpio = (int)$id_pat;
+
+                if ($id_pat_limpio > 0) {
+                    // "ii" porque ambos son enteros (ID medicamento e ID patología)
+                    $stmt4->bind_param(
+                        "ii",
+                        $id_descripcion_generada,
+                        $id_pat_limpio
+                    );
+
+                    if (!$stmt4->execute()) {
+                        throw new Exception("Error al guardar patología: " . $stmt4->error);
                     }
                 }
             }

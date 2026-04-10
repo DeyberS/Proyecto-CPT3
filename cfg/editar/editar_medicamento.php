@@ -16,6 +16,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $excipientes  = $_POST['excipientes'];
     $id_laboratorio     = !empty($_POST['laboratorio']) ? (int)$_POST['laboratorio'] : null;
     $codigo_barras      = !empty($_POST['codigo_barras']) ? $_POST['codigo_barras'] : 'Ninguno';
+    $cantidad_concentracion = !empty($_POST['cantidad_concentracion']) ? $_POST['cantidad_concentracion'] : null;
+    $id_tipo_concentracion = !empty($_POST['tipo_concentracion']) ? $_POST['tipo_concentracion'] : null;
 
     // Principios activos (formato: "id,cant,unid|id,cant,unid")
     $principios_raw     = $_POST['composicion_detallada']; 
@@ -31,9 +33,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // PASO 2: Actualizar todos los detalles en 'descripcion_medicamento'
         // Incluimos laboratorio, código de barras y el resto de campos del formulario
         $sql_desc = "UPDATE descripcion_medicamento SET 
+                        Id_tipo_concentracion = ?,
                         Id_presentacion = ?, 
                         Id_laboratorio = ?, 
                         codigo_barras = ?, 
+                        cantidad_concentracion = ?,
                         contenido_neto = ?, 
                         via_aplicacion = ?, 
                         almacenamiento = ?, 
@@ -41,10 +45,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                      WHERE Id = ?";
         
         $stmt2 = $conexion->prepare($sql_desc);
-        $stmt2->bind_param("iisssssi", 
+        $stmt2->bind_param("iiissssssi",
+            $id_tipo_concentracion, 
             $id_presentacion, 
             $id_laboratorio, 
             $codigo_barras, 
+            $cantidad_concentracion,
             $contenido_neto, 
             $via_aplicacion, 
             $almacenamiento, 
@@ -75,6 +81,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     $stmt3->bind_param("iiid", $id_descripcion, $id_pa, $id_unid, $cantidad);
                     $stmt3->execute();
+                }
+            }
+        }
+
+        // 1. Cambia la forma en que recibes las patologías (ya que vienen como "1|2|3")
+        $patologias_raw = isset($_POST['patologias_seleccionadas']) ? $_POST['patologias_seleccionadas'] : '';
+        $patologias = !empty($patologias_raw) ? explode('|', $patologias_raw) : [];
+
+        $sql_delete = "DELETE FROM detalle_patologia_medicamento WHERE Id_medicamento = ?";
+        $stmt_del = $conexion->prepare($sql_delete);
+        $stmt_del->bind_param("i", $id_descripcion);
+        $stmt_del->execute();
+
+        // 3. Inserta las nuevas
+        if (!empty($patologias)) {
+            $sql_insert = "INSERT INTO detalle_patologia_medicamento (Id_medicamento, Id_patologia) VALUES (?, ?)";
+            $stmt_ins = $conexion->prepare($sql_insert);
+
+            foreach ($patologias as $id_patologia) {
+                $id_patologia = trim($id_patologia);
+                if (!empty($id_patologia)) {
+                    // Asegúrate de usar el ID que corresponda a la columna Id_medicamento de esa tabla
+                    $stmt_ins->bind_param("ii", $id_descripcion, $id_patologia);
+                    $stmt_ins->execute();
                 }
             }
         }

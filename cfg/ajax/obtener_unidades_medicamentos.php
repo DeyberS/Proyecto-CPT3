@@ -23,7 +23,7 @@ else if ($id_pres == 6) {
 
 $sql = $conexion->query("SELECT * FROM unidad_medida $filtro");
 
-echo '<option value="">Seleccione una Unidad</option>';
+echo '<option value="">--- Seleccione una unidad ---</option>';
 while ($r = $sql->fetch_assoc()) {
     echo "<option value='".$r['Id_unidad_medida']."'>".$r['unidad']."</option>";
 }
