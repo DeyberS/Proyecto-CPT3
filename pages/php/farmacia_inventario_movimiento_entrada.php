@@ -10,17 +10,15 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Inventario | Entrada</title>
+  <title>Inventario | Entrada </title>
   <?php
   include('includes/headerNav2.php');
   ?>
 
   <style>
     /* ---------------------------------------------------------------------- */
-    /* ANIMACIONES Y ESTILOS DE MODALES (Solicitados) */
+    /* ANIMACIONES Y ESTILOS DE MODALES (Igualados a Ajustes)                 */
     /* ---------------------------------------------------------------------- */
-
-    /* Animación para el fondo al abrir el modal */
     @keyframes pulse-opacity {
       0% {
         opacity: 0;
@@ -31,7 +29,6 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       }
     }
 
-    /* Animación para el modal de Bootstrap (reemplaza la clase 'fade') */
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -56,33 +53,22 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       }
     }
 
-    /* Aplica la animación al modal que se está mostrando */
     .modal.in .modal-dialog,
     #avisoModal,
     #modalEntradaGuardar,
     #modalBúsquedaAvanzadaMedicamento,
-    #modalRegresarInventario {
+    #modalRegresarInventario,
+    #modalAgregarMedicamento {
       animation: fadeIn 0.4s ease-out;
     }
 
-    /* Aplica la animación de salida cuando el modal tiene la clase de cierre */
     .modal.out .modal-dialog {
       animation: fadeOut 0.4s ease-in;
     }
 
-    /* Estilo para el body cuando un modal está abierto (fondo animado) */
     .modal-open .modal-backdrop {
       opacity: 0.7 !important;
       animation: pulse-opacity 0.3s forwards;
-      /* Aplica la animación al backdrop */
-    }
-
-    /* ---------------------------------------------------------------------- */
-    /* ESTILOS DE VALIDACIÓN Y LAYOUT */
-    /* ---------------------------------------------------------------------- */
-    .input-error {
-      border: 2px solid crimson !important;
-      box-shadow: 0 0 5px crimson;
     }
 
     .modal {
@@ -97,7 +83,45 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
     .modal.in {
       display: block;
-      /* Asegura que se muestre para la animación */
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /* ESTILOS DE VALIDACIÓN Y LAYOUT */
+    /* ---------------------------------------------------------------------- */
+    .input-error {
+      border: 2px solid crimson !important;
+      box-shadow: 0 0 5px crimson;
+    }
+
+    .table-detalle th {
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    .table-detalle td {
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .row-vence-pronto {
+      background-color: #fff3cd !important;
+    }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+      /* Asegura contener elementos flotantes internamente */
+    }
+
+    /* Regla añadida para mantener el color gris en inputs de fecha bloqueados */
+    input[type="date"][readonly],
+    input[type="date"][disabled] {
+      background-color: #eeeeee !important;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -105,108 +129,39 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 <body>
   <div class="content-wrapper">
     <section class="content-header">
-      <h1>
-        Entrada de Medicamentos
-      </h1>
+      <h1>Entrada de Medicamentos <small>Recepción y Lotes</small></h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
         <li><a href="#"><i class="fa fa-users"></i>Inventario</a></li>
-        <li class="active"><a href="#"><i class="fa fa-user-plus"></i>Entrada</a></li>
+        <li class="active"><a href="#"><i class="fa fa-arrow-down"></i>Entrada</a></li>
       </ol>
     </section>
 
     <section class="content">
+      <form id="formularioEntrada" method="POST" action="../../cfg/movimientos_inventario.php" novalidate autocomplete="off">
+        <input type="hidden" name="op" id="op" value="<?php echo $operacion_actual; ?>">
+        <input type="hidden" name="detalle_medicamentos" id="detalle_medicamentos" value="[]">
 
-      <div class="row">
-        <div class="col-md-12">
-          <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#tab_1" data-toggle="tab">Detalle de La Operacion</a></li>
-            </ul>
-            <div class="tab-content">
-              <div class="tab-pane active" id="tab_1">
+        <div class="row">
+          <div class="col-md-12">
+
+            <div class="area-trabajo-blanca">
+
+              <div class="box box-primary">
+                <div class="box-header with-border">
+                  <h3 class="box-title"><i class="fa fa-truck"></i> Datos de la Recepción:</h3>
+                </div>
                 <div class="box-body">
-                  <form id="formularioEntrada" style="margin-bottom: 11%;" method="POST" action="../../cfg/movimientos_inventario.php" novalidate autocomplete="off">
-                    <input type="hidden" name="op" id="op" value="<?php echo $operacion_actual; ?>">
-                    <label class="control-label"></label>
-                    <div class="col-sm-4" id="group_laboratorio">
-                      <label>Medicamento (*):</label>
-                      <div class="input-group">
-                        <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control" required>
-                          <option value="">--- Seleccione un Medicamento ---</option>
-                          <?php
-                          // 2. Cargar Medicamentos
-                          $sql_medicamentos = "SELECT 
-                          dm.Id AS id_desc, 
-                          m.nombre_medicamento,
-                          p.nombre_presentacion,
-                          GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
-                          FROM descripcion_medicamento dm
-                          INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-                          INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
-                          INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
-                          INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-                          INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
-                          WHERE m.estatus = 1 AND dm.estatus = 1
-                          GROUP BY dm.Id
-                          ORDER BY m.nombre_medicamento ASC";
-                          $resultado_medicamentos = $conexion->query($sql_medicamentos);
-
-                          if ($resultado_medicamentos && $resultado_medicamentos->num_rows > 0) {
-                            while ($row_med = $resultado_medicamentos->fetch_assoc()) {
-                              // Se usa Id_medicamento como value
-                              echo '<option value="' . $row_med['id_desc'] . '">' . htmlspecialchars($row_med['nombre_medicamento']) . " " . "(" . htmlspecialchars($row_med['componentes']) . ")" . " - " . "[" . htmlspecialchars($row_med['nombre_presentacion']) . "]" . '</option>';
-                            }
-                          }
-                          ?>
-                        </select>
-
-                        <span class="input-group-btn">
-                          <button class="btn btn-info" type="button" id="btnBuscarFiltrar" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada de Medicamentos" style="height: 34px;">
-                            <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
-                          </button>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="col-sm-4">
-                      <label>Stock minimo:</label>
-                      <input type="text" id="stock_minimo" name="stock_minimo" class="form-control" value="" readonly disabled>
-                    </div>
-
-                    <div class="col-sm-4">
-                      <label>Stock maximo:</label>
-                      <input type="text" id="stock_maximo" name="stock_maximo" class="form-control" value="" readonly disabled>
-                    </div>
-
-                    <div class="col-sm-1">
-                    </div>
-
-                    <br><br><br><br>
-
-                    <div class="col-sm-4">
-                      <label>Lote (*):</label>
-                      <input type="text" name="lote" id="lote" class="form-control" list="lista_lotes" placeholder="Escriba o seleccione..." required>
-                      <datalist id="lista_lotes">
-                      </datalist>
-                    </div>
-
-                    <div class="col-sm-4 form-group" id="group_proveedor">
-                      <label>Proveedor (*):</label>
+                  <div class="row">
+                    <div class="col-sm-4 form-group">
+                      <label>Proveedor / Donante (*):</label>
                       <select id="proveedor" name="proveedor" class="form-control" required>
                         <option value="">--- Seleccione un proveedor ---</option>
                         <?php
-                        // 2. Cargar Medicamentos
-                        include("../../cfg/conexion.php");
-                        $sql_proveedor = "SELECT Id_proveedor, nombre_proveedor 
-                                      FROM proveedor 
-                                      ORDER BY nombre_proveedor ASC";
-
+                        $sql_proveedor = "SELECT Id_proveedor, nombre_proveedor FROM proveedor WHERE estatus = 1 ORDER BY nombre_proveedor ASC";
                         $resultado_proveedor = $conexion->query($sql_proveedor);
-
                         if ($resultado_proveedor && $resultado_proveedor->num_rows > 0) {
                           while ($row_pro = $resultado_proveedor->fetch_assoc()) {
-                            // Se usa Id_proveedor como value para que se guarde correctamente la relación
                             echo '<option value="' . $row_pro['Id_proveedor'] . '">' . htmlspecialchars($row_pro['nombre_proveedor']) . '</option>';
                           }
                         }
@@ -214,56 +169,159 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                       </select>
                     </div>
 
-                    <div class="col-sm-4">
-                      <label>F. Fabricacion (*):</label>
-                      <input type="date" id="fecha_fabricacion" name="fecha_fabricacion" class="form-control" required>
+                    <div class="col-sm-4 form-group">
+                      <label>Fecha de Recepción (*):</label>
+                      <input type="date" id="fecha_recepcion" name="fecha_recepcion" class="form-control" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" onkeydown="return false;" readonly>
                     </div>
 
-                    <div class="col-sm-1">
+                    <div class="col-sm-4 form-group">
+                      <label>Observaciones Generales:</label>
+                      <input type="text" id="observaciones_generales" name="observaciones_generales" class="form-control" placeholder="Ej: Cajas en buen estado..." maxlength="255">
                     </div>
-
-                    <br><br><br><br>
-
-                    <div class="col-sm-4">
-                      <label>F. Vencimiento (*):</label>
-                      <input type="date" id="fecha_vencimiento" name="fecha_vencimiento" class="form-control" required disabled>
-                    </div>
-
-                    <div class="col-sm-4">
-                      <label>Existencia (Actual):</label>
-                      <input type="text" id="existencia_actual" class="form-control" value="" readonly disabled>
-                    </div>
-                    
-                    <div class="col-sm-4">
-                      <label>Unidades a ingresar (*):</label>
-                      <input type="text" id="cantidad" name="cantidad" class="form-control" inputmode="numeric" required>
-                    </div>
-
-                    <div class="col-sm-1">
-                    </div>
-
-                    <br><br><br><br>
-
-                    <div class="col-sm-4">
-                      <label>Observaciones:</label>
-                      <input type="text" id="observaciones" name="observaciones" class="form-control" maxlength="255">
-                    </div>
-
-                    <div style="float:right; margin-top: 2%;">
-                      <button type="button" class="btn btn-secondary" id="abrirModalRegresar">Regresar</button>
-                      <button type="submit" class="btn btn-success" id="guardarEntrada">Guardar</button>
-                    </div>
-                  </form>
+                  </div>
                 </div>
               </div>
+
+              <div class="box box-success">
+                <div class="box-header with-border">
+                  <h3 class="box-title"><i class="fa fa-medkit"></i> Medicamentos a Ingresar:</h3>
+                  <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnAbrirModalAgregar">
+                      <i class="fa fa-plus"></i> Añadir Medicamento
+                    </button>
+                  </div>
+                </div>
+                <div class="box-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover table-detalle" id="tablaMedicamentos">
+                      <thead>
+                        <tr>
+                          <th>Medicamento</th>
+                          <th>Lote</th>
+                          <th>F. Fabricación</th>
+                          <th>F. Vencimiento</th>
+                          <th>Cant.</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="cuerpoTablaMedicamentos">
+                        <tr id="filaVacia">
+                          <td colspan="6" class="text-center text-muted">Aún no se han añadido medicamentos a esta entrada.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="box-footer text-right" style="background-color: transparent; border-top: 1px solid #f4f4f4; padding-top: 15px;">
+                  <button type="button" class="btn btn-secondary" id="abrirModalRegresar">Regresar</button>
+                  <button type="submit" class="btn btn-success" id="btnPrepararGuardado"><i class="fa fa-save"></i>Guardar</button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </section>
   </div>
 
-  <div class="modal" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
+  <div class="modal" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" style="color: white;"><i class="fa fa-plus-circle"></i> Ingresar Lote de Medicamento</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-12 form-group">
+              <label>Medicamento del Catálogo (*):</label>
+              <div class="input-group">
+                <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control">
+                  <option value="">--- Seleccione un Medicamento ---</option>
+                  <?php
+                  $sql_medicamentos = "SELECT dm.Id AS id_desc, m.nombre_medicamento, p.nombre_presentacion,
+                    GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), ' ', IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
+                    FROM descripcion_medicamento dm
+                    INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+                    INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+                    LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+                    LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+                    LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+                    WHERE m.estatus = 1 AND (dm.estatus = '1' OR dm.estatus = 1) 
+                    GROUP BY dm.Id ORDER BY m.nombre_medicamento ASC";
+
+                  $resultado_medicamentos = $conexion->query($sql_medicamentos);
+                  if ($resultado_medicamentos && $resultado_medicamentos->num_rows > 0) {
+                    while ($row_med = $resultado_medicamentos->fetch_assoc()) {
+                      $comp = trim($row_med['componentes']) ? " (" . htmlspecialchars($row_med['componentes']) . ")" : "";
+                      // EXTRAÍMOS EL COMPONENTE PARA PASARLO POR DATA-COMPONENTES
+                      $componentesLimpios = trim($row_med['componentes']) ? htmlspecialchars($row_med['componentes']) : 'Sin principios activos registrados';
+                      echo '<option value="' . $row_med['id_desc'] . '" data-nombre="' . htmlspecialchars($row_med['nombre_medicamento'] . " [" . $row_med['nombre_presentacion'] . "]") . '" data-componentes="' . $componentesLimpios . '">' . htmlspecialchars($row_med['nombre_medicamento']) . $comp . " - [" . htmlspecialchars($row_med['nombre_presentacion']) . "]" . '</option>';
+                    }
+                  }
+                  ?>
+                </select>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" id="btnBuscarFiltrar" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada de Medicamentos" style="height: 34px;">
+                    <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
+              </div>
+            </div>
+
+            <div class="col-sm-4 form-group">
+              <label>Existencia Actual:</label>
+              <input type="text" id="existencia_actual" class="form-control" readonly disabled style="background-color: #f9f9f9;">
+            </div>
+            <div class="col-sm-4 form-group">
+              <label>Stock Mínimo:</label>
+              <input type="text" id="stock_minimo" class="form-control" readonly disabled style="background-color: #f9f9f9;">
+            </div>
+            <div class="col-sm-4 form-group">
+              <label>Stock Máximo:</label>
+              <input type="text" id="stock_maximo" class="form-control" readonly disabled style="background-color: #f9f9f9;">
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label style="width: 100%;">Número de Lote (*):
+                <button type="button" id="btnCopiarUltimoLote" class="btn btn-info btn-xs pull-right" style="display: none; padding: 2px 5px;" title="Copiar Lote y Fechas del último ingresado">
+                  <i class="fa fa-copy"></i> Usar Último
+                </button>
+              </label>
+              <input type="text" id="lote" class="form-control" list="lista_lotes" placeholder="Ej: L-2026X" style="text-transform: uppercase;">
+              <datalist id="lista_lotes"></datalist>
+            </div>
+            <div class="col-sm-4 form-group mt-3">
+              <label>F. Fabricación (*):</label>
+              <input type="date" id="fecha_fabricacion" class="form-control" onkeydown="return false;">
+            </div>
+            <div class="col-sm-4 form-group mt-3">
+              <label>F. Vencimiento (*):</label>
+              <input type="date" id="fecha_vencimiento" class="form-control" disabled onkeydown="return false;">
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Unidades a Ingresar (*):</label>
+              <input type="text" id="cantidad" class="form-control" placeholder="Solo números, sin 0 inicial" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-success" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalBúsquedaAvanzadaMedicamento" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header bg-primary">
@@ -288,8 +346,6 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                   <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
                     <option value="">-- Todos --</option>
                     <?php
-                    // Cargar tipos de medicamento dinámicamente
-                    include("../../cfg/conexion.php"); // Asegura la conexión
                     $sql_tipos = "SELECT Id_presentacion, nombre_presentacion FROM presentacion WHERE estatus = 1 ORDER BY nombre_presentacion DESC";
                     $res_tipos = $conexion->query($sql_tipos);
                     while ($row_t = $res_tipos->fetch_assoc()) {
@@ -358,7 +414,6 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                   <select id="filtro_laboratorio" name="filtro_laboratorio" class="form-control">
                     <option value="">-- Todos --</option>
                     <?php
-                    // Cargar laboratorios dinámicamente
                     $sql_labs = "SELECT Id_laboratorio, nombre_laboratorio FROM laboratorio WHERE estatus = 1 ORDER BY nombre_laboratorio ASC";
                     $res_labs = $conexion->query($sql_labs);
                     while ($row_l = $res_labs->fetch_assoc()) {
@@ -411,23 +466,6 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
     </div>
   </div>
 
-  <div class="modal" id="modalEntradaGuardar" tabindex="-1" role="dialog" aria-labelledby="modalEntradaGuardarLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header" style="background-color: #00a65a; color: white;">
-          <h5 class="modal-title" id="modalEntradaGuardarLabel" style="color: white;">Confirmacion de Guardado</h5>
-        </div>
-        <div class="modal-body">
-          <p>¿Está seguro de que desea guardar la información para esta entrada del inventario?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Guardar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="modal" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-labelledby="modalRegresarInventarioLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -445,169 +483,155 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
     </div>
   </div>
 
-  <?php
-  // Cierre de la conexión a la base de datos
-  if (isset($conexion)) {
+  <div class="modal" id="modalEntradaGuardar" tabindex="-1" role="dialog" aria-labelledby="modalEntradaGuardarLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h5 class="modal-title" id="modalEntradaGuardarLabel" style="color: white;">Confirmacion de Guardado</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea guardar la información para esta entrada del inventario?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <?php if (isset($conexion)) {
     $conexion->close();
   }
-  include('includes/footer.php');
-  ?>
+  include('includes/footer.php'); ?>
 
   <script>
     $(document).ready(function() {
-      let lotesCargados = []; // Variable para lo id="confirmarGuardadoFinal"s lotes del medicamento seleccionado
-      // 1. Referencias a elementos del DOM (Mezclando jQuery y Vanila para compatibilidad con tu código)
-      const formulario = document.getElementById('formularioEntrada');
-      const fechaFabricacionInput = $('#fecha_fabricacion');
-      const fechaVencimientoInput = $('#fecha_vencimiento');
-      const cantidadInput = $('#cantidad');
-      const medicamentoSelect = $('#Id_descripcion_medicamento');
-      const stockMinimoInput = $('#stock_minimo');
-      const stockMaximoInput = $('#stock_maximo');
-      const listaLotes = $('#lista_lotes');
+      // ARRAY PRINCIPAL QUE GUARDA LOS MEDICAMENTOS
+      let listaDetalles = [];
+      let lotesCargados = [];
+      
+      // NUEVAS VARIABLES PARA EDICIÓN Y REUTILIZACIÓN DE LOTE
+      let editandoIndex = -1;
+      let ultimoLoteIngresado = null; 
 
+      const hoy = new Date().toISOString().split('T')[0];
+      $('#fecha_fabricacion').attr('max', hoy);
+
+      // ---------------------------------------------------------------------
+      // LÓGICA DE CIERRE DE MODALES ANIMADOS (Traida de Ajustes)
+      // ---------------------------------------------------------------------
+      $('.modal').on('click', '[data-dismiss="modal"]', function() {
+        var $modal = $(this).closest('.modal');
+        $modal.removeClass('in').addClass('out');
+
+        setTimeout(function() {
+          $modal.modal('hide');
+          $modal.removeClass('out');
+        }, 400);
+      });
+
+      $('.modal').on('hidden.bs.modal', function() {
+        if ($('.modal:visible').length) {
+          $('body').addClass('modal-open');
+        } else {
+          $('body').removeClass('modal-open');
+          // EL BACKDROP SE ELIMINA SOLO SI NO QUEDAN MODALES ABIERTOS
+          $('.modal-backdrop').remove();
+        }
+      });
+
+      // -------------------------------------------------------------
+      // FUNCIONES BASE
+      // -------------------------------------------------------------
       function mostrarAviso(mensaje) {
-        clearTimeout($('#avisoModal').data('timer'));
         $('#avisoTexto').html(mensaje);
         $('#avisoModal').modal('show');
       }
 
-      // Limpia el estado de error de todos los inputs
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
+      function limpiarFormularioModal() {
+        $('#Id_descripcion_medicamento').val('').trigger('change');
+        $('#lote, #fecha_fabricacion, #fecha_vencimiento, #cantidad').val('').removeClass('input-error');
+        $('#fecha_fabricacion, #fecha_vencimiento').prop('readonly', false);
+        $('#fecha_vencimiento').prop('disabled', true);
+        $('#lote').css('border-color', '#ced4da');
+        $('#existencia_actual, #stock_minimo, #stock_maximo').val('');
       }
 
-      // Función para abrir el modal de Guardar
-      function abrirModalGuardar() {
-        clearTimeout($('#modalEntradaGuardar').data('timer'));
-        $('#modalEntradaGuardar').modal('show');
-      }
-
-      // --- CONFIGURACIÓN INICIAL ---
-
-      // --- FUNCIÓN DE VALIDACIÓN GENERAL ---
-      function checkFormValidity() {
-        let allRequiredFieldsFilled = true;
-        const requiredFields = formulario.querySelectorAll('[required]');
-
-        requiredFields.forEach(field => {
-          if (field.disabled && field.id === 'fecha_vencimiento') {
-            // No bloquea si está deshabilitado
-          } else if (!field.value.trim()) {
-            allRequiredFieldsFilled = false;
-          }
-        });
-      }
-
-      // --- VALIDACIÓN DE FECHAS (No futuras para fabricación) ---
-      const today = new Date().toISOString().split('T')[0];
-      fechaFabricacionInput.attr('max', today);
-
-      // --- EVENTOS DE VALIDACIÓN ---
-      $(formulario).on('input change', checkFormValidity);
-
-      fechaFabricacionInput.on('change', function() {
-        const fabricacionDate = $(this).val();
-        if (fabricacionDate) {
-          fechaVencimientoInput.prop('disabled', false).attr('min', fabricacionDate);
-        } else {
-          fechaVencimientoInput.prop('disabled', true).val('').removeAttr('min');
-        }
-        checkFormValidity();
+      $('#abrirModalRegresar').on('click', function() {
+        $('#modalRegresarInventario').modal('show');
       });
 
-      fechaVencimientoInput.on('change', function() {
-        const fabricacionDate = fechaFabricacionInput.val();
-        const selectedDate = $(this).val();
-
-        if (fabricacionDate && selectedDate < fabricacionDate) {
-          mostrarAviso('La fecha de vencimiento no puede ser anterior a la de fabricación.');
-          $(this).val('');
-        } else if (selectedDate && selectedDate <= today) {
-          mostrarAviso('La fecha de vencimiento debe ser una fecha futura.');
-          $(this).val('');
-        }
-        checkFormValidity();
-      });
-
-      cantidadInput.on('input', function() {
-        this.value = this.value.replace(/[^0-9]/g, '');
-        if (this.value && parseInt(this.value) <= 0) this.value = 1;
-        checkFormValidity();
-      });
-
+      // -------------------------------------------------------------
+      // FILTRADO AVANZADO AJAX (Igual a Ajustes)
+      // -------------------------------------------------------------
       const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
 
-      // 1. Lógica para botón Limpiar Filtros dentro del Modal
       $('#btnLimpiarFiltros').on('click', function() {
-        // Resetea el formulario del modal (formFiltroModal)
         $('#formFiltroModal')[0].reset();
-        // Opcionalmente, podrías ejecutar el filtrado vacío para cargar todos
       });
 
-      // 2. Lógica principal: Clic en "Aplicar Filtros" dentro del Modal
-      $('#btnAplicarFiltros').on('click', function() {
-        // Serializar los datos del formulario del modal
+      $('#btnAplicarFiltros').on('click', function(e) {
+        e.preventDefault(); 
+
         const datosFiltro = $('#formFiltroModal').serialize();
 
-        // Mostrar un indicador de carga en el botón si es necesario
-
-        // Realizar la llamada AJAX al nuevo backend
         $.ajax({
-          url: '../../cfg/ajax/filtrar_medicamentos_completo.php', // El nuevo backend
+          url: '../../cfg/ajax/filtrar_medicamentos_completo.php',
           type: 'POST',
-          data: datosFiltro, // Envía los valores de los filtros del modal
+          data: datosFiltro,
           dataType: 'json',
           success: function(response) {
-            // 1. Limpiar el select principal
             medicamentoSelectPrincipal.empty();
-
-            // 2. Añadir la opción inicial por defecto
             medicamentoSelectPrincipal.append('<option value="">--- Seleccione un Medicamento ---</option>');
 
-            // 3. Repoblar el select con los nuevos resultados filtrados
             if (response.length > 0) {
-              // Iterar sobre el array de medicamentos devuelto por PHP
               response.forEach(function(item) {
-                // Crear el nuevo <option value="id_desc">nombre completo descriptivo</option>
-                medicamentoSelectPrincipal.append('<option value="' + item.id_desc + '">' + item.nombre_completo + '</option>');
+                medicamentoSelectPrincipal.append('<option value="' + item.id_desc + '" data-nombre="' + item.nombre_completo + '">' + item.nombre_completo + '</option>');
               });
-
-              // Opcionalmente: Si hay un solo resultado, seleccionarlo automáticamente
-              /* if (response.length === 1) {
-                  medicamentoSelectPrincipal.val(response[0].id_desc).trigger('change');
-              } */
             } else {
-              // Si no hay resultados
-              medicamentoSelectPrincipal.append('<option value="" disabled>🛑 No se encontraron medicamentos que coincidan con los filtros aplicados.</option>');
+              medicamentoSelectPrincipal.append('<option value="" disabled>🛑 No se encontraron medicamentos.</option>');
             }
-
-            // 4. Cerrar el modal animadamente usando tu lógica existente
-            $('#modalBúsquedaAvanzadaMedicamento').removeClass('in').addClass('out');
-            setTimeout(function() {
-              $('#modalBúsquedaAvanzadaMedicamento').modal('hide');
-              $('#modalBúsquedaAvanzadaMedicamento').removeClass('out');
-            }, 400);
-
-            // 5. Opcional: Mostrar un aviso si hay resultados
-            /* if (response.length > 0) {
-               // alert('Se encontraron ' + response.length + ' medicamentos. Busque en la lista principal.');
-            } */
           },
           error: function(jqXHR, textStatus, errorThrown) {
             console.error("Error en AJAX de filtrado avanzado: ", textStatus, errorThrown);
-            // Mostrar aviso de error si tienes una función para ello
-            // mostrarAviso('🛑 Error al intentar filtrar los medicamentos desde el modal.');
           }
         });
       });
 
-      // --- LLAMADA AJAX AL SELECCIONAR MEDICAMENTO ---
+      // -------------------------------------------------------------
+      // LÓGICA DEL MODAL AGREGAR MEDICAMENTO
+      // -------------------------------------------------------------
+      $('#btnAbrirModalAgregar').on('click', function() {
+        editandoIndex = -1; // Nos aseguramos que es un nuevo registro
+        limpiarFormularioModal();
+        $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-check"></i> Añadir a la Lista');
+        
+        // Muestra u oculta el botón de copiar lote dependiendo de si hay uno previo
+        if (ultimoLoteIngresado) {
+          $('#btnCopiarUltimoLote').show();
+        } else {
+          $('#btnCopiarUltimoLote').hide();
+        }
+
+        $('#modalAgregarMedicamento').modal('show');
+      });
+
+      // LÓGICA PARA BOTÓN REUTILIZAR LOTE
+      $('#btnCopiarUltimoLote').on('click', function() {
+        if (ultimoLoteIngresado) {
+          $('#lote').val(ultimoLoteIngresado.lote);
+          $('#fecha_fabricacion').val(ultimoLoteIngresado.fecha_fabricacion);
+          $('#fecha_vencimiento').val(ultimoLoteIngresado.fecha_vencimiento).prop('disabled', false);
+          $('#lote').trigger('input'); // Para que ejecute cualquier validación
+        }
+      });
 
       $('#Id_descripcion_medicamento').on('change', function() {
         const medicamentoId = $(this).val();
         $('#lista_lotes').empty();
-        lotesCargados = []; // Limpiamos los lotes previos
+        lotesCargados = [];
 
         if (medicamentoId) {
           $.ajax({
@@ -620,13 +644,11 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
             dataType: 'json',
             success: function(data) {
               if (!data.error) {
-                // Llenamos stocks y existencia
-                $('#existencia_actual').val(data.existencia_actual);
-                $('#stock_minimo').val(data.stock_minimo);
-                $('#stock_maximo').val(data.stock_maximo);
+                $('#existencia_actual').val(data.existencia_actual !== null && data.existencia_actual !== undefined ? data.existencia_actual : 0);
+                $('#stock_minimo').val(data.stock_minimo !== null && data.stock_minimo !== undefined ? data.stock_minimo : 0);
+                $('#stock_maximo').val(data.stock_maximo !== null && data.stock_maximo !== undefined ? data.stock_maximo : 0);
 
-                // Guardamos y llenamos el datalist
-                if (data.lotes) {
+                if (data.lotes && data.lotes.length > 0) {
                   lotesCargados = data.lotes;
                   data.lotes.forEach(function(item) {
                     $('#lista_lotes').append('<option value="' + item.lote + '">');
@@ -635,137 +657,224 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
               }
             }
           });
+        } else {
+          $('#existencia_actual, #stock_minimo, #stock_maximo').val('');
         }
       });
 
-      // --- AL ESCRIBIR O SELECCIONAR UN LOTE ---
       $('#lote').on('input change', function() {
-        const loteEscrito = $(this).val().trim();
+        const loteEscrito = $(this).val().trim().toUpperCase();
+        $(this).val(loteEscrito);
 
         if (loteEscrito === "") {
           $('#fecha_fabricacion, #fecha_vencimiento').val('').prop('readonly', false);
           return;
         }
 
-        const loteEncontrado = lotesCargados.find(l => l.lote.toString().toLowerCase() === loteEscrito.toLowerCase());
+        const loteEncontrado = lotesCargados.find(l => l.lote.toUpperCase() === loteEscrito);
 
         if (loteEncontrado) {
-
-          // Llenamos los campos de fecha
-          $('#fecha_fabricacion').val(loteEncontrado.fecha_fabricacion);
-
-          // Importante: primero habilitar para poder asignar el valor, luego poner readonly
-          $('#fecha_vencimiento').prop('disabled', false).val(loteEncontrado.fecha_vencimiento);
-
-          // Bloqueamos para evitar que modifiquen datos de un lote que ya existe en BD
-          $('#fecha_fabricacion, #fecha_vencimiento').prop('readonly', true);
-
-          // Agregamos una clase visual para saber que es un lote existente
+          $('#fecha_fabricacion').val(loteEncontrado.fecha_fabricacion).prop('readonly', true);
+          $('#fecha_vencimiento').prop('disabled', false).val(loteEncontrado.fecha_vencimiento).prop('readonly', true);
           $(this).css('border-color', '#28a745');
         } else {
-          console.log("Lote nuevo o no terminado de escribir...");
-
-          // Si no existe, permitimos edición manual
           $('#fecha_fabricacion, #fecha_vencimiento').prop('readonly', false);
           $(this).css('border-color', '#ced4da');
         }
-        checkFormValidity();
       });
 
-      $('#formularioEntrada').on('submit', function(e) {
-        e.preventDefault();
-        limpiarErrores();
+      $('#fecha_fabricacion').on('change', function() {
+        if ($(this).val()) {
+          $('#fecha_vencimiento').prop('disabled', false).attr('min', $(this).val());
+        } else {
+          $('#fecha_vencimiento').prop('disabled', true).val('').removeAttr('min');
+        }
+      });
 
-        const cantidad = parseFloat($('#cantidad').val());
-        const stockMin = $('#stock_minimo').val();
-        const stockMax = $('#stock_maximo').val();
-        var nombreLote = $('#lote').val();
-        var proveedor = $('#proveedor').val();
-        var formularioValido = true;
+      // -------------------------------------------------------------
+      // AGREGAR O EDITAR EN LA LISTA DE DETALLES
+      // -------------------------------------------------------------
+      $('#btnConfirmarAgregarMedicamento').on('click', function() {
+        const id_med = $('#Id_descripcion_medicamento').val();
+        const nombre_med = $('#Id_descripcion_medicamento option:selected').data('nombre');
+        const componentes = $('#Id_descripcion_medicamento option:selected').data('componentes'); // Capturamos Principios Activos
+        const lote = $('#lote').val().trim().toUpperCase();
+        const f_fab = $('#fecha_fabricacion').val();
+        const f_venc = $('#fecha_vencimiento').val();
+        const cant = parseInt($('#cantidad').val());
 
-        // 1.1. Verificación de campos obligatorios vacíos
-        $('input[required], select[required]').each(function() {
-          var $input = $(this);
+        $('.modal-body input, .modal-body select').removeClass('input-error');
 
-          if (($input.is('select') && ($input.val() === null || $input.val() === "")) ||
-            (!$input.is('select') && $input.val().trim() === "")) {
-            $input.addClass('input-error');
-            formularioValido = false;
-          }
-        });
-
-        if (nombreLote.trim() === "") {
+        if (!id_med) {
+          $('#Id_descripcion_medicamento').addClass('input-error');
+          mostrarAviso('Seleccione un medicamento.');
+          return;
+        }
+        if (!lote) {
           $('#lote').addClass('input-error');
-          mostrarAviso('🛑 Error: El lote del medicamento no puede estar vacío.');
+          mostrarAviso('Ingrese el número de lote.');
+          return;
+        }
+        if (!f_fab) {
+          $('#fecha_fabricacion').addClass('input-error');
+          mostrarAviso('Ingrese la fecha de fabricación.');
+          return;
+        }
+        if (!f_venc) {
+          $('#fecha_vencimiento').addClass('input-error');
+          mostrarAviso('Ingrese la fecha de vencimiento.');
+          return;
+        }
+        if (isNaN(cant) || cant <= 0) {
+          $('#cantidad').addClass('input-error');
+          mostrarAviso('La cantidad debe ser mayor a 0.');
+          return;
+        }
+        if (f_venc <= hoy) {
+          $('#fecha_vencimiento').addClass('input-error');
+          mostrarAviso('El medicamento ya está vencido.');
+          return;
+        }
+        if (f_venc < f_fab) {
+          $('#fecha_vencimiento').addClass('input-error');
+          mostrarAviso('La fecha de vencimiento es incorrecta.');
           return;
         }
 
-        if (proveedor.trim() === "") {
-          $('#lote').addClass('input-error');
-          mostrarAviso('🛑 Error: El proveedor del medicamento no puede estar vacío.');
+        // Verificamos si existe PERO ignoramos el que estamos editando actualmente
+        const existeIndex = listaDetalles.findIndex(item => item.id_medicamento === id_med && item.lote === lote);
+        if (existeIndex !== -1 && existeIndex !== editandoIndex) {
+          mostrarAviso('Este medicamento con el mismo Lote ya está en la lista. Si desea modificarlo, edítelo directamente usando el botón amarillo en la tabla.');
           return;
         }
 
-        if (isNaN(cantidad) || cantidad <= 0) {
-          mostrarAviso("🛑 Error: Ingrese una cantidad válida mayor a 0.");
-          return;
+        const nuevoItem = {
+          id_medicamento: id_med,
+          nombre_medicamento: nombre_med,
+          componentes: componentes, // Guardamos los principios activos
+          lote: lote,
+          fecha_fabricacion: f_fab,
+          fecha_vencimiento: f_venc,
+          cantidad: cant
+        };
+
+        // Si estamos editando, reemplazamos el registro, sino hacemos un push nuevo
+        if (editandoIndex !== -1) {
+          listaDetalles[editandoIndex] = nuevoItem;
+          editandoIndex = -1; // Reseteamos el index tras editar
+        } else {
+          listaDetalles.push(nuevoItem);
         }
 
-        // Validación de Stock Máximo (Importante en Entradas)
-        if (!isNaN(stockMax) && cantidad > stockMax) {
-          mostrarAviso("🛑 Error: La cantidad ingresada (" + cantidad + ") supera el stock máximo permitido (" + stockMax + ").");
-          return;
-        }
+        // Guardamos los datos de este lote como el "último ingresado" para usarlo después
+        ultimoLoteIngresado = {
+          lote: lote,
+          fecha_fabricacion: f_fab,
+          fecha_vencimiento: f_venc
+        };
 
-        // Validación de Stock Mínimo (Opcional en entradas, pero útil para sugerencias)
-        if (!isNaN(stockMin) && cantidad < stockMin) {
-          // Podrías dejarlo como advertencia o error según tu regla de negocio
-          mostrarAviso("🛑 Error: La cantidad es menor al stock mínimo.");
-          return;
-        }
+        actualizarTablaDetalles();
 
-        if (!formularioValido) {
-          mostrarAviso('⚠️ Error: Todos los campos obligatorios (*) deben estar llenos.');
-          return;
-        }
-        // 1.3. Si todo es válido, abrimos el modal de confirmación
-        abrirModalGuardar();
-      });
-
-      // 1.4. Lógica para el botón 'Guardar' dentro del modal de confirmación
-      $('#confirmarGuardadoFinal').on('click', function() {
-        $('#modalEntradaGuardar').modal('hide');
-        $('#formularioEntrada').off('submit').submit();
-      });
-
-      // 1.5. Lógica para el botón Regresar (Abre el modal)
-      $('#abrirModalRegresar').on('click', function() {
-        $('#modalRegresarInventario').modal('show');
-      });
-
-      // =====================================================================
-      // FIX CLAVE: CERRAR MODALES CON data-dismiss (Para la animación de salida)
-      // =====================================================================
-      $('.modal').on('click', '[data-dismiss="modal"]', function() {
-        var $modal = $(this).closest('.modal');
-        $modal.removeClass('in').addClass('out');
-
+        // Cierre animado del modal agregar medicamento
+        $('#modalAgregarMedicamento').removeClass('in').addClass('out');
         setTimeout(function() {
-          $modal.modal('hide');
-          $modal.removeClass('out');
+          $('#modalAgregarMedicamento').modal('hide');
+          $('#modalAgregarMedicamento').removeClass('out');
         }, 400);
       });
 
-      // =====================================================================
-      // LIMPIEZA ADICIONAL PARA MODALES 
-      // =====================================================================
-      $('.modal').on('hidden.bs.modal', function() {
-        if ($('.modal:visible').length) {
-          $('body').addClass('modal-open');
+      // -------------------------------------------------------------
+      // DIBUJAR LA TABLA, ELIMINAR Y EDITAR ÍTEMS
+      // -------------------------------------------------------------
+      function actualizarTablaDetalles() {
+        const tbody = $('#cuerpoTablaMedicamentos');
+        tbody.empty();
+
+        if (listaDetalles.length === 0) {
+          tbody.append('<tr id="filaVacia"><td colspan="6" class="text-center text-muted">Aún no se han añadido medicamentos a esta entrada.</td></tr>');
         } else {
-          $('body').removeClass('modal-open');
+          listaDetalles.forEach((item, index) => {
+            let rowClass = "";
+            let diffDias = (new Date(item.fecha_vencimiento) - new Date(hoy)) / (1000 * 60 * 60 * 24);
+            if (diffDias < 180) rowClass = "row-vence-pronto";
+
+            // Se agregó ${item.componentes} debajo del nombre y el botón de editar
+            tbody.append(`
+              <tr class="${rowClass}">
+                <td style="text-align: left;">
+                  ${item.nombre_medicamento}
+                  <br><small class="text-muted" style="font-size: 11px;"><i>${item.componentes}</i></small>
+                </td>
+                <td><strong>${item.lote}</strong></td>
+                <td>${item.fecha_fabricacion}</td>
+                <td>${item.fecha_vencimiento} ${diffDias < 180 ? ' <i class="fa fa-warning text-warning" title="Vence pronto"></i>' : ''}</td>
+                <td><span class="badge bg-green" style="font-size:14px;">${item.cantidad}</span></td>
+                <td>
+                  <button type="button" class="btn btn-warning btn-xs btn-editar-fila" data-index="${index}" title="Editar medicamento">
+                    <i"><img src="../../recursos/imagenes/iconos/editar.png" style="width:10px; height:10px;"></i>
+                  </button>
+                  <button type="button" class="btn btn-danger btn-xs btn-eliminar-fila" data-index="${index}" title="Eliminar de la lista">
+                    <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </td>
+              </tr>
+            `);
+          });
         }
-        $('.modal-backdrop').remove();
+
+        $('#detalle_medicamentos').val(JSON.stringify(listaDetalles));
+      }
+
+      // ACCIÓN DE EDITAR (Carga los datos al modal)
+      $('#cuerpoTablaMedicamentos').on('click', '.btn-editar-fila', function() {
+        const index = $(this).data('index');
+        const item = listaDetalles[index];
+        editandoIndex = index; // Declaramos en qué posición estamos trabajando
+
+        limpiarFormularioModal(); // Limpiamos primero todo el modal
+        
+        // Rellenamos el modal con los datos del item
+        $('#Id_descripcion_medicamento').val(item.id_medicamento).trigger('change');
+        $('#lote').val(item.lote);
+        $('#fecha_fabricacion').val(item.fecha_fabricacion);
+        $('#fecha_vencimiento').val(item.fecha_vencimiento).prop('disabled', false);
+        $('#cantidad').val(item.cantidad);
+
+        $('#btnCopiarUltimoLote').hide(); // Ocultamos el botón de copiar lote para no confundir mientras se edita
+        $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-save"></i> Guardar Cambios');
+        
+        $('#modalAgregarMedicamento').modal('show');
+      });
+
+      $('#cuerpoTablaMedicamentos').on('click', '.btn-eliminar-fila', function() {
+        const index = $(this).data('index');
+        listaDetalles.splice(index, 1);
+        actualizarTablaDetalles();
+      });
+
+      // -------------------------------------------------------------
+      // SUBMIT Y GUARDADO FINAL
+      // -------------------------------------------------------------
+      $('#formularioEntrada').on('submit', function(e) {
+        e.preventDefault();
+
+        if ($('#proveedor').val() === "") {
+          mostrarAviso("Debe seleccionar el Proveedor/Donante.");
+          return;
+          
+        }
+
+        if (listaDetalles.length === 0) {
+          mostrarAviso("Debe añadir al menos un medicamento a la lista para generar una entrada.");
+          return;
+        }
+
+        $('#modalEntradaGuardar').modal('show');
+      });
+
+      $('#confirmarGuardadoFinal').on('click', function() {
+        $('#modalEntradaGuardar').modal('hide');
+        $('#formularioEntrada').off('submit').submit();
       });
     });
   </script>

@@ -12,12 +12,9 @@ $id_medicamento = isset($_POST['id_medicamento']) ? mysqli_real_escape_string($c
 $es_menor = isset($_POST['es_menor']) && ($_POST['es_menor'] == 1 || $_POST['es_menor'] == '1' || $_POST['es_menor'] === 'true');
 $metodo = isset($_POST['metodo']) ? mysqli_real_escape_string($conexion, $_POST['metodo']) : '';
 
-
-
-
-// Base de la consulta
+// Base de la consulta: CORRECCIÓN AQUÍ (Usar c.Id_consulta en lugar de pm.Id)
 $sql = "SELECT 
-            pm.Id AS id_prescripcion_medicamento,
+            c.Id_consulta AS id_prescripcion_medicamento,
             c.fecha_consulta,
             per.tipo_cedula AS tipo_cedula_paciente,
             per.cedula AS cedula_paciente,
@@ -26,21 +23,19 @@ $sql = "SELECT
             TIMESTAMPDIFF(YEAR, per.fecha_nacimiento, CURDATE()) AS edad";
 
 if ($es_menor) {
-    // FILTRO ESTRICTO: Solo menores de 18 años
     $sql .= ", rep.nombre AS nombre_rep, rep.apellido AS apellido_rep, rep.tipo_cedula AS tipo_cedula_rep, rep.cedula AS cedula_rep 
              FROM prescripcion_medicamentos pm
              INNER JOIN consulta c ON pm.Id_consulta = c.Id_consulta
              INNER JOIN persona per ON c.Id_paciente = per.id
              LEFT JOIN detalle_paciente_menor dpm ON per.id = dpm.id_persona
              LEFT JOIN persona rep ON dpm.id_representante = rep.id
-             WHERE pm.estado_prescripcion = 'pendiente' 
+             WHERE pm.estado_prescripcion IN ('pendiente', 'parcial') 
              AND TIMESTAMPDIFF(YEAR, per.fecha_nacimiento, CURDATE()) < 18"; 
 } else {
-    // FILTRO ESTRICTO: Solo mayores o iguales a 18 años (Paciente Interno)
     $sql .= " FROM prescripcion_medicamentos pm
              INNER JOIN consulta c ON pm.Id_consulta = c.Id_consulta
              INNER JOIN persona per ON c.Id_paciente = per.id
-             WHERE pm.estado_prescripcion = 'pendiente'
+             WHERE pm.estado_prescripcion IN ('pendiente', 'parcial')
              AND TIMESTAMPDIFF(YEAR, per.fecha_nacimiento, CURDATE()) >= 18";
 }
 
@@ -49,24 +44,29 @@ if (!empty($id_medicamento)) {
     $sql .= " AND pm.Id_descripcion_medicamento = '$id_medicamento' ";
 }
 
-// Filtro de búsqueda
+// Filtro de búsqueda (se ajustó para respetar correctamente cuando se manda sólo Cédula)
 if ($es_menor) {
     if ($metodo === 'cedula') {
-        // Solo filtramos por tipo_cedula si el método es cédula
-        $sql .= " AND rep.cedula LIKE '%$busqueda%' AND rep.tipo_cedula = '$tipo_cedula'";
+        $sql .= " AND rep.cedula LIKE '%$busqueda%'";
+        if (!empty($tipo_cedula)) {
+            $sql .= " AND rep.tipo_cedula = '$tipo_cedula'";
+        }
     } else {
         $sql .= " AND (rep.nombre LIKE '%$busqueda%' OR rep.apellido LIKE '%$busqueda%')";
     }
 } else {
     if ($metodo === 'cedula') {
-        // Solo filtramos por tipo_cedula si el método es cédula
-        $sql .= " AND per.cedula LIKE '%$busqueda%' AND per.tipo_cedula = '$tipo_cedula'";
+        $sql .= " AND per.cedula LIKE '%$busqueda%'";
+        if (!empty($tipo_cedula)) {
+            $sql .= " AND per.tipo_cedula = '$tipo_cedula'";
+        }
     } else {
         $sql .= " AND (per.nombre LIKE '%$busqueda%' OR per.apellido LIKE '%$busqueda%')";
     }
 }
 
-$sql .= " ORDER BY c.fecha_consulta DESC LIMIT 15";
+// CORRECCIÓN: Agrupar por el ID de la consulta para no generar options duplicados
+$sql .= " GROUP BY c.Id_consulta ORDER BY c.fecha_consulta DESC LIMIT 15";
 
 $resultado = mysqli_query($conexion, $sql);
 
@@ -81,7 +81,6 @@ if ($resultado && mysqli_num_rows($resultado) > 0) {
         $ced_r      = $fila['cedula_rep'] ?? '';
     
         echo "<option value='{$fila['id_prescripcion_medicamento']}' 
-                data-cantidad='".htmlspecialchars($fila['dosis'])."'
                 data-paciente='{$paciente_completo}'
                 data-tipo-cedula-p='{$tipo_ced_p}'
                 data-cedula-p='{$ced_p}'

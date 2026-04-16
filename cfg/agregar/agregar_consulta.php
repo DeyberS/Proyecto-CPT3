@@ -204,11 +204,16 @@ verificar_y_guardar_antecedente($conexion, $id_historial, $estilo_vida, 'tipos_e
 // ==========================================================
 
 // 1. Recibimos el dato
+// ==========================================================
+// SECCIÓN DE PRESCRIPCIÓN DE MEDICAMENTOS Y SOLICITUD A FARMACIA
+// ==========================================================
+
+// 1. Recibimos el dato
 $medicamento_input = $_POST['medicamento_full_data'] ?? '';
 
 // 2. Verificamos que no esté vacío
 if (!empty($medicamento_input)) {
-    
+
     // Intentamos decodificar por si acaso viene como JSON puro desde el frontend
     $medicamentos = json_decode($medicamento_input, true);
 
@@ -217,7 +222,7 @@ if (!empty($medicamento_input)) {
         $medicamentos = [];
         // Separamos la cadena de texto usando la coma como delimitador
         $ids_separados = explode(',', $medicamento_input);
-        
+
         // Creamos el arreglo con la estructura que espera el ciclo foreach
         foreach ($ids_separados as $id_val) {
             $id_limpio = trim($id_val); // Quitamos espacios en blanco accidentales
@@ -227,17 +232,45 @@ if (!empty($medicamento_input)) {
         }
     }
 
-    // 3. Ahora recorremos el array (que ya tiene cada ID separado correctamente)
-    foreach ($medicamentos as $med) {
-        $id_desc_med = isset($med['id']) ? (int)$med['id'] : 0;
+    // 3. Si hay medicamentos, creamos la Solicitud General (Farmacia) UNA sola vez
+    if (count($medicamentos) > 0) {
+        // Insertamos la solicitud. Al ser de una consulta, el origen es 'Interno'.
+        // Llenamos los campos de externos vacíos/0 por defecto.
+        $sql_solicitud = "INSERT INTO solicitud_medicamento 
+                          (origen, id_consulta, tipo_cedula_externo, cedula_externo, estatus_general, fecha_solicitud) 
+                          VALUES ('Interno', $id_consulta, '', 0, 'Pendiente', NOW())";
 
-        if ($id_desc_med > 0) {
-            $sql_presc = "INSERT INTO prescripcion_medicamentos 
-                          (Id_consulta, Id_descripcion_medicamento) 
-                          VALUES ($id_consulta, $id_desc_med)";
+        if (!mysqli_query($conexion, $sql_solicitud)) {
+            handle_error($conexion, "Error al crear solicitud de farmacia", $sql_solicitud);
+        }
 
-            if (!mysqli_query($conexion, $sql_presc)) {
-                handle_error($conexion, "Error al insertar medicamento ID: $id_desc_med", $sql_presc);
+        $id_solicitud = mysqli_insert_id($conexion); // Obtenemos el ID de la solicitud recién creada
+
+        // 4. Ahora recorremos el array para registrar cada medicamento en ambas partes
+        foreach ($medicamentos as $med) {
+            $id_desc_med = isset($med['id']) ? (int)$med['id'] : 0;
+
+            // ⚠️ OJO: Aquí capturamos la cantidad si viene en el JSON, sino ponemos 1 por defecto.
+            $cantidad_recetada = isset($med['cantidad']) ? (int)$med['cantidad'] : 1;
+
+            if ($id_desc_med > 0) {
+                // A. Registrar en el Historial Médico (Prescripción)
+                $sql_presc = "INSERT INTO prescripcion_medicamentos 
+                              (Id_consulta, Id_descripcion_medicamento, estado_prescripcion) 
+                              VALUES ($id_consulta, $id_desc_med, 'pendiente')";
+
+                if (!mysqli_query($conexion, $sql_presc)) {
+                    handle_error($conexion, "Error al insertar medicamento en prescripción ID: $id_desc_med", $sql_presc);
+                }
+
+                // B. Registrar en el Detalle de la Solicitud (Para la Farmacia)
+                $sql_detalle_solicitud = "INSERT INTO detalle_solicitud 
+                                          (id_solicitud, id_medicamento, cantidad_recetada, cantidad_entregada, estatus_item) 
+                                          VALUES ($id_solicitud, $id_desc_med, $cantidad_recetada, 0, 'Pendiente')";
+
+                if (!mysqli_query($conexion, $sql_detalle_solicitud)) {
+                    handle_error($conexion, "Error al insertar detalle de solicitud farmacia ID: $id_desc_med", $sql_detalle_solicitud);
+                }
             }
         }
     }

@@ -203,19 +203,22 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                     <li><a href="pages/php/farmacia_inventario_listado.php"></i>Inventario</a></li>
                   <?php endif; ?>
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
-                    <li><a href="pages/php/farmacia_medicamentos_listado.php"><i class="fa fa-user-plus"></i>Medicamentos</a></li>
+                    <li><a href="pages/php/farmacia_inventario_kardex.php"><i class="fa fa-user-plus"></i>Kardex</a></li>
                   <?php endif; ?>
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
-                    <li><a href="pages/php/farmacia_prescripciones_listado.php"><i class="fa fa-user-plus"></i>Recipes</a></li>
+                    <li><a href="pages/php/farmacia_medicamentos_listado.php"><i class="fa fa-user-plus"></i>Medicamentos</a></li>
+                  <?php endif; ?>
+                  <?php if (in_array('Ver Lotes', $_SESSION["permisos"])) : ?>
+                    <li><a href="pages/php/farmacia_lotes_listado.php"><i class="fa fa-user-plus"></i>Lotes</a></li>
                   <?php endif; ?>
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
                     <li><a href="pages/php/farmacia_proveedores_listado.php"><i class="fa fa-user-plus"></i>Proveedores</a></li>
                   <?php endif; ?>
                   <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
                     <li><a href="pages/php/farmacia_laboratorio_listado.php"><i class="fa fa-user-plus"></i>Laboratorios</a></li>
-                  <?php endif; ?>
-                  <?php if (in_array('Ver Lotes', $_SESSION["permisos"])) : ?>
-                    <li><a href="pages/php/farmacia_lotes_listado.php"><i class="fa fa-user-plus"></i>Lotes</a></li>
+                  <?php endif; ?>    
+                  <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
+                    <li><a href="pages/php/farmacia_prescripciones_listado.php"><i class="fa fa-user-plus"></i>Recipes</a></li>
                   <?php endif; ?>
                 </ul>
               </li>

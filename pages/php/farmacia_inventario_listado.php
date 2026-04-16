@@ -54,6 +54,7 @@
   .modal.in .modal-dialog,
   #DesactivarLote,
   #ModalReporteInventario,
+  #modalAnulacion,
   #ModalConfirmarEliminar {
     animation: fadeIn 0.4s ease-out;
   }
@@ -94,9 +95,9 @@
     }
 
     // Contar el total de registros filtrados para que la paginación sea exacta
-    $sql_conteo = "SELECT COUNT(*) as total 
-                 FROM medicamentos_detalle_inventario mdi
-                 INNER JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
+    $sql_conteo = "SELECT COUNT(DISTINCT di.Id_detalle_inventario) as total 
+                 FROM detalle_inventario di
+                 INNER JOIN medicamentos_detalle_inventario mdi ON di.Id_detalle_inventario = mdi.Id_detalle_inventario
                  INNER JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
                  INNER JOIN descripcion_medicamento dm ON l.Id_descripcion_medicamento = dm.Id
                  INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
@@ -128,19 +129,19 @@
         <?php endif; ?>
         <p class="pull-right" style="width:5px;"></p>
         <?php if (in_array('Generar Salidas de Inventario', $_SESSION["permisos"])) : ?>
-          <a href="farmacia_inventario_movimiento_salida.php?op=salida" class="btn-sm btn-danger pull-right"><i class="fa fa-arrow-down"></i> Salida</a>
+          <a href="farmacia_inventario_movimiento_salida.php?op=ajuste_salida" class="btn-sm btn-primary pull-right"><i class="fa fa-arrow-down"></i> Ajuste de Inventario</a>
+        <?php endif; ?>
+        <p class="pull-right" style="width:5px;"></p>
+        <?php if (in_array('Generar Salidas de Inventario', $_SESSION["permisos"])) : ?>
+          <a href="farmacia_inventario_movimiento_despacho.php?op=despacho" class="btn-sm btn-primary pull-right"><i class="fa fa-arrow-down"></i> Despacho</a>
         <?php endif; ?>
         <p class="pull-right" style="width:5px;"></p>
         <?php if (in_array('Generar Entradas de Inventario', $_SESSION["permisos"])) : ?>
-          <a href="farmacia_inventario_movimiento_entrada.php?op=entrada" class="btn-sm btn-success pull-right"><i class="fa fa-arrow-up"></i> Entrada </a>
+          <a href="farmacia_inventario_movimiento_entrada.php?op=entrada" class="btn-sm btn-primary pull-right"><i class="fa fa-arrow-up"></i> Entrada </a>
         <?php endif; ?>
         <p class="pull-right" style="width:5px;"></p>
         <?php if (in_array('Ajustar Stock de Medicamentos', $_SESSION["permisos"])) : ?>
-          <a href="farmacia_inventario_ajustes.php?op=ajuste" class="btn-sm btn-warning pull-right"><i class="fa fa-cog"></i> Ajuste de Stock </a>
-        <?php endif; ?>
-        <p class="pull-right" style="width:5px;"></p>
-        <?php if (in_array('Ajustar Stock de Medicamentos', $_SESSION["permisos"])) : ?>
-          <a href="farmacia_prescripciones_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-cog"></i> Ver Recetas </a>
+          <a href="farmacia_inventario_ajustes.php?op=ajuste" class="btn-sm btn-primary pull-right"><i class="fa fa-cog"></i> Ajuste de Stock </a>
         <?php endif; ?>
         <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="width: 200px;" autocomplete="off">
       </div>
@@ -151,13 +152,9 @@
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <tr>
               <th>Responsable</th>
-              <th>Medicamento</th>
-              <th>Existencia</th>
-              <th>Stock Mín/Máx</th>
-              <th>N. Lote</th>
-              <th>Cantidad</th>
-              <th>Movimiento</th>
+              <th>Resumen de Productos</th>
               <th>Fecha</th>
+              <th>Movimiento</th>
               <?php if (in_array('Gestionar acciones de inventario', $_SESSION["permisos"])) : ?>
                 <th>Acciones</th>
               <?php endif; ?>
@@ -167,32 +164,22 @@
             <?php
             // 3. CONSULTA SQL CON PAGINACIÓN Y SUB-QUERY DE EXISTENCIA TOTAL
             $sql = "SELECT
-                m.Id_medicamento, 
-                m.nombre_medicamento,
-                p.nombre,
-                tdm.nombre_presentacion,
-                GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
-                l.Lote,
-                tm.nombre as tipo_nom,
-                mdi.cantidad,
-                mdi.stock_momento,
-                di.fecha,
                 di.Id_detalle_inventario,
-                dm.stock_minimo,
-                dm.stock_maximo
-            FROM medicamentos_detalle_inventario mdi
-            INNER JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
+                di.estado_movimiento,
+                di.fecha,
+                di.Id_tipoMovimiento,
+                tm.nombre as tipo_nom,
+                p.nombre as responsable,
+                GROUP_CONCAT(CONCAT(m.nombre_medicamento, ' (x', mdi.cantidad, ')') SEPARATOR ', ') AS resumen_productos
+            FROM detalle_inventario di
+            INNER JOIN medicamentos_detalle_inventario mdi ON di.Id_detalle_inventario = mdi.Id_detalle_inventario
             INNER JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
             INNER JOIN descripcion_medicamento dm ON l.Id_descripcion_medicamento = dm.Id
             INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-            INNER JOIN presentacion tdm ON dm.Id_presentacion = tdm.Id_presentacion
-            INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
-            INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-            INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
             INNER JOIN tipo_movimiento tm ON di.Id_tipoMovimiento = tm.Id_tipo_movimiento
             INNER JOIN persona p ON di.Id_persona = p.Id
             $donde
-            GROUP BY mdi.Id
+            GROUP BY di.Id_detalle_inventario
             ORDER BY di.fecha DESC
             LIMIT $inicio, $registros_por_pagina";
 
@@ -204,28 +191,36 @@
                 $es_entrada = (strcasecmp($row['tipo_nom'], 'Entrada') == 0);
                 $simbolo = $es_entrada ? '+' : '-';
                 $color_texto = $es_entrada ? 'text-green' : 'text-red'; // Opcional: para dar color al número
+                $tipos_prohibidos = [8, 9];
             ?>
                 <tr>
-                  <td><small class="text-row text-white"><?= htmlspecialchars($row['nombre']); ?></small></td>
-                  <td><small class="text-row text-white"><?= htmlspecialchars($row['nombre_medicamento'] . " (" . $row['componentes'] . ")"); ?></small></td>
-                  <td><small class="text-row text-white"><?= htmlspecialchars($row['stock_momento']); ?></small></td>
-                  <td><small class="text-row text-white"><?= "Min: " . $row['stock_minimo'] . " / Max: " . $row['stock_maximo']; ?></small></td>
-                  <td><small class="text-row text-white"><?= htmlspecialchars($row['Lote']); ?></small></td>
-                  <td><small class="text-row text-white"><strong><?= $simbolo . $row['cantidad']; ?></strong></small></td>
-                  <td><small class="badge <?= $clase_badge; ?>"><?= htmlspecialchars($row['tipo_nom']); ?></small></td>
+                  <td><small class="text-row text-white"><?= htmlspecialchars($row['responsable']); ?></small></td>
+                  <td><small class="text-row text-white"><?= htmlspecialchars($row['resumen_productos']); ?></small></td>
                   <td><small class="text-row text-white"><?= date("d/m/Y H:i", strtotime($row['fecha'])); ?></small></td>
+                  <td><small class="badge <?= $clase_badge; ?>"><?= htmlspecialchars($row['tipo_nom']); ?></small></td>
                   <?php if (in_array('Gestionar acciones de inventario', $_SESSION["permisos"])) : ?>
                     <td>
                       <?php if (in_array('Ver Consultas', $_SESSION["permisos"])) : ?>
-                        <a href="farmacia_inventario_ver_kardex.php?id=<?php echo $row['Id_medicamento'] ?>" class="btn-sm btn-success" title="Ver Kardex"><img src="../../recursos/imagenes/iconos/Consulta-Reporte-w.png" style="width:15px; height:15px;"></a>
-                      <?php endif; ?>
-                      <?php if (in_array('Ver Consultas', $_SESSION["permisos"])) : ?>
                         <a href="farmacia_inventario_ver_movimiento.php?id=<?php echo $row['Id_detalle_inventario'] ?>" class="btn-sm btn-info" title="Ver Movimiento"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
                       <?php endif; ?>
-                      <?php if (in_array('Editar Movimientos de Inventario', $_SESSION["permisos"])) : ?>
-                        <a href="../../cfg/redireccion_movimiento_editar.php?id=<?= $row['Id_detalle_inventario']; ?>" title="Editar" class="btn-sm btn-warning"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
+                      <?php if (in_array('Ver Consultas', $_SESSION["permisos"])) : ?>
+                        <?php if ($row['estado_movimiento'] !== 'Anulado' && !in_array($row['Id_tipoMovimiento'], $tipos_prohibidos)) : ?>
+
+                          <?php if ($contador === 0 && $pagina_actual === 1 && empty($busqueda)) : ?>
+                            <a href="javascript:void(0);" onclick="abrirModalAnulacion(<?= $row['Id_detalle_inventario']; ?>)" title="Anular Movimiento" class="btn-sm btn-danger">
+                              <img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;">
+                            </a>
+                          <?php else : ?>
+                            <a href="#" class="btn-sm btn-disabled" title="Solo puede anular el último movimiento realizado para evitar descuadres de stock">
+                              <img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px; opacity: 0.5;">
+                            </a>
+                          <?php endif; ?>
+
+                        <?php else : ?>
+                          <span class="badge badge-secondary">Anulado</span>
+                        <?php endif; ?>
                       <?php endif; ?>
-                      <?php if (in_array('Eliminar Movimientos de Inventario', $_SESSION["permisos"])) : ?>
+                      <?php if (in_array('Elimina Movimientos de Inventario', $_SESSION["permisos"])) : ?>
                         <?php if ($contador === 0 && $pagina_actual === 1) : ?>
                           <a href="javascript:void(0);" onclick="confirmarEliminar(<?= $row['Id_detalle_inventario']; ?>)" title="Eliminar" class="btn-sm btn-danger"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
                         <?php else : ?>
@@ -326,6 +321,32 @@
       </div>
     </div>
 
+    <div class="modal" id="modalAnulacion" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white" style="background-color: #dc3545; color: white;">
+            <h5 class="modal-title" style="color:white !important;">Confirmar Anulación</h5>
+            <button type="button" class="close" onclick="closeCustomModal($('#modalAnulacion'))" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form action="../../cfg/movimientos_inventario.php" method="POST">
+            <div class="modal-body">
+              <p>¿Está seguro de que desea anular el <strong>Movimiento #<span id="display_id"></span></strong>?</p>
+              <p class="text-muted small">Esta acción revertirá el stock y no se puede deshacer.</p>
+
+              <input type="hidden" name="op" value="revertir_movimiento">
+              <input type="hidden" name="id_detalle_inventario" id="id_anular_input">
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCustomModal($('#modalAnulacion'))">Cancelar</button>
+                <button type="submit" class="btn btn-danger">Confirmar Reversión</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <div class="modal" id="ModalReporteInventario" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -399,6 +420,17 @@
 
       // Mostramos el modal
       $('#ModalConfirmarEliminar').modal('show');
+    }
+
+    function abrirModalAnulacion(id) {
+      // Asignar el ID al campo oculto del formulario
+      document.getElementById('id_anular_input').value = id;
+
+      // Mostrar el ID visualmente en el texto del modal
+      document.getElementById('display_id').textContent = id;
+
+      // Usar el método nativo de Bootstrap para abrir el modal
+      $('#modalAnulacion').modal('show');
     }
 
 

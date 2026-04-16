@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 10-04-2026 a las 23:23:34
+-- Tiempo de generación: 16-04-2026 a las 19:37:42
 -- Versión del servidor: 10.4.22-MariaDB
 -- Versión de PHP: 7.3.33
 
@@ -123,7 +123,10 @@ CREATE TABLE `citas` (
 --
 
 INSERT INTO `citas` (`id_cita`, `fecha_cita`, `hora_cita`, `motivo`, `Id_paciente`, `Id_medico`, `Id_especialidad`, `fecha_registro`, `estado`, `estatus`) VALUES
-(122, '0000-00-00', '00:00:00', 'Dolor', 331, 19, 2, '2026-04-06 12:43:30', 'Vencida', 0);
+(122, '0000-00-00', '00:00:00', 'Dolor', 331, 19, 2, '2026-04-06 12:43:30', 'Vencida', 0),
+(123, '0000-00-00', '00:00:00', 'Dolor', 328, 19, 2, '2026-04-14 01:48:35', 'Vencida', 0),
+(124, '0000-00-00', '00:00:00', 'Dolor', 328, 19, 2, '2026-04-16 12:59:37', 'Vencida', 0),
+(125, '0000-00-00', '00:00:00', 'SDDS', 328, 19, 2, '2026-04-16 15:12:45', 'Vencida', 0);
 
 -- --------------------------------------------------------
 
@@ -163,7 +166,7 @@ CREATE TABLE `consulta` (
 --
 
 INSERT INTO `consulta` (`Id_consulta`, `fecha_consulta`, `motivo_consulta`, `diagnostico`, `tratamiento_indicado`, `peso`, `talla`, `temperatura`, `tension`, `frecuencia_cardiaca`, `saturacion`, `frecuencia_respiratoria`, `estado_paciente`, `reaccion_adversa`, `detalle_reaccion`, `evolucion_resultado`, `lectura_examenes`, `examenes_solicitados`, `entregado_a`, `parentesco`, `Id_historial`, `Id_medico`, `Id_paciente`, `estatus`) VALUES
-(110, '2026-04-06', 'Dolor', 'Gripe', 'Tomese eso hoy', '0.00', '0.00', 0, 0, 0, 0, 0, 'Primera Consulta', 'No', '', 'Paciente acude por primera vez. Se inicia protocolo.', '', '', 'Mario Gomez', '', 87, 329, 331, 0);
+(113, '2026-04-16', 'SDDS', 'SDADS', 'SDAD', '0.00', '0.00', 0, 0, 0, 0, 0, 'Primera Consulta', 'No', '', 'Paciente acude por primera vez. Se inicia protocolo.', '', '', 'Camilo Raul Montilla Perez', '', 86, 329, 328, 1);
 
 -- --------------------------------------------------------
 
@@ -208,6 +211,14 @@ CREATE TABLE `descripcion_medicamento` (
   `estatus` enum('1','2') COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
+--
+-- Volcado de datos para la tabla `descripcion_medicamento`
+--
+
+INSERT INTO `descripcion_medicamento` (`Id`, `via_aplicacion`, `almacenamiento`, `excipientes`, `stock_minimo`, `stock_maximo`, `codigo_barras`, `contenido_neto`, `cantidad_concentracion`, `Id_tipo_concentracion`, `Id_laboratorio`, `Id_presentacion`, `Id_medicamento`, `estatus`) VALUES
+(81, 'Oral', '8_a_15', 'Fresa, Sal, Mantequilla', 1, 100, '27489824824742', '10 Tabletas', '10', 2, 2, 1, 94, '1'),
+(82, 'Oral', '8_a_15', 'Fresa, Sal, Mantequilla', 1, 100, '234234235233', '10 Tabletas', '10', 2, 2, 1, 95, '1');
+
 -- --------------------------------------------------------
 
 --
@@ -221,8 +232,20 @@ CREATE TABLE `detalle_inventario` (
   `Id_prescripcion` int(11) DEFAULT NULL,
   `comprobante` varchar(255) DEFAULT NULL,
   `fecha` datetime NOT NULL,
-  `observaciones` varchar(255) NOT NULL
+  `observaciones` varchar(255) NOT NULL,
+  `estado_movimiento` enum('Activo','Anulado') NOT NULL DEFAULT 'Activo'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `detalle_inventario`
+--
+
+INSERT INTO `detalle_inventario` (`Id_detalle_inventario`, `Id_TipoMovimiento`, `Id_Persona`, `Id_prescripcion`, `comprobante`, `fecha`, `observaciones`, `estado_movimiento`) VALUES
+(226, 1, 189, NULL, NULL, '2026-04-16 11:13:46', 'Entrada', 'Activo'),
+(230, 2, 189, NULL, NULL, '2026-04-16 11:33:29', 'Despacho a paciente externo: Deyber Silva', 'Anulado'),
+(232, 9, 189, NULL, NULL, '2026-04-16 12:50:11', 'ANULACIÓN DE MOV. #230 | Motivo: Error de registro detectado por administrador', 'Activo'),
+(233, 1, 189, NULL, NULL, '2026-04-16 13:16:48', 'Entrega', 'Activo'),
+(234, 1, 189, NULL, NULL, '2026-04-16 13:18:14', 'Entrega', 'Activo');
 
 -- --------------------------------------------------------
 
@@ -390,6 +413,39 @@ CREATE TABLE `detalle_principio_medicamento` (
   `cantidad_unidad_medida` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Volcado de datos para la tabla `detalle_principio_medicamento`
+--
+
+INSERT INTO `detalle_principio_medicamento` (`Id_principio_medicamento`, `id_medicamento`, `id_principio_activo`, `id_tipo_unidad_medida`, `cantidad_unidad_medida`) VALUES
+(42, 82, 1, 1, 800),
+(43, 81, 1, 1, 800),
+(44, 81, 2, 2, 250);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `detalle_solicitud`
+--
+
+CREATE TABLE `detalle_solicitud` (
+  `id_detalle` int(11) NOT NULL,
+  `id_solicitud` int(11) NOT NULL,
+  `id_medicamento` int(11) NOT NULL,
+  `cantidad_recetada` int(11) NOT NULL,
+  `cantidad_entregada` int(11) NOT NULL DEFAULT 0,
+  `estatus_item` enum('Pendiente','Entregado','Parcialmente Entregado','Cancelado') DEFAULT 'Pendiente'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `detalle_solicitud`
+--
+
+INSERT INTO `detalle_solicitud` (`id_detalle`, `id_solicitud`, `id_medicamento`, `cantidad_recetada`, `cantidad_entregada`, `estatus_item`) VALUES
+(35, 29, 81, 1, 0, 'Cancelado'),
+(36, 29, 82, 1, 0, 'Cancelado'),
+(37, 30, 82, 2, 0, 'Cancelado');
+
 -- --------------------------------------------------------
 
 --
@@ -536,6 +592,14 @@ CREATE TABLE `existencias_stock` (
   `ultima_actualizacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Volcado de datos para la tabla `existencias_stock`
+--
+
+INSERT INTO `existencias_stock` (`Id_existencia`, `Id_descripcion_medicamento`, `Id_lote`, `cantidad_actual`, `ultima_actualizacion`) VALUES
+(74, 81, 60, 15, '2026-04-16 17:16:48'),
+(75, 82, 61, 20, '2026-04-16 17:18:14');
+
 -- --------------------------------------------------------
 
 --
@@ -556,7 +620,7 @@ CREATE TABLE `historial_alergias` (
 --
 
 INSERT INTO `historial_alergias` (`Id`, `Id_persona`, `Id_alergia`, `Id_Historial`, `fecha_registro`, `estatus`) VALUES
-(69, 328, 6, 86, '2012-11-01', '1');
+(70, 328, 6, 86, '2012-11-01', '1');
 
 -- --------------------------------------------------------
 
@@ -664,8 +728,8 @@ CREATE TABLE `historial_patologias` (
 
 INSERT INTO `historial_patologias` (`Id`, `Id_persona`, `Id_patologia`, `Id_Historial`, `fecha_registro`, `estatus`) VALUES
 (140, 332, 32, 88, '2012-11-01', '1'),
-(141, 328, 32, 86, '2010-07-01', '1'),
-(142, 331, 32, 87, '0000-00-00', '1');
+(142, 331, 32, 87, '0000-00-00', '1'),
+(143, 328, 32, 86, '2010-07-01', '1');
 
 -- --------------------------------------------------------
 
@@ -705,6 +769,14 @@ CREATE TABLE `lotes_medicamentos` (
   `estatus` int(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
+--
+-- Volcado de datos para la tabla `lotes_medicamentos`
+--
+
+INSERT INTO `lotes_medicamentos` (`Id`, `Id_descripcion_medicamento`, `Id_proveedor`, `Lote`, `fecha_fabricacion`, `fecha_vencimiento`, `estado_lote`, `estatus`) VALUES
+(60, 81, 1, 'D-FGHR', '2026-04-12', '2026-04-29', 'Disponible', 1),
+(61, 82, 1, 'L-2026B', '2026-04-12', '2026-04-29', 'Disponible', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -739,6 +811,14 @@ CREATE TABLE `medicamento` (
   `estatus` int(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Volcado de datos para la tabla `medicamento`
+--
+
+INSERT INTO `medicamento` (`Id_medicamento`, `nombre_medicamento`, `estatus`) VALUES
+(94, 'DARFF', 1),
+(95, 'GERMEW', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -753,6 +833,18 @@ CREATE TABLE `medicamentos_detalle_inventario` (
   `cantidad` int(11) NOT NULL,
   `stock_momento` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `medicamentos_detalle_inventario`
+--
+
+INSERT INTO `medicamentos_detalle_inventario` (`Id`, `Id_detalle_inventario`, `Id_descripcion_medicamento`, `Id_lote`, `cantidad`, `stock_momento`) VALUES
+(220, 226, 81, 60, 10, 10),
+(221, 226, 82, 61, 10, 10),
+(222, 230, 82, 61, 1, 9),
+(223, 232, 82, 61, 1, 10),
+(224, 233, 81, 60, 5, 15),
+(225, 234, 82, 61, 10, 20);
 
 -- --------------------------------------------------------
 
@@ -1392,7 +1484,24 @@ INSERT INTO `permiso` (`Id_permiso`, `nombre_permiso`, `descripcion`, `estatus`)
 (174, 'Gestionar acciones de especialidades', 'Permite realizar acciones en el modulo de especialidades (editar, eliminar, etc).', 1),
 (175, 'Gestionar acciones de usuarios', 'Permite realizar acciones en el modulo de usuarios (editar, eliminar, etc).', 1),
 (176, 'Gestionar acciones de roles', 'Permite realizar acciones en el modulo de roles (editar, eliminar, etc).', 1),
-(177, 'Gestionar acciones de permisos', 'Permite realizar acciones en el modulo de permisos (editar, eliminar, etc).', 1);
+(177, 'Gestionar acciones de permisos', 'Permite realizar acciones en el modulo de permisos (editar, eliminar, etc).', 1),
+(178, 'Crear Proveedores', 'Permiso para crear proveedores', 1),
+(179, 'Editar Proveedores', 'Permiso para editar proveedores', 1),
+(180, 'Eliminar Proveedores', 'Permiso para eliminar proveedores', 1),
+(181, 'Ver Proveedores', 'Permiso para ver proveedores', 1),
+(182, 'Crear Laboratorios', 'Permiso para crear laboratorios', 1),
+(183, 'Editar Laboratorios', 'Permiso para editar laboratorios', 1),
+(184, 'Eliminar Laboratorios', 'Permiso para eliminar laboratorios', 1),
+(185, 'Ver Laboratorios', 'Permiso para ver laboratorios', 1),
+(186, 'Generar despachos de inventario', 'Permiso para despachar medicamentos', 1),
+(187, 'Ver kardex de medicamentos', 'Permiso para ver el kardex de los medicamentos', 1),
+(188, 'Desactivar Proveedores', 'Permiso para desactivar proveedores', 1),
+(189, 'Desactivar Laboratorios', 'Permiso para desactivar laboratorios', 1),
+(190, 'Reactivar Proveedores', 'Permiso para reactivar proveedores', 1),
+(191, 'Reactivar Laboratorios', 'Permiso para reactivar laboratorios', 1),
+(192, 'Gestionar acciones de proveedores', 'Permiso para gestionar las acciones de los proveedores', 1),
+(193, 'Gestionar acciones de laboratorios', 'Permiso para gestionar las acciones de los laboratorios', 1),
+(194, 'Gestionar acciones de recetas', 'Permiso para gestionar las acciones de las recetas', 1);
 
 -- --------------------------------------------------------
 
@@ -1427,7 +1536,7 @@ INSERT INTO `persona` (`id`, `nombre`, `apellido`, `tipo_cedula`, `cedula`, `fec
 (282, 'Doctor Mario', '', '', NULL, '0000-00-00', '', 'DoctorM@gmail.com', '$2y$10$Vkl.uEJ6/eYrUH8zEUm1OOgFk6l2j8FwaZsftByZc2yn.G7E8QE/O', 0, NULL, NULL, NULL, 2),
 (283, 'Vistante', '', '', NULL, '0000-00-00', '', 'Visitante@gmail.com', '$2y$10$LpUujaFYGLR8dh8TLbVeSOPfgEPOoSUhUBRPwDegm4vmCAjesma6K', 0, NULL, NULL, NULL, 2),
 (284, 'Recursos Humanos', '', '', NULL, '0000-00-00', '', 'RH2026@gmail.com', '$2y$10$OZv49JoBe5QAdfDZSthS0.vAX2Z5P/vmcjo5YdNMYEL8K2vP5NMz.', 0, NULL, NULL, NULL, 2),
-(328, 'X', '', 'V', '22333333', '1994-11-01', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
+(328, 'Camilo Raul', 'Montilla Perez', 'V', '22333333', '1994-11-01', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
 (329, 'Francisco', 'Perez Mendoza', 'V', '23456646', '1994-11-01', 'Masculino', 'Camilo@gmail.com', '', 0, NULL, NULL, NULL, 1),
 (330, 'Mario', 'Gomez', 'V', '24244252', '1994-11-01', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
 (331, 'Steve ', 'Rogers', 'V', '31306212', '2011-03-01', 'Masculino', NULL, '', 0, NULL, NULL, NULL, 1),
@@ -1467,9 +1576,17 @@ CREATE TABLE `prescripcion_medicamentos` (
   `Id` int(11) NOT NULL,
   `Id_consulta` int(11) NOT NULL,
   `Id_descripcion_medicamento` int(11) NOT NULL,
-  `estado_prescripcion` enum('pendiente','entregado','parcial','no entregado') COLLATE utf8_spanish_ci NOT NULL DEFAULT 'pendiente',
+  `estado_prescripcion` enum('pendiente','entregado','parcial','no entregado','cancelado') COLLATE utf8_spanish_ci NOT NULL DEFAULT 'pendiente',
   `estatus` int(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `prescripcion_medicamentos`
+--
+
+INSERT INTO `prescripcion_medicamentos` (`Id`, `Id_consulta`, `Id_descripcion_medicamento`, `estado_prescripcion`, `estatus`) VALUES
+(219, 113, 81, 'cancelado', 1),
+(220, 113, 82, 'cancelado', 1);
 
 -- --------------------------------------------------------
 
@@ -2872,6 +2989,32 @@ INSERT INTO `sintomas` (`Id_sintomas`, `nombre_sintoma`, `estatus`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `solicitud_medicamento`
+--
+
+CREATE TABLE `solicitud_medicamento` (
+  `id_solicitud` int(11) NOT NULL,
+  `origen` enum('Interno','Externo') NOT NULL,
+  `id_consulta` int(11) DEFAULT NULL,
+  `tipo_cedula_externo` varchar(2) NOT NULL,
+  `cedula_externo` int(11) NOT NULL,
+  `datos_paciente_externo` varchar(150) DEFAULT NULL,
+  `datos_medico_externo` varchar(150) DEFAULT NULL,
+  `estatus_general` enum('Pendiente','Parcial','Completado','Cancelado') DEFAULT 'Pendiente',
+  `fecha_solicitud` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `solicitud_medicamento`
+--
+
+INSERT INTO `solicitud_medicamento` (`id_solicitud`, `origen`, `id_consulta`, `tipo_cedula_externo`, `cedula_externo`, `datos_paciente_externo`, `datos_medico_externo`, `estatus_general`, `fecha_solicitud`) VALUES
+(29, 'Interno', 113, '', 0, NULL, NULL, 'Cancelado', '2026-04-16 11:12:45'),
+(30, 'Externo', NULL, 'V', 31306211, 'Deyber Silva', 'Mario', 'Cancelado', '2026-04-16 11:33:29');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `telefonos_emergencia`
 --
 
@@ -2949,7 +3092,13 @@ CREATE TABLE `tipo_movimiento` (
 
 INSERT INTO `tipo_movimiento` (`Id_tipo_movimiento`, `nombre`) VALUES
 (1, 'Entrada'),
-(2, 'Salida');
+(2, 'Salida por Despacho'),
+(3, 'Salida por Vencimiento'),
+(4, 'Salida por Dañado'),
+(5, 'Salida por Pérdida o Robo'),
+(6, 'Ajuste por Cuadre (Entrada)'),
+(7, 'Ajuste por Cuadre (Salida)'),
+(9, 'Reversión de Salida (Anulación)');
 
 -- --------------------------------------------------------
 
@@ -3109,6 +3258,14 @@ ALTER TABLE `detalle_principio_medicamento`
   ADD KEY `id_tipo_unidad_medida` (`id_tipo_unidad_medida`),
   ADD KEY `id_medicamento` (`id_medicamento`),
   ADD KEY `id_principio_activo` (`id_principio_activo`);
+
+--
+-- Indices de la tabla `detalle_solicitud`
+--
+ALTER TABLE `detalle_solicitud`
+  ADD PRIMARY KEY (`id_detalle`),
+  ADD KEY `FK_detalle_solicitud_principal` (`id_solicitud`),
+  ADD KEY `FK_detalle_medicamento_catalogo` (`id_medicamento`);
 
 --
 -- Indices de la tabla `direccion`
@@ -3353,6 +3510,13 @@ ALTER TABLE `sintomas`
   ADD PRIMARY KEY (`Id_sintomas`);
 
 --
+-- Indices de la tabla `solicitud_medicamento`
+--
+ALTER TABLE `solicitud_medicamento`
+  ADD PRIMARY KEY (`id_solicitud`),
+  ADD KEY `FK_solicitud_consulta` (`id_consulta`);
+
+--
 -- Indices de la tabla `telefonos_emergencia`
 --
 ALTER TABLE `telefonos_emergencia`
@@ -3418,13 +3582,13 @@ ALTER TABLE `antecedentes_sexuales_reproductivos`
 -- AUTO_INCREMENT de la tabla `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=123;
+  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
 
 --
 -- AUTO_INCREMENT de la tabla `consulta`
 --
 ALTER TABLE `consulta`
-  MODIFY `Id_consulta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+  MODIFY `Id_consulta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT de la tabla `departamento`
@@ -3436,13 +3600,13 @@ ALTER TABLE `departamento`
 -- AUTO_INCREMENT de la tabla `descripcion_medicamento`
 --
 ALTER TABLE `descripcion_medicamento`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_inventario`
 --
 ALTER TABLE `detalle_inventario`
-  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
+  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=235;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_medico`
@@ -3490,7 +3654,13 @@ ALTER TABLE `detalle_presentacion_medicamentos`
 -- AUTO_INCREMENT de la tabla `detalle_principio_medicamento`
 --
 ALTER TABLE `detalle_principio_medicamento`
-  MODIFY `Id_principio_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `Id_principio_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+
+--
+-- AUTO_INCREMENT de la tabla `detalle_solicitud`
+--
+ALTER TABLE `detalle_solicitud`
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT de la tabla `direccion`
@@ -3526,13 +3696,13 @@ ALTER TABLE `estilos_de_vida_paciente`
 -- AUTO_INCREMENT de la tabla `existencias_stock`
 --
 ALTER TABLE `existencias_stock`
-  MODIFY `Id_existencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `Id_existencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_alergias`
 --
 ALTER TABLE `historial_alergias`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_antecedentes_familiares`
@@ -3562,7 +3732,7 @@ ALTER TABLE `historial_medico`
 -- AUTO_INCREMENT de la tabla `historial_patologias`
 --
 ALTER TABLE `historial_patologias`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=143;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=144;
 
 --
 -- AUTO_INCREMENT de la tabla `laboratorio`
@@ -3574,7 +3744,7 @@ ALTER TABLE `laboratorio`
 -- AUTO_INCREMENT de la tabla `lotes_medicamentos`
 --
 ALTER TABLE `lotes_medicamentos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT de la tabla `lugar_nacimiento`
@@ -3586,13 +3756,13 @@ ALTER TABLE `lugar_nacimiento`
 -- AUTO_INCREMENT de la tabla `medicamento`
 --
 ALTER TABLE `medicamento`
-  MODIFY `Id_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
+  MODIFY `Id_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
 
 --
 -- AUTO_INCREMENT de la tabla `medicamentos_detalle_inventario`
 --
 ALTER TABLE `medicamentos_detalle_inventario`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=226;
 
 --
 -- AUTO_INCREMENT de la tabla `medicos_departamentos`
@@ -3628,7 +3798,7 @@ ALTER TABLE `patologias`
 -- AUTO_INCREMENT de la tabla `permiso`
 --
 ALTER TABLE `permiso`
-  MODIFY `Id_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=178;
+  MODIFY `Id_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=195;
 
 --
 -- AUTO_INCREMENT de la tabla `persona`
@@ -3646,7 +3816,7 @@ ALTER TABLE `prefijos_telefonos`
 -- AUTO_INCREMENT de la tabla `prescripcion_medicamentos`
 --
 ALTER TABLE `prescripcion_medicamentos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=215;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
 
 --
 -- AUTO_INCREMENT de la tabla `presentacion`
@@ -3691,6 +3861,12 @@ ALTER TABLE `sintomas`
   MODIFY `Id_sintomas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
+-- AUTO_INCREMENT de la tabla `solicitud_medicamento`
+--
+ALTER TABLE `solicitud_medicamento`
+  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
+--
 -- AUTO_INCREMENT de la tabla `telefonos_emergencia`
 --
 ALTER TABLE `telefonos_emergencia`
@@ -3712,7 +3888,7 @@ ALTER TABLE `tipos_estilos_de_vida`
 -- AUTO_INCREMENT de la tabla `tipo_movimiento`
 --
 ALTER TABLE `tipo_movimiento`
-  MODIFY `Id_tipo_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id_tipo_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `unidad_medida`
@@ -3803,6 +3979,13 @@ ALTER TABLE `detalle_principio_medicamento`
   ADD CONSTRAINT `detalle_principio_medicamento_ibfk_1` FOREIGN KEY (`id_medicamento`) REFERENCES `descripcion_medicamento` (`Id`),
   ADD CONSTRAINT `detalle_principio_medicamento_ibfk_2` FOREIGN KEY (`id_principio_activo`) REFERENCES `principio_activo` (`id_principio_activo`),
   ADD CONSTRAINT `detalle_principio_medicamento_ibfk_3` FOREIGN KEY (`id_tipo_unidad_medida`) REFERENCES `unidad_medida` (`Id_unidad_medida`);
+
+--
+-- Filtros para la tabla `detalle_solicitud`
+--
+ALTER TABLE `detalle_solicitud`
+  ADD CONSTRAINT `FK_detalle_medicamento_catalogo` FOREIGN KEY (`id_medicamento`) REFERENCES `descripcion_medicamento` (`Id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_detalle_solicitud_principal` FOREIGN KEY (`id_solicitud`) REFERENCES `solicitud_medicamento` (`id_solicitud`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `direccion`
@@ -3935,6 +4118,12 @@ ALTER TABLE `prescripcion_medicamentos`
 --
 ALTER TABLE `sector`
   ADD CONSTRAINT `FK_Sector` FOREIGN KEY (`Id_Municipio`) REFERENCES `municipio` (`Id_Municipio`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `solicitud_medicamento`
+--
+ALTER TABLE `solicitud_medicamento`
+  ADD CONSTRAINT `FK_solicitud_consulta` FOREIGN KEY (`id_consulta`) REFERENCES `consulta` (`Id_consulta`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

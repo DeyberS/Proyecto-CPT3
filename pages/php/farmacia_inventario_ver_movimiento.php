@@ -8,51 +8,66 @@ if (!$id_movimiento) {
     exit;
 }
 
-// SQL Mejorado: Usamos LEFT JOIN en componentes y datos de paciente para que NADA bloquee la visualización
-$sql = "SELECT 
-            di.*, 
-            mdi.cantidad, 
-            m.nombre_medicamento, 
-            tpm.nombre_presentacion,
-            GROUP_CONCAT(DISTINCT CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpmd.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
-            l.Lote as nombre_lote,
-            l.fecha_vencimiento,
+// ==============================================================================
+// CONSULTA 1: DATOS DE LA CABECERA (El movimiento en general, paciente, usuario)
+// ==============================================================================
+$sql_cabecera = "SELECT 
+            di.*,
+            tm.nombre as tipo_nom,
             u.nombre as usuario_nombre, u.apellido as usuario_apellido,
             pac.nombre as pac_nombre, pac.apellido as pac_apellido, pac.tipo_cedula as pac_tipo_cedula, pac.cedula as pac_cedula,
             rep.nombre as rep_nombre, rep.apellido as rep_apellido, rep.tipo_cedula as rep_tipo_cedula, rep.cedula as rep_cedula
         FROM detalle_inventario di
-        INNER JOIN medicamentos_detalle_inventario mdi ON di.Id_detalle_inventario = mdi.Id_detalle_inventario
-        INNER JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
-        INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-        INNER JOIN presentacion tpm ON dm.Id_presentacion = tpm.Id_presentacion
-        INNER JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
         INNER JOIN persona u ON di.Id_persona = u.id 
-        /* Relaciones opcionales para no perder el registro si faltan datos */
-        LEFT JOIN detalle_principio_medicamento dpmd ON dm.Id = dpmd.id_medicamento
-        LEFT JOIN unidad_medida um ON dpmd.id_tipo_unidad_medida = um.Id_unidad_medida
-        LEFT JOIN principio_activo pa ON dpmd.id_principio_activo = pa.Id_principio_activo
+        INNER JOIN tipo_movimiento tm ON di.Id_tipoMovimiento = tm.Id_tipo_movimiento
+        /* Relaciones opcionales para paciente y representante */
         LEFT JOIN prescripcion_medicamentos pr ON di.Id_prescripcion = pr.Id
         LEFT JOIN consulta c ON pr.Id_consulta = c.Id_consulta
         LEFT JOIN persona pac ON c.Id_paciente = pac.id
         LEFT JOIN detalle_paciente_menor dpm_menor ON pac.id = dpm_menor.id_persona
         LEFT JOIN persona rep ON dpm_menor.id_representante = rep.id
-        WHERE di.Id_detalle_inventario = '$id_movimiento'
-        GROUP BY di.Id_detalle_inventario LIMIT 1";
+        WHERE di.Id_detalle_inventario = '$id_movimiento' LIMIT 1";
 
-$res = mysqli_query($conexion, $sql);
+$res_cabecera = mysqli_query($conexion, $sql_cabecera);
 
-if ($res && mysqli_num_rows($res) > 0) {
-    $mov = mysqli_fetch_assoc($res);
+if ($res_cabecera && mysqli_num_rows($res_cabecera) > 0) {
+    $mov = mysqli_fetch_assoc($res_cabecera);
 } else {
     echo "<div class='alert alert-danger'><h4><i class='icon fa fa-ban'></i> Error</h4>Movimiento #$id_movimiento no encontrado en la base de datos.</div>";
     exit;
 }
 
-$esEntrada = ($mov['Id_TipoMovimiento'] == '1');
-$tipo_label = $esEntrada ? 'ENTRADA DE INVENTARIO' : 'SALIDA DE INVENTARIO';
-$tipo_bg = $esEntrada ? '#27ae60' : '#e74c3c';
+// ==============================================================================
+// CONSULTA 2: DATOS DEL DETALLE (Todos los medicamentos dentro de este movimiento)
+// ==============================================================================
+$sql_detalles = "SELECT 
+            mdi.cantidad, 
+            m.nombre_medicamento, 
+            tpm.nombre_presentacion,
+            GROUP_CONCAT(DISTINCT CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpmd.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
+            l.Lote as nombre_lote,
+            l.fecha_vencimiento
+        FROM medicamentos_detalle_inventario mdi
+        INNER JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
+        INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+        INNER JOIN presentacion tpm ON dm.Id_presentacion = tpm.Id_presentacion
+        INNER JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
+        /* Relaciones para componentes */
+        LEFT JOIN detalle_principio_medicamento dpmd ON dm.Id = dpmd.id_medicamento
+        LEFT JOIN unidad_medida um ON dpmd.id_tipo_unidad_medida = um.Id_unidad_medida
+        LEFT JOIN principio_activo pa ON dpmd.id_principio_activo = pa.Id_principio_activo
+        WHERE mdi.Id_detalle_inventario = '$id_movimiento'
+        GROUP BY mdi.Id";
 
-// Ajustar esta ruta según donde guardes tus fotos de comprobante
+$res_detalles = mysqli_query($conexion, $sql_detalles);
+
+// Variables de diseño
+$esEntrada = (strcasecmp($mov['tipo_nom'], 'Entrada') == 0);
+$tipo_label = strtoupper($mov['tipo_nom']) . ' DE INVENTARIO';
+$tipo_bg = $esEntrada ? '#27ae60' : '#e74c3c';
+$simbolo = $esEntrada ? '+' : '-';
+
+// Ruta comprobante
 $ruta_comprobante = "../../recursos/comprobantes/" . $mov['comprobante'];
 ?>
 
@@ -103,24 +118,6 @@ $ruta_comprobante = "../../recursos/comprobantes/" . $mov['comprobante'];
             color: white;
         }
 
-        .cantidad-container {
-            background: #fcfcfc;
-            border: 2px solid #eee;
-            border-left: 8px solid <?php echo $tipo_bg; ?>;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .cantidad-valor {
-            font-size: 40px;
-            font-weight: 900;
-            color: <?php echo $tipo_bg; ?>;
-        }
-
         .info-entrega {
             background: #ebf5fb;
             border-radius: 10px;
@@ -151,6 +148,27 @@ $ruta_comprobante = "../../recursos/comprobantes/" . $mov['comprobante'];
             font-size: 16px;
             color: #2c3e50;
             font-weight: 500;
+        }
+        
+        /* Estilos nuevos para la tabla de productos */
+        .table-productos th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-size: 13px;
+        }
+        .table-productos td {
+            vertical-align: middle !important;
+            font-size: 14px;
+        }
+        .qty-badge {
+            font-size: 16px;
+            font-weight: bold;
+            color: <?php echo $tipo_bg; ?>;
+            background: #fdfdfd;
+            padding: 5px 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            display: inline-block;
         }
 
         @media print {
@@ -191,45 +209,66 @@ $ruta_comprobante = "../../recursos/comprobantes/" . $mov['comprobante'];
 
                 <div class="card-body" style="padding: 30px;">
                     <div class="row">
-                        <div class="col-md-7">
-                            <h3 style="color: var(--accent); margin-top: 0;"><strong><?php echo $mov['nombre_medicamento']; ?></strong></h3>
-                            <p class="text-muted"><?php echo !empty($mov['componentes']) ? $mov['componentes'] : 'Sin componentes registrados'; ?></p>
-
-                            <div class="cantidad-container">
-                                <div>
-                                    <span class="label-custom">Cantidad Movilizada</span>
-                                    <span style="font-weight: bold;"><?php echo $mov['nombre_presentacion']; ?></span>
-                                </div>
-                                <div class="cantidad-valor"><?php echo $esEntrada ? '+' : '-'; ?> <?php echo $mov['cantidad']; ?></div>
+                        
+                        <div class="col-md-8">
+                            <h4 style="color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top:0;">
+                                <i class="fa fa-pills"></i> Productos Movilizados
+                            </h4>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover table-bordered table-productos">
+                                    <thead>
+                                        <tr>
+                                            <th>Medicamento</th>
+                                            <th>Presentación</th>
+                                            <th>Lote</th>
+                                            <th>Vence</th>
+                                            <th class="text-center">Cant.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if ($res_detalles && mysqli_num_rows($res_detalles) > 0): ?>
+                                            <?php while ($prod = mysqli_fetch_assoc($res_detalles)): ?>
+                                                <tr>
+                                                    <td>
+                                                        <strong><?php echo $prod['nombre_medicamento']; ?></strong><br>
+                                                        <small class="text-muted"><?php echo !empty($prod['componentes']) ? $prod['componentes'] : 'Sin componentes'; ?></small>
+                                                    </td>
+                                                    <td><?php echo $prod['nombre_presentacion']; ?></td>
+                                                    <td><?php echo $prod['nombre_lote']; ?></td>
+                                                    <td style="<?php echo (strtotime($prod['fecha_vencimiento']) < time()) ? 'color: red; font-weight:bold;' : ''; ?>">
+                                                        <?php echo date("d/m/Y", strtotime($prod['fecha_vencimiento'])); ?>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span class="qty-badge"><?php echo $simbolo . " " . $prod['cantidad']; ?></span>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="5" class="text-center">No se encontraron medicamentos en este movimiento.</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
                             </div>
 
-                            <div class="row">
-                                <div class="col-xs-6">
-                                    <span class="label-custom">Lote</span>
-                                    <span class="val-custom"><?php echo $mov['nombre_lote']; ?></span>
-                                </div>
-                                <div class="col-xs-6">
-                                    <span class="label-custom">Vencimiento</span>
-                                    <span class="val-custom" style="color: #c0392b;"><?php echo date("d/m/Y", strtotime($mov['fecha_vencimiento'])); ?></span>
-                                </div>
-                            </div>
-
-                            <div style="margin-top: 25px;">
+                            <div style="margin-top: 30px;">
                                 <span class="label-custom"><i class="fa fa-camera"></i> Foto del Comprobante (Soporte Digital)</span>
                                 <?php if (!empty($mov['comprobante']) && file_exists($ruta_comprobante)) : ?>
-                                    <img src="<?php echo $ruta_comprobante; ?>" class="img-comprobante" alt="Foto Comprobante">
+                                    <img src="<?php echo $ruta_comprobante; ?>" class="img-comprobante" style="max-width: 300px;" alt="Foto Comprobante">
                                 <?php else : ?>
-                                    <div class="text-center" style="border: 2px dashed #ccc; padding: 20px; border-radius: 8px; color: #999;">
-                                        <i class="fa fa-image fa-3x"></i><br>Sin imagen de soporte adjunta
+                                    <div style="border: 2px dashed #ccc; width: 100%; padding: 15px; border-radius: 8px; color: #999; display: inline-block;">
+                                        <i class="fa fa-image fa-2x"></i><br><small>Sin soporte</small>
                                     </div>
                                 <?php endif; ?>
                             </div>
                         </div>
 
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <div class="info-entrega">
-                                <h4 style="border-bottom: 2px solid #d6eaf8; padding-bottom: 10px; color: #2980b9;">
-                                    <i class="fa fa-user-md"></i> Destino del Medicamento
+                                <h4 style="border-bottom: 2px solid #d6eaf8; padding-bottom: 10px; color: #2980b9; margin-top:0;">
+                                    <i class="fa fa-user-md"></i> Detalles del Destino
                                 </h4>
 
                                 <?php if (!empty($mov['pac_nombre'])) : ?>
@@ -247,16 +286,16 @@ $ruta_comprobante = "../../recursos/comprobantes/" . $mov['comprobante'];
                                         </div>
                                     <?php endif; ?>
                                 <?php else : ?>
-                                    <div class="text-center" style="padding: 30px 10px;">
+                                    <div class="text-center" style="padding: 20px 10px;">
                                         <i class="fa fa-truck fa-3x" style="opacity: 0.2; color: #2c3e50;"></i>
-                                        <p style="margin-top: 15px;">Este registro corresponde a un movimiento de <strong>Stock Interno</strong>.</p>
+                                        <p style="margin-top: 15px;">Este registro corresponde a un movimiento de <strong>Stock Interno</strong> (Ajuste, Entrada Proveedor, etc).</p>
                                     </div>
                                 <?php endif; ?>
 
                                 <div style="margin-top: 30px; border-top: 1px solid #d6eaf8; padding-top: 15px;">
-                                    <span class="label-custom">Observaciones</span>
+                                    <span class="label-custom">Observaciones Generales</span>
                                     <p style="font-size: 13px; font-style: italic; color: #555;">
-                                        "<?php echo !empty($mov['observaciones']) ? $mov['observaciones'] : 'Sin observaciones adicionales registradas.'; ?>"
+                                        "<?php echo (!empty($mov['observaciones']) && trim($mov['observaciones']) != '') ? $mov['observaciones'] : 'Sin observaciones adicionales registradas.'; ?>"
                                     </p>
                                 </div>
                             </div>
@@ -264,7 +303,7 @@ $ruta_comprobante = "../../recursos/comprobantes/" . $mov['comprobante'];
                     </div>
 
                     <div class="row no-print" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                        <div>
+                        <div class="col-xs-12">
                             <button type="button" style="margin-left: 5px;" class="btn btn-primary pull-right" onclick="window.print();">
                                 <i class="fa fa-print"></i> Imprimir
                             </button>
@@ -276,28 +315,27 @@ $ruta_comprobante = "../../recursos/comprobantes/" . $mov['comprobante'];
                     </div>
                 </div>
             </div>
-    </div>
-    </section>
+        </section>
 
-    <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegreso">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-crimson">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="modalConfirmarRegresoLabel"><i class="fa fa-warning"></i>Confirmación de Regreso</h4>
-                </div>
-                <div class="modal-body">
-                    <p>Esta apunto de regresar al inicio. ¿Desea continuar?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-                    <a href="farmacia_inventario_listado.php" class="btn btn-danger">Regresar al Inicio</a>
+        <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegreso">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-crimson">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="modalConfirmarRegresoLabel"><i class="fa fa-warning"></i> Confirmación</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p style="font-size: 16px;">Está a punto de regresar al listado. ¿Desea continuar?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+                        <a href="farmacia_inventario_listado.php" class="btn btn-danger">Regresar al Inicio</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
+    
     <?php include('includes/footer.php'); ?>
 </body>
-
 </html>

@@ -50,7 +50,8 @@
 
   .modal.in .modal-dialog,
   #DesactivarPrescripcion,
-  #ModalReportePrescripcion {
+  #ModalReportePrescripcion,
+  #modalConfirmarEstado {
     animation: fadeIn 0.4s ease-out;
   }
 
@@ -72,54 +73,117 @@
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="content-wrapper">
     <?php
-    include('../../cfg/conexion.php');
-    $sqlRecipe = ("SELECT * FROM prescripcion_medicamentos WHERE estatus = 1 ORDER BY Id ASC");
-    $queryData   = mysqli_query($conexion, $sqlRecipe);
-    $total_recipe = mysqli_num_rows($queryData);
-    ?>
-    <section class="content-header">
-      <h1>Control de Despacho de Medicamentos (<?php echo $total_recipe; ?> Recipes)</h1>
-    </section>
+    $sql_base = "
+        SELECT 
+            'Interna' AS tipo_receta,
+            c.Id_consulta AS id_prescripcion,
+            CASE 
+                WHEN SUM(CASE WHEN pm.estado_prescripcion = 'cancelado' THEN 1 ELSE 0 END) > 0 THEN 'Cancelado'
+                WHEN SUM(CASE WHEN pm.estado_prescripcion = 'entregado' THEN 1 ELSE 0 END) = COUNT(pm.Id) THEN 'Entregado'
+                WHEN SUM(CASE WHEN pm.estado_prescripcion = 'entregado' THEN 1 ELSE 0 END) > 0 THEN 'Parcial'
+                ELSE 'Pendiente'
+            END AS estado_entrega,
+            c.fecha_consulta AS fecha_solicitud,
+            paciente.nombre AS nom_pac, 
+            paciente.apellido AS ape_pac,
+            paciente.tipo_cedula AS tipo_cedula_pac, 
+            paciente.cedula AS cedula_pac,
+            rep.cedula AS cedula_representante,
+            medico.nombre AS nom_med,
+            medico.apellido AS ape_med,
+            GROUP_CONCAT(CONCAT('• ', m.nombre_medicamento) SEPARATOR '<br>') AS nombre_medicamento,
+            TIMESTAMPDIFF(YEAR, paciente.fecha_nacimiento, CURDATE()) < 18 AS es_menor
+        FROM consulta c
+        INNER JOIN prescripcion_medicamentos pm ON c.Id_consulta = pm.Id_consulta
+        INNER JOIN persona paciente ON c.Id_paciente = paciente.id
+        INNER JOIN persona medico ON c.Id_medico = medico.id
+        INNER JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
+        INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+        LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+        LEFT JOIN (
+            SELECT 
+                dpm.id_medicamento as id_desc, 
+                GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), ' ', IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
+            FROM detalle_principio_medicamento dpm
+            LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+            LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+            GROUP BY dpm.id_medicamento
+        ) comp_tbl ON dm.Id = comp_tbl.id_desc
+        LEFT JOIN detalle_paciente_menor dpm_menor ON paciente.id = dpm_menor.id_persona
+        LEFT JOIN persona rep ON dpm_menor.id_representante = rep.id
+        WHERE pm.estatus = 1
+        GROUP BY c.Id_consulta
 
-    <?php
-    // --- LÓGICA DE PAGINACIÓN (Basada en medico_listado.php) ---
+        UNION ALL
+
+        SELECT 
+            'Externa' AS tipo_receta,
+            sm.id_solicitud AS id_prescripcion,
+            sm.estatus_general AS estado_entrega,
+            DATE(sm.fecha_solicitud) AS fecha_solicitud,
+            sm.datos_paciente_externo AS nom_pac,
+            '' AS ape_pac,
+            sm.tipo_cedula_externo AS tipo_cedula_pac,
+            sm.cedula_externo AS cedula_pac,
+            NULL AS cedula_representante,
+            sm.datos_medico_externo AS nom_med,
+            '' AS ape_med,
+            GROUP_CONCAT(CONCAT('• ', m.nombre_medicamento, ' (Cant: ', ds.cantidad_recetada, ')') SEPARATOR '<br>') AS nombre_medicamento,
+            0 AS es_menor
+        FROM solicitud_medicamento sm
+        INNER JOIN detalle_solicitud ds ON sm.id_solicitud = ds.id_solicitud
+        INNER JOIN descripcion_medicamento dm ON ds.id_medicamento = dm.Id
+        INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+        LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+        LEFT JOIN (
+            SELECT 
+                dpm.id_medicamento as id_desc, 
+                GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), ' ', IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
+            FROM detalle_principio_medicamento dpm
+            LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+            LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+            GROUP BY dpm.id_medicamento
+        ) comp_tbl ON dm.Id = comp_tbl.id_desc
+        WHERE sm.origen = 'Externo'
+        GROUP BY sm.id_solicitud
+    ";
+
+    // --- LÓGICA DE PAGINACIÓN Y FILTROS ---
     $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
     $registros_por_pagina = 14;
     $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
-    // 1. Definir el filtro base (Estado pendiente por defecto o según tu lógica)
-    $donde = "WHERE pm.estatus = 1"; // Ajusta según tus estados reales
+    $donde = " WHERE 1=1";
     if ($busqueda != '') {
-      $donde .= " AND (paciente.nombre LIKE '%$busqueda%' 
-                     OR paciente.apellido LIKE '%$busqueda%' 
-                     OR paciente.cedula LIKE '%$busqueda%' 
-                     OR m.nombre_medicamento LIKE '%$busqueda%')";
+      $donde .= " AND (nom_pac LIKE '%$busqueda%' 
+                     OR ape_pac LIKE '%$busqueda%' 
+                     OR cedula_pac LIKE '%$busqueda%' 
+                     OR nombre_medicamento LIKE '%$busqueda%')";
     }
 
-    // 2. Contar el total de registros FILTRADOS
-    $sql_conteo = "SELECT COUNT(*) as total 
-                   FROM prescripcion_medicamentos pm
-                   INNER JOIN consulta c ON pm.Id_consulta = c.Id_consulta
-                   INNER JOIN persona paciente ON c.Id_paciente = paciente.id
-                   INNER JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
-                   INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-                   $donde";
+    // Contar el total de registros FILTRADOS unificados
+    $sql_conteo = "SELECT COUNT(*) as total FROM ($sql_base) AS base_unificada $donde";
     $resultado_conteo = mysqli_query($conexion, $sql_conteo);
     $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
     $total_registros = $fila_conteo['total'];
-    $total_paginas = ceil($total_registros / $registros_por_pagina)
+    $total_paginas = ceil($total_registros / $registros_por_pagina);
     ?>
+
+    <section class="content-header">
+      <h1>Control de Despacho de Medicamentos (<?php echo $total_registros; ?> Recipes)</h1>
+    </section>
 
     <section class="content">
       <div class="row">
         <div class="col-xs-12">
           <div class="box box-primary">
             <div class="box-header with-border">
-              <a href="papelera/farmacia_prescripciones_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color:gray;"> Papelera </a>
               <p class="pull-right" style="width:5px;"></p>
               <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"> <i class="fa fa-cubes"></i> Ver Inventario General</a>
-              <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
+              <form method="GET" action="" style="display:inline;">
+                <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off" style="width:250px; display:inline-block;">
+              </form>
             </div>
           </div>
           <br><br>
@@ -130,105 +194,65 @@
                 <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
                   <tr>
                     <th>Fecha Consulta</th>
-                    <th>Paciente</th>
+                    <th>Paciente / Tipo</th>
                     <th>Médico Tratante</th>
                     <th>Medicamento Solicitado</th>
-                    <th class="text-center">Stock Disponible</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody class="tbody" width="100%" style="font-size: 12px;">
                   <?php
-                  // CONSULTA OPTIMIZADA (Relaciona Prescripción -> Consulta -> Paciente/Médico -> Stock)
-                  $query = "SELECT 
-                              -- Identificadores
-                              pm.Id AS id_prescripcion,
-                              pm.estado_prescripcion AS estado_entrega,
-                              pm.Id_descripcion_medicamento,
-                              
-                              -- Datos de la Consulta
-                              c.fecha_consulta,
-                              
-                              -- Datos del Paciente
-                              paciente.nombre AS nom_pac, 
-                              paciente.apellido AS ape_pac,
-                              paciente.tipo_cedula AS tipo_cedula_pac, 
-                              paciente.cedula AS cedula_pac,
-                              rep.cedula AS cedula_representante,
-                              
-                              -- Datos del Médico
-                              medico.nombre AS nom_med,
-                              medico.apellido AS ape_med,
-
-                              -- Datos del Medicamento
-                              m.nombre_medicamento,
-                              p.nombre_presentacion,       
-                              GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpmc.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,          
-                              TIMESTAMPDIFF(YEAR, paciente.fecha_nacimiento, CURDATE()) < 18 AS es_menor,
-                              
-                              -- Cálculo de Stock (Suma de lotes disponibles)
-                              (SELECT IFNULL(SUM(es.cantidad_actual), 0) 
-                               FROM existencias_stock es 
-                               WHERE es.Id_descripcion_medicamento = pm.Id_descripcion_medicamento
-                              ) AS stock_total
-
-                            FROM prescripcion_medicamentos pm
-                            INNER JOIN consulta c ON pm.Id_consulta = c.Id_consulta
-                            INNER JOIN persona paciente ON c.Id_paciente = paciente.id
-                            INNER JOIN persona medico ON c.Id_medico = medico.id
-                            INNER JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
-                            INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-                            LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
-                            LEFT JOIN detalle_principio_medicamento dpmc ON dm.Id = dpmc.id_medicamento
-                            LEFT JOIN unidad_medida um ON dpmc.id_tipo_unidad_medida = um.Id_unidad_medida
-                            LEFT JOIN principio_activo pa ON dpmc.id_principio_activo = pa.Id_principio_activo
-                            -- Uniones para llegar al representante
-                            LEFT JOIN detalle_paciente_menor dpm ON paciente.id = dpm.id_persona
-                            LEFT JOIN persona rep ON dpm.id_representante = rep.id
-                            $donde
-                            -- FILTRO: Solo mostramos lo que falta por entregar
-                            GROUP BY pm.Id -- <--- ESTA LÍNEA ES VITAL
-                            ORDER BY c.fecha_consulta ASC LIMIT $inicio, $registros_por_pagina";
+                  // ==============================================================================
+                  // 2. CONSULTA FINAL PARA OBTENER LOS DATOS Y STOCK
+                  // ==============================================================================
+                  $query = "
+                    SELECT base_unificada.*
+                    FROM ($sql_base) AS base_unificada
+                    $donde
+                    ORDER BY fecha_solicitud DESC 
+                    LIMIT $inicio, $registros_por_pagina
+                  ";
 
                   $resultado = mysqli_query($conexion, $query);
 
                   while ($row = mysqli_fetch_assoc($resultado)) {
-                    // Lógica visual para el Stock
-                    $stock = $row['stock_total'];
-                    $badgeClass = ($stock > 0) ? 'label-success' : 'label-danger';
-                    $btnClass = ($stock > 0) ? 'btn-success' : 'btn-disabled';
-                    $disabled = ($stock > 0) ? '' : 'disabled';
+
+                    // Definir etiqueta del tipo de receta
+                    if ($row['tipo_receta'] === 'Interna') {
+                      $etiquetaTipo = ($row['es_menor'] == 1) ? '<span class="label label-info">Interna - Rep.</span>' : '<span class="label label-primary">Interna - Pac.</span>';
+                    } else {
+                      $etiquetaTipo = '<span class="label label-warning" style="background-color:#f39c12;">Externa</span>';
+                    }
                   ?>
                     <tr>
-                      <td><?php echo date('d/m/Y', strtotime($row['fecha_consulta'])); ?></td>
+                      <td><?php echo date('d/m/Y', strtotime($row['fecha_solicitud'])); ?></td>
 
                       <td>
-                        <strong><?php echo $row['nom_pac'] . " " . $row['ape_pac']; ?></strong><br>
-                        <small><?php echo $row['tipo_cedula_pac']; ?>-<?php echo $row['cedula_pac']; ?></small>
-                      </td>
-
-                      <td>
-                        Dr/a. <?php echo $row['nom_med'] . " " . $row['ape_med']; ?>
+                        <?php echo $etiquetaTipo; ?><br>
+                        <strong><?php echo htmlspecialchars(trim($row['nom_pac'] . " " . $row['ape_pac'])); ?></strong><br>
+                        <small><?php echo htmlspecialchars($row['tipo_cedula_pac']); ?>-<?php echo htmlspecialchars($row['cedula_pac']); ?></small>
                       </td>
 
                       <td>
-                        <span class="text-blue"><?= htmlspecialchars($row['nombre_medicamento'] . " (" . $row['componentes'] . ")"); ?></span><br>
+                        Dr/a. <?php echo htmlspecialchars(trim($row['nom_med'] . " " . $row['ape_med'])); ?>
                       </td>
 
-
-                      <td class="text-center">
-                        <span class="">
-                          <?php echo $stock; ?>
-                        </span>
+                      <td>
+                        <span class="text-blue"><?php echo $row['nombre_medicamento']; ?></span><br>
                       </td>
+
 
                       <td class="text-center">
                         <?php
-                        if ($row['estado_entrega'] == 'pendiente') {
+                        if ($row['estado_entrega'] == 'pendiente' || $row['estado_entrega'] == 'Pendiente') {
                           echo '<span class="badge bg-yellow">Pendiente</span>';
-                        } else if ($row['estado_entrega'] == 'no entregado') {
+                        } else if ($row['estado_entrega'] == 'Parcial' || $row['estado_entrega'] == 'Parcialmente Entregado') {
+                          echo '<span class="badge bg-aqua">Parcial</span>';
+                        } else if ($row['estado_entrega'] == 'no entregado' || $row['estado_entrega'] == 'No entregado') {
                           echo '<span class="badge bg-default">No Entregado</span>';
+                        } else if ($row['estado_entrega'] == 'Cancelado') {
+                          echo '<span class="badge bg-crimson">Cancelado</span>';
                         } else {
                           echo '<span class="badge bg-green">Entregado</span>';
                         }
@@ -236,28 +260,28 @@
                       </td>
 
                       <td class="text-center">
-                        <?php if ($row['estado_entrega'] == 'pendiente') : ?>
+                        <?php if ($row['estado_entrega'] == 'pendiente' || $row['estado_entrega'] == 'Parcialmente Entregado' || $row['estado_entrega'] == 'Parcial' || $row['estado_entrega'] == 'Pendiente') : ?>
                           <?php
-                          // Si es menor, enviamos la cédula del representante, si no, la del paciente
-                          $cedula_a_enviar = ($row['es_menor'] == 1) ? $row['cedula_representante'] : $row['cedula_pac'];
+                          $cedula_a_enviar = ($row['es_menor'] == 1 && !empty($row['cedula_representante'])) ? $row['cedula_representante'] : $row['cedula_pac'];
                           ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info btn-sm" title="Ver Informarcion">
+                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
                             <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
                           </a>
-                          <a href="farmacia_inventario_movimiento_salida.php?id_pres=<?php echo $row['id_prescripcion']; ?>&id_med=<?php echo $row['Id_descripcion_medicamento']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&from=prescripciones" class="btn btn-success btn-sm" title="Despachar Medicamento">
+
+                          <a href="farmacia_inventario_movimiento_despacho.php?id_pres=<?php echo $row['id_prescripcion']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&tipo=<?php echo $row['tipo_receta']; ?>&from=prescripciones" class="btn btn-success btn-sm" title="Despachar Receta">
                             <img src="../../recursos/imagenes/iconos/enviar.png" style="width:15px; height:15px;">
                           </a>
-                          <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></button>
 
-                        <?php elseif ($row['estado_entrega'] == 'no entregado') : ?>
-                          <a href="#" data-id="<?php echo $row['id_prescripcion'] ?>" class="btn btn-sm btn-danger btn-desactivar" title="Desactivar">
-                            <img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;">
-                          </a>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Ver Informarcion">
+                          <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado', '<?php echo $row['tipo_receta'] ?>')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar">
+                            <img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;">
+                          </button>
+
+                        <?php elseif ($row['estado_entrega'] == 'no entregado' || $row['estado_entrega'] == 'Cancelado') : ?>
+                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
                             <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
                           </a>
                         <?php else : ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>" class="btn btn-info <?php echo $btnClass; ?> btn-sm" <?php echo $disabled; ?> title="Ver Informarcion">
+                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
                             <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
                           </a>
                         <?php endif; ?>
@@ -305,15 +329,14 @@
   $mostrar_modal_error = false;
   $mensaje_modal = '';
 
-  // Usar las variables consistentes: 'mensaje_user_exito' y 'mensaje_user_error'
   if (isset($_SESSION['mensaje_user_exito'])) {
     $mostrar_modal_exito = true;
     $mensaje_modal = $_SESSION['mensaje_user_exito'];
-    unset($_SESSION['mensaje_user_exito']); // Limpiar la sesión
+    unset($_SESSION['mensaje_user_exito']);
   } elseif (isset($_SESSION['mensaje_user_error'])) {
     $mostrar_modal_error = true;
     $mensaje_modal = $_SESSION['mensaje_user_error'];
-    unset($_SESSION['mensaje_user_error']); // Limpiar la sesión
+    unset($_SESSION['mensaje_user_error']);
   }
   ?>
 
@@ -336,84 +359,119 @@
     </div>
   </div>
 
-  <div class="modal" id="DesactivarPrescripcion" tabindex="-1" role="dialog" aria-labelledby="DesactivarPreescripcionLabel">
+  <div class="modal" id="modalConfirmarEstado" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header" style="background-color: #dc3545; color: white;">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="DesactivarPrescripcionLabel">Confirmar Desactivacion</h4>
+          <h4 class="modal-title" id="modalLabel">Confirmar Acción</h4>
         </div>
         <div class="modal-body">
-          <p>¿Está seguro de que desea desactivar esta receta? Esta acción solo se puede revertir en la papelera.</p>
+          <p id="mensajeModal">¿Está seguro de que desea cambiar el estado de esta receta?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-          <a href="#" id="desactivar" class="btn btn-danger">Aceptar</a>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnConfirmarEstado" class="btn btn-danger">Aceptar</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-  $(document).ready(function() {
-    function cambiarEstado(id, nuevoEstado) {
-      if (confirm('¿Confirmar cambio a ' + nuevoEstado + '?')) {
-        $.post('../../cfg/ajax/actualizar_estado_receta.php', {
+    $(document).ready(function() {
+      // Se añade el parámetro tipoReceta para enviar por AJAX
+      // Variables para almacenar temporalmente los datos antes de confirmar
+      let datosEstadoTemp = {
+        id: null,
+        nuevoEstado: null,
+        tipoReceta: null
+      };
+
+      window.cambiarEstado = function(id, nuevoEstado, tipoReceta) {
+        // 1. Guardamos los datos para usarlos al confirmar
+        datosEstadoTemp = {
           id: id,
-          estado_entrega: nuevoEstado
-        }, function(data) {
-          if (data.trim() == 'ok') {
-            location.reload();
-          } else {
-            alert('Error al actualizar');
-          }
+          nuevoEstado: nuevoEstado,
+          tipoReceta: tipoReceta
+        };
+
+        // 2. Personalizamos el mensaje del modal
+        $('#mensajeModal').text('¿Está seguro de que desea cambiar el estado a "' + nuevoEstado + '"?');
+
+        // 3. Abrimos el modal
+        $('#modalConfirmarEstado').modal('show');
+      };
+
+      // Escuchador para el botón "Aceptar" dentro del modal
+      $(document).ready(function() {
+        $('#btnConfirmarEstado').click(function() {
+          // Deshabilitar botón para evitar múltiples clics
+          const btn = $(this);
+          btn.prop('disabled', true);
+
+          // Ejecutar la petición AJAX
+          $.post('../../cfg/ajax/actualizar_estado_receta.php', {
+            id: datosEstadoTemp.id,
+            estado_entrega: datosEstadoTemp.nuevoEstado,
+            tipo: datosEstadoTemp.tipoReceta
+          }, function(data) {
+            if (data.trim() == 'ok') {
+              location.reload(); // Recarga exitosa
+            } else {
+              alert('Error al actualizar: ' + data);
+              btn.prop('disabled', false); // Rehabilitar en caso de error
+              $('#modalConfirmarEstado').modal('hide');
+            }
+          }).fail(function() {
+            alert('Error de conexión con el servidor');
+            btn.prop('disabled', false);
+            $('#modalConfirmarEstado').modal('hide');
+          });
         });
+      });
+
+      function closeCustomModal(modalElement) {
+        modalElement.removeClass('in').addClass('out');
+        setTimeout(() => {
+          modalElement.modal('hide').removeClass('out');
+        }, 100);
       }
-    }
 
-    function closeCustomModal(modalElement) {
-      modalElement.removeClass('in').addClass('out');
-      setTimeout(() => {
-        modalElement.modal('hide').removeClass('out');
-      }, 100); // Duración de la animación
-    }
+      $('#modalConfirmarEstado .close, #modalConfirmarEstado .btn-default').on('click', function() {
+        closeCustomModal($('#modalConfirmarEstado'));
+      });
 
-    $('#DesactivarPrescripcion .close, #DesactivarPrescripcion .btn-second').on('click', function() {
-      closeCustomModal($('#DesactivarPrescripcion'));
+      $('.reporte').on('click', function(e) {
+        e.preventDefault();
+        $('#ModalReportePrescripcion').modal('show');
+      });
+
+      $('#ModalReportePrescripcion .close, #ModalReportePrescripcion .btn-second').on('click', function() {
+        closeCustomModal($('#ModalReportePrescripcion'));
+      });
+
+      $('#btnEjecutarReportePrescripcion').on('click', function() {
+        var tipo = $('#tipo_reporte_Prescripcion').val();
+        window.open('../../cfg/reportes/generar_pdf_Prescripciones.php?tipo=' + tipo, '_blank');
+        $('#ModalReportePrescripcion').modal('hide');
+      });
+
+      // Se actualiza el botón desactivar para que envíe el origen/tipo en la URL
+      $(document).on('click', '.btn-desactivar', function(e) {
+        e.preventDefault();
+        var IdPrescripcion = $(this).data('id');
+        var tipoReceta = $(this).data('tipo');
+        var urlDesactivar = "../../cfg/desactivar/desactivar_prescripcion.php?Id=" + IdPrescripcion + "&tipo=" + tipoReceta;
+        $('#desactivar').attr('href', urlDesactivar);
+        $('#DesactivarPrescripcion').modal('show');
+      })
+
+      <?php if ($mostrar_modal_exito) : ?>
+        $('#modalExito').modal('show');
+      <?php elseif ($mostrar_modal_error) : ?>
+        $('#modalError').modal('show');
+      <?php endif; ?>
     });
-
-    $('.reporte').on('click', function(e) {
-      e.preventDefault();
-      $('#ModalReportePrescripcion').modal('show');
-    });
-
-    // Cerrar el modal usando tu función closeCustomModal
-    $('#ModalReportePrescripcion .close, #ModalReportePrescripcion .btn-second').on('click', function() {
-      closeCustomModal($('#ModalReportePrescripcion'));
-    });
-
-    // Función para redirigir al generador PDF
-    $('#btnEjecutarReportePrescripcion').on('click', function() {
-      var tipo = $('#tipo_reporte_Prescripcion').val();
-      window.open('../../cfg/reportes/generar_pdf_Prescripciones.php?tipo=' + tipo, '_blank');
-      $('#ModalReportePrescripcion').modal('hide');
-    });
-
-
-    $(document).on('click', '.btn-desactivar', function(e) {
-      e.preventDefault();
-      var IdPrescripcion = $(this).data('id');
-      var urlDesactivar = "../../cfg/desactivar/desactivar_prescripcion.php?Id=" + IdPrescripcion;
-      $('#desactivar').attr('href', urlDesactivar);
-      $('#DesactivarPrescripcion').modal('show');
-    })
-
-    <?php if ($mostrar_modal_exito) : ?>
-      $('#modalExito').modal('show');
-    <?php elseif ($mostrar_modal_error) : ?>
-      $('#modalError').modal('show');
-    <?php endif; ?>
-  });
   </script>
 
   <?php

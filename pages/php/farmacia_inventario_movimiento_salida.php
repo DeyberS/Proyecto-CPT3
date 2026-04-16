@@ -1,11 +1,6 @@
 <?php
 include("../../cfg/conexion.php");
-$operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'salida';
-$id_pres_auto = isset($_GET['id_pres']) ? $_GET['id_pres'] : '';
-$id_med_auto  = isset($_GET['id_med']) ? $_GET['id_med'] : '';
-$cedula_auto  = isset($_GET['pac']) ? $_GET['pac'] : '';
-$es_menor_auto = isset($_GET['menor']) ? $_GET['menor'] : 0;
-$origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
+$operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'ajuste_salida';
 ?>
 
 <!DOCTYPE html>
@@ -14,341 +9,227 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Inventario | Salida</title>
+  <title>Inventario | Ajuste de Inventario</title>
   <?php include('includes/headerNav2.php'); ?>
 
   <style>
-    /* ANIMACIONES EXACTAS DEL FORMULARIO DE ENTRADA */
-    @keyframes pulse-opacity {
-      0% {
-        opacity: 0;
-      }
+    /* ANIMACIONES Y ESTILOS GLOBALES */
+    @keyframes pulse-opacity { 0% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }
 
-      100% {
-        opacity: 1;
-      }
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-50px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes fadeOut {
-      from {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      to {
-        opacity: 0;
-        transform: translateY(-50px);
-      }
-    }
-
-    .modal.in .modal-dialog,
-    #avisoModal,
-    #modalSalidaGuardar,
-    #modalBúsquedaAvanzadaMedicamento,
-    #modalRegresarInventario {
+    .modal.in .modal-dialog, #avisoModal, #modalSalidaGuardar, #modalBúsquedaAvanzadaMedicamento, #modalRegresarInventario, #modalAgregarMedicamento {
       animation: fadeIn 0.4s ease-out;
     }
+    .modal.out .modal-dialog { animation: fadeOut 0.4s ease-out; }
+    .modal-open .modal-backdrop { opacity: 0.7 !important; animation: pulse-opacity 0.3s forwards; }
+    
+    .modal-header .close { color: #fff; filter: alpha(opacity=80); opacity: .8; text-shadow: none; }
+    .modal-header .close:hover { opacity: 1; }
 
-    .modal.out .modal-dialog {
-      animation: fadeOut 0.4s ease-out;
+    .input-error { border: 2px solid crimson !important; box-shadow: 0 0 5px crimson; }
+    .bg-crimson { background-color: #dc3545 !important; color: white !important; }
+    .bg-warning-custom { background-color: #f39c12 !important; color: white !important; }
+
+    .content-wrapper { min-height: 100vh !important; overflow-y: auto; }
+    .main-sidebar { position: fixed !important; height: 100%; }
+
+    /* ESTILOS DE TABLA (Traídos de la Entrada) */
+    .table-detalle th { background-color: #f4f4f4; text-align: center; }
+    .table-detalle td { text-align: center; vertical-align: middle !important; }
+    .row-vence-pronto { background-color: #fff3cd !important; }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff; padding: 25px; border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 20px;
     }
 
-    .modal-open .modal-backdrop {
-      opacity: 0.7 !important;
-      animation: pulse-opacity 0.3s forwards;
-    }
-
-    /* ESTILO DE LA X (CLOSE BUTTON) */
-    .modal-header .close {
-      color: #000;
-      filter: alpha(opacity=50);
-      opacity: .5;
-      text-shadow: 0 1px 0 #fff;
-    }
-
-    .modal-header .close:hover {
-      opacity: .8;
-    }
-
-    .input-error {
-      border: 2px solid crimson !important;
-      box-shadow: 0 0 5px crimson;
-    }
-
-    .bg-crimson {
-      background-color: #dc3545 !important;
-      color: white !important;
-    }
-
-    .bg-success-custom {
-      background-color: #00a65a !important;
-      color: white !important;
-    }
-
-    /* Evitar que el contenido empuje elementos del sidebar */
-    .content-wrapper {
-      min-height: 100vh !important;
-      /* Asegura que el contenedor tenga altura completa */
-      overflow-y: auto;
-    }
-
-    /* Si el reloj está en el sidebar, aseguramos que el sidebar sea fijo */
-    .main-sidebar {
-      position: fixed !important;
-      height: 100%;
-    }
-
-    #detalles_vinculo input[readonly] {
-      box-shadow: none;
-      cursor: default;
-    }
-
-    /* Ajuste para que las secciones dinámicas no afecten el layout global */
-    .seccion-enfasis {
-      clear: both;
-      /* Evita interferencia con floats */
-      display: block;
-      width: 100%;
-    }
-
-    .bg-externo {
-      background-color: #fff9eb;
-      border: 1px solid #f39c12;
-    }
-
-    .text-green-bold {
-      color: #00a65a;
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-
-    /* Contenedor de botones interno */
-    .form-actions {
-      padding: 20px 0;
-      border-top: 1px solid #f4f4f4;
-      margin-top: 20px;
-      text-align: right;
-    }
+    input[readonly], input[disabled] { background-color: #eeeeee !important; cursor: not-allowed; }
+    .text-green-bold { color: #00a65a; font-weight: bold; font-size: 1.2em; }
   </style>
 </head>
 
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="content-wrapper">
     <section class="content-header">
-      <h1>Salida de Medicamentos</h1>
+      <h1>Salidas Especiales y Ajustes <small>Módulo de Control</small></h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
+        <li><a href="#"><i class="fa fa-users"></i>Inventario</a></li>
+        <li class="active"><a href="#"><i class="fa fa-minus-circle"></i>Ajustes</a></li>
+      </ol>
     </section>
 
     <section class="content">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#tab_1" data-toggle="tab">Detalle de La Operación</a></li>
-            </ul>
-            <div class="tab-content">
-              <div class="tab-pane active" id="tab_1" style="padding: 10px;">
+      <form id="formularioSalida" method="POST" action="../../cfg/movimientos_inventario.php" novalidate autocomplete="off">
+        <input type="hidden" name="op" id="op" value="<?php echo $operacion_actual; ?>">
+        <input type="hidden" name="detalle_medicamentos" id="detalle_medicamentos" value="[]">
 
-                <form id="formularioSalida" method="POST" action="../../cfg/movimientos_inventario.php" novalidate autocomplete="off">
-                  <input type="hidden" name="op" id="op" value="<?php echo $operacion_actual; ?>">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="area-trabajo-blanca">
 
+              <div class="box box-warning">
+                <div class="box-header with-border">
+                  <h3 class="box-title"><i class="fa fa-file-text-o"></i> Datos del Ajuste:</h3>
+                </div>
+                <div class="box-body">
                   <div class="row">
-                    <div class="col-sm-4">
-                      <label>Motivo de Salida (*):</label>
-                      <select name="observaciones" id="observaciones" class="form-control" required>
+                    <div class="col-sm-4 form-group">
+                      <label>Motivo del Ajuste (*):</label>
+                      <select name="id_tipo_movimiento" id="id_tipo_movimiento" class="form-control" required>
                         <option value="">-- Seleccione un motivo --</option>
-                        <option value="Entrega a Paciente">Entrega a Paciente Interno</option>
-                        <option value="Entrega a Representante">Entrega a Representante (Menor)</option>
-                        <option value="Récipe Externo">Récipe Externo (Otro Hospital)</option>
-                        <option value="Medicamento Vencido">Medicamento Vencido</option>
-                        <option value="Desecho/Dañado">Desecho / Dañado</option>
+                        <option value="3">Salida por Vencimiento</option>
+                        <option value="4">Salida por Dañado</option>
+                        <option value="5">Salida por Pérdida o Robo</option>
+                        <option value="7">Ajuste por Cuadre (Salida)</option>
                       </select>
                     </div>
 
-                    <div class="col-sm-8">
-                      <label>Medicamento (*):</label>
-                      <div class="input-group">
-                        <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control" required>
-                          <option value="">--- Seleccione un medicamento ---</option>
-                          <?php
-                          $sql = "SELECT dm.Id, 
-                          m.nombre_medicamento, 
-                          p.nombre_presentacion,
-                          GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
-                          FROM descripcion_medicamento dm                     
-                          INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento 
-                          INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion 
-                          INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
-                          INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-                          INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
-                          WHERE m.estatus = 1 AND dm.estatus = 1 
-                          GROUP BY dm.Id
-                          ORDER BY m.nombre_medicamento ASC";
-                          $res = $conexion->query($sql);
-                          while ($row = $res->fetch_assoc()) {
-                            echo '<option value="' . $row['Id'] . '">' . htmlspecialchars($row['nombre_medicamento']) . " " . "(" . htmlspecialchars($row['componentes']) . ")" . " - " . "[" . htmlspecialchars($row['nombre_presentacion']) . "]" . '</option>';
-                          }
-                          ?>
-                        </select>
+                    <div class="col-sm-3 form-group">
+                      <label>Fecha de Registro:</label>
+                      <input type="date" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly>
+                    </div>
 
-                        <span class="input-group-btn">
-                          <button class="btn btn-info" type="button" id="btnBuscarFiltrar" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada de Medicamentos" style="height: 34px;">
-                            <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
-                          </button>
-                        </span>
-                      </div>
+                    <div class="col-sm-5 form-group">
+                      <label>Observaciones / Justificación (*):</label>
+                      <input type="text" name="observaciones_generales" id="observaciones_generales" class="form-control" placeholder="Ej: Frascos rotos durante el traslado..." required>
                     </div>
                   </div>
-
-                  <div class="row" style="margin-top:15px;">
-                    <div class="col-sm-3">
-                      <label>Existencia Total:</label>
-                      <input type="text" id="existencia_actual" class="form-control" readonly disabled>
-                    </div>
-                    <div class="col-sm-3">
-                      <label>Seleccione Lote (*):</label>
-                      <select id="lista_lotes" name="lote" class="form-control" required>
-                        <option value="">-- Seleccione un lote --</option>
-                      </select>
-                    </div>
-                    <div class="col-sm-3">
-                      <label>Cantidad a Retirar (*):</label>
-                      <input type="text" id="cantidad" name="cantidad" class="form-control" required min="1" onkeypress="return isNumberKey(event)">
-                    </div>
-                    <div class="col-sm-3">
-                      <label>Niveles (Mín/Máx):</label>
-                      <input type="text" id="stock_info" class="form-control" readonly disabled>
-                    </div>
-                  </div>
-
-                  <div id="seccion_interna" class="seccion-enfasis" style="display:none;">
-                    <h4><i class="fa fa-search"></i> Vincular Receta del Sistema</h4>
-
-                    <div class="row">
-                      <div class="col-sm-3">
-                        <label>Buscar por:</label>
-                        <select id="metodo_busqueda" class="form-control">
-                          <option value="cedula">Cédula</option>
-                          <option value="nombre">Nombre / Apellido</option>
-                        </select>
-                      </div>
-                      <div class="col-sm-4 form-group">
-                        <label id="label_busqueda">Ingrese Los Datos (*):</label>
-                        <div class="input-group">
-                          <span class="input-group-btn" style="width: 25%;">
-                            <select name="tipo_cedula" id="tipo_cedula" class="form-control" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                              <option value="V">V-</option>
-                              <option value="E">E-</option>
-                              <option value="PN">PN-</option>
-                            </select>
-                          </span>
-
-                          <input type="text" id="input_busqueda_paciente" name="cedula_paciente" class="form-control" placeholder="N° de Cédula" onkeypress="return validarEntradaDinamica(event)" style="border-top-left-radius: 0; border-bottom-left-radius: 0;" required>
-                        </div>
-                      </div>
-                      <div class="col-sm-5">
-                        <label>Resultados de Receta (*):</label>
-                        <select name="id_prescripcion" id="id_prescripcion" class="form-control" required>
-                          <option value="">-- Seleccione --</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div id="detalles_vinculo" class="row" style="margin-top: 20px; display:none;">
-                      <div class="col-sm-6">
-                        <div class="well well-sm" style="border-left: 5px solid #00a65a; background: #00a65a14; padding: 15px;">
-                          <h5 style="margin-top:0; color:#00a65a; font-weight:bold;"><i class="fa fa-user"></i> DATOS DEL PACIENTE</h5>
-                          <input type="text" id="info_paciente_nom" class="form-control" readonly style="border:none; background:transparent; font-weight:bold; box-shadow:none; font-size:1.1em;">
-                          <input type="text" id="info_paciente_ced" class="form-control" readonly style="border:none; background:transparent; font-weight:bold; box-shadow:none; font-size:1.1em;">
-                        </div>
-                      </div>
-
-                      <div id="col_info_rep" class="col-sm-6" style="display:none;">
-                        <div class="well well-sm" style="border-left: 5px solid #3c8dbc; background: #f4f8ff; padding: 15px;">
-                          <h5 style="margin-top:0; color:#3c8dbc; font-weight:bold;"><i class="fa fa-users"></i> REPRESENTANTE LEGAL</h5>
-                          <input type="text" id="info_rep_nom" class="form-control" readonly style="border:none; background:transparent; font-weight:bold; box-shadow:none; font-size:1.1em;">
-                          <input type="text" id="info_rep_ced" class="form-control" readonly style="border:none; background:transparent; font-weight:bold; box-shadow:none; font-size:1.1em;">
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-
-                  <div id="seccion_externa" class="seccion-enfasis bg-externo" style="display:none; border-top: 3px solid #f39c12; margin-top: 30px; padding: 20px;">
-                    <h4 style="margin-bottom: 20px;"><i class="fa fa-external-link"></i> Datos de Récipe Externo</h4>
-                    <div class="row">
-                      <div class="col-sm-3">
-                        <label>Médico Externo (*):</label>
-                        <input type="text" name="medico_externo" id="medico_externo" class="form-control" onkeypress="return isTextKey(event)" placeholder="Ej. Dr. Pérez">
-                      </div>
-
-                      <div class="col-sm-3">
-                        <label>Nombre del Paciente (*):</label>
-                        <input type="text" name="paciente_externo_nombre" id="paciente_externo_nombre" class="form-control" placeholder="Nombre completo" required>
-                      </div>
-
-                      <div class="col-sm-4">
-                        <label>Cédula del Paciente (*):</label>
-                        <div class="input-group">
-                          <span class="input-group-btn" style="width: 20%;">
-                            <select name="tipo_cedula_ext" class="form-control" style="margin-right: 10px;" required>
-                              <option value="V-">V-</option>
-                              <option value="E-">E-</option>
-                              <option value="PN-">PN-</option>
-                            </select>
-                          </span>
-                          <input type="number" name="paciente_externo_cedula" id="paciente_externo_cedula" class="form-control" min="1" max="20" placeholder="Solo números" required>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-2">
-                        <label>N° Récipe (*):</label>
-                        <input type="number" name="numero_recipe" id="numero_recipe" class="form-control" placeholder="000" min="1">
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-12" style="margin-top: 15px; margin-bottom: 15px;">
-                    <label>Evidencia de Entrega (Comprobante):</label>
-                    <div class="btn-group" style="width: 100%; display: flex;">
-                      <button type="button" class="btn btn-info" style="flex: 1;" data-toggle="modal" data-target="#modalEvidencia" onclick="prepararCaptura('camara')">
-                        <i class="fa fa-camera"></i> <span id="txt-btn-camara">Usar Cámara</span>
-                      </button>
-                      <button type="button" class="btn btn-warning" style="flex: 1;" data-toggle="modal" data-target="#modalEvidencia" onclick="prepararCaptura('archivo')">
-                        <i class="fa fa-upload"></i> <span id="txt-btn-subir">Subir Archivo</span>
-                      </button>
-                    </div>
-                    <div id="miniatura-evidencia" style="display:none; margin-top:10px; border: 1px solid #ddd; padding: 5px; border-radius: 4px; background: #f9f9f9; text-align: center;">
-                      <span class="text-green-bold" style="font-size: 0.9em;"><i class="fa fa-check-circle"></i> Evidencia cargada correctamente</span>
-                      <button type="button" class="btn btn-xs btn-danger pull-right" onclick="quitarImagenGlobal()"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
-                    </div>
-                    <input type="hidden" name="foto_base64" id="foto_base64">
-                  </div>
-
-                  <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="abrirModalRegresar">Regresar</button>
-                    <button type="submit" class="btn btn-success">Guardar</button>
-                  </div>
-                </form>
-
+                </div>
               </div>
+
+              <div class="box box-danger">
+                <div class="box-header with-border">
+                  <h3 class="box-title"><i class="fa fa-medkit"></i> Medicamentos a Dar de Baja:</h3>
+                  <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnAbrirModalAgregar">
+                      <i class="fa fa-plus"></i> Añadir Medicamento
+                    </button>
+                  </div>
+                </div>
+                <div class="box-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover table-detalle" id="tablaMedicamentos">
+                      <thead>
+                        <tr>
+                          <th>Medicamento</th>
+                          <th>Lote</th>
+                          <th>F. Vencimiento</th>
+                          <th>Cant. a Bajar</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="cuerpoTablaMedicamentos">
+                        <tr id="filaVacia">
+                          <td colspan="5" class="text-center text-muted">Aún no se han añadido medicamentos para dar de baja.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="box box-default">
+                <div class="box-header with-border">
+                  <h3 class="box-title"><i class="fa fa-camera"></i> Evidencia del Ajuste (Acta, Foto del daño, etc.):</h3>
+                </div>
+                <div class="box-body">
+                  <div class="btn-group" style="width: 100%; display: flex;">
+                    <button type="button" class="btn btn-info" style="flex: 1;" data-toggle="modal" data-target="#modalEvidencia" onclick="prepararCaptura('camara')">
+                      <i class="fa fa-camera"></i> <span id="txt-btn-camara">Usar Cámara</span>
+                    </button>
+                    <button type="button" class="btn btn-warning" style="flex: 1;" data-toggle="modal" data-target="#modalEvidencia" onclick="prepararCaptura('archivo')">
+                      <i class="fa fa-upload"></i> <span id="txt-btn-subir">Subir Archivo</span>
+                    </button>
+                  </div>
+                  <div id="miniatura-evidencia" style="display:none; margin-top:10px; border: 1px solid #ddd; padding: 5px; border-radius: 4px; background: #f9f9f9; text-align: center; cursor: pointer;" title="Haga clic para ampliar">
+                    <span class="text-green-bold" style="font-size: 0.9em;"><i class="fa fa-check-circle"></i> Evidencia cargada correctamente</span>
+                    <button type="button" class="btn btn-xs btn-danger pull-right" onclick="quitarImagenGlobal()"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
+                  </div>
+                  <input type="hidden" name="foto_base64" id="foto_base64">
+                </div>
+                
+                <div class="box-footer text-right" style="background-color: transparent; border-top: 1px solid #f4f4f4; padding-top: 15px;">
+                  <button type="button" class="btn btn-secondary" id="abrirModalRegresar">Regresar</button>
+                  <button type="submit" class="btn btn-danger" id="btnPrepararGuardado"><i class="fa fa-trash"></i> Procesar Baja</button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </section>
+  </div>
+
+  <div class="modal" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" style="color: white;"><i class="fa fa-minus-circle"></i> Seleccionar Lote a Dar de Baja</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-12 form-group">
+              <label>Medicamento del Catálogo (*):</label>
+              <div class="input-group">
+                <select id="Id_descripcion_medicamento" class="form-control">
+                  <option value="">--- Seleccione un Medicamento ---</option>
+                  <?php
+                  $sql_meds = "SELECT dm.Id AS id_desc, m.nombre_medicamento, p.nombre_presentacion,
+                    GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), ' ', IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
+                    FROM descripcion_medicamento dm
+                    INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+                    INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+                    LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+                    LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+                    LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+                    WHERE m.estatus = 1 AND dm.estatus = 1 
+                    GROUP BY dm.Id ORDER BY m.nombre_medicamento ASC";
+                  $res_meds = $conexion->query($sql_meds);
+                  while ($row_med = $res_meds->fetch_assoc()) {
+                    $comp = trim($row_med['componentes']) ? " (" . htmlspecialchars($row_med['componentes']) . ")" : "";
+                    echo '<option value="' . $row_med['id_desc'] . '" data-nombre="' . htmlspecialchars($row_med['nombre_medicamento'] . " [" . $row_med['nombre_presentacion'] . "]") . '" data-componentes="' . htmlspecialchars($row_med['componentes']) . '">' . htmlspecialchars($row_med['nombre_medicamento']) . $comp . " - [" . htmlspecialchars($row_med['nombre_presentacion']) . "]" . '</option>';
+                  }
+                  ?>
+                </select>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" style="height: 34px;">
+                    <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
+              </div>
+            </div>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Seleccione Lote (*):</label>
+              <select id="lista_lotes" class="form-control">
+                <option value="">-- Seleccione un lote --</option>
+              </select>
+            </div>
+            
+            <div class="col-sm-4 form-group mt-3">
+              <label>F. Vencimiento:</label>
+              <input type="text" id="fecha_vencimiento_readonly" class="form-control" readonly disabled>
+            </div>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Cantidad a Dar de Baja (*):</label>
+              <input type="text" id="cantidad_baja" class="form-control" placeholder="Solo números">
+              <small id="max_stock_help" class="form-text text-muted" style="color:#d9534f; font-weight:bold;"></small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="modal" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
@@ -487,13 +368,10 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
           <h4 class="modal-title" style="color:white;"><i class="fa fa-file-image-o"></i> Gestionar Evidencia</h4>
         </div>
         <div class="modal-body text-center">
-
           <div id="modal-placeholder" style="padding: 40px 20px; border: 2px dashed #ddd; border-radius: 10px; color: #999;">
             <i class="fa fa-cloud-upload" style="font-size: 50px; margin-bottom: 15px;"></i>
             <h4 id="placeholder-texto">Cargando interfaz...</h4>
-            <p>Haga clic en los botones de la parte inferior para capturar o subir la imagen.</p>
           </div>
-
           <div id="modal-seccion-camara" style="display:none;">
             <video id="video-modal" width="100%" style="max-width: 450px; border-radius: 8px; background: #000;" autoplay></video>
             <canvas id="canvas-modal" style="display:none;"></canvas>
@@ -501,14 +379,10 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
               <button type="button" id="btn-capturar-modal" class="btn btn-success"><i class="fa fa-camera"></i> Tomar Foto</button>
             </div>
           </div>
-
           <input type="file" id="input-archivo-modal" accept="image/*" style="display:none;">
-
           <div id="modal-contenedor-previa" style="display:none; margin-top:10px;">
             <img id="foto-previa-modal" src="" style="max-width: 100%; max-height: 400px; border: 3px solid #3c8dbc; border-radius: 5px;">
-            <p class="text-muted" style="margin-top:5px;">¿Desea utilizar esta imagen?</p>
           </div>
-
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
@@ -532,37 +406,31 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
     </div>
   </div>
 
-  <div class="modal" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header bg-crimson">
-          <h5 class="modal-title" id="avisoModalLabel" style="color: white;">Aviso de Validación</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p id="avisoTexto"></p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="modal" id="avisoModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header bg-crimson">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h5 class="modal-title" style="color:white;">Aviso de Validación</h5>
+          <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+          <h5 class="modal-title" style="color: white;">Aviso de Validación</h5>
+        </div>
+        <div class="modal-body"><p id="avisoTexto"></p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title" style="color: white;">Confirmacion de Regreso</h5>
         </div>
         <div class="modal-body">
-          <p id="avisoTexto"></p>
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <a href="farmacia_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
         </div>
       </div>
     </div>
@@ -571,34 +439,13 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
   <div class="modal" id="modalSalidaGuardar" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header bg-success-custom">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h5 class="modal-title" style="color:white;">Confirmación de Guardado</h5>
+        <div class="modal-header bg-warning-custom">
+          <h5 class="modal-title" style="color: white;">Confirmar Ajuste</h5>
         </div>
-        <div class="modal-body">
-          <p>¿Está seguro de que desea guardar la información para esta salida del inventario?</p>
-        </div>
+        <div class="modal-body"><p>¿Está seguro de procesar esta baja de inventario? Esta acción restará unidades del sistema.</p></div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Guardar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="modalRegresarInventario" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header bg-crimson">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h5 class="modal-title" style="color:white;">Confirmación de Regreso</h5>
-        </div>
-        <div class="modal-body">
-          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-          <a href="<?php echo ($origen === 'prescripciones') ? 'farmacia_prescripciones_listado.php' : 'farmacia_inventario_listado.php'; ?>" class="btn btn-danger">Abandonar Formulario</a>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmarGuardadoFinal">Confirmar Baja</button>
         </div>
       </div>
     </div>
@@ -607,521 +454,375 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
   <?php include('includes/footer.php'); ?>
 
   <script>
-    function isNumberKey(evt) {
-      var charCode = (evt.which) ? evt.which : evt.keyCode;
-      return !(charCode > 31 && (charCode < 48 || charCode > 57));
-    }
-
-    function isTextKey(evt) {
-      var charCode = (evt.which) ? evt.which : evt.keyCode;
-      return ((charCode > 64 && charCode < 91) || (charCode > 96 && charCode < 123) || charCode == 32 || charCode == 241 || charCode == 209);
-    }
-
-    function validarEntradaDinamica(evt) {
-      return ($('#metodo_busqueda').val() === 'cedula') ? isNumberKey(evt) : isTextKey(evt);
-    }
-
-    const cantidadInput = $('#cantidad');
-
-    cantidadInput.on('input', function() {
-      this.value = this.value.replace(/[^0-9]/g, '');
-      if (this.value && parseInt(this.value) <= 0) this.value = 1;
-      checkFormValidity();
-    });
+    // VARIABLE GLOBAL PARA LA TABLA DINÁMICA
+    let listaDetalles = [];
+    let editandoIndex = -1;
+    let streamModal = null;
+    const hoy = new Date().toISOString().split('T')[0];
 
     function mostrarAviso(mensaje) {
       $('#avisoTexto').html(mensaje);
       $('#avisoModal').modal('show');
     }
-    // Variable global para el stream
-    let streamModal = null;
 
-    // Función para preparar el modal según el botón pulsado
-    // 1. Modificar la función de preparar captura
-    function prepararCaptura(tipo) {
-      // Ocultar todo al inicio
-      $('#modal-seccion-camara, #modal-contenedor-previa, #btn-aceptar-evidencia').hide();
-      $('#modal-placeholder').show(); // Mostrar placeholder por defecto
-      $('#foto-previa-modal').attr('src', '');
-
-      if (tipo === 'camara') {
-        $('#placeholder-texto').text('Iniciando Cámara...');
-        const video = document.getElementById('video-modal');
-
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: "environment"
-              }
-            })
-            .then(stream => {
-              streamModal = stream;
-              video.srcObject = stream;
-              // Una vez que la cámara responde, ocultamos placeholder y mostramos video
-              $('#modal-placeholder').hide();
-              $('#modal-seccion-camara').show();
-            })
-            .catch(err => {
-              console.error("Error camara:", err);
-              $('#placeholder-texto').text('Error: Cámara no disponible');
-              alert("Asegúrate de usar HTTPS y dar permisos de cámara.");
-            });
-        }
-      } else {
-        // Si es archivo
-        $('#placeholder-texto').text('Seleccionando archivo...');
-        $('#input-archivo-modal').click();
-
-        // Si el usuario cancela la selección de archivo, el placeholder se queda con este texto:
-        setTimeout(() => {
-          $('#placeholder-texto').text('Esperando archivo...');
-        }, 1000);
-      }
-    }
-
-    // 2. Modificar el evento de cambio de archivo
-    $('#input-archivo-modal').on('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          $('#modal-placeholder').hide(); // Ocultar placeholder
-          $('#foto-previa-modal').attr('src', event.target.result);
-          $('#modal-contenedor-previa, #btn-aceptar-evidencia').show();
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // 3. NUEVO: Lógica para ver la imagen al hacer clic en "Evidencia cargada"
-    $(document).on('click', '#miniatura-evidencia', function(e) {
-      // Evitamos que se dispare si se hace clic en el botón de borrar (basura)
-      if ($(e.target).closest('.btn-danger').length) return;
-
-      const foto = $('#foto_base64').val();
-      if (foto) {
-        $('#img-vista-grande').attr('src', foto);
-        $('#modalVisualizarFoto').modal('show');
-      }
-    });
-
-    // 4. Mejorar el cursor para indicar que es clickeable
-    $('#miniatura-evidencia').css('cursor', 'pointer').attr('title', 'Haga clic para ampliar');
-
-    // Capturar foto desde el video del modal
-    $('#btn-capturar-modal').on('click', function() {
-      const video = document.getElementById('video-modal');
-      const canvas = document.getElementById('canvas-modal');
-      const context = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const dataURL = canvas.toDataURL('image/jpeg', 0.8);
-      $('#foto-previa-modal').attr('src', dataURL);
-      $('#modal-seccion-camara').hide();
-      $('#modal-contenedor-previa, #btn-aceptar-evidencia').show();
-
-      if (streamModal) {
-        streamModal.getTracks().forEach(t => t.stop());
-      }
-    });
-
-    // Confirmar imagen en el modal
-    $('#btn-aceptar-evidencia').on('click', function() {
-      const imgBase64 = $('#foto-previa-modal').attr('src');
-      $('#foto_base64').val(imgBase64);
-
-      // Cambiar textos de los botones principales
-      $('#txt-btn-camara').text('Volver a Tomar');
-      $('#txt-btn-subir').text('Cambiar Archivo');
-      $('#miniatura-evidencia').fadeIn();
-
-      $('#modalEvidencia').modal('hide');
-    });
-
-    // Función para limpiar todo
-    function quitarImagenGlobal() {
-      $('#foto_base64').val('');
-      $('#txt-btn-camara').text('Usar Cámara');
-      $('#txt-btn-subir').text('Subir Archivo');
-      $('#miniatura-evidencia').hide();
-      $('#input-archivo-modal').val('');
-    }
-
-    // Asegurar que la cámara se apague al cerrar el modal
-    $('#modalEvidencia').on('hidden.bs.modal', function() {
-      if (streamModal) {
-        streamModal.getTracks().forEach(t => t.stop());
-        streamModal = null;
-      }
-    });
-
-    const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
-
-    // 1. Lógica para botón Limpiar Filtros dentro del Modal
-    $('#btnLimpiarFiltros').on('click', function() {
-      // Resetea el formulario del modal (formFiltroModal)
-      $('#formFiltroModal')[0].reset();
-      // Opcionalmente, podrías ejecutar el filtrado vacío para cargar todos
-    });
-
-    // 2. Lógica principal: Clic en "Aplicar Filtros" dentro del Modal
-    $('#btnAplicarFiltros').on('click', function() {
-      // Serializar los datos del formulario del modal
-      const datosFiltro = $('#formFiltroModal').serialize();
-
-      // Mostrar un indicador de carga en el botón si es necesario
-
-      // Realizar la llamada AJAX al nuevo backend
-      $.ajax({
-        url: '../../cfg/ajax/filtrar_medicamentos_completo.php', // El nuevo backend
-        type: 'POST',
-        data: datosFiltro, // Envía los valores de los filtros del modal
-        dataType: 'json',
-        success: function(response) {
-          // 1. Limpiar el select principal
-          medicamentoSelectPrincipal.empty();
-
-          // 2. Añadir la opción inicial por defecto
-          medicamentoSelectPrincipal.append('<option value="">--- Seleccione un Medicamento ---</option>');
-
-          // 3. Repoblar el select con los nuevos resultados filtrados
-          if (response.length > 0) {
-            // Iterar sobre el array de medicamentos devuelto por PHP
-            response.forEach(function(item) {
-              // Crear el nuevo <option value="id_desc">nombre completo descriptivo</option>
-              medicamentoSelectPrincipal.append('<option value="' + item.id_desc + '">' + item.nombre_completo + '</option>');
-            });
-
-            // Opcionalmente: Si hay un solo resultado, seleccionarlo automáticamente
-            /* if (response.length === 1) {
-                medicamentoSelectPrincipal.val(response[0].id_desc).trigger('change');
-            } */
-          } else {
-            // Si no hay resultados
-            medicamentoSelectPrincipal.append('<option value="" disabled>🛑 No se encontraron medicamentos que coincidan con los filtros aplicados.</option>');
-          }
-
-          // 4. Cerrar el modal animadamente usando tu lógica existente
-          $('#modalBúsquedaAvanzadaMedicamento').removeClass('in').addClass('out');
-          setTimeout(function() {
-            $('#modalBúsquedaAvanzadaMedicamento').modal('hide');
-            $('#modalBúsquedaAvanzadaMedicamento').removeClass('out');
-          }, 400);
-
-          // 5. Opcional: Mostrar un aviso si hay resultados
-          /* if (response.length > 0) {
-             // alert('Se encontraron ' + response.length + ' medicamentos. Busque en la lista principal.');
-          } */
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.error("Error en AJAX de filtrado avanzado: ", textStatus, errorThrown);
-          // Mostrar aviso de error si tienes una función para ello
-          // mostrarAviso('🛑 Error al intentar filtrar los medicamentos desde el modal.');
-        }
-      });
+    // CIERRE ANIMADO DE MODALES
+    $('.modal').on('click', '[data-dismiss="modal"]', function() {
+      var $modal = $(this).closest('.modal');
+      $modal.removeClass('in').addClass('out');
+      setTimeout(function() { $modal.modal('hide').removeClass('out'); }, 400);
     });
 
     $(document).ready(function() {
-      function cargarLotesMedicamento(id, callback = null) {
+
+      // =====================================================================
+      // LIMPIEZA ADICIONAL PARA MODALES (Soluciona el problema de fondo oscuro)
+      // =====================================================================
+      $('.modal').on('hidden.bs.modal', function() {
+        if ($('.modal:visible').length) {
+          $('body').addClass('modal-open');
+          // NO eliminamos el backdrop si aún hay modales abiertos superpuestos
+        } else {
+          $('body').removeClass('modal-open');
+          $('.modal-backdrop').remove(); // Solo destruimos el backdrop si es el último modal
+        }
+      });
+
+      // -------------------------------------------------------------
+      // LÓGICA DE EVIDENCIA (CÁMARA / ARCHIVO)
+      // -------------------------------------------------------------
+      window.prepararCaptura = function(tipo) {
+        $('#modal-seccion-camara, #modal-contenedor-previa, #btn-aceptar-evidencia').hide();
+        $('#modal-placeholder').show();
+        $('#foto-previa-modal').attr('src', '');
+
+        if (tipo === 'camara') {
+          $('#placeholder-texto').text('Iniciando Cámara...');
+          const video = document.getElementById('video-modal');
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+              .then(stream => {
+                streamModal = stream;
+                video.srcObject = stream;
+                $('#modal-placeholder').hide();
+                $('#modal-seccion-camara').show();
+              }).catch(err => {
+                $('#placeholder-texto').text('Error: Cámara no disponible');
+              });
+          }
+        } else {
+          $('#placeholder-texto').text('Seleccionando archivo...');
+          $('#input-archivo-modal').click();
+          setTimeout(() => { $('#placeholder-texto').text('Esperando archivo...'); }, 1000);
+        }
+      };
+
+      $('#input-archivo-modal').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            $('#modal-placeholder').hide();
+            $('#foto-previa-modal').attr('src', event.target.result);
+            $('#modal-contenedor-previa, #btn-aceptar-evidencia').show();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      $('#btn-capturar-modal').on('click', function() {
+        const video = document.getElementById('video-modal');
+        const canvas = document.getElementById('canvas-modal');
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        $('#foto-previa-modal').attr('src', canvas.toDataURL('image/jpeg', 0.8));
+        $('#modal-seccion-camara').hide();
+        $('#modal-contenedor-previa, #btn-aceptar-evidencia').show();
+        if (streamModal) streamModal.getTracks().forEach(t => t.stop());
+      });
+
+      $('#btn-aceptar-evidencia').on('click', function() {
+        $('#foto_base64').val($('#foto-previa-modal').attr('src'));
+        $('#txt-btn-camara').text('Volver a Tomar');
+        $('#txt-btn-subir').text('Cambiar Archivo');
+        $('#miniatura-evidencia').fadeIn();
+        $('#modalEvidencia').modal('hide');
+      });
+
+      window.quitarImagenGlobal = function() {
+        $('#foto_base64').val('');
+        $('#txt-btn-camara').text('Usar Cámara');
+        $('#txt-btn-subir').text('Subir Archivo');
+        $('#miniatura-evidencia').hide();
+        $('#input-archivo-modal').val('');
+      };
+
+      $(document).on('click', '#miniatura-evidencia', function(e) {
+        if ($(e.target).closest('.btn-danger').length) return;
+        const foto = $('#foto_base64').val();
+        if (foto) {
+          $('#img-vista-grande').attr('src', foto);
+          $('#modalVisualizarFoto').modal('show');
+        }
+      });
+
+      $('#modalEvidencia').on('hidden.bs.modal', function() {
+        if (streamModal) { streamModal.getTracks().forEach(t => t.stop()); streamModal = null; }
+      });
+
+      // -------------------------------------------------------------
+      // FILTRADO AVANZADO EXACTO DEL ARCHIVO AJUSTES
+      // -------------------------------------------------------------
+      const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
+
+      $('#btnLimpiarFiltros').on('click', function() {
+        $('#formFiltroModal')[0].reset();
+      });
+
+      $('#btnAplicarFiltros').on('click', function() {
+        const datosFiltro = $('#formFiltroModal').serialize();
+
         $.ajax({
-          url: '../../cfg/ajax/obtener_descripcion_medicamento.php',
+          url: '../../cfg/ajax/filtrar_medicamentos_completo.php',
           type: 'POST',
-          data: {
-            id: id
-          },
+          data: datosFiltro,
           dataType: 'json',
-          success: function(data) {
-            $('#existencia_actual').val(data.existencia_actual); //
-            $('#stock_info').val(data.stock_minimo + ' / ' + data.stock_maximo); //
-
-            let $lotes = $('#lista_lotes').empty().append('<option value="">-- Seleccione --</option>'); //
-
-            if (data.lotes && data.lotes.length > 0) {
-              data.lotes.forEach((l, index) => {
-                let textoDias = "";
-                let estilo = "";
-
-                // Lógica de etiquetas de vencimiento
-                if (l.dias_restantes <= 0) {
-                  textoDias = " - VENCIDO";
-                  estilo = "color: red; font-weight: bold;";
-                } else if (l.dias_restantes <= 30) {
-                  textoDias = ` - (Próximo a vencer: ${l.dias_restantes} días)`;
-                  estilo = "color: orange; font-weight: bold;";
-                } else {
-                  textoDias = ` - (Vence en: ${l.dias_restantes} días)`;
-                }
-
-                $lotes.append(
-                  `<option value="${l.Id}" data-cant="${l.cantidad_actual}" style="${estilo}">
-                ${l.lote} (Disp: ${l.cantidad_actual})${textoDias}
-            </option>`
-                ); //
+          success: function(response) {
+            medicamentoSelectPrincipal.empty();
+            medicamentoSelectPrincipal.append('<option value="">--- Seleccione un Medicamento ---</option>');
+            if (response.length > 0) {
+              response.forEach(function(item) {
+                // Se agregan los data-atributos vacíos o con el nombre completo para evitar que la tabla de abajo se quede sin texto
+                medicamentoSelectPrincipal.append('<option value="' + item.id_desc + '" data-nombre="' + item.nombre_completo + '" data-componentes="">' + item.nombre_completo + '</option>');
               });
-
-              // Seleccionar automáticamente el primer lote disponible (FEFO)
-              // Como el SQL ya viene ordenado por fecha de vencimiento ASC, el índice 0 es el correcto
-              $('#lista_lotes').val(data.lotes[0].Id).trigger('change'); //
+            } else {
+              medicamentoSelectPrincipal.append('<option value="" disabled>🛑 No se encontraron medicamentos que coincidan con los filtros aplicados.</option>');
             }
+            
+            // SE ELIMINÓ EL CÓDIGO QUE CERRABA EL MODAL AUTOMÁTICAMENTE
+            // Ahora el modal se queda abierto para que puedas seguir filtrando.
 
-            if (callback) callback(); //
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error en AJAX de filtrado avanzado: ", textStatus, errorThrown);
           }
         });
+      });
+
+      // -------------------------------------------------------------
+      // LÓGICA DEL MODAL: AGREGAR A LA LISTA
+      // -------------------------------------------------------------
+      function limpiarFormularioModal() {
+        $('#Id_descripcion_medicamento').val('').trigger('change');
+        $('#lista_lotes').empty().append('<option value="">-- Seleccione un lote --</option>');
+        $('#fecha_vencimiento_readonly').val('');
+        $('#cantidad_baja').val('').removeClass('input-error');
+        $('#max_stock_help').text('');
       }
 
-      const idPresAuto = "<?php echo $id_pres_auto; ?>";
-      const idMedAuto = "<?php echo $id_med_auto; ?>";
-      const cedulaAuto = "<?php echo $cedula_auto; ?>";
-      const esMenorAuto = "<?php echo $es_menor_auto; ?>";
+      $('#btnAbrirModalAgregar').on('click', function() {
+        editandoIndex = -1;
+        limpiarFormularioModal();
+        $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-check"></i> Añadir a la Lista');
+        $('#modalAgregarMedicamento').modal('show');
+      });
 
-      // Localiza la línea 245 y reemplaza ese bloque hasta antes de $('#id_prescripcion').on('change'...)
-      if (idPresAuto !== "") {
+      // Validar entrada numérica en cantidad
+      $('#cantidad_baja').on('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value === '0') this.value = '1';
+      });
 
-        // 1. DETERMINAR Y FIJAR EL MOTIVO PRIMERO
-        if (esMenorAuto == 1 || esMenorAuto === "1") {
-          $('#observaciones').val('Entrega a Representante').trigger('change');
-        } else {
-          $('#observaciones').val('Entrega a Paciente').trigger('change');
-        }
+      // Cargar lotes al seleccionar medicamento
+      $('#Id_descripcion_medicamento').on('change', function() {
+        const medId = $(this).val();
+        let $lotes = $('#lista_lotes').empty().append('<option value="">-- Cargando... --</option>');
+        $('#fecha_vencimiento_readonly').val('');
+        $('#max_stock_help').text('');
 
-        // 2. CARGAR EL MEDICAMENTO
-        $('#Id_descripcion_medicamento').val(idMedAuto).trigger('change');
+        if (medId) {
+          $.ajax({
+            url: '../../cfg/ajax/obtener_descripcion_medicamento.php',
+            type: 'POST',
+            data: { id: medId }, // Usa el mismo AJAX de despacho que trae existencias
+            dataType: 'json',
+            success: function(data) {
+              $lotes.empty().append('<option value="">-- Seleccione un lote --</option>');
+              if (data.lotes && data.lotes.length > 0) {
+                data.lotes.forEach(l => {
+                  let estilo = l.dias_restantes <= 0 ? "color:red;" : "";
+                  
+                  // Agregado para mostrar los días restantes
+                  let textoDisp = "";
+                  if (l.dias_restantes <= 0) {
+                      textoDisp = " (VENCIDO)";
+                  } else {
+                      textoDisp = ` (Faltan ${l.dias_restantes} días)`;
+                  }
 
-        // 3. ESPERAR CARGA DE LOTES Y LUEGO BUSCAR AL PACIENTE
-        cargarLotesMedicamento(idMedAuto, function() {
-          // Forzamos la visibilidad de la sección de búsqueda
-          $('#seccion_interna').show();
-
-          // Escribimos la cédula y disparamos la búsqueda
-          $('#input_busqueda_paciente').val(cedulaAuto).trigger('keyup');
-
-          // 4. INTERVALO PARA SELECCIONAR LA RECETA CUANDO EL AJAX TERMINE
-          const esperarPrescripcion = setInterval(function() {
-            if ($('#id_prescripcion option').length > 1) {
-              clearInterval(esperarPrescripcion);
-
-              // Seleccionamos la receta y disparamos su evento change
-              $('#id_prescripcion').val(idPresAuto).trigger('change');
-
-              // FORZAR DESPLIEGUE DE LOS CUADROS DE DATOS (IMPORTANTE)
-              $('#detalles_vinculo').stop().slideDown();
-              if (esMenorAuto == 1) {
-                $('#col_info_rep').show();
-              }
-
-              // 5. SELECCIONAR LOTE DISPONIBLE
-              $('#lista_lotes option').each(function() {
-                if (parseFloat($(this).data('cant')) > 0) {
-                  $(this).prop('selected', true).trigger('change');
-                  return false;
-                }
-              });
-
-              $('#input_busqueda_paciente').prop('readonly', true);
-
-              // 2. Para los <select>, readonly no funciona igual, así que bloqueamos clics y cambiamos estilo
-              $('#observaciones, #Id_descripcion_medicamento, #metodo_busqueda, #tipo_cedula, #id_prescripcion, #cantidad')
-                .css({
-                  'pointer-events': 'none',
-                  'background-color': '#eee',
-                  'cursor': 'not-allowed'
+                  $lotes.append(`<option value="${l.Id}" data-lote="${l.lote}" data-venc="${l.fecha_vencimiento}" data-cant="${l.cantidad_actual}" data-dias="${l.dias_restantes}" style="${estilo}">${l.lote} - Stock: ${l.cantidad_actual} ${textoDisp}</option>`);
                 });
+              } else {
+                $lotes.empty().append('<option value="">No hay stock de este medicamento</option>');
+              }
             }
-          }, 100); // Un poco más de tiempo para estabilidad
-        });
+          });
+        }
+      });
+
+      // Al seleccionar un lote, mostrar info y límite de stock
+      $('#lista_lotes').on('change', function() {
+        const option = $(this).find('option:selected');
+        if (option.val() !== "") {
+          // Mostrar los días restantes también en el input de solo lectura
+          let textoDias = option.data('dias') <= 0 ? ' (VENCIDO)' : ` (Faltan ${option.data('dias')} días)`;
+          
+          $('#fecha_vencimiento_readonly').val(option.data('venc'));
+          $('#max_stock_help').text(`Máximo disponible para baja: ${option.data('cant')} unid.`);
+        } else {
+          $('#fecha_vencimiento_readonly').val('');
+          $('#max_stock_help').text('');
+        }
+      });
+
+      // Bóton Añadir al array
+      $('#btnConfirmarAgregarMedicamento').on('click', function() {
+        const id_med = $('#Id_descripcion_medicamento').val();
+        const nombre_med = $('#Id_descripcion_medicamento option:selected').data('nombre') || $('#Id_descripcion_medicamento option:selected').text();
+        const componentes = $('#Id_descripcion_medicamento option:selected').data('componentes') || '';
+        
+        const lote_id = $('#lista_lotes').val(); // ID del lote en BD (necesario para el backend)
+        const lote_nombre = $('#lista_lotes option:selected').data('lote');
+        const f_venc = $('#lista_lotes option:selected').data('venc');
+        const max_cant = parseInt($('#lista_lotes option:selected').data('cant') || 0);
+        
+        const cant_baja = parseInt($('#cantidad_baja').val());
+
+        $('.modal-body .form-control').removeClass('input-error');
+
+        if (!id_med) { $('#Id_descripcion_medicamento').addClass('input-error'); mostrarAviso('Seleccione un medicamento.'); return; }
+        if (!lote_id) { $('#lista_lotes').addClass('input-error'); mostrarAviso('Seleccione un lote.'); return; }
+        if (isNaN(cant_baja) || cant_baja <= 0) { $('#cantidad_baja').addClass('input-error'); mostrarAviso('Ingrese una cantidad válida.'); return; }
+        if (cant_baja > max_cant) { $('#cantidad_baja').addClass('input-error'); mostrarAviso(`La cantidad supera el stock físico de este lote (${max_cant}).`); return; }
+
+        // Evitar duplicados en la lista visual (a menos que se esté editando ese mismo registro)
+        const existeIndex = listaDetalles.findIndex(item => item.id_medicamento === id_med && item.lote_id === lote_id);
+        if (existeIndex !== -1 && existeIndex !== editandoIndex) {
+          mostrarAviso('Este Lote ya está en la lista de bajas. Modifíquelo directamente usando el botón de editar.');
+          return;
+        }
+
+        const nuevoItem = {
+          id_medicamento: id_med,
+          nombre_medicamento: nombre_med,
+          componentes: componentes,
+          lote_id: lote_id, // Enviamos el ID real para restarlo
+          lote: lote_nombre, // Para mostrarlo en la tabla
+          fecha_vencimiento: f_venc,
+          cantidad: cant_baja
+        };
+
+        if (editandoIndex !== -1) {
+          listaDetalles[editandoIndex] = nuevoItem;
+        } else {
+          listaDetalles.push(nuevoItem);
+        }
+
+        actualizarTablaDetalles();
+        $('#modalAgregarMedicamento').modal('hide');
+      });
+
+      // -------------------------------------------------------------
+      // DIBUJAR LA TABLA Y ACCIONES (Eliminar/Editar)
+      // -------------------------------------------------------------
+      function actualizarTablaDetalles() {
+        const tbody = $('#cuerpoTablaMedicamentos');
+        tbody.empty();
+
+        if (listaDetalles.length === 0) {
+          tbody.append('<tr id="filaVacia"><td colspan="5" class="text-center text-muted">Aún no se han añadido medicamentos para dar de baja.</td></tr>');
+        } else {
+          listaDetalles.forEach((item, index) => {
+            let rowClass = "";
+            let diffDias = (new Date(item.fecha_vencimiento) - new Date(hoy)) / (1000 * 60 * 60 * 24);
+            if (diffDias <= 0) rowClass = "row-vence-pronto"; // Destacar si está vencido
+
+            tbody.append(`
+              <tr class="${rowClass}">
+                <td style="text-align: left;">
+                  ${item.nombre_medicamento}
+                  <br><small class="text-muted" style="font-size: 11px;"><i>${item.componentes}</i></small>
+                </td>
+                <td><strong>${item.lote}</strong></td>
+                <td>${item.fecha_vencimiento} ${diffDias <= 0 ? ' <i class="fa fa-exclamation-triangle text-danger" title="Lote Vencido"></i>' : ''}</td>
+                <td><span class="badge bg-red" style="font-size:14px;">- ${item.cantidad}</span></td>
+                <td>
+                  <button type="button" class="btn btn-warning btn-xs btn-editar-fila" data-index="${index}"><img src="../../recursos/imagenes/iconos/editar.png" style="width:10px;"></button>
+                  <button type="button" class="btn btn-danger btn-xs btn-eliminar-fila" data-index="${index}"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:10px;"></button>
+                </td>
+              </tr>
+            `);
+          });
+        }
+        $('#detalle_medicamentos').val(JSON.stringify(listaDetalles));
       }
 
-      // 1. ASIGNACIÓN AUTOMÁTICA DE CANTIDAD 1 AL ELEGIR RECETA
-      $('#id_prescripcion').on('change', function() {
-        if ($(this).val() !== "") {
-          $('#cantidad').val(1);
-        }
+      $('#cuerpoTablaMedicamentos').on('click', '.btn-eliminar-fila', function() {
+        listaDetalles.splice($(this).data('index'), 1);
+        actualizarTablaDetalles();
       });
 
-      $(document).ready(function() {
-        const idPresAuto = "<?php echo $id_pres_auto; ?>";
-        const esMenorAuto = "<?php echo $es_menor_auto; ?>";
+      $('#cuerpoTablaMedicamentos').on('click', '.btn-editar-fila', function() {
+        const index = $(this).data('index');
+        const item = listaDetalles[index];
+        editandoIndex = index; 
 
-        if (idPresAuto !== "") {
-          // Forzamos el cambio de etiquetas ANTES de disparar el change para asegurar que la lógica de UI se ejecute
-          if (esMenorAuto == 1 || esMenorAuto === "1") {
-            $('#observaciones').val('Entrega a Representante');
-            // Actualización manual de UI inmediata para evitar el bug de etiquetas
-            $('#seccion_interna h4').html('<i class="fa fa-users"></i> Buscar por Datos del Representante');
-            $('#label_busqueda').text('Ingrese Datos del Representante:');
-          } else {
-            $('#observaciones').val('Entrega a Paciente');
-            $('#seccion_interna h4').html('<i class="fa fa-user"></i> Vincular Receta del Sistema');
-            $('#label_busqueda').text('Ingrese Los Datos del Paciente:');
-          }
+        limpiarFormularioModal(); 
+        
+        // Cargar datos al modal
+        $('#Id_descripcion_medicamento').val(item.id_medicamento).trigger('change');
+        
+        // Dar tiempo al AJAX de lotes para cargar y luego seleccionarlo
+        setTimeout(() => {
+          $('#lista_lotes').val(item.lote_id).trigger('change');
+          $('#cantidad_baja').val(item.cantidad);
+        }, 500);
 
-          // Ahora sí disparamos el change para que el resto del sistema reaccione (como mostrar la sección interna)
-          $('#observaciones').trigger('change');
-
-          // El resto de tu lógica de carga automática...
-          $('#Id_descripcion_medicamento').val("<?php echo $id_med_auto; ?>").trigger('change');
-        }
+        $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-save"></i> Guardar Cambios');
+        $('#modalAgregarMedicamento').modal('show');
       });
 
-      // 2. ANIMACIÓN DE SALIDA DE MODALES
-      $('.modal').on('click', '[data-dismiss="modal"]', function() {
-        var $modal = $(this).closest('.modal');
-        $modal.removeClass('in').addClass('out');
-        setTimeout(function() {
-          $modal.modal('hide').removeClass('out');
-        }, 400);
-      });
+      // -------------------------------------------------------------
+      // SUBMIT DEL FORMULARIO PRINCIPAL
+      // -------------------------------------------------------------
+      $('#abrirModalRegresar').on('click', function() { $('#modalRegresarInventario').modal('show'); });
 
-      $('#abrirModalRegresar').on('click', function() {
-        $('#modalRegresarInventario').modal('show');
-      });
-
-      $('#id_prescripcion').on('change', function() {
-        const selected = $(this).find('option:selected');
-        const motivo = $('#observaciones').val();
-
-        if ($(this).val() !== "" && $(this).val() !== null) {
-          const tCedP = selected.attr('data-tipo-cedula-p');
-          const cedP = selected.attr('data-cedula-p');
-          // Llenar datos y mostrar
-          $('#info_paciente_nom').val("Nombre: " + selected.data('paciente'));
-          $('#info_paciente_ced').val("Cédula: " + tCedP + "-" + cedP);
-          $('#cantidad').val(1);
-
-          $('#detalles_vinculo').slideDown();
-
-          if (motivo === 'Entrega a Representante') {
-            const tCedR = selected.attr('data-tipo-cedula-r');
-            const cedR = selected.attr('data-cedula-r');
-            $('#info_rep_nom').val("Nombre: " + selected.data('representante'));
-            $('#info_rep_ced').val("Cédula: " + tCedR + "-" + cedR);
-            $('#col_info_rep').show();
-          } else {
-            $('#col_info_rep').hide();
-          }
-        } else {
-          // Si no hay nada seleccionado, ocultar todo
-          $('#detalles_vinculo').slideUp();
-          $('#cantidad').val('');
-        }
-      });
-
-      // Mostrar/Ocultar tipo de cédula según el método de búsqueda
-      $('#metodo_busqueda').on('change', function() {
-        const inputBusqueda = $('#input_busqueda_paciente');
-        const grupoInput = inputBusqueda.closest('.input-group'); // El contenedor padre
-        const contenedorTipoCedula = $('#tipo_cedula').parent(); // El span del selector
-
-        if ($(this).val() === 'nombre') {
-          // 1. Ocultar el selector
-          contenedorTipoCedula.hide();
-
-          // 2. Forzar al grupo a no comportarse como tabla y al input a expandirse
-          grupoInput.css('display', 'block');
-          inputBusqueda.css({
-            'width': '100%',
-            'border-top-left-radius': '4px',
-            'border-bottom-left-radius': '4px'
-          }).attr('placeholder', 'Ingrese nombre o apellido');
-        } else {
-          // 1. Mostrar el selector
-          contenedorTipoCedula.show();
-
-          // 2. Restaurar el comportamiento de Bootstrap (display: table)
-          grupoInput.css('display', 'table');
-          inputBusqueda.css({
-            'width': '',
-            'border-top-left-radius': '0',
-            'border-bottom-left-radius': '0'
-          }).attr('placeholder', 'N° de Cédula');
-        }
-
-        // Limpiar y disparar búsqueda
-        inputBusqueda.val('').trigger('keyup');
-      });
-
-      // 3. LÓGICA DE SECCIONES Y VALIDACIÓN OBLIGATORIA
-      $('#observaciones').on('change', function() {
-        const val = $(this).val();
-
-        // --- BLOQUE DE LIMPIEZA TOTAL ---
-        $('.seccion-enfasis').slideUp(); // Oculta secciones de búsqueda
-        $('#detalles_vinculo').hide(); // Oculta los recuadros de datos del paciente/representante
-        $('#col_info_rep').hide(); // Asegura que la columna de representante se oculte
-
-        // Limpiar valores de los inputs informativos
-        $('#info_paciente_nom, #info_paciente_ced, #info_rep_nom, #info_rep_ced').val('');
-
-        // Reset de campos obligatorios y cantidad
-        $('#id_prescripcion, #medico_externo, #paciente_externo, #numero_recipe').prop('required', false);
-        $('#cantidad').prop('readonly', false).val('').css('background-color', '#fff');
-
-        // Limpiar busqueda y resultados previos
-        $('#input_busqueda_paciente').val('');
-        $('#id_prescripcion').html('<option value="">-- Seleccione una preescripcion --</option>');
-        // ---------------------------------
-
-        if (val === 'Entrega a Paciente' || val === 'Entrega a Representante') {
-          if (val === 'Entrega a Representante') {
-            $('#seccion_interna h4').html('<i class="fa fa-users"></i> Buscar por Datos del Representante');
-            $('#label_busqueda').text('Ingrese Datos del Representante:');
-          } else {
-            $('#seccion_interna h4').html('<i class="fa fa-user"></i> Vincular Receta del Sistema');
-            $('#label_busqueda').text('Ingrese Los Datos del Paciente:');
-          }
-
-          $('#seccion_interna').slideDown();
-          $('#id_prescripcion').prop('required', true);
-          $('#cantidad').prop('readonly', true).css('background-color', '#eee');
-
-        } else if (val === 'Récipe Externo') {
-          $('#seccion_externa').slideDown();
-          $('#medico_externo, #paciente_externo, #numero_recipe').prop('required', true);
-        }
-      });
-
-      // 4. VALIDACIÓN DE FORMULARIO
       $('#formularioSalida').on('submit', function(e) {
         e.preventDefault();
-        $('.form-control').removeClass('input-error');
-        let error = false;
 
-        // Verifica todos los campos con required (incluyendo los dinámicos)
-        $(this).find('[required]:visible').each(function() {
-          if (!$(this).val()) {
-            $(this).addClass('input-error');
-            error = true;
-          }
-        });
-
-        if (error) {
-          $('#avisoTexto').text('⚠️ Por favor complete todos los campos marcados como obligatorios.');
-          $('#avisoModal').modal('show');
+        if ($('#id_tipo_movimiento').val() === "") {
+          mostrarAviso("Debe seleccionar un Motivo para el Ajuste.");
           return;
         }
 
-        // Dentro del submit...
-        const motivo = $('#observaciones').val();
+        if ($('#observaciones_generales').val().trim() === "") {
+          mostrarAviso("Debe ingresar una justificación / observación obligatoria.");
+          return;
+        }
+
+        if (listaDetalles.length === 0) {
+          mostrarAviso("La lista está vacía. Debe añadir al menos un medicamento para procesar la baja.");
+          return;
+        }
+
+        // Validación opcional: Evidencia obligatoria si es "Dañado" o "Robo"
+        const motivo = parseInt($('#id_tipo_movimiento').val());
         const evidencia = $('#foto_base64').val();
-
-        const motivosConEvidencia = ['Entrega a Paciente', 'Entrega a Representante', 'Récipe Externo'];
-
-        if (motivosConEvidencia.includes(motivo)) {
-          if (!evidencia || evidencia.trim() === "") {
-            // Usamos la función mostrarAviso
-            mostrarAviso('<strong>📸 Evidencia Obligatoria:</strong><br>Para este motivo de salida, debe capturar una foto o subir un archivo del comprobante.');
-            return; // Detiene el envío
-          }
-        }
-
-        const cant = parseFloat($('#cantidad').val());
-        const disp = parseFloat($('#lista_lotes option:selected').data('cant') || 0);
-        if (cant > disp) {
-          $('#avisoTexto').text('🛑 Error: La cantidad solicitada supera el stock disponible en este lote.');
-          $('#avisoModal').modal('show');
-          return;
+        if ((motivo === 4 || motivo === 5) && (!evidencia || evidencia.trim() === "")) {
+          mostrarAviso('<strong>📸 Evidencia Sugerida/Obligatoria:</strong><br>Para registrar daños, pérdidas o robos, es altamente recomendable (o requerido por su política) adjuntar un comprobante o foto.');
+          return; // Puedes quitar el "return" si quieres que sea solo un aviso y no obligatorio
         }
 
         $('#modalSalidaGuardar').modal('show');
@@ -1131,54 +832,7 @@ $origen = isset($_GET['from']) ? $_GET['from'] : 'inventario';
         $('#formularioSalida').off('submit').submit();
       });
 
-      // AJAX - Obtener Lotes
-      $('#Id_descripcion_medicamento').on('change', function() {
-        const id = $(this).val();
-        if (!id) return;
-
-        cargarLotesMedicamento(id);
-      });
-
-      $('#observaciones').on('change', function() {
-        const busquedaActual = $('#input_busqueda_paciente').val();
-        if (busquedaActual.length > 0) {
-          // Disparamos el evento keyup manualmente para actualizar los resultados con el nuevo filtro
-          $('#input_busqueda_paciente').trigger('keyup');
-        }
-      });
-
-      // AJAX - Búsqueda de pacientes/recetas
-      // CÓDIGO CORREGIDO EN farmacia_inventario_movimiento_salida.php
-      $('#input_busqueda_paciente').on('keyup', function() {
-        const query = $(this).val();
-        const medId = $('#Id_descripcion_medicamento').val();
-        var tipoCed = $('#tipo_cedula').val(); // <-- Defines tipoCed aquí
-
-        const esRepresentante = ($('#observaciones').val() === 'Entrega a Representante');
-
-        if (query.length > 0 && medId) {
-          $.ajax({
-            url: '../../cfg/ajax/obtener_prescripciones.php',
-            type: 'POST',
-            data: {
-              busqueda: query,
-              tipo_cedula: tipoCed, // <-- ¡AQUÍ ESTABA EL ERROR! Cámbialo a tipoCed
-              id_medicamento: medId,
-              metodo: $('#metodo_busqueda').val(),
-              es_menor: ($('#observaciones').val() === 'Entrega a Representante') ? 1 : 0
-            },
-            success: function(res) {
-              $('#id_prescripcion').html(res);
-            }
-          });
-        }
-      });
-      // Si cambia el tipo (V, E, PN), volver a buscar automáticamente
-      $('#tipo_cedula').on('change', function() {
-        $('#input_busqueda_paciente').trigger('keyup');
-      });
     });
   </script>
 </body>
-
 </html>
