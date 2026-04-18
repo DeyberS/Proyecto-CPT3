@@ -259,33 +259,43 @@
                         ?>
                       </td>
 
+                      <?php if (in_array('Gestionar acciones de recetas', $_SESSION["permisos"])) : ?>
                       <td class="text-center">
                         <?php if ($row['estado_entrega'] == 'pendiente' || $row['estado_entrega'] == 'Parcialmente Entregado' || $row['estado_entrega'] == 'Parcial' || $row['estado_entrega'] == 'Pendiente') : ?>
                           <?php
                           $cedula_a_enviar = ($row['es_menor'] == 1 && !empty($row['cedula_representante'])) ? $row['cedula_representante'] : $row['cedula_pac'];
                           ?>
+                          <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
                           <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
                             <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
                           </a>
-
+                          <?php endif; ?>
+                          <?php if (in_array('Generar Despacho de Inventario', $_SESSION["permisos"])) : ?>
                           <a href="farmacia_inventario_movimiento_despacho.php?id_pres=<?php echo $row['id_prescripcion']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&tipo=<?php echo $row['tipo_receta']; ?>&from=prescripciones" class="btn btn-success btn-sm" title="Despachar Receta">
                             <img src="../../recursos/imagenes/iconos/enviar.png" style="width:15px; height:15px;">
                           </a>
-
+                          <?php endif; ?>
+                          <?php if (in_array('Cancelar Recetas', $_SESSION["permisos"])) : ?>
                           <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado', '<?php echo $row['tipo_receta'] ?>')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar">
                             <img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;">
                           </button>
+                          <?php endif; ?>
 
                         <?php elseif ($row['estado_entrega'] == 'no entregado' || $row['estado_entrega'] == 'Cancelado') : ?>
+                          <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
                           <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
                             <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
                           </a>
+                          <?php endif; ?>
                         <?php else : ?>
+                          <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
                           <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
                             <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
                           </a>
+                          <?php endif; ?>
                         <?php endif; ?>
                       </td>
+                      <?php endif; ?>
                     </tr>
                   <?php } ?>
                 </tbody>

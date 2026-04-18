@@ -187,18 +187,36 @@
                     <label class="control-label"></label>
                     <div class="col-sm-4">
                       <p>Rol (*):</p>
-                      <select name="rol" id="rol" class="form-control" required>
+                      <?php
+                      // 1. Verificamos si el usuario actual en sesión es Administrador (Id_rol = 1)
+                      // Asegúrate de que el nombre de tu variable de sesión sea el correcto ('Id_rol', 'rol', etc.)
+                      $es_admin = (isset($_SESSION['rol']) && $_SESSION['rol'] == 1);
+                      
+                      // 2. Si no es admin, preparamos el atributo disabled
+                      $disabled_attr = $es_admin ? '' : 'disabled';
+                      ?>
+                      
+                      <select name="<?php echo $es_admin ? 'rol' : 'rol_deshabilitado'; ?>" id="rol" class="form-control" required <?php echo $disabled_attr; ?>>
                         <option value="" selected="disabled">--- Seleccione Un Rol ---</option>
                         <?php
                         include("../../cfg/conexion.php");
 
-                        $sql_roles = $conexion->query("SELECT * FROM rol HAVING Id_rol IN (1, 2, 6, 7, 8)");
+                        $sql_roles = $conexion->query("SELECT * FROM rol HAVING Id_rol IN (1, 2, 6, 7, 8, 9)");
                         while ($row_rol = $sql_roles->fetch_assoc()) {
                           $selected = ($row_rol['Id_rol'] == $rol_actual) ? 'selected' : '';
                           echo "<option value='" . $row_rol['Id_rol'] . "' " . $selected . ">" . $row_rol['nombre_rol'] . "</option>";
                         }
                         ?>
                       </select>
+
+                      <?php 
+                      // 3. Si NO es admin y el select está deshabilitado, usamos un input oculto 
+                      // para enviar el rol original de vuelta al servidor y no dañar la actualización.
+                      if (!$es_admin): 
+                      ?>
+                        <input type="hidden" name="rol" value="<?php echo $rol_actual; ?>">
+                        <small class="text-muted">No tienes permisos para modificar el rol.</small>
+                      <?php endif; ?>
                     </div>
                     <br><br><br><br>
                     <div style="float:right;">

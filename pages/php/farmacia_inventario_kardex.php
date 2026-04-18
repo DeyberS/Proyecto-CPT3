@@ -179,9 +179,11 @@
         <section class="content">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-book"></i> Volver al Listado</a>
+                    <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-book"></i> Ir al Inventario</a>
                     <p class="pull-right" style="width:5px;"></p>
+                    <?php if (in_array('Generar reporte de kardex', $_SESSION["permisos"])) : ?>
                     <a href="#" class="btn-sm btn-info pull-right reporte"><i class="fa fa-book"></i> Reporte Kardex</a>
+                    <?php endif; ?>
                     
                     <div class="pull-left form-inline">
                         <div class="form-group">

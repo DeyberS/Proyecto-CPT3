@@ -85,11 +85,11 @@
     <section class="content">
       <div style="padding-bottom: 10px;">
         <p class="pull-right" style="width:5px;"></p>
-        <?php if (in_array('Ver papelera de roles', $_SESSION["permisos"])) : ?>
+        <?php if (in_array('Ver papelera de laboratorios', $_SESSION["permisos"])) : ?>
           <a href="papelera/farmacia_laboratorio_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color: gray;"> Papelera </a>
         <?php endif; ?>
         <p class="pull-right" style="width:5px;"></p>
-        <?php if (in_array('Crear Roles', $_SESSION["permisos"])) : ?>
+        <?php if (in_array('Crear Laboratorios', $_SESSION["permisos"])) : ?>
           <a href="farmacia_laboratorio_agregar.php" class="btn-sm btn-success pull-right"><i class="fa fa-user-plus"></i> Añadir Un Nuevo Laboratorio </a>
         <?php endif; ?>
           <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
@@ -100,7 +100,7 @@
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Nombre del laboratorio</th>
             <th>Medicamentos asociados</th>
-            <?php if (in_array('Gestionar acciones de roles', $_SESSION["permisos"])) : ?>
+            <?php if (in_array('Gestionar acciones de laboratorios', $_SESSION["permisos"])) : ?>
               <th>Acciones</th>
             <?php endif; ?>
           </thead>
@@ -144,12 +144,12 @@
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_laboratorio']; ?></span></td>
               <td class=""><span class="text-row text-white"><?= $row['total_medicamentos']; ?></span></td>
-              <?php if (in_array('Gestionar acciones de roles', $_SESSION["permisos"])) : ?>
+              <?php if (in_array('Gestionar acciones de laboratorios', $_SESSION["permisos"])) : ?>
                 <td>
-                  <?php if (in_array('Editar Roles', $_SESSION["permisos"])) : ?>
+                  <?php if (in_array('Editar Laboratorios', $_SESSION["permisos"])) : ?>
                     <a href="farmacia_laboratorio_editar.php?Id=<?php echo $row['Id'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
-                  <?php if (in_array('Desactivar Roles', $_SESSION["permisos"])) : ?>
+                  <?php if (in_array('Desactivar Laboratorios', $_SESSION["permisos"])) : ?>
                     <a href="#" data-id="<?php echo $row['Id'] ?>" class="btn-sm btn-danger btn-desactivar" title="Desactivar"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
                 </td>

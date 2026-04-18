@@ -87,6 +87,14 @@
 
     // Definir el filtro dinámico
     $donde = "WHERE 1=1";
+
+    $id_rol_usuario_activo = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0; 
+    $id_persona_activa = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : 0);
+    
+    if ($id_rol_usuario_activo == 9) {
+        $donde .= " AND di.Id_persona = '$id_persona_activa'";
+    }
+
     if ($busqueda != '') {
       $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' 
                   OR p.nombre LIKE '%$busqueda%' 
@@ -132,7 +140,7 @@
           <a href="farmacia_inventario_movimiento_salida.php?op=ajuste_salida" class="btn-sm btn-primary pull-right"><i class="fa fa-arrow-down"></i> Ajuste de Inventario</a>
         <?php endif; ?>
         <p class="pull-right" style="width:5px;"></p>
-        <?php if (in_array('Generar Salidas de Inventario', $_SESSION["permisos"])) : ?>
+        <?php if (in_array('Generar Despacho de Inventario', $_SESSION["permisos"])) : ?>
           <a href="farmacia_inventario_movimiento_despacho.php?op=despacho" class="btn-sm btn-primary pull-right"><i class="fa fa-arrow-down"></i> Despacho</a>
         <?php endif; ?>
         <p class="pull-right" style="width:5px;"></p>
@@ -200,10 +208,10 @@
                   <td><small class="badge <?= $clase_badge; ?>"><?= htmlspecialchars($row['tipo_nom']); ?></small></td>
                   <?php if (in_array('Gestionar acciones de inventario', $_SESSION["permisos"])) : ?>
                     <td>
-                      <?php if (in_array('Ver Consultas', $_SESSION["permisos"])) : ?>
+                      <?php if (in_array('Ver Movimientos de Inventario', $_SESSION["permisos"])) : ?>
                         <a href="farmacia_inventario_ver_movimiento.php?id=<?php echo $row['Id_detalle_inventario'] ?>" class="btn-sm btn-info" title="Ver Movimiento"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
                       <?php endif; ?>
-                      <?php if (in_array('Ver Consultas', $_SESSION["permisos"])) : ?>
+                      <?php if (in_array('Anular Movimientos de Inventario', $_SESSION["permisos"])) : ?>
                         <?php if ($row['estado_movimiento'] !== 'Anulado' && !in_array($row['Id_tipoMovimiento'], $tipos_prohibidos)) : ?>
 
                           <?php if ($contador === 0 && $pagina_actual === 1 && empty($busqueda)) : ?>
@@ -220,6 +228,7 @@
                           <span class="badge badge-secondary">Anulado</span>
                         <?php endif; ?>
                       <?php endif; ?>
+
                       <?php if (in_array('Elimina Movimientos de Inventario', $_SESSION["permisos"])) : ?>
                         <?php if ($contador === 0 && $pagina_actual === 1) : ?>
                           <a href="javascript:void(0);" onclick="confirmarEliminar(<?= $row['Id_detalle_inventario']; ?>)" title="Eliminar" class="btn-sm btn-danger"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
@@ -227,6 +236,7 @@
                           <a href="#" class="btn-sm btn-disabled"><img src="../../recursos/imagenes/iconos/Delete.png" title="No se pueden eliminar registros antiguos, realice un ajuste" style="width:15px; height:15px;"></a>
                         <?php endif; ?>
                       <?php endif; ?>
+                      
                     </td>
                   <?php endif; ?>
                 </tr>

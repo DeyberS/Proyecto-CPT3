@@ -71,7 +71,7 @@ include('../includes/headerPapelera.php');
   $sqlUsuarios = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p 
   JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
   JOIN rol r ON dpr.Id_rol = r.Id_rol
-  HAVING r.Id_rol IN (1, 2, 6, 7, 8) AND p.estatus = 0 ORDER BY id ASC");
+  HAVING r.Id_rol IN (1, 2, 6, 7, 8, 9) AND p.estatus = 0 ORDER BY id ASC");
   $queryData   = mysqli_query($conexion, $sqlUsuarios);
   $total_usuarios = mysqli_num_rows($queryData);
   ?>
@@ -114,7 +114,7 @@ include('../includes/headerPapelera.php');
             
             // 2. Definir filtros base - ¡AQUÍ ESTABA EL ERROR! 
             // Agregamos "WHERE" explícitamente al inicio.
-            $donde = "WHERE p.estatus = 0 AND r.Id_rol IN (1, 2, 6, 7, 8)";
+            $donde = "WHERE p.estatus = 0 AND r.Id_rol IN (1, 2, 6, 7, 8, 9)";
             
             if ($busqueda != '') {
                 $donde .= " AND (p.nombre LIKE '%$busqueda%' OR p.apellido LIKE '%$busqueda%' OR p.email LIKE '%$busqueda%')";

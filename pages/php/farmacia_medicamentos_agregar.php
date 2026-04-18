@@ -951,9 +951,50 @@ if (isset($_GET['duplicar_id'])) {
         }
       });
 
-      // --- LÓGICA DE PATOLOGÍAS ---
+      // =====================================================================
+      // VALIDACIÓN PARA EVITAR DUPLICADOS (Principios Activos y Patologías)
+      // =====================================================================
 
-      // 1. Cargar patologías existentes (si se está duplicando)
+      // Validar Principios Activos duplicados
+      $(document).on('change', '.select-pa', function() {
+        let selectActual = $(this);
+        let valorActual = selectActual.val();
+
+        if (valorActual === "") return; // Ignorar si se selecciona la opción por defecto
+
+        let conteo = 0;
+        $('.select-pa').each(function() {
+          if ($(this).val() === valorActual) {
+            conteo++;
+          }
+        });
+
+        if (conteo > 1) {
+          mostrarAviso("⚠️ <b>Atención:</b> Este principio activo ya ha sido seleccionado en otra fila. Por favor, elija uno diferente o modifique la cantidad en el que ya agregó.");
+          selectActual.val(""); // Resetea el select actual a su opción por defecto
+        }
+      });
+
+      // Validar Patologías duplicadas
+      $(document).on('change', '.select-pat', function() {
+        let selectActual = $(this);
+        let valorActual = selectActual.val();
+
+        if (valorActual === "") return; // Ignorar si se selecciona la opción por defecto
+
+        let conteo = 0;
+        $('.select-pat').each(function() {
+          if ($(this).val() === valorActual) {
+            conteo++;
+          }
+        });
+
+        if (conteo > 1) {
+          mostrarAviso("⚠️ <b>Atención:</b> Esta patología ya ha sido seleccionada en esta lista. Por favor, elija una diferente.");
+          selectActual.val(""); // Resetea el select actual a su opción por defecto
+        }
+      });
+
       // 1. Cargar patologías existentes (si se está duplicando)
       <?php if (isset($patologias_json)) : ?>
         let patsExistentes = <?php echo $patologias_json; ?>;

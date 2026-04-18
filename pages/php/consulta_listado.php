@@ -122,6 +122,15 @@
 
             // 2. Definir el filtro base (Importante para que el buscador funcione)
             $donde = "WHERE c.estatus = 1";
+
+            $id_rol_usuario_activo = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0; 
+            $id_persona_activa = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
+
+            // Si el rol es 4 (Medico) o 7 (Medico - Usuario), filtramos para que solo vea sus consultas
+            if ($id_rol_usuario_activo == 4 || $id_rol_usuario_activo == 7) {
+                $donde .= " AND c.Id_medico = '$id_persona_activa'";
+            }
+
             if ($busqueda != '') {
               $donde .= " AND (p_paciente.nombre LIKE '%$busqueda%' 
                             OR p_paciente.apellido LIKE '%$busqueda%' 

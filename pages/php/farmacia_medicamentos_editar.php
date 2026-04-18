@@ -575,6 +575,50 @@ $valor_patologias = implode(',', $patologias_ids);
         }
       });
 
+      // =====================================================================
+      // VALIDACIÓN PARA EVITAR DUPLICADOS (Principios Activos y Patologías)
+      // =====================================================================
+
+      // Validar Principios Activos duplicados
+      $(document).on('change', '.select-pa', function() {
+        let selectActual = $(this);
+        let valorActual = selectActual.val();
+
+        if (valorActual === "") return; // Ignorar si se selecciona la opción por defecto
+
+        let conteo = 0;
+        $('.select-pa').each(function() {
+          if ($(this).val() === valorActual) {
+            conteo++;
+          }
+        });
+
+        if (conteo > 1) {
+          mostrarAviso("⚠️ <b>Atención:</b> Este principio activo ya ha sido seleccionado en otra fila. Por favor, elija uno diferente o modifique la cantidad en el que ya agregó.");
+          selectActual.val(""); // Resetea el select actual a su opción por defecto
+        }
+      });
+
+      // Validar Patologías duplicadas
+      $(document).on('change', '.select-pat', function() {
+        let selectActual = $(this);
+        let valorActual = selectActual.val();
+
+        if (valorActual === "") return; // Ignorar si se selecciona la opción por defecto
+
+        let conteo = 0;
+        $('.select-pat').each(function() {
+          if ($(this).val() === valorActual) {
+            conteo++;
+          }
+        });
+
+        if (conteo > 1) {
+          mostrarAviso("⚠️ <b>Atención:</b> Esta patología ya ha sido seleccionada en esta lista. Por favor, elija una diferente.");
+          selectActual.val(""); // Resetea el select actual a su opción por defecto
+        }
+      });
+
       // Cargar patologías existentes al iniciar
       let patologiasExistentes = "<?= $valor_patologias; ?>".split(',');
       if (patologiasExistentes[0] !== "") {

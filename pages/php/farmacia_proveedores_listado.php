@@ -85,11 +85,11 @@
     <section class="content">
       <div style="padding-bottom: 10px;">
         <p class="pull-right" style="width:5px;"></p>
-        <?php if (in_array('Ver papelera de permisos', $_SESSION["permisos"])) : ?>
+        <?php if (in_array('Ver papelera de proveedores', $_SESSION["permisos"])) : ?>
           <a href="papelera/farmacia_proveedores_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color: gray;"> Papelera </a>
         <?php endif; ?>
         <p class="pull-right" style="width:5px;"></p>
-        <?php if (in_array('Crear Permisos', $_SESSION["permisos"])) : ?>
+        <?php if (in_array('Crear Proveedores', $_SESSION["permisos"])) : ?>
           <a href="farmacia_proveedores_agregar.php" class="btn-sm btn-success pull-right"> Añadir Un Nuevo Proveedor </a>
         <?php endif; ?>
         <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
@@ -99,7 +99,7 @@
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Nombre del proveedor</th>
-            <?php if (in_array('Gestionar acciones de permisos', $_SESSION["permisos"])) : ?>
+            <?php if (in_array('Gestionar acciones de proveedores', $_SESSION["permisos"])) : ?>
               <th>Acciones</th>
             <?php endif; ?>
           </thead>
@@ -134,12 +134,12 @@
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_proveedor']; ?></span></td>
-              <?php if (in_array('Gestionar acciones de permisos', $_SESSION["permisos"])) : ?>
+              <?php if (in_array('Gestionar acciones de proveedores', $_SESSION["permisos"])) : ?>
                 <td>
-                  <?php if (in_array('Editar Permisos', $_SESSION["permisos"])) : ?>
+                  <?php if (in_array('Editar Proveedores', $_SESSION["permisos"])) : ?>
                     <a href="farmacia_proveedores_editar.php?Id=<?php echo $row['Id_proveedor'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
-                  <?php if (in_array('Desactivar Permisos', $_SESSION["permisos"])) : ?>
+                  <?php if (in_array('Desactivar Proveedores', $_SESSION["permisos"])) : ?>
                     <a href="#" data-id="<?php echo $row['Id_proveedor'] ?>" title="Desactivar" class="btn-sm btn-danger btn-desactivar"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>
                 </td>

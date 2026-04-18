@@ -145,7 +145,7 @@
                         <?php
                         include('../../cfg/conexion.php');
 
-                        $sql = $conexion->query("SELECT * FROM rol HAVING Id_rol IN (1, 2, 6, 7, 8)");
+                        $sql = $conexion->query("SELECT * FROM rol HAVING Id_rol IN (1, 2, 6, 7, 8, 9)");
                         while ($resultado = $sql->fetch_assoc()) {
                           echo "<option value='" . $resultado['Id_rol'] . "'>" . $resultado['nombre_rol'] . "</option>";
                         }
