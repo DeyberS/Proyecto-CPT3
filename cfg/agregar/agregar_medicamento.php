@@ -120,15 +120,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Si todo salió bien, confirmar cambios
         $conexion->commit();
-        $_SESSION['mensaje_user_exito'] = '✅ Éxito: El medicamento fue agregado correctamente.';
-        header("location: ../../pages/php/farmacia_medicamentos_listado.php");
-        exit();
 
+        // Detectar si la petición es AJAX
+        $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
+        if ($is_ajax) {
+            // Buscar el nombre de la presentación para enviarlo al frontend
+            $sql_pres = $conexion->query("SELECT nombre_presentacion FROM presentacion WHERE Id_presentacion = '$id_presentacion'");
+            $row_pres = $sql_pres->fetch_assoc();
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'id_desc' => $id_descripcion_generada,
+                'nombre_medicamento' => $nombre_medicamento,
+                'nombre_presentacion' => $row_pres['nombre_presentacion'] ?? 'N/A'
+            ]);
+            exit();
+        } else {
+            // Comportamiento clásico (recarga de página)
+            $_SESSION['mensaje_user_exito'] = '✅ Éxito: El medicamento fue agregado correctamente.';
+            header("location: ../../pages/php/farmacia_medicamentos_listado.php");
+            exit();
+        }
     } catch (Exception $e) {
         $conexion->rollback();
-        error_log("Error de transacción al agregar el area: " . $e->getMessage()); 
-        $_SESSION['mensaje_user_error'] = '❌ Error de Registro: No se pudo registrar el area. Detalle: ' . $e->getMessage();
-        header("location: ../../pages/php/farmacia_medicamentos_listado.php");
+        error_log("Error de transacción al agregar el area: " . $e->getMessage());
+
+        $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            exit();
+        } else {
+            $_SESSION['mensaje_user_error'] = '❌ Error de Registro: No se pudo registrar el area. Detalle: ' . $e->getMessage();
+            header("location: ../../pages/php/farmacia_medicamentos_listado.php");
+            exit();
+        }
+    } {
     }
 }
 ?>

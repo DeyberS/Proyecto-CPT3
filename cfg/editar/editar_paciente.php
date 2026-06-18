@@ -132,65 +132,54 @@ WHERE Id_persona='$id_paciente'");
 // 🔥 PATOLOGÍAS CON FECHA
 // -------------------------------------------------------------
 
-mysqli_query($conexion,"DELETE FROM historial_patologias 
-WHERE Id_Historial='$id_historial' AND Id_persona='$id_paciente'");
+mysqli_query($conexion,"DELETE FROM historial_patologias WHERE Id_Historial='$id_historial' AND Id_persona='$id_paciente'");
 
-$patologias_ids = array_filter(explode(',',$patologias_ids_csv));
-$patologias_fechas = [];
+// Decodificar el JSON enviado desde el frontend bajo el name="patologias_data"
+$patologias_json = $_POST['patologias_data'] ?? '[]';
+$patologias_array = json_decode($patologias_json, true);
 
-foreach(explode(',',$patologias_fechas_csv) as $item){
-    if(strpos($item,':')!==false){
-        [$id,$fecha]=explode(':',$item);
-        $patologias_fechas[$id]=$fecha;
+if (is_array($patologias_array) && count($patologias_array) > 0) {
+    $values_pat = [];
+    foreach($patologias_array as $pat){
+        $id_patologia = mysqli_real_escape_string($conexion, $pat['id']);
+        $fecha = mysqli_real_escape_string($conexion, $pat['fecha']);
+        if (empty($fecha)) $fecha = date('Y-m-d'); // Respaldo de seguridad
+        
+        $values_pat[] = "('$id_patologia','$id_historial','$id_paciente','1','$fecha')";
+    }
+    
+    if (count($values_pat) > 0) {
+        mysqli_query($conexion,"INSERT INTO historial_patologias 
+        (Id_patologia, Id_Historial, Id_persona, estatus, fecha_registro)
+        VALUES ".implode(',', $values_pat));
     }
 }
-
-$values=[];
-
-foreach($patologias_ids as $id_patologia){
-
-    $fecha = $patologias_fechas[$id_patologia] ?? date('Y-m-d');
-
-    $values[]="('$id_patologia','$id_historial','$id_paciente',1,'$fecha')";
-}
-
-if($values){
-    mysqli_query($conexion,"INSERT INTO historial_patologias 
-    (Id_patologia,Id_Historial,Id_persona,estatus,fecha_registro)
-    VALUES ".implode(',',$values));
-}
-
 
 // -------------------------------------------------------------
 // 🔥 ALERGIAS CON FECHA
 // -------------------------------------------------------------
 
-mysqli_query($conexion,"DELETE FROM historial_alergias 
-WHERE Id_Historial='$id_historial' AND Id_persona='$id_paciente'");
+mysqli_query($conexion,"DELETE FROM historial_alergias WHERE Id_Historial='$id_historial' AND Id_persona='$id_paciente'");
 
-$alergias_ids = array_filter(explode(',',$alergias_ids_csv));
-$alergias_fechas=[];
+// Decodificar el JSON enviado desde el frontend bajo el name="alergias_data"
+$alergias_json = $_POST['alergias_data'] ?? '[]';
+$alergias_array = json_decode($alergias_json, true);
 
-foreach(explode(',',$alergias_fechas_csv) as $item){
-    if(strpos($item,':')!==false){
-        [$id,$fecha]=explode(':',$item);
-        $alergias_fechas[$id]=$fecha;
+if (is_array($alergias_array) && count($alergias_array) > 0) {
+    $values_ale = [];
+    foreach($alergias_array as $ale){
+        $id_alergia = mysqli_real_escape_string($conexion, $ale['id']);
+        $fecha = mysqli_real_escape_string($conexion, $ale['fecha']);
+        if (empty($fecha)) $fecha = date('Y-m-d'); // Respaldo de seguridad
+        
+        $values_ale[] = "('$id_alergia','$id_historial','$id_paciente','1','$fecha')";
     }
-}
-
-$values=[];
-
-foreach($alergias_ids as $id_alergia){
-
-    $fecha = $alergias_fechas[$id_alergia] ?? date('Y-m-d');
-
-    $values[]="('$id_alergia','$id_historial','$id_paciente',1,'$fecha')";
-}
-
-if($values){
-    mysqli_query($conexion,"INSERT INTO historial_alergias
-    (Id_alergia,Id_Historial,Id_persona,estatus,fecha_registro)
-    VALUES ".implode(',',$values));
+    
+    if (count($values_ale) > 0) {
+        mysqli_query($conexion,"INSERT INTO historial_alergias
+        (Id_alergia, Id_Historial, Id_persona, estatus, fecha_registro)
+        VALUES ".implode(',', $values_ale));
+    }
 }
 
 

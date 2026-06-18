@@ -293,33 +293,60 @@
       $("#btnSelectAll").click(function() { $(".check-permiso").prop('checked', true); });
       $("#btnUnselectAll").click(function() { $(".check-permiso").prop('checked', false); });
 
-      // --- VISUALIZACIÓN UNIFICADA EN DISPLAY PRINCIPAL ---
+      function verificarRolYMostrarModal() {
+          const nombre = $('#nombre_rol').val().trim();
+          const idRol = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+          const btnGuardar = $('#btnGuardar');
+          const textoOriginal = btnGuardar.text();
+          
+          btnGuardar.text('Verificando...').attr('disabled', true);
 
-      // 3. ENVÍO DEL FORMULARIO
-      // Se usa la validación local (sin la validación de duplicidad AJAX que solicitaste omitir)
-      $('#formularioRol').on('submit', function(e) {
-        e.preventDefault();
-        limpiarErrores();
-        let errores = [];
+          $.ajax({
+            url: 'get/verificar_existencia_rol.php',
+            method: 'POST',
+            dataType: 'json',
+            data: { nombre: nombre, id: idRol },
+            success: function(response) {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
 
-        if ($('#nombre_rol').val().trim() === "") {
-          errores.push("Falta el Nombre del rol.");
-          $('#group_nombre').addClass('has-error');
+              if (response.existe_nombre) {
+                $('#group_nombre').addClass('has-error');
+                $('#nombre_rol').addClass('input-error');
+                mostrarAviso('⚠️ Error: Ya existe un rol con el nombre: ' + nombre);
+              } else {
+                // Si NO existe, mostramos el modal
+                $('#modalGuardar').modal('show');
+              }
+            },
+            error: function() {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
+            }
+          });
         }
 
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores de Formulario: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          // Si pasa la validación local, muestra el modal de confirmación
-          $('#modalGuardar').modal('show');
-        }
-      });
+        $('#formularioRol').on('submit', function(e) {
+          e.preventDefault();
+          limpiarErrores();
+          let errores = [];
 
-      $('#confirmarGuardar').on('click', function() {
-        $('#modalGuardar').modal('hide');
-        // Al no requerir la validación AJAX de duplicidad, se envía directamente el formulario
-        $('#formularioRol').off('submit').submit();
-      });
+          if ($('#nombre_rol').val().trim() === "") {
+            errores.push("Falta el nombre del rol.");
+            $('#group_nombre').addClass('has-error');
+          }
+          
+          if (errores.length > 0) {
+            mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+          } else {
+            // Validar antes del modal
+            verificarRolYMostrarModal();
+          }
+        });
+
+        $('#confirmarGuardar').on('click', function() {
+          $('#modalGuardar').modal('hide');
+          $('#formularioRol')[0].submit();
+        });
 
       // --- Aplicar validaciones a campos de solo texto ---
       const campos = [document.getElementById("nombre_rol")];

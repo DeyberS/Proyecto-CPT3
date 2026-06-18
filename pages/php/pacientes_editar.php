@@ -1,3 +1,68 @@
+<?php
+if (isset($_POST['ajax_nueva_patologia'])) {
+  $conexion = new mysqli("localhost", "root", "", "cpt3db");
+  $conexion->set_charset("utf8");
+  $nombre = $conexion->real_escape_string($_POST['nombre_patologia']);
+  $cie = $conexion->real_escape_string($_POST['codigo_cie']);
+  $contagiosa = $conexion->real_escape_string($_POST['enfermedad_contagiosa']);
+
+  $verificar = $conexion->query("SELECT Id_patologia FROM patologias WHERE nombre_patologia = '$nombre'");
+  if ($verificar->num_rows > 0) {
+    echo json_encode(['success' => false, 'error' => 'Ya existe una patología registrada con el nombre: <b>' . $nombre . '</b>']);
+    exit;
+  }
+
+  $conexion->query("INSERT INTO patologias (nombre_patologia, codigo_cie, estatus, contagioso) VALUES ('$nombre', '$cie', 1, '$contagiosa')");
+  $id_pat = $conexion->insert_id;
+
+  if (isset($_POST['sintomas_ids']) && !empty($_POST['sintomas_ids'])) {
+    $sintomas = explode(',', $_POST['sintomas_ids']);
+    foreach ($sintomas as $id_sintoma) {
+      if (trim($id_sintoma) !== "") {
+        $id_sin = $conexion->real_escape_string($id_sintoma);
+        // CORRECCIÓN: La tabla en la BD termina en "s" (detalle_patologia_sintomas)
+        $conexion->query("INSERT INTO detalle_patologia_sintomas (Id_patologia, Id_sintoma) VALUES ('$id_pat', '$id_sin')");
+      }
+    }
+  }
+
+  echo json_encode(['success' => true, 'id' => $id_pat, 'nombre' => $nombre, 'cie' => $cie]);
+  exit;
+}
+
+if (isset($_POST['ajax_nueva_alergia'])) {
+  $conexion = new mysqli("localhost", "root", "", "cpt3db");
+  $conexion->set_charset("utf8");
+  $nombre = $conexion->real_escape_string($_POST['nombre_alergia']);
+
+  $verificar = $conexion->query("SELECT Id_alergias_conocidas FROM alergias_conocidas WHERE nombre_alergia = '$nombre'");
+  if ($verificar->num_rows > 0) {
+    echo json_encode(['success' => false, 'error' => 'Ya existe una alergia registrada con el nombre: <b>' . $nombre . '</b>']);
+    exit;
+  }
+
+  $conexion->query("INSERT INTO alergias_conocidas (nombre_alergia, estatus) VALUES ('$nombre', 1)");
+  echo json_encode(['success' => true, 'id' => $conexion->insert_id, 'nombre' => $nombre]);
+  exit;
+}
+
+// NUEVO: Manejador para guardar Síntomas
+if (isset($_POST['ajax_nuevo_sintoma'])) {
+  $conexion = new mysqli("localhost", "root", "", "cpt3db");
+  $conexion->set_charset("utf8");
+  $nombre = $conexion->real_escape_string($_POST['nombre_sintoma']);
+
+  $verificar = $conexion->query("SELECT Id_sintomas FROM sintomas WHERE nombre_sintoma = '$nombre'");
+  if ($verificar->num_rows > 0) {
+    echo json_encode(['success' => false, 'error' => 'Ya existe un síntoma registrado con el nombre: <b>' . $nombre . '</b>']);
+    exit;
+  }
+
+  $conexion->query("INSERT INTO sintomas (nombre_sintoma, estatus) VALUES ('$nombre', 1)");
+  echo json_encode(['success' => true, 'id' => $conexion->insert_id, 'nombre' => $nombre]);
+  exit;
+}
+?>
 <!DOCTYPE html>
 <html>
 
@@ -7,6 +72,20 @@
   <title>Pacientes | Editar</title>
   <?php
   include('includes/headerNav2.php');
+
+  $opciones_sintomas_global = "";
+  $conexion = new mysqli("localhost", "root", "", "cpt3db");
+  $conexion->set_charset("utf8");
+  $sql_sg = "SELECT Id_sintomas, nombre_sintoma FROM sintomas WHERE estatus = 1 ORDER BY nombre_sintoma ASC";
+  $res_sg = $conexion->query($sql_sg);
+  if ($res_sg) {
+    while ($row = $res_sg->fetch_assoc()) {
+      $id = $row['Id_sintomas'];
+      $nombre = htmlspecialchars($row['nombre_sintoma']);
+      $opciones_sintomas_global .= "<option value='$id'>$nombre</option>";
+    }
+  }
+  // --------------------------------------------------------
   ?>
   <style>
     /* ---------------------------------------------------------------------- */
@@ -255,7 +334,7 @@
                     <div class="col-sm-1 pull-left" style="margin-top: 30px;">
                       <select name="tipo_cedula" id="tipo_cedula" class="form-control" style="width: 60px;" required>
                         <option value="V" <?php echo ($row['tipo_cedula'] == 'V' ? 'selected' : ''); ?>>V-</option>
-                        <option value="E" <?php echo ($row['tipo_cedula'] == 'E' ? 'selected' : ''); ?>>E-</option>
+                        <!--<option value="E" <?php echo ($row['tipo_cedula'] == 'E' ? 'selected' : ''); ?>>E-</option>-->
                       </select>
                     </div>
                     <div class="col-sm-3">
@@ -319,21 +398,35 @@
                       </select>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-4">
-                      <p>Estado de nacimiento (*):</p>
-                      <select name="estado_nacimiento" id="estado_nacimiento" class="form-control" required>
-                        <option value="<?php echo $id_estado_nac; ?>" selected>
-                          <?php echo ($id_estado_nac ? "Cargando..." : "--- Seleccione Un Estado ---"); ?>
-                        </option>
+                   <div class="col-sm-4">
+                      <p>Estado de nacimiento:</p>
+                      <select name="estado_nacimiento" id="estado_nacimiento" class="form-control">
+                        <option value="">--- Seleccione Un Estado ---</option>
+                        <?php
+                        if ($id_pais_nac) {
+                            $res_est_nac = $conexion->query("SELECT Id_Estado, nombre_estado FROM estado WHERE Id_Pais = $id_pais_nac");
+                            while ($row_est_nac = $res_est_nac->fetch_assoc()) {
+                                $selected = ($row_est_nac['Id_Estado'] == $id_estado_nac) ? 'selected' : '';
+                                echo "<option value='{$row_est_nac['Id_Estado']}' {$selected}>{$row_est_nac['nombre_estado']}</option>";
+                            }
+                        }
+                        ?>
                       </select>
                     </div>
                     <label class="control-label"></label>
                     <div class="col-sm-3">
-                      <p>Municipio de nacimiento (*):</p>
-                      <select name="municipio_nacimiento" id="municipio_nacimiento" class="form-control" required>
-                        <option value="<?php echo $id_municipio_nac; ?>" selected>
-                          <?php echo ($id_municipio_nac ? "Cargando..." : "--- Seleccione Un Municpio ---"); ?>
-                        </option>
+                      <p>Municipio de nacimiento:</p>
+                      <select name="municipio_nacimiento" id="municipio_nacimiento" class="form-control">
+                        <option value="">--- Seleccione Un Municipio ---</option>
+                        <?php
+                        if ($id_estado_nac) {
+                            $res_mun_nac = $conexion->query("SELECT Id_Municipio, nombre_municipio FROM municipio WHERE Id_Estado = $id_estado_nac");
+                            while ($row_mun_nac = $res_mun_nac->fetch_assoc()) {
+                                $selected = ($row_mun_nac['Id_Municipio'] == $id_municipio_nac) ? 'selected' : '';
+                                echo "<option value='{$row_mun_nac['Id_Municipio']}' {$selected}>{$row_mun_nac['nombre_municipio']}</option>";
+                            }
+                        }
+                        ?>
                       </select>
                     </div>
                     <br><br><br><br>
@@ -543,37 +636,48 @@
                 <section id="new" style="margin-bottom: 4%;">
                   <label class="control-label"></label>
                   <div class="col-sm-4">
-                    <p>Estado (*):</p>
-                    <select name="estado" id="estado" class="form-control" required>
-                      <option value="<?php echo $id_estado_dir; ?>" selected>
-                        <?php echo ($id_estado_dir ? "Cargando..." : "--- Seleccione Un Estado ---"); ?>
-                      </option>
+                    <p>Estado:</p>
+                    <select name="estado" id="estado" class="form-control">
+                      <option value="">--- Seleccione Un Estado ---</option>
                       <?php
-                      // Carga de estados, asumiendo Id_Pais = 1 es Venezuela
-                      $result_dir = $conexion->query("SELECT Id_Estado, nombre_estado, Id_Pais FROM estado HAVING Id_Pais = 1");
+                      $result_dir = $conexion->query("SELECT Id_Estado, nombre_estado FROM estado WHERE Id_Pais = 1");
                       while ($row_dir = $result_dir->fetch_assoc()) {
-                        $selected = ($row_dir['Id_Estado'] == $id_estado_dir) ? 'selected' : "";
-                        echo "<option value='{$row_dir['Id_Estado']}'{$selected}>{$row_dir['nombre_estado']}</option>";
+                        $selected = ($row_dir['Id_Estado'] == $id_estado_dir) ? 'selected' : '';
+                        echo "<option value='{$row_dir['Id_Estado']}' {$selected}>{$row_dir['nombre_estado']}</option>";
                       }
                       ?>
                     </select>
                   </div>
                   <label class="control-label"></label>
                   <div class="col-sm-4">
-                    <p>Municipio (*):</p>
-                    <select name="municipio" id="municipio" class="form-control" required>
-                      <option value="<?php echo $id_municipio_dir; ?>" selected>
-                        <?php echo ($id_municipio_dir ? "Cargando..." : "--- Seleccione Un Municipio ---"); ?>
-                      </option>
+                    <p>Municipio:</p>
+                    <select name="municipio" id="municipio" class="form-control">
+                      <option value="">--- Seleccione Un Municipio ---</option>
+                      <?php
+                      if ($id_estado_dir) {
+                          $res_mun_dir = $conexion->query("SELECT Id_Municipio, nombre_municipio FROM municipio WHERE Id_Estado = $id_estado_dir");
+                          while ($row_mun_dir = $res_mun_dir->fetch_assoc()) {
+                              $selected = ($row_mun_dir['Id_Municipio'] == $id_municipio_dir) ? 'selected' : '';
+                              echo "<option value='{$row_mun_dir['Id_Municipio']}' {$selected}>{$row_mun_dir['nombre_municipio']}</option>";
+                          }
+                      }
+                      ?>
                     </select>
                   </div>
                   <label class="control-label"></label>
                   <div class="col-sm-3">
-                    <p>Sector (*):</p>
-                    <select name="sector" id="sector" class="form-control" required>
-                      <option value="<?php echo $id_sector_dir; ?>" selected>
-                        <?php echo ($id_sector_dir ? "Cargando..." : "--- Seleccione Un Sector ---"); ?>
-                      </option>
+                    <p>Sector:</p>
+                    <select name="sector" id="sector" class="form-control">
+                      <option value="">--- Seleccione Un Sector ---</option>
+                      <?php
+                      if ($id_municipio_dir) {
+                          $res_sec_dir = $conexion->query("SELECT Id_Sector, nombre_sector FROM sector WHERE Id_Municipio = $id_municipio_dir");
+                          while ($row_sec_dir = $res_sec_dir->fetch_assoc()) {
+                              $selected = ($row_sec_dir['Id_Sector'] == $id_sector_dir) ? 'selected' : '';
+                              echo "<option value='{$row_sec_dir['Id_Sector']}' {$selected}>{$row_sec_dir['nombre_sector']}</option>";
+                          }
+                      }
+                      ?>
                     </select>
                   </div>
                   <br><br><br><br>
@@ -611,36 +715,24 @@
               <div class="tab-pane" id="salud_otros">
                 <section id="new" style="margin-bottom: 12%;">
                   <label class="control-label"></label>
-                  <div class="col-sm-5">
-                    <p>Patologias:</p>
-                    <input type="hidden" name="patologias_ids" id="patologias_ids" value="">
-                    <input type="hidden" name="patologias_fechas" id="patologias_fechas" value="">
-                    <div id="patologias_agregadas" class="well well-sm" style="height: auto; min-height: 34px;">
-                      <span class="text-muted">Ninguna Patologia seleccionada.</span>
-                    </div>
-                  </div>
-                  <div class="col-sm-1" style="margin-top: 30px;">
-                    <button type="button" class="form-control pull-right bt-sm btn-primary" data-toggle="modal" data-target="#modalPatologias">
-                      <img src="../../recursos/imagenes/iconos/editar.png" height="20px" width="20px">
+                  <div class="col-sm-4 form-group" id="group_patologia">
+                    <p>Patologías detectadas previamante:</p>
+                    <button type="button" class="btn btn-info btn-block" id="btn_modal_pat" data-toggle="modal" data-placement="top" title="Ninguna seleccionada" data-target="#modalPatologias">
+                      <i></i> Gestionar Patologías
                     </button>
+                    <input type="hidden" name="patologias_data" id="patologias_ids" value="">
+                  </div>
+
+                  <label class="control-label"></label>
+                  <div class="col-sm-4 form-group" id="group_alergia">
+                    <p>Alergías detectadas previamante:</p>
+                    <button type="button" class="btn btn-info btn-block" id="btn_modal_ale" data-toggle="modal" data-placement="top" title="Ninguna seleccionada" data-target="#modalAlergias">
+                      <i></i> Gestionar Alergias
+                    </button>
+                    <input type="hidden" name="alergias_data" id="alergias_ids" value="">
                   </div>
                   <label class="control-label"></label>
-                  <div class="col-sm-4">
-                    <p>Alergias:</p>
-                    <input type="hidden" name="alergias_ids" id="alergias_ids" value="">
-                    <input type="hidden" name="alergias_fechas" id="alergias_fechas" value="">
-                    <div id="alergias_agregadas" class="well well-sm" style="height: auto; min-height: 34px;">
-                      <span class="text-muted">Ninguna Alergia seleccionada.</span>
-                    </div>
-                  </div>
-                  <div class="col-sm-1" style="margin-top: 30px;">
-                    <button type="button" class="form-control pull-right bt-sm btn-primary" data-toggle="modal" data-target="#modalAlergias">
-                      <img src="../../recursos/imagenes/iconos/editar.png" height="20px" width="20px">
-                    </button>
-                  </div>
-                  <br><br><br><br><br><br>
-                  <label class="control-label"></label>
-                  <div class="col-sm-5">
+                  <div class="col-sm-3">
                     <p>Grupo Sanguineo (*):</p>
                     <select name="grupo_sanguineo" class="form-control" required>
                       <option value="">--- Seleccione ---</option>
@@ -654,6 +746,7 @@
                       <option value="O-" <?php echo ($row['grupo_sanguineo'] == 'O-' ? 'selected' : ''); ?>>O-</option>
                     </select>
                   </div>
+                  <br><br><br><br><br>
                   <label class="control-label"></label>
                   <div class="col-sm-1">
                     <p>Discap.:</p>
@@ -662,7 +755,7 @@
                       <option value="Si" <?php echo ($row['discapacidad'] == 'Si' ? 'selected' : ''); ?>">Si</option>
                     </select>
                   </div>
-                  <div class="col-sm-5">
+                  <div class="col-sm-3">
                     <p>Tipo de discapacidad:</p>
                     <select name="tipo_discapacidad" id="tipo_discapacidad" class="form-control">
                       <option value="">--- Seleccione Una Discapacidad ---</option>
@@ -691,6 +784,200 @@
   // Se incluye el footer y los scripts base
   include('includes/footer.php');
   ?>
+
+  <div class="modal" id="modalPatologias" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title"><i class="fa fa-medkit"></i> Gestionar Patologías</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_patologias"></div>
+          <button type="button" class="btn btn-success btn-sm" id="add_fila_pat">
+            <i class="fa fa-plus"></i> Añadir otra
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologia">
+            <i class="fa fa-plus-circle"></i> Nueva Patología
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="guardar_pat_listo">Listo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalBuscarPat" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title">Buscar Patología</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="inputBuscarPat" class="form-control" placeholder="Escriba para filtrar...">
+          <div class="list-group" id="listaResultadosPat" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalAlergias" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title"><i class="fa fa-wheelchair"></i> Gestionar Alergias</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_alergias"></div>
+          <button type="button" class="btn btn-success btn-sm" id="add_fila_ale">
+            <i class="fa fa-plus"></i> Añadir otra
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaAlergia">
+            <i class="fa fa-plus-circle"></i> Nueva Alergia
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="guardar_ale_listo">Listo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalBuscarAle" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title">Buscar Alergia</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="inputBuscarAle" class="form-control" placeholder="Escriba para filtrar...">
+          <div class="list-group" id="listaResultadosAle" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevaPatologia" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Patología</h4>
+        </div>
+        <div class="modal-body">
+          <form id="formAjaxPatologia">
+            <div class="form-group">
+              <label>Nombre de la Patología (*):</label>
+              <input type="text" class="form-control" id="ajax_nombre_pat" required>
+            </div>
+            <div class="form-group">
+              <label>Código CIE (Opcional):</label>
+              <input type="text" class="form-control" id="ajax_cie_pat">
+            </div>
+            <div class="form-group">
+              <label>¿Es contagiosa?</label>
+              <select class="form-control" id="ajax_contagiosa_pat">
+                <option value="NO">NO</option>
+                <option value="SI">SI</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Síntomas (*):</label>
+              <button type="button" class="btn btn-info btn-block" id="btn_abrir_sintomas_ajax" data-toggle="tooltip" title="Ninguno seleccionado">
+                <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:15px; height:15px; filter: invert(1);"></i> Gestionar Síntomas
+              </button>
+              <input type="hidden" id="ajax_sintomas_ids" value="">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn_guardar_ajax_pat">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalSintomasAjax" role="dialog" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title"><i class="fa fa-list"></i> Seleccionar Síntomas</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_sintomas_ajax"></div>
+          <button type="button" class="btn btn-success btn-sm pull-left" id="add_fila_sintoma_ajax">
+            <i class="fa fa-plus"></i> Añadir otro
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoSintoma" style="margin-left:5px;">
+            <i class="fa fa-star"></i> Nuevo Síntoma
+          </button>
+          <div style="clear: both;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="btn_confirmar_sintomas_ajax">Confirmar Síntomas</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevoSintoma" role="dialog" style="z-index: 1070;">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Crear Nuevo Síntoma</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre del Síntoma</label>
+            <input type="text" id="nombre_nuevo_sintoma" class="form-control" placeholder="Ej. Dolor de cabeza">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btnGuardarSintomaBD">Guardar y Seleccionar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalBuscarSintoma" role="dialog" style="z-index: 1070;">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info" style="background-color: #3c8dbc; color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Buscar Síntoma</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="inputBuscarSintoma" class="form-control" placeholder="Escriba para filtrar...">
+          <div class="list-group" id="listaResultadosSintoma" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevaAlergia" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Alergia</h4>
+        </div>
+        <div class="modal-body">
+          <form id="formAjaxAlergia">
+            <div class="form-group">
+              <label>Nombre de la Alergia (*):</label>
+              <input type="text" class="form-control" id="ajax_nombre_ale" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn_guardar_ajax_ale">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="modal" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel">
     <div class="modal-dialog" role="document">
@@ -745,158 +1032,6 @@
     </div>
   </div>
 
-  <div class="modal fade" id="modalPatologias" tabindex="-1" role="dialog" aria-labelledby="modalPatologiasLabel">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header" style="background-color: #286090; color: white;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="modalPatologiasLabel"><i class="fa fa-stethoscope"></i> Seleccionar Patologías Conocidas</h4>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-sm-12">
-              <label for="lista_patologias_seleccionadas">Patologías en lista temporal:</label>
-              <div id="lista_patologias_seleccionadas" class="well well-sm" style="min-height: 50px;">
-              </div>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="modal_patologia">Patología disponible (*)</label>
-              <select id="modal_patologia" class="form-control">
-                <option value="disabled">--- Seleccione Una Patología ---</option>
-                <?php
-                // Conexión y consulta para patologías
-                $result_patologia = $conexion->query("SELECT * FROM patologias");
-                while ($row_patologia = $result_patologia->fetch_assoc()) {
-                  echo "<option value='{$row_patologia['Id_patologia']}' data-nombre='{$row_patologia['nombre_patologia']}' data-cie='{$row_patologia['codigo_cie']}'>{$row_patologia['nombre_patologia']}</option>";
-                }
-                ?>
-              </select>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="modal_codigo_cie">Código CIE-10 (Auto)</label>
-              <input type="text" id="modal_codigo_cie" class="form-control" readonly value="No disponible">
-            </div>
-          </div>
-          <div class="col-sm-6 pull-left">
-            <div class="form-group">
-              <label for="modal_fecha_patologia">Fecha detección (*)</label>
-              <input type="date" id="modal_fecha_patologia" class="form-control" max="<?php echo date('Y-m-d'); ?>">
-            </div>
-          </div>
-          <div class="clearfix"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-          <button type="button" class="btn btn-success pull-right" id="btnAgregarPatologiaTemporal">
-            <i class="fa fa-plus"></i> Guardar seleccion
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="modalNuevaPatologia" tabindex="-1" role="dialog" aria-labelledby="modalNuevaPatologiaLabel">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header" style="background-color: #337ab7; color: white;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="modalNuevaPatologiaLabel"><i class="fa fa-plus"></i> Agregar Nueva Patología</h4>
-        </div>
-        <div class="modal-body">
-          <form id="formNuevaPatologia" onsubmit="return false;">
-            <div class="form-group">
-              <label for="nuevo_nombre_patologia">Nombre de la Patología (*)</label>
-              <input type="text" class="form-control" id="nuevo_nombre_patologia" required>
-            </div>
-            <div class="form-group">
-              <label for="nuevo_codigo_cie">Código CIE-10 (*)</label>
-              <input type="text" class="form-control" id="nuevo_codigo_cie" required>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success" id="btnGuardarNuevaPatologiaAjax">Guardar Patología</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="modalAlergias" tabindex="-1" role="dialog" aria-labelledby="modalAlergiasLabel">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header" style="background-color: #337ab7; color: white;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="modalAlergiasLabel"><i class="fa fa-wheelchair"></i> Seleccionar Alergias</h4>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-sm-12">
-              <label for="lista_alergias_seleccionadas">Alergias en lista temporal:</label>
-              <div id="lista_alergias_seleccionadas" class="well well-sm" style="min-height: 50px;">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="form-group">
-                <label for="modal_alergia">Alergia disponible (*)</label>
-                <select id="modal_alergia" class="form-control">
-                  <option value="disabled">--- Seleccione Una Alergia ---</option>
-                  <?php
-                  // Conexión y consulta para alergias
-                  $sql_alergia = $conexion->query("SELECT * FROM alergias_conocidas");
-                  while ($resultado_alergia = $sql_alergia->fetch_assoc()) {
-                    echo "<option value='" . $resultado_alergia["Id_alergias_conocidas"] . "' data-nombre='{$resultado_alergia['nombre_alergia']}'>" . $resultado_alergia['nombre_alergia'] . "</option>";
-                  }
-                  ?>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="col-sm-6 pull-left">
-            <div class="form-group">
-              <label for="modal_fecha_alergia">Fecha detección (*)</label>
-              <input type="date" id="modal_fecha_alergia" class="form-control" max="<?php echo date('Y-m-d'); ?>">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-          <button type="button" class="btn btn-success" id="btnAgregarAlergiaTemporal">
-            <i class="fa fa-plus"></i> Guardar seleccion
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="modalNuevaAlergia" tabindex="-1" role="dialog" aria-labelledby="modalNuevaAlergiaLabel">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header" style="background-color: #337ab7; color: white;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="modalNuevaAlergiaLabel"><i class="fa fa-plus"></i> Agregar Nueva Alergia</h4>
-        </div>
-        <div class="modal-body">
-          <form id="formNuevaAlergia" onsubmit="return false;">
-            <div class="form-group">
-              <label for="nuevo_nombre_alergia">Nombre de la Alergia (*)</label>
-              <input type="text" class="form-control" id="nuevo_nombre_alergia" required>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success" id="btnGuardarNuevaAlergiaAjax">Guardar Alergia</button>
-        </div>
-      </div>
-    </div>
-  </div>
   <script src="../../assets/js/jquery.min.js"></script>
   <script src="../../assets/js/bootstrap.min.js"></script>
   <script>
@@ -912,7 +1047,6 @@
     // Data de Patologías y Alergias (Existente en editar.php)
     const patologiasData = "<?php echo $patologias_data; ?>";
     const alergiasData = "<?php echo $alergias_data; ?>";
-
 
     // ------------------------------------------------------------------
     // FUNCIÓN DE AYUDA PARA MODALES (Copiada de pacientes_agregar.php)
@@ -1015,159 +1149,227 @@
     calcularEdad(); // Calcular la edad inicial al cargar
 
 
-    // --- LÓGICA DE VALIDACIÓN DE CÉDULA --- (Adaptada de pacientes_agregar.php)
-    const cedulaInput = document.getElementById('cedula');
-    const tipoCedulaSelect = document.getElementById('tipo_cedula');
+    // Capturar el ID del registro actual (ya está en un input hidden llamado 'Id' en tu HTML)
+    const idActualRegistro = document.querySelector('input[name="Id"]').value;
 
-    function validarCedulaFormato() {
-      const cedula = parseInt(cedulaInput.value.trim());
-      const tipo = tipoCedulaSelect.value;
-      let esValido = true;
-
-      $(cedulaInput).removeClass('input-error');
-      $(tipoCedulaSelect).removeClass('input-error');
-
-      if (cedulaInput.value.trim() === "") {
-        $(cedulaInput).addClass('input-error');
-        return true;
+    // --- 1. FUNCIÓN AJAX UNIFICADA (CÉDULA Y EMAIL) ---
+async function verificarDatosUnicosBD(tipo, cedula, email, idPersona) {
+  return new Promise((resolve) => {
+    if (cedula === "" && email === "") {
+      resolve({ existe_cedula: false, existe_email: false });
+      return;
+    }
+    $.ajax({
+      url: 'get/verificar_existencia_cedula.php',
+      method: 'POST',
+      dataType: 'json',
+      data: {
+        tipo_cedula: tipo,
+        cedula: cedula,
+        email: email,
+        id: idPersona
+      },
+      success: function(response) {
+        resolve(response);
+      },
+      error: function() {
+        resolve({ existe_cedula: false, existe_email: false });
       }
+    });
+  });
+}
 
-      if (isNaN(cedula) || cedula <= 0) {
-        $(cedulaInput).addClass('input-error');
-        esValido = false;
-      } else if (tipo === 'V' && cedula > 80000000) {
-        mostrarAviso('Para el tipo V-, la cédula no debe ser mayor a 80.000.000', '⚠️');
-        $(cedulaInput).addClass('input-error');
-        esValido = false;
-      } else if (tipo === 'E' && cedula < 80000000) {
-        mostrarAviso('Para el tipo E-, la cédula no debe ser menor a 80.000.000', '⚠️');
-        $(cedulaInput).addClass('input-error');
-        esValido = false;
-      }
+// --- 2. VALIDACIÓN UNIFICADA DE FORMATO Y EXISTENCIA ---
+async function validarDatosUnicos() {
+  // Referencias dinámicas (detecta automáticamente si es paciente normal o representante)
+  const cedulaInput = document.getElementById('cedula') || document.getElementById('cedula_rep');
+  const tipoSelect = document.getElementById('tipo_cedula') || document.getElementById('tipo_cedula_rep');
+  const emailInput = document.getElementById('email') || document.getElementById('email_rep');
 
-      return esValido;
+  const cedula = cedulaInput ? cedulaInput.value.trim() : "";
+  const tipo = tipoSelect ? tipoSelect.value : "";
+  const email = emailInput ? emailInput.value.trim() : "";
+
+  // Capturar ID en caso de edición para excluirlo
+  let idActual = 0;
+  const inputId = document.querySelector('input[name="Id_representante"]') || document.querySelector('input[name="Id"]');
+  if (inputId && inputId.value) idActual = inputId.value;
+
+  let esValido = true;
+  let errores = [];
+
+  // Limpiar bordes rojos previos
+  if (cedulaInput) $(cedulaInput).removeClass('input-error');
+  if (tipoSelect) $(tipoSelect).removeClass('input-error');
+  if (emailInput) $(emailInput).removeClass('input-error');
+
+  // --- Validaciones Locales de Formato ---
+  if (email !== "" && (email.indexOf('@') === -1 || email.indexOf('.') === -1)) {
+    if (emailInput) $(emailInput).addClass('input-error');
+    errores.push("El campo Email debe tener un formato válido (ej: usuario@correo.com).");
+    esValido = false;
+  }
+
+  if (cedula !== "" && !isNaN(parseInt(cedula))) {
+    const cedNum = parseInt(cedula);
+    if (tipo === 'V' && cedNum > 80000000) {
+      if (cedulaInput) $(cedulaInput).addClass('input-error');
+      if (tipoSelect) $(tipoSelect).addClass('input-error');
+      errores.push("Para tipo V-, la cédula no puede ser mayor a 80.000.000.");
+      esValido = false;
+    } else if (tipo === 'E' && cedNum < 80000000) {
+      if (cedulaInput) $(cedulaInput).addClass('input-error');
+      if (tipoSelect) $(tipoSelect).addClass('input-error');
+      errores.push("Para tipo E-, la cédula no puede ser menor a 80.000.000.");
+      esValido = false;
+    }
+  }
+
+  if (!esValido) {
+    mostrarAviso("🛑 <b>Errores de formato:</b><br>" + errores.join("<br>"));
+    return false; // Aborta antes de golpear la BD si el formato está mal
+  }
+
+  // --- Verificación Combinada en Base de Datos ---
+  if (cedula !== "" || email !== "") {
+    const bd = await verificarDatosUnicosBD(tipo, cedula, email, idActual);
+
+    if (bd.existe_cedula) {
+      if (cedulaInput) $(cedulaInput).addClass('input-error');
+      if (tipoSelect) $(tipoSelect).addClass('input-error');
+      errores.push(`El documento <b>${tipo}-${cedula}</b> ya se encuentra registrado en el sistema.`);
+      esValido = false;
     }
 
-    // Se aplica la validación en el cambio y desenfoque (blur)
-    $(cedulaInput).on('blur', validarCedulaFormato);
-    $(tipoCedulaSelect).on('change', validarCedulaFormato);
-
-
-    function loadAndSelect(parentId, targetId, url, keyName, savedId) {
-      const $targetSelect = $('#' + targetId);
-      $targetSelect.html(`<option value="${savedId}" selected>Cargando...</option>`);
-
-      return new Promise((resolve) => {
-        if (!parentId) {
-          $targetSelect.html('<option value="">--- Seleccione Una Opción ---</option>');
-          resolve(null);
-          return;
-        }
-
-        $.ajax({
-          url: url + '?' + keyName + '=' + parentId,
-          method: 'GET',
-          dataType: 'json',
-          success: function(data) {
-            $targetSelect.html('<option value="">--- Seleccione Una Opción ---</option>');
-            data.forEach(item => {
-              // Asumiendo que los campos de retorno son consistentes (Id_Estado, nombre_estado, Id_Municipio, nombre_municipio, Id_Sector, nombre_sector)
-              const idField = item.Id_Estado || item.Id_Municipio || item.Id_Sector;
-              const nameField = item.nombre_estado || item.nombre_municipio || item.nombre_sector;
-              const isSelected = (idField.toString() === savedId.toString()) ? 'selected' : '';
-              $targetSelect.append(`<option value="${idField}" ${isSelected}>${nameField}</option>`);
-            });
-            resolve(savedId);
-          },
-          error: function() {
-            $targetSelect.html('<option value="">Error al cargar datos</option>');
-            resolve(null);
-          }
-        });
-      });
+    if (bd.existe_email) {
+      if (emailInput) $(emailInput).addClass('input-error');
+      errores.push(`El correo <b>${email}</b> ya está siendo usado por otra persona.`);
+      esValido = false;
     }
 
-    // --- ENLACE DE EVENTOS PARA CARGA DINÁMICA DE UBICACIÓN (Copiada y adaptada de pacientes_agregar.php) ---
+    if (!esValido) {
+      mostrarAviso("🛑 <b>Datos duplicados detectados:</b><br>" + errores.join("<br>"));
+    }
+  }
 
-    // 1. NACIMIENTO: PAIS -> ESTADO
+  return esValido;
+}
+
+// --- 3. DISPARADORES AUTOMÁTICOS ---
+if (document.getElementById('cedula')) document.getElementById('cedula').addEventListener('blur', validarDatosUnicos);
+if (document.getElementById('tipo_cedula')) document.getElementById('tipo_cedula').addEventListener('change', validarDatosUnicos);
+if (document.getElementById('email')) document.getElementById('email').addEventListener('blur', validarDatosUnicos);
+if (document.getElementById('email_rep')) document.getElementById('email_rep').addEventListener('blur', validarDatosUnicos);
+
+    // ==========================================================================
+    // --- LÓGICA DE DEPENDENCIAS DE UBICACIÓN (Nacimiento y Residencia) ---
+    // ==========================================================================
+
+    // 1. PAÍS NACIMIENTO -> ESTADO NACIMIENTO
     document.getElementById('pais_nacimiento').addEventListener('change', function() {
-      const paisId = this.value;
-      const estadoSelect = document.getElementById('estado_nacimiento');
-      const municipioSelect = document.getElementById('municipio_nacimiento');
+      var paisId = this.value;
+      var estadoSelect = document.getElementById('estado_nacimiento');
+      var municipioSelect = document.getElementById('municipio_nacimiento');
+
       estadoSelect.innerHTML = '<option value="">--- Seleccione Un Estado ---</option>';
-      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municpio ---</option>';
+      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
 
       if (paisId) {
-        loadAndSelect(paisId, 'estado_nacimiento', 'get/get_estados.php', 'Id_Pais', '').then(() => {
-          // No hacemos nada más aquí, la carga se detiene hasta que el usuario seleccione un estado
+        $.ajax({
+          url: 'get/get_estados.php',
+          method: 'GET',
+          data: { Id_Pais: paisId },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var estado = data[i];
+              estadoSelect.innerHTML += '<option value="' + estado.Id_Estado + '">' + estado.nombre_estado + '</option>';
+            }
+          }
         });
       }
     });
 
-    // 2. NACIMIENTO: ESTADO -> MUNICIPIO
+    // 2. ESTADO NACIMIENTO -> MUNICIPIO NACIMIENTO
     document.getElementById('estado_nacimiento').addEventListener('change', function() {
-      const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio_nacimiento');
-      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municpio ---</option>';
+      var estadoId = this.value;
+      var municipioSelect = document.getElementById('municipio_nacimiento');
 
-      if (estadoId) {
-        loadAndSelect(estadoId, 'municipio_nacimiento', 'get/get_municipios.php', 'Id_Estado', '');
-      }
-    });
-
-    // 3. DIRECCIÓN: ESTADO -> MUNICIPIO
-    document.getElementById('estado').addEventListener('change', function() {
-      const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio');
-      const sectorSelect = document.getElementById('sector');
       municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
-      sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
 
       if (estadoId) {
-        loadAndSelect(estadoId, 'municipio', 'get/get_municipios.php', 'Id_Estado', '');
+        $.ajax({
+          url: 'get/get_municipios.php',
+          method: 'GET',
+          data: { Id_Estado: estadoId },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var municipio = data[i];
+              municipioSelect.innerHTML += '<option value="' + municipio.Id_Municipio + '">' + municipio.nombre_municipio + '</option>';
+            }
+          }
+        });
       }
     });
 
-    // 4. DIRECCIÓN: MUNICIPIO -> SECTOR
+    // 3. ESTADO RESIDENCIA (NORMAL) -> MUNICIPIO RESIDENCIA
+    document.getElementById('estado').addEventListener('change', function() {
+      var estadoId = this.value;
+      var municipioSelect = document.getElementById('municipio');
+      var sectorSelect = document.getElementById('sector');
+
+      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
+      if (sectorSelect) {
+        sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
+      }
+
+      if (estadoId) {
+        $.ajax({
+          url: 'get/get_municipios.php',
+          method: 'GET',
+          data: { Id_Estado: estadoId },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var municipio = data[i];
+              municipioSelect.innerHTML += '<option value="' + municipio.Id_Municipio + '">' + municipio.nombre_municipio + '</option>';
+            }
+          }
+        });
+      }
+    });
+
+    // 4. MUNICIPIO RESIDENCIA (NORMAL) -> SECTOR RESIDENCIA
     document.getElementById('municipio').addEventListener('change', function() {
-      const municipioId = this.value;
-      const sectorSelect = document.getElementById('sector');
+      var municipioId = this.value;
+      var sectorSelect = document.getElementById('sector');
+
       sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
 
       if (municipioId) {
-        loadAndSelect(municipioId, 'sector', 'get/get_sectores.php', 'Id_Municipio', '');
+        $.ajax({
+          url: 'get/get_sectores.php',
+          method: 'GET',
+          data: { Id_Municipio: municipioId },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var sector = data[i];
+              sectorSelect.innerHTML += '<option value="' + sector.Id_Sector + '">' + sector.nombre_sector + '</option>';
+            }
+          }
+        });
       }
     });
 
-
-    // --- INICIALIZACIÓN DE CARGA DE DATOS AL CARGAR LA PÁGINA (EXISTENTE EN EDITAR.PHP, PERO REFINADA) ---
+    // Inicializar Patologías y Alergias (Si borraste el DOMContentLoaded)
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. LÓGICA DE NACIMIENTO (Tab 1)
-      const initNacimiento = loadAndSelect(saved_id_pais_nac, 'estado_nacimiento', 'get/get_estados.php', 'Id_Pais', saved_id_estado_nac);
-
-      initNacimiento
-        .then((savedStateId) => {
-          if (savedStateId) {
-            return loadAndSelect(savedStateId, 'municipio_nacimiento', 'get/get_municipios.php', 'Id_Estado', saved_id_municipio_nac);
-          }
-        })
-        .catch(error => console.error('Fallo en la cadena de Nacimiento:', error));
-
-      // 2. LÓGICA DE DIRECCIÓN (Tab 3)
-      const initDireccionMun = loadAndSelect(saved_id_estado_dir, 'municipio', 'get/get_municipios.php', 'Id_Estado', saved_id_municipio_dir);
-
-      initDireccionMun
-        .then((savedMunId) => {
-          if (savedMunId) {
-            return loadAndSelect(savedMunId, 'sector', 'get/get_sectores.php', 'Id_Municipio', saved_id_sector_dir);
-          }
-        })
-        .catch(error => console.error('Fallo en la cadena de Dirección:', error));
-
-
-      // 3. Inicializar Patologías y Alergias
       if (typeof parseData === 'function') {
-        // Se llama al final de los scripts para parsear los datos de PHP y cargarlos.
         inicializarDatosMedicos();
       }
     });
@@ -1301,302 +1503,494 @@
     selectDiscapacidad.addEventListener('change', toggleOptions);
     toggleOptions(); // Inicializa la función al cargar
 
-
     // =====================================================================
-    // LÓGICA PARA PATOLOGÍAS Y ALERGIAS (Copiada y adaptada de pacientes_agregar.php)
+    // LÓGICA PARA PATOLOGÍAS Y ALERGIAS (CORREGIDO)
     // =====================================================================
 
-    // --- INICIALIZACIÓN DE ARRAYS CON DATOS DE EDICIÓN ---
+    $('#btn_modal_pat, #btn_modal_ale').tooltip();
 
-    // Función de ayuda para parsear datos (Id::Nombre::CIE-10::Fecha o Id::Nombre::Fecha)
-    function parseData(dataString, separator, itemParser) {
-      if (!dataString) return [];
-      return dataString.split(separator).map(itemParser).filter(item => item);
+    // 1. Funciones para agregar filas HTML
+    function agregarFilaPatologia(id_guardado = "", fecha_guardada = "") {
+      let optionsHtml = '';
+      // Si ya existe un select en pantalla, clonamos su HTML para asegurar que incluya las opciones añadidas por AJAX
+      if ($('.select-pat').length > 0) {
+        optionsHtml = $('.select-pat').first().html();
+      } else {
+        // Fallback al PHP inicial si es la primera fila
+        optionsHtml = `<option value="">--- Seleccione una patología ---</option>
+          <?php
+          $conn_pat = new mysqli("localhost", "root", "", "cpt3db");
+          $conn_pat->set_charset("utf8");
+          $q_pat = $conn_pat->query("SELECT Id_patologia, nombre_patologia, codigo_cie FROM patologias WHERE estatus = 1 ORDER BY nombre_patologia ASC");
+          if ($q_pat) {
+            while ($p = $q_pat->fetch_assoc()) {
+              echo "<option value='{$p['Id_patologia']}' data-nombre='{$p['nombre_patologia']}' data-cie='{$p['codigo_cie']}'>{$p['nombre_patologia']}</option>";
+            }
+          }
+          ?>`;
+      }
+
+      let htmlPat = `
+        <div class="row fila-pat" style="margin-bottom: 10px;">
+            <div class="col-sm-6">
+                <div class="input-group">
+                    <select class="form-control select-pat">
+                        ${optionsHtml}
+                    </select>
+                    <span class="input-group-btn">
+                        <button class="btn btn-info btn-search-pat" type="button" title="Buscar Patología">
+                          <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <input type="date" class="form-control input-fecha-pat" max="<?php echo date('Y-m-d'); ?>">
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-danger btn-remove-pat">
+                    <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
+                </button>
+            </div>
+        </div>`;
+
+      let $fila = $(htmlPat);
+      $('#contenedor_filas_patologias').append($fila);
+
+      if (id_guardado !== "") {
+        // Retraso mínimo para garantizar que el DOM reconozca las opciones inyectadas
+        setTimeout(() => $fila.find('.select-pat').val(id_guardado.toString().trim()), 10);
+      }
+      if (fecha_guardada !== "") $fila.find('.input-fecha-pat').val(fecha_guardada.toString().trim());
     }
 
-    // Parsear patologías
-    let patologiasSeleccionadas = [];
-    // Parsear alergias
-    let alergiasSeleccionadas = [];
+    function agregarFilaAlergia(id_guardado = "", fecha_guardada = "") {
+      let optionsHtml = '';
+      // Igual que en patologías: clonamos las opciones del select existente para arrastrar las guardadas por AJAX
+      if ($('.select-ale').length > 0) {
+        optionsHtml = $('.select-ale').first().html();
+      } else {
+        optionsHtml = `<option value="">--- Seleccione una alergia ---</option>
+          <?php
+          $conn_ale = new mysqli("localhost", "root", "", "cpt3db");
+          $conn_ale->set_charset("utf8");
+          $q_ale = $conn_ale->query("SELECT Id_alergias_conocidas, nombre_alergia FROM alergias_conocidas WHERE estatus = 1 ORDER BY nombre_alergia ASC");
+          if ($q_ale) {
+            while ($a = $q_ale->fetch_assoc()) {
+              echo "<option value='{$a['Id_alergias_conocidas']}' data-nombre='{$a['nombre_alergia']}'>{$a['nombre_alergia']}</option>";
+            }
+          }
+          ?>`;
+      }
 
+      let htmlAle = `
+        <div class="row fila-ale" style="margin-bottom: 10px;">
+            <div class="col-sm-6">
+                <div class="input-group">
+                    <select class="form-control select-ale">
+                        ${optionsHtml}
+                    </select>
+                    <span class="input-group-btn">
+                        <button class="btn btn-info btn-search-ale" type="button" title="Buscar Alergia">
+                          <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <input type="date" class="form-control input-fecha-ale" max="<?php echo date('Y-m-d'); ?>">
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-danger btn-remove-ale">
+                    <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
+                </button>
+            </div>
+        </div>`;
+
+      let $fila = $(htmlAle);
+      $('#contenedor_filas_alergias').append($fila);
+
+      if (id_guardado !== "") {
+        // Retraso mínimo para garantizar que el DOM reconozca las opciones inyectadas
+        setTimeout(() => $fila.find('.select-ale').val(id_guardado.toString().trim()), 10);
+      }
+      if (fecha_guardada !== "") $fila.find('.input-fecha-ale').val(fecha_guardada.toString().trim());
+    }
+
+    // --- PRE-CARGA DE EDICIÓN ---
     function inicializarDatosMedicos() {
+      // 1. Cargar Patologías desde BD
+      if (patologiasData && patologiasData.trim() !== "") {
+        let items = patologiasData.split('||');
+        items.forEach(function(item) {
+          if(item.trim() !== "") {
+              let parts = item.split('::');
+              if (parts.length >= 3) {
+                let id_pat = parts[0] ? parts[0].trim() : '';
+                let fecha_pat = parts[3] ? parts[3].trim() : '';
+                agregarFilaPatologia(id_pat, fecha_pat);
+              }
+          }
+        });
+        setTimeout(() => $('#guardar_pat_listo').trigger('click'), 50); // Simular guardar asíncrono
+      } else {
+        agregarFilaPatologia();
+      }
 
-      patologiasSeleccionadas = parseData(patologiasData, '||', (item) => {
-        const parts = item.split('::');
-        if (parts.length >= 3) {
-          return {
-            id: parts[0],
-            nombre: parts[1],
-            codigo_cie: parts[2],
-            fecha: parts[3] || ''
-          };
-        }
-        return null;
-      });
-
-      alergiasSeleccionadas = parseData(alergiasData, '||', (item) => {
-        const parts = item.split('::');
-        if (parts.length >= 2) {
-          return {
-            id: parts[0],
-            nombre: parts[1],
-            fecha: parts[2] || ''
-          };
-        }
-        return null;
-      });
-
-      updateMainDisplay();
+      // 2. Cargar Alergias desde BD
+      if (alergiasData && alergiasData.trim() !== "") {
+        let items = alergiasData.split('||');
+        items.forEach(function(item) {
+          if(item.trim() !== "") {
+              let parts = item.split('::');
+              if (parts.length >= 2) {
+                let id_ale = parts[0] ? parts[0].trim() : '';
+                let fecha_ale = parts[2] ? parts[2].trim() : '';
+                agregarFilaAlergia(id_ale, fecha_ale);
+              }
+          }
+        });
+        setTimeout(() => $('#guardar_ale_listo').trigger('click'), 50); // Simular guardar asíncrono
+      } else {
+        agregarFilaAlergia();
+      }
     }
 
+    // Botones de agregar y eliminar
+    $('#add_fila_pat').click(() => agregarFilaPatologia());
+    $('#add_fila_ale').click(() => agregarFilaAlergia());
+    $(document).on('click', '.btn-remove-pat', function() {
+      $(this).closest('.fila-pat').remove();
+    });
+    $(document).on('click', '.btn-remove-ale', function() {
+      $(this).closest('.fila-ale').remove();
+    });
 
-    // --- Funciones de Patologías ---
+    // Generador de JSON (Al dar click en Listo)
+    // CORRECCIÓN: Agregar la 'e' como parámetro de la función
+    $('#guardar_pat_listo').click(function(e) {
+      let seleccionadas = [];
+      let nombres = [];
+      let errorFecha = false;
 
-    document.getElementById('modal_patologia').addEventListener('change', function() {
-      const patologiaId = this.value;
-      const $selectedOption = $(this).find('option:selected');
-      if (patologiaId && patologiaId !== 'disabled') {
-        document.getElementById('modal_codigo_cie').value = $selectedOption.data('cie') || 'No disponible';
+      $('.fila-pat').each(function() {
+        let select = $(this).find('.select-pat');
+        let id = select.val();
+        let fecha = $(this).find('.input-fecha-pat').val();
+
+        if (id && id !== "") {
+          if (!fecha) errorFecha = true;
+          let opt = select.find('option:selected');
+          seleccionadas.push({
+            id: parseInt(id),
+            nombre: opt.data('nombre'),
+            codigo_cie: opt.data('cie'),
+            fecha: fecha
+          });
+          nombres.push(opt.text().trim());
+        }
+      });
+
+      // CORRECCIÓN: Usar 'e.originalEvent' en lugar de 'event.originalEvent'
+      if (errorFecha && e.originalEvent) {
+        mostrarAviso("⚠️ Atención: Hay patologías seleccionadas sin fecha de detección.");
+        return false;
+      }
+
+      $('#patologias_ids').val(JSON.stringify(seleccionadas));
+      let boton = $('#btn_modal_pat');
+      if (nombres.length > 0) {
+        boton.attr('data-original-title', nombres.join(', ')).tooltip('fixTitle').removeClass('input-error');
       } else {
-        document.getElementById('modal_codigo_cie').value = 'No disponible';
+        boton.attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+      }
+      $('#modalPatologias').modal('hide');
+    });
+
+    // CORRECCIÓN: Hacer lo mismo con el botón de alergias
+    $('#guardar_ale_listo').click(function(e) {
+      let seleccionadas = [];
+      let nombres = [];
+      let errorFecha = false;
+
+      $('.fila-ale').each(function() {
+        let select = $(this).find('.select-ale');
+        let id = select.val();
+        let fecha = $(this).find('.input-fecha-ale').val();
+
+        if (id && id !== "") {
+          if (!fecha) errorFecha = true;
+          let opt = select.find('option:selected');
+          seleccionadas.push({
+            id: parseInt(id),
+            nombre: opt.data('nombre'),
+            fecha: fecha
+          });
+          nombres.push(opt.text().trim());
+        }
+      });
+
+      if (errorFecha && e.originalEvent) {
+        mostrarAviso("⚠️ Atención: Hay alergias seleccionadas sin fecha de detección.");
+        return false;
+      }
+
+      $('#alergias_ids').val(JSON.stringify(seleccionadas));
+      let boton = $('#btn_modal_ale');
+      if (nombres.length > 0) {
+        boton.attr('data-original-title', nombres.join(', ')).tooltip('fixTitle').removeClass('input-error');
+      } else {
+        boton.attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+      }
+      $('#modalAlergias').modal('hide');
+    });
+
+    // 3. Modales Buscadores
+    let selectDestinoTarget = null;
+    $(document).on('click', '.btn-search-pat', function() {
+      selectDestinoTarget = $(this).closest('.input-group').find('.select-pat');
+      $('#modalBuscarPat').modal('show');
+      $('#inputBuscarPat').val('').trigger('keyup');
+    });
+    $('#inputBuscarPat').on('keyup', function() {
+      let texto = $(this).val().toLowerCase();
+      let html = '';
+      $('.select-pat:first option').not('[value=""]').each(function() {
+        let nombre = $(this).text();
+        if (nombre.toLowerCase().includes(texto)) html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pat" data-id="${$(this).val()}">${nombre}</a>`;
+      });
+      $('#listaResultadosPat').html(html);
+    });
+    $(document).on('click', '.seleccionar-pat', function(e) {
+      e.preventDefault();
+      selectDestinoTarget.val($(this).data('id')).trigger('change');
+      $('#modalBuscarPat').modal('hide');
+    });
+
+    $(document).on('click', '.btn-search-ale', function() {
+      selectDestinoTarget = $(this).closest('.input-group').find('.select-ale');
+      $('#modalBuscarAle').modal('show');
+      $('#inputBuscarAle').val('').trigger('keyup');
+    });
+    $('#inputBuscarAle').on('keyup', function() {
+      let texto = $(this).val().toLowerCase();
+      let html = '';
+      $('.select-ale:first option').not('[value=""]').each(function() {
+        let nombre = $(this).text();
+        if (nombre.toLowerCase().includes(texto)) html += `<a href="#" class="list-group-item list-group-item-action seleccionar-ale" data-id="${$(this).val()}">${nombre}</a>`;
+      });
+      $('#listaResultadosAle').html(html);
+    });
+    $(document).on('click', '.seleccionar-ale', function(e) {
+      e.preventDefault();
+      selectDestinoTarget.val($(this).data('id')).trigger('change');
+      $('#modalBuscarAle').modal('hide');
+    });
+
+    // Validar duplicados
+    $(document).on('change', '.select-pat', function() {
+      let val = $(this).val();
+      if (!val) return;
+      if ($('.select-pat').filter(function() {
+          return $(this).val() === val;
+        }).length > 1) {
+        mostrarAviso("⚠️ <b>Atención:</b> Esta patología ya fue seleccionada.");
+        $(this).val("");
       }
     });
 
-    function addPatologia() {
-
-      const patologiaSelect = document.getElementById('modal_patologia');
-      const patologiaId = patologiaSelect.value;
-      const $selectedOption = $(patologiaSelect).find('option:selected');
-
-      const fecha = document.getElementById('modal_fecha_patologia').value;
-
-      if (!patologiaId || patologiaId === 'disabled') {
-        mostrarAviso('Por favor, seleccione una patología válida.');
-        return;
+    $(document).on('change', '.select-ale', function() {
+      let val = $(this).val();
+      if (!val) return;
+      if ($('.select-ale').filter(function() {
+          return $(this).val() === val;
+        }).length > 1) {
+        mostrarAviso("⚠️ <b>Atención:</b> Esta alergia ya fue seleccionada.");
+        $(this).val("");
       }
-
-      const nombre = $selectedOption.data('nombre');
-      const codigo_cie = $selectedOption.data('cie');
-
-      const existe = patologiasSeleccionadas.some(p => p.id == patologiaId);
-      if (existe) {
-        mostrarAviso(`La patología '${nombre}' ya está en la lista.`);
-        return;
-      }
-
-      patologiasSeleccionadas.push({
-        id: patologiaId,
-        nombre: nombre,
-        codigo_cie: codigo_cie,
-        fecha: fecha
-      });
-
-      renderPatologiasModal();
-      updateMainDisplay();
-      mostrarAviso(`✅ Patología '${nombre}' añadida temporalmente.`);
-    }
-
-    document.getElementById('btnAgregarPatologiaTemporal')
-      .addEventListener('click', addPatologia);
-
-
-    function renderPatologiasModal() {
-
-      const lista = document.getElementById('lista_patologias_seleccionadas');
-      lista.innerHTML = '';
-
-      if (patologiasSeleccionadas.length === 0) {
-        lista.innerHTML = '<span class="text-muted">Ninguna patología en la lista temporal.</span>';
-        lista.classList.remove('well', 'well-sm');
-        return;
-      }
-
-      lista.classList.add('well', 'well-sm');
-
-      patologiasSeleccionadas.forEach(p => {
-        lista.innerHTML += `
-      <span class="label label-primary" style="margin-right:5px;margin-bottom:5px;display:inline-block;font-size:14px;padding:6px 10px;">
-        ${p.nombre} (${p.codigo_cie}) - ${p.fecha || 'Sin fecha'}
-        <a href="#" data-id="${p.id}" class="remove-patologia text-white" style="margin-left:5px;">&times;</a>
-      </span>`;
-      });
-
-      lista.querySelectorAll('.remove-patologia')
-        .forEach(el => el.addEventListener('click', removePatologia));
-    }
-
-    function removePatologia(e) {
-
-      e.preventDefault();
-      const idQuitar = e.target.getAttribute('data-id');
-
-      const nombreQuitar = patologiasSeleccionadas.find(p => p.id == idQuitar)?.nombre || 'Patología';
-
-      patologiasSeleccionadas = patologiasSeleccionadas.filter(p => p.id != idQuitar);
-
-      renderPatologiasModal();
-      updateMainDisplay();
-      mostrarAviso(`Patología '${nombreQuitar}' eliminada.`);
-    }
-
-    $('#modalPatologias').on('show.bs.modal', renderPatologiasModal);
-
-
-    // --- Funciones de Alergias ---
-
-    function addAlergia() {
-
-      const alergiaSelect = document.getElementById('modal_alergia');
-      const alergiaId = alergiaSelect.value;
-      const $selectedOption = $(alergiaSelect).find('option:selected');
-
-      const fecha = document.getElementById('modal_fecha_alergia').value;
-
-      if (!alergiaId || alergiaId === 'disabled') {
-        mostrarAviso('Por favor, seleccione una alergia válida.');
-        return;
-      }
-
-      const nombre = $selectedOption.data('nombre');
-
-      const existe = alergiasSeleccionadas.some(a => a.id == alergiaId);
-      if (existe) {
-        mostrarAviso(`La alergia '${nombre}' ya está en la lista.`);
-        return;
-      }
-
-      alergiasSeleccionadas.push({
-        id: alergiaId,
-        nombre: nombre,
-        fecha: fecha
-      });
-
-      renderAlergiasModal();
-      updateMainDisplay();
-      mostrarAviso(`✅ Alergia '${nombre}' añadida temporalmente.`);
-    }
-
-    document.getElementById('btnAgregarAlergiaTemporal')
-      .addEventListener('click', addAlergia);
-
-
-    function renderAlergiasModal() {
-
-      const lista = document.getElementById('lista_alergias_seleccionadas');
-      lista.innerHTML = '';
-
-      if (alergiasSeleccionadas.length === 0) {
-        lista.innerHTML = '<span class="text-muted">Ninguna alergia en la lista temporal.</span>';
-        return;
-      }
-
-      alergiasSeleccionadas.forEach(a => {
-        lista.innerHTML += `
-      <span class="label label-primary" style="margin-right:5px;margin-bottom:5px;display:inline-block;font-size:14px;padding:6px 10px;">
-        ${a.nombre} - ${a.fecha || 'Sin fecha'}
-        <a href="#" data-id="${a.id}" class="remove-alergia text-white" style="margin-left:5px;">&times;</a>
-      </span>`;
-      });
-
-      lista.querySelectorAll('.remove-alergia')
-        .forEach(el => el.addEventListener('click', removeAlergia));
-    }
-
-    function removeAlergia(e) {
-
-      e.preventDefault();
-
-      const idQuitar = e.target.getAttribute('data-id');
-
-      const nombreQuitar = alergiasSeleccionadas.find(a => a.id == idQuitar)?.nombre || 'Alergia';
-
-      alergiasSeleccionadas = alergiasSeleccionadas.filter(a => a.id != idQuitar);
-
-      renderAlergiasModal();
-      updateMainDisplay();
-      mostrarAviso(`Alergia '${nombreQuitar}' eliminada.`);
-    }
-
-    $('#modalAlergias').on('show.bs.modal', renderAlergiasModal);
-
-
-    // --- FUNCIÓN PRINCIPAL ---
-
-    function updateMainDisplay() {
-
-      document.getElementById('patologias_ids').value =
-        patologiasSeleccionadas.map(p => p.id).join(',');
-
-      const patologiasDiv = document.getElementById('patologias_agregadas');
-      patologiasDiv.innerHTML = '';
-
-      if (patologiasSeleccionadas.length === 0) {
-        patologiasDiv.innerHTML = '<span class="text-muted">Ninguna patología seleccionada.</span>';
-      } else {
-        patologiasSeleccionadas.forEach(p => {
-          patologiasDiv.innerHTML += `
-        <span class="text">
-          ${p.nombre},
-        </span>`;
-        });
-      }
-
-      document.getElementById('patologias_fechas').value =
-        patologiasSeleccionadas
-        .map(p => p.id + ':' + (p.fecha || ''))
-        .join(',');
-
-      document.getElementById('alergias_fechas').value =
-        alergiasSeleccionadas
-        .map(a => a.id + ':' + (a.fecha || ''))
-        .join(',');
-
-      document.getElementById('alergias_ids').value =
-        alergiasSeleccionadas.map(a => a.id).join(',');
-
-      const alergiasDiv = document.getElementById('alergias_agregadas');
-      alergiasDiv.innerHTML = '';
-
-      if (alergiasSeleccionadas.length === 0) {
-        alergiasDiv.innerHTML = '<span class="text-muted">Ninguna alergia seleccionada.</span>';
-      } else {
-        alergiasSeleccionadas.forEach(a => {
-          alergiasDiv.innerHTML += `
-        <span class="text">
-          ${a.nombre},
-        </span>`;
-        });
-      }
-    }
-
-    // --- LÓGICA AJAX PARA GUARDAR NUEVA PATOLOGÍA (Copiada de pacientes_agregar.php) ---
-    $('#btnGuardarNuevaPatologiaAjax').click(function() {
-      const nombre = $('#nuevo_nombre_patologia').val().trim();
-      const codigo = $('#nuevo_codigo_cie').val().trim();
-
-      if (nombre === '' || codigo === '') {
-        mostrarAviso('El nombre y el código CIE-10 son obligatorios.');
-        return;
-      }
-
-      // Simulación de guardado (en un entorno real aquí iría la llamada AJAX a un script: /cfg/guardar_patologia.php)
-      // Por ahora cerramos el modal y mostramos aviso
-      $('#modalNuevaPatologia').modal('hide');
-      mostrarAviso('✅ Patología guardada (Simulación).');
-      // En un entorno real, se debería actualizar el select de patologías.
     });
 
-    // --- LÓGICA AJAX PARA GUARDAR NUEVA ALERGIA (Copiada de pacientes_agregar.php) ---
-    $('#btnGuardarNuevaAlergiaAjax').click(function() {
-      const nombre = $('#nuevo_nombre_alergia').val().trim();
-      if (nombre === '') {
-        mostrarAviso('El nombre es obligatorio.');
+    // =====================================================================
+    // LÓGICA DE SÍNTOMAS Y GUARDADO AJAX (Faltante)
+    // =====================================================================
+
+    // 1. Abrir Modal de Síntomas
+    $('#btn_abrir_sintomas_ajax').click(function() {
+      $('#modalSintomasAjax').modal('show');
+      // Si está vacío, agregar la primera fila
+      if ($('.fila-sintoma-ajax').length === 0) {
+        agregarFilaSintomaAjax();
+      }
+    });
+
+    // 2. Función para agregar fila de síntoma
+    function agregarFilaSintomaAjax() {
+      let htmlSintoma = `
+        <div class="row fila-sintoma-ajax" style="margin-bottom: 10px;">
+            <div class="col-sm-10">
+                <select class="form-control select-sintoma-ajax">
+                    <option value="">--- Seleccione un síntoma ---</option>
+                    <?php echo $opciones_sintomas_global; ?>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-danger btn-remove-sintoma-ajax">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </div>
+        </div>`;
+      $('#contenedor_filas_sintomas_ajax').append(htmlSintoma);
+    }
+
+    // 3. Eventos de los botones de síntomas
+    $('#add_fila_sintoma_ajax').click(() => agregarFilaSintomaAjax());
+    $(document).on('click', '.btn-remove-sintoma-ajax', function() {
+      $(this).closest('.fila-sintoma-ajax').remove();
+    });
+
+    // 4. Confirmar selección de síntomas y pasarlos al input oculto
+    $('#btn_confirmar_sintomas_ajax').click(function() {
+      let seleccionados = [];
+      $('.select-sintoma-ajax').each(function() {
+        let val = $(this).val();
+        if (val) seleccionados.push(val);
+      });
+      $('#ajax_sintomas_ids').val(seleccionados.join(','));
+
+      let boton = $('#btn_abrir_sintomas_ajax');
+      if (seleccionados.length > 0) {
+        boton.attr('data-original-title', seleccionados.length + ' síntoma(s) seleccionado(s)').tooltip('fixTitle').removeClass('btn-info').addClass('btn-success');
+      } else {
+        boton.attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle').removeClass('btn-success').addClass('btn-info');
+      }
+      $('#modalSintomasAjax').modal('hide');
+    });
+
+    // 5. Guardar Nueva Patología vía AJAX (Conecta con el PHP de arriba)
+    $('#btn_guardar_ajax_pat').click(function() {
+      let nombre = $('#ajax_nombre_pat').val();
+      let cie = $('#ajax_cie_pat').val();
+      let contagiosa = $('#ajax_contagiosa_pat').val();
+      let sintomas = $('#ajax_sintomas_ids').val();
+
+      if (!nombre) {
+        mostrarAviso("El nombre de la patología es obligatorio.");
         return;
       }
-      // Simulación de guardado
-      $('#modalNuevaAlergia').modal('hide');
-      mostrarAviso('✅ Alergia guardada (Simulación).');
-      // En un entorno real, se debería actualizar el select de alergias.
+
+      $.ajax({
+        url: window.location.href, // Envía a esta misma página
+        method: 'POST',
+        data: {
+          ajax_nueva_patologia: 1,
+          nombre_patologia: nombre,
+          codigo_cie: cie,
+          enfermedad_contagiosa: contagiosa,
+          sintomas_ids: sintomas
+        },
+        dataType: 'json',
+        success: function(res) {
+          if (res.success) {
+            // Añadir al selector dinámicamente
+            let nuevaOpcion = `<option value="${res.id}" data-nombre="${res.nombre}" data-cie="${res.cie}">${res.nombre}</option>`;
+            $('.select-pat').append(nuevaOpcion);
+
+            // Limpiar modal
+            $('#modalNuevaPatologia').modal('hide');
+            $('#formAjaxPatologia')[0].reset();
+            $('#contenedor_filas_sintomas_ajax').empty();
+            $('#ajax_sintomas_ids').val('');
+            $('#btn_abrir_sintomas_ajax').removeClass('btn-success').addClass('btn-info').attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle');
+
+            mostrarAviso("Patología guardada con éxito.");
+          } else {
+            mostrarAviso(res.error);
+          }
+        }
+      });
+    });
+
+    // 6. Guardar Nueva Alergia vía AJAX (Conecta con el PHP de arriba)
+    $('#btn_guardar_ajax_ale').click(function() {
+      let nombre = $('#ajax_nombre_ale').val();
+
+      if (!nombre) {
+        mostrarAviso("El nombre de la alergia es obligatorio.");
+        return;
+      }
+
+      $.ajax({
+        url: window.location.href,
+        method: 'POST',
+        data: {
+          ajax_nueva_alergia: 1,
+          nombre_alergia: nombre
+        },
+        dataType: 'json',
+        success: function(res) {
+          if (res.success) {
+            // 1. Añadir la nueva opción a todos los selects de alergias actuales
+            let nuevaOpcion = `<option value="${res.id}" data-nombre="${res.nombre}">${res.nombre}</option>`;
+            $('.select-ale').append(nuevaOpcion);
+
+            // 2. Buscar si hay algún select de alergia vacío en pantalla
+            let selectVacio = $('.select-ale').filter(function() { return !$(this).val(); }).first();
+
+            if (selectVacio.length > 0) {
+              // Si hay uno vacío, seleccionamos la nueva alergia ahí
+              selectVacio.val(res.id).trigger('change');
+            } else {
+              // Si no hay selects vacíos, agregamos una nueva fila y le pasamos el ID directamente
+              agregarFilaAlergia(res.id, ""); 
+            }
+
+            // 3. Cerrar modal y limpiar
+            $('#modalNuevaAlergia').modal('hide');
+            $('#formAjaxAlergia')[0].reset();
+            mostrarAviso("Alergia guardada con éxito.");
+          } else {
+            mostrarAviso(res.error);
+          }
+        }
+      });
+    });
+
+    // 7. Guardar Nuevo Síntoma vía AJAX (Faltaba este bloque)
+    $('#btnGuardarSintomaBD').click(function() {
+      let nombre = $('#nombre_nuevo_sintoma').val();
+
+      if (!nombre) {
+        mostrarAviso("El nombre del síntoma es obligatorio.");
+        return;
+      }
+
+      $.ajax({
+        url: window.location.href,
+        method: 'POST',
+        data: {
+          ajax_nuevo_sintoma: 1,
+          nombre_sintoma: nombre
+        },
+        dataType: 'json',
+        success: function(res) {
+          if (res.success) {
+            // Añadir al selector dinámicamente
+            let nuevaOpcion = `<option value="${res.id}">${res.nombre}</option>`;
+            $('.select-sintoma-ajax').append(nuevaOpcion);
+
+            // Si quieres que se autoseleccione en el último select vacío
+            $('.select-sintoma-ajax').last().val(res.id);
+
+            // Limpiar modal
+            $('#modalNuevoSintoma').modal('hide');
+            $('#nombre_nuevo_sintoma').val('');
+
+            mostrarAviso("Síntoma guardado con éxito.");
+          } else {
+            mostrarAviso(res.error);
+          }
+        }
+      });
     });
 
     // --- MODAL DE AVISO GENÉRICO (Copiado de pacientes_agregar.php) ---
@@ -1604,7 +1998,6 @@
       $('#avisoTexto').html(mensaje);
       $('#avisoModal').modal('show');
     }
-
 
     // =====================================================================
     // VALIDACIÓN PRINCIPAL DE CADA PESTAÑA (ASÍNCRONA) (Copiada de pacientes_agregar.php)
@@ -1645,7 +2038,7 @@
       // 2. Validaciones Específicas por Pestaña
       if (tabSelector === '#info') {
         // 2a. Validación de Cédula (Formato y Duplicado en BD)
-        if (validarCedulaFormato() === false) {
+        if (validarDatosUnicos() === false) {
           esValido = false;
           errores.push('Error en el formato o la cédula ya existe.');
         }
@@ -1663,14 +2056,14 @@
 
         const edad = parseInt($('#edad').val());
         if (isNaN(edad) || edad < 18 || edad > 120) {
-          errores.push("El paciente debe ser mayor de **18 años** (Fecha de Nacimiento).");
+          errores.push("El paciente debe ser mayor de 18 años (Fecha de Nacimiento).");
           $('#fechaN').addClass('input-error');
           esValido = false;
         }
 
         const email = $('#email').val().trim();
         if (email !== "" && (email.indexOf('@') === -1 || email.indexOf('.') === -1)) {
-          errores.push("El campo **Email** debe tener un formato válido (ej: nombre@dominio.com).");
+          errores.push("El campo Email debe tener un formato válido (ej: nombre@dominio.com).");
           $('#email').addClass('input-error');
           esValido = false;
         }
@@ -1682,11 +2075,11 @@
           const años = parseInt($('#años_aprobados').val());
           const max = parseInt($('#años_aprobados').attr('max'));
           if (isNaN(años) || años < 0) {
-            errores.push("El campo **Años Aprobados** es obligatorio si seleccionó 'Sí' en Analfabeta.");
+            errores.push("El campo Años Aprobados es obligatorio si seleccionó 'Sí' en Analfabeta.");
             $('#años_aprobados').addClass('input-error');
             esValido = false;
           } else if (!isNaN(max) && años > max) {
-            errores.push("Los **Años Aprobados** exceden el máximo permitido para esta Misión (" + max + " años).");
+            errores.push("Los Años Aprobados exceden el máximo permitido para esta Misión (" + max + " años).");
             $('#años_aprobados').addClass('input-error');
             esValido = false;
           }
@@ -1699,44 +2092,43 @@
       }
 
       if (tabSelector === '#salud_otros') {
-        // Validación de Patologías (marcado con el (*) en el PHP corregido)
-        if (patologiasSeleccionadas.length === 0) {
-          errores.push("Debe seleccionar al menos **una Patología**.");
-          $('#patologias_agregadas').addClass('input-error');
-          esValido = false;
-        }
-        // Validación de Grupo Sanguíneo ya está cubierta por el [required]
+
       }
 
       if (!esValido && errores.length > 0) {
-        mostrarAviso('⚠️ **Errores de Formulario:**<ul><li>' + errores.join('</li><li>') + '</li></ul>');
+        mostrarAviso('⚠️ Errores de Formulario:<ul><li>' + errores.join('</li><li>') + '</li></ul>');
       }
 
       return esValido;
     }
 
-    // --- LÓGICA DE NAVEGACIÓN (Copiada de pacientes_agregar.php) ---
-    $('.next-tab').on('click', async function() {
+    $('.next-tab').off('click').on('click', async function() {
       const $btn = $(this);
       const tabActualSelector = $btn.data('tab-actual');
       const tabSiguienteName = $btn.data('tab-siguiente');
       const nextTabLink = $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"] a`);
 
-      $btn.prop('disabled', false).text('Guardar');
+      $btn.prop('disabled', true).text('Validando...');
 
       const esValido = await validarPestana(tabActualSelector);
 
+      $btn.prop('disabled', false).text(tabSiguienteName === 'confirmar' ? 'Actualizar' : 'Siguiente');
+
       if (esValido) {
         if (tabSiguienteName === 'confirmar') {
-          $('#modalGuardarPaciente').modal('show');
+          // ULTIMA VERIFICACIÓN ANTES DE MOSTRAR EL MODAL
+          const cedulaFinalValida = await validarDatosUnicos();
+          if(!cedulaFinalValida) {
+             mostrarAviso("🛑 Conflicto de Cédula. Regrese a la pestaña 'Datos Personales' y corrija la información.");
+             return;
+          }
+          
+          const modalSelector = $('#modalGuardarPaciente').length ? '#modalGuardarPaciente' : '#modalGuardarMedico';
+          $(modalSelector).modal('show');
         } else {
-          const $siguienteTabLi = $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"]`);
-          // 1. Quitar la clase disabled-tab y la clase active
           $('.nav-tabs li').removeClass('active');
           $('.tab-content .tab-pane').removeClass('active');
-          $siguienteTabLi.removeClass('disabled-tab').addClass('active');
-
-          // 2. Activar la pestaña siguiente
+          $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"]`).removeClass('disabled-tab').addClass('active');
           nextTabLink.tab('show');
           $('#' + tabSiguienteName).addClass('active');
         }

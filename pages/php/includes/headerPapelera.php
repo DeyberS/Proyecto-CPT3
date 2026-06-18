@@ -45,6 +45,32 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
     z-index: 1000;
   }
 
+  @keyframes glow-recipes-yellow {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(243, 156, 18, 0.4); box-shadow: 0 0 10px rgba(243, 156, 18, 0.6); }
+    100% { background-color: transparent; }
+  }
+  .glow-active {
+    animation: glow-recipes-yellow 2s infinite;
+    border-radius: 4px;
+  }
+
+  .wrapper {
+    display: block !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    background-color: #f4f7f9 !important;
+  }
+
+  .content-wrapper {
+    background-color: #f4f7f9 !important;
+  }
+
+  .content-custom {
+    padding: 50px 10px;
+    margin-left: 60px;
+  }
+
   /* Añade un margen al final del menú para que el último item no quede tapado por el reloj */
   .sidebar-menu {
     padding-bottom: 80px;
@@ -241,7 +267,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                       <li><a href="../farmacia_laboratorio_listado.php"><i class="fa fa-user-plus"></i>Laboratorios</a></li>
                     <?php endif; ?>    
                     <?php if (in_array('Ver Recetas', $_SESSION["permisos"])) : ?>
-                      <li><a href="../farmacia_prescripciones_listado.php"><i class="fa fa-user-plus"></i>Recipes</a></li>
+                      <li><a href="../farmacia_prescripciones_listado.php" id="menu-link-recetas"><i class="fa fa-user-plus"></i>Récipes</a></li>
                     <?php endif; ?>
                   </ul>
                 </li>
@@ -353,7 +379,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                   <li><a href="../farmacia_laboratorio_listado.php"><i class="fa fa-flask" style="margin-right:10px; font-size:18px;"><img src="../../../recursos/imagenes/iconos/filled/places/rural_post@2x.png" style="height:18px; width:18; margin-top:-4px; margin-right:0px; filter:invert();"></i> <span>Laboratorios</span></a></li>
                 <?php endif; ?>  
                 <?php if (in_array('Ver Recetas', $_SESSION["permisos"])) : ?>
-                  <li><a href="../farmacia_prescripciones_listado.php"><i class="fa fa-file-text-o" style="margin-right:10px; font-size:18px;"><img src="../../../recursos/imagenes/iconos/filled/symbols/i_note_action@2x.png" style="height:20px; width:20; margin-top:-4px; margin-right:0px; filter:invert();"></i> <span>Récipes (Prescripciones)</span></a></li>
+                  <li><a href="../farmacia_prescripciones_listado.php" id="menu-link-recetas"><i class="fa fa-file-text-o" style="margin-right:10px; font-size:18px;"><img src="../../../recursos/imagenes/iconos/filled/symbols/i_note_action@2x.png" style="height:20px; width:20; margin-top:-4px; margin-right:0px; filter:invert();"></i> <span>Récipes (Prescripciones)</span></a></li>
                 <?php endif; ?>
                 <?php if (in_array('Ver Lotes', $_SESSION["permisos"])) : ?>
                   <li><a href="../farmacia_lotes_listado.php"><i class="fa fa-cubes" style="margin-right:10px; font-size:18px;"><img src="../../../recursos/imagenes/iconos/filled/objects/rdt_result_out_stock@2x.png" style="height:20px; width:20; margin-top:-4px; margin-right:0px; filter:invert();"></i> <span>Lotes</span></a></li>

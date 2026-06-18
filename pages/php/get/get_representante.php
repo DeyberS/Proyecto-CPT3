@@ -14,8 +14,8 @@ if ($conexion->connect_error) {
     exit();
 }
 
-// 2. OBTENER PARÁMETROS (CORREGIDO: Usar $_POST y los nombres correctos del JS)
-$tipo_cedula = $_POST['tipo_cedula'] ?? ''; // JS envía 'tipo_cedula', no 'tipo'
+// 2. OBTENER PARÁMETROS
+$tipo_cedula = $_POST['tipo_cedula'] ?? ''; 
 $cedula = $_POST['cedula'] ?? '';
 
 if (empty($tipo_cedula) || empty($cedula)) {
@@ -27,8 +27,7 @@ if (empty($tipo_cedula) || empty($cedula)) {
 $tipo_cedula = $conexion->real_escape_string($tipo_cedula);
 $cedula = $conexion->real_escape_string($cedula);
 
-// 3. CONSULTA SQL
-// Asegúrate de que los nombres de tablas y columnas sean exactos a tu BD
+// 3. CONSULTA SQL (Modificada para verificar si tiene Id_rol = 5)
 $sql = "
 SELECT 
     p.id, 
@@ -38,7 +37,8 @@ SELECT
     p.email,
     p.genero, 
     tp.Id_prefijo, 
-    tp.telefono
+    tp.telefono,
+    IF(EXISTS(SELECT 1 FROM detalle_persona_rol dpr WHERE dpr.Id_persona = p.id AND dpr.Id_rol = 5), 1, 0) AS es_representante
 FROM 
     persona p 
 LEFT JOIN
@@ -46,7 +46,6 @@ LEFT JOIN
 WHERE 
     p.tipo_cedula = '$tipo_cedula' 
     AND p.cedula = '$cedula'
-    AND p.fecha_nacimiento <= DATE_SUB(CURDATE(), INTERVAL 18 YEAR)
 LIMIT 1
 ";
 
@@ -55,16 +54,17 @@ $resultado = $conexion->query($sql);
 if ($resultado && $resultado->num_rows > 0) {
     $datos = $resultado->fetch_assoc();
     
-    // 4. RESPUESTA JSON (CORREGIDO: Estructura plana para coincidir con el JS)
+    // 4. RESPUESTA JSON
     echo json_encode([
-        'existe' => true,           // El JS espera 'existe'
+        'existe' => true,
+        'es_representante' => (bool)$datos['es_representante'], // Enviamos si es representante
         'nombre' => $datos['nombre'],
         'apellido' => $datos['apellido'],
         'fecha_nacimiento' => $datos['fecha_nacimiento'],
         'genero' => $datos['genero'],
         'email' => $datos['email'],
-        'prefijo_id' => $datos['Id_prefijo'],     // El JS espera 'prefijo_id'
-        'telefono_numero' => $datos['telefono']   // El JS espera 'telefono_numero'
+        'prefijo_id' => $datos['Id_prefijo'],
+        'telefono_numero' => $datos['telefono']
     ]);
 } else {
     // No encontrado

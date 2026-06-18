@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST["btn_enviar_codigo"])) {
         $email = trim($_POST["email"]);
 
-        $sql = "SELECT id FROM persona WHERE email = ?";
+        $sql = "SELECT id FROM persona WHERE email = ? AND password IS NOT NULL AND password != ''";
         if ($stmt = mysqli_prepare($conexion, $sql)) {
             mysqli_stmt_bind_param($stmt, "s", $email);
             if (mysqli_stmt_execute($stmt)) {

@@ -1,11 +1,5 @@
 <?php
-// ARCHIVO: cfg/verificar_existencia_patologia.php
-
-// 1. Incluir archivo de conexión (AJUSTA LA RUTA SEGÚN TU PROYECTO)
 require '../../../cfg/conexion.php'; 
-// Asegúrate de que $conexion es la variable de tu conexión mysqli
-
-// 2. Configurar cabecera JSON
 header('Content-Type: application/json');
 
 $response = [
@@ -14,20 +8,24 @@ $response = [
     'mensaje' => ''
 ];
 
-// Validar que lleguen los datos
 if (isset($_POST['nombre'])) {
-    
     $nombre = trim($_POST['nombre']);
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
 
     try {
-        // --- A. VERIFICAR NOMBRE (Insensible a mayúsculas/minúsculas) ---
-        $sql_nombre = "SELECT Id_especialidad FROM especialidad WHERE LOWER(nombre_especialidad) = LOWER(?) LIMIT 1";
-        
-        if ($stmt = $conexion->prepare($sql_nombre)) {
+        if ($id > 0) {
+            $sql_nombre = "SELECT Id_especialidad FROM especialidad WHERE LOWER(nombre_especialidad) = LOWER(?) AND Id_especialidad != ? LIMIT 1";
+            $stmt = $conexion->prepare($sql_nombre);
+            $stmt->bind_param("si", $nombre, $id);
+        } else {
+            $sql_nombre = "SELECT Id_especialidad FROM especialidad WHERE LOWER(nombre_especialidad) = LOWER(?) LIMIT 1";
+            $stmt = $conexion->prepare($sql_nombre);
             $stmt->bind_param("s", $nombre);
+        }
+        
+        if ($stmt) {
             $stmt->execute();
             $stmt->store_result();
-            
             if ($stmt->num_rows > 0) {
                 $response['existe_nombre'] = true;
             }

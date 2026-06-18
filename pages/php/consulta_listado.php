@@ -68,9 +68,27 @@
     <?php
     include('../../cfg/conexion.php');
 
-    // 1. Consulta para contar el total de consultas
-    $sqlConsultas = "SELECT COUNT(id_consulta) AS total_consultas FROM consulta WHERE estatus = 1";
-    $queryData   = mysqli_query($conexion, $sqlConsultas);
+    // Es necesario tener acceso a las variables de sesión para el filtro
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // Obtenemos los datos del usuario logueado (asegúrate de que estas variables existan en tu header/login)
+    $id_persona_activa = $_SESSION['id'] ?? 0;
+    $id_rol_usuario_activo = $_SESSION['rol'] ?? 0;
+
+    // Base de la consulta
+    $sqlConsultas = "SELECT COUNT(c.Id_consulta) AS total_consultas 
+                    FROM consulta c
+                    INNER JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+                    WHERE c.estatus = 1";
+
+    // Si el usuario es un Médico (Rol 7 o 4), aplicamos el filtro por su ID de persona
+    if ($id_rol_usuario_activo == 7 || $id_rol_usuario_activo == 4) {
+        $sqlConsultas .= " AND dm.Id_persona = '$id_persona_activa'";
+    }
+
+    $queryData = mysqli_query($conexion, $sqlConsultas);
     $total_consultas = mysqli_fetch_assoc($queryData)['total_consultas'];
     ?>
     <section class="content-header">
@@ -105,8 +123,6 @@
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Paciente</th>
             <th>Médico</th>
-            <th>Motivo de Consulta</th>
-            <th>Diagnóstico</th>
             <th>Fecha de Consulta</th>
             <?php if (in_array('Gestionar acciones de consultas', $_SESSION["permisos"])) : ?>
               <th>Acciones</th>
@@ -126,25 +142,25 @@
             $id_rol_usuario_activo = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0; 
             $id_persona_activa = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
 
-            // Si el rol es 4 (Medico) o 7 (Medico - Usuario), filtramos para que solo vea sus consultas
-            if ($id_rol_usuario_activo == 4 || $id_rol_usuario_activo == 7) {
-                $donde .= " AND c.Id_medico = '$id_persona_activa'";
-            }
+            if ($id_rol_usuario_activo == 7) {
+              $donde .= " AND dm.Id_persona = '$id_persona_activa'";
+          }
 
-            if ($busqueda != '') {
-              $donde .= " AND (p_paciente.nombre LIKE '%$busqueda%' 
-                            OR p_paciente.apellido LIKE '%$busqueda%' 
-                            OR p_medico.nombre LIKE '%$busqueda%' 
-                            OR c.motivo_consulta LIKE '%$busqueda%'
-                            OR c.diagnostico LIKE '%$busqueda%')";
-            }
+          if ($busqueda != '') {
+            $donde .= " AND (p_paciente.nombre LIKE '%$busqueda%' 
+                          OR p_paciente.apellido LIKE '%$busqueda%' 
+                          OR p_medico.nombre LIKE '%$busqueda%' 
+                          )";
+          }
 
-            // 3. Contar el total de registros FILTRADOS para la paginación
-            $sql_conteo = "SELECT COUNT(*) as total 
-                          FROM consulta c
-                          JOIN persona p_paciente ON c.Id_paciente = p_paciente.id
-                          JOIN persona p_medico ON c.Id_medico = p_medico.id 
-                          $donde";
+          // 3. Contar el total de registros FILTRADOS para la paginación
+          // CORRECCIÓN: Se agregaron los mismos JOIN de detalle_medico que usas en tu consulta principal
+          $sql_conteo = "SELECT COUNT(*) as total 
+                        FROM consulta c
+                        JOIN persona p_paciente ON c.Id_paciente = p_paciente.id
+                        JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+                        JOIN persona p_medico ON dm.Id_persona = p_medico.id 
+                        $donde";
             $resultado_conteo = mysqli_query($conexion, $sql_conteo);
             $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
             $total_consultas_filtradas = $fila_conteo['total'];
@@ -163,7 +179,8 @@
                     c.estatus
                   FROM consulta c
                   JOIN persona p_paciente ON c.Id_paciente = p_paciente.id
-                  JOIN persona p_medico ON c.Id_medico = p_medico.id
+                  JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+                  JOIN persona p_medico ON dm.Id_persona = p_medico.id
                   $donde
                   ORDER BY c.fecha_consulta DESC
                   LIMIT $inicio, $registros_por_pagina";
@@ -176,8 +193,6 @@
                 <tr>
                   <td class=""><span class="text-row text-white"><?= ($row['nombre_paciente']) . " " . ($row['apellido_paciente']); ?></span></td>
                   <td class=""><span class="text-row text-white"><?= ($row['nombre_medico']) . " " . ($row['apellido_medico']); ?></span></td>
-                  <td class=""><span class="text-row text-white"><?= substr($row['motivo_consulta'], 0, 50) . (strlen($row['motivo_consulta']) > 50 ? '...' : ''); ?></span></td>
-                  <td class=""><span class="text-row text-white"><?= substr($row['diagnostico'], 0, 50) . (strlen($row['diagnostico']) > 50 ? '...' : ''); ?></span></td>
                   <td class=""><span class="text-row text-white"><?= date('d/m/Y', strtotime($row['fecha_consulta'])); ?></span></td>
                   <?php if (in_array('Gestionar acciones de consultas', $_SESSION["permisos"])) : ?>
                     <td>

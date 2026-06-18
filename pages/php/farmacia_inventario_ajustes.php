@@ -55,6 +55,52 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       }
     }
 
+    /* --- ESTILOS NUEVOS PARA ERRORES Y ETIQUETAS (TAGS) --- */
+
+    /* 1. Botón rojo sombreado para cuando falta el medicamento */
+    .btn-error-sombreado {
+      background-color: #f8d7da !important;
+      color: #721c24 !important;
+      border: 1px solid #f5c6cb !important;
+      box-shadow: 0 0 10px rgba(220, 53, 69, 0.6) !important;
+      transition: all 0.3s ease;
+    }
+
+    /* 2. Diseño del contenedor de Etiquetas (Tags) */
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 4px;
+      border: 1px solid #d2d6de;
+      background-color: #fff;
+      min-height: 34px;
+      cursor: text;
+    }
+
+    .tags-input-container .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .tags-input-container .tag-badge i {
+      margin-left: 6px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      min-width: 150px;
+      padding: 2px;
+    }
+
     /* Aplica la animación al modal que se está mostrando */
     .modal.in .modal-dialog,
     #avisoModal,
@@ -225,6 +271,13 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
         <div class="modal-body">
           <form id="formFiltroModal">
             <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
+                <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre, principio activo, presentacion, etc...">
+              </div>
+            </div>
+            <br><br>
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
@@ -418,25 +471,68 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
       // Función para abrir el modal de Guardar
       function abrirModalGuardar() {
+        var stock_maximo = Number($('#stock_maximo').val());
+        var existencia = Number($('#existencia_actual').val());
+
+        if (stock_maximo < existencia) {
+          // 1. Inventamos el texto de advertencia que me pediste
+          var mensaje = '⚠️ <strong>¡Atención!</strong> La existencia actual supera el stock máximo permitido. ' +
+            'Tenga en cuenta que las entradas del sistema hacia este medicamento quedarán bloqueadas temporalmente hasta que se regularice el inventario.';
+
+          // 2. Personalizamos el botón de cerrar del modal #avisoModal
+          var $btnCerrar = $('#avisoModal').find('.btn-secondary'); // Buscamos el botón dentro de tu modal
+
+          $btnCerrar
+            .text('Aceptar') // Cambiamos el texto a "Aceptar"
+            .removeClass('btn-secondary') // Quitamos el color gris
+            .addClass('btn-danger') // Le ponemos el color rojo (danger)
+            .off('click') // Limpiamos eventos 'click' previos para que no se acumulen
+            .one('click', function() { // .one se ejecuta una sola vez al hacer clic
+              // 3. Al darle "Aceptar", restauramos el botón a su estado original por si se usa en otra parte
+              $(this).text('Cerrar').removeClass('btn-danger').addClass('btn-secondary');
+
+              // 4. Procedemos a mostrar el modal de guardado técnico
+              $('#avisoModal').modal('hide'); // Opcional: por si Bootstrap no lo cierra automáticamente al cambiar clases
+              mostrarModalGuardadoFinal();
+            });
+
+          // 5. Mostramos el aviso con el texto configurado
+          mostrarAviso(mensaje);
+
+          return; // Retornamos para detener la ejecución y que NO se abra el modal de guardado de inmediato
+        }
+
+        // Si NO se cumple la condición, el código sigue su flujo normal aquí abajo
+        mostrarModalGuardadoFinal();
+      }
+
+      // Factorizamos esta parte en una pequeña función para poder reutilizarla
+      function mostrarModalGuardadoFinal() {
         clearTimeout($('#modalAjusteGuardar').data('timer'));
         $('#modalAjusteGuardar').modal('show');
       }
-      
-      const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
 
-      // 1. Lógica para botón Limpiar Filtros dentro del Modal
+      const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
+      const opcionesOriginalesMedicamentos = medicamentoSelectPrincipal.html(); // Guardamos las opciones iniciales cargadas por PHP
+
       $('#btnLimpiarFiltros').on('click', function() {
-        // Resetea el formulario del modal (formFiltroModal)
         $('#formFiltroModal')[0].reset();
-        // Opcionalmente, podrías ejecutar el filtrado vacío para cargar todos
+        medicamentoSelectPrincipal.html(opcionesOriginalesMedicamentos); // Restauramos la lista completa
       });
 
       // 2. Lógica principal: Clic en "Aplicar Filtros" dentro del Modal
       $('#btnAplicarFiltros').on('click', function() {
         // Serializar los datos del formulario del modal
         const datosFiltro = $('#formFiltroModal').serialize();
+        const busquedaRapida = $('#filtro_busqueda_rapida').val().trim();
+        const principios = $('#filtro_principios').val().trim();
+        const nombre_med = $('#filtro_nombre').val().trim();
 
-        // Mostrar un indicador de carga en el botón si es necesario
+        // --- NUEVA VALIDACIÓN: Si ambos están vacíos, lanzamos alerta y nos detenemos ---
+        if (busquedaRapida === "" && principios === "" && nombre_med === "") {
+          mostrarAviso("Los campos de filtro están vacíos. Escriba alguna etiqueta para buscar.");
+          return; // El return evita que se ejecute la petición AJAX
+        }
 
         // Realizar la llamada AJAX al nuevo backend
         $.ajax({
@@ -468,17 +564,6 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
               medicamentoSelectPrincipal.append('<option value="" disabled>🛑 No se encontraron medicamentos que coincidan con los filtros aplicados.</option>');
             }
 
-            // 4. Cerrar el modal animadamente usando tu lógica existente
-            $('#modalBúsquedaAvanzadaMedicamento').removeClass('in').addClass('out');
-            setTimeout(function() {
-              $('#modalBúsquedaAvanzadaMedicamento').modal('hide');
-              $('#modalBúsquedaAvanzadaMedicamento').removeClass('out');
-            }, 400);
-
-            // 5. Opcional: Mostrar un aviso si hay resultados
-            /* if (response.length > 0) {
-               // alert('Se encontraron ' + response.length + ' medicamentos. Busque en la lista principal.');
-            } */
           },
           error: function(jqXHR, textStatus, errorThrown) {
             console.error("Error en AJAX de filtrado avanzado: ", textStatus, errorThrown);
@@ -487,6 +572,67 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
           }
         });
       });
+
+      // -------------------------------------------------------------
+      // SISTEMA DE ETIQUETAS (TAGS) PARA BÚSQUEDA RÁPIDA
+      // -------------------------------------------------------------
+      function inicializarTags(selector) {
+        const $inputOriginal = $(selector);
+        $inputOriginal.hide(); // Ocultamos el input original
+
+        // Creamos la estructura visual falsa
+        const $contenedor = $('<div class="tags-input-container"></div>');
+        const $inputFalso = $('<input type="text" class="tags-input-fake" placeholder="' + ($inputOriginal.attr('placeholder') || 'Escriba y presione Enter...') + '">');
+
+        $contenedor.append($inputFalso);
+        $inputOriginal.after($contenedor);
+
+        let tagsArray = [];
+
+        function renderizarTags() {
+          $contenedor.find('.tag-badge').remove();
+          tagsArray.forEach((tag, index) => {
+            const $tag = $(`<span class="tag-badge bg-primary">${tag} <i class="fa fa-times remove-tag" data-index="${index}"></i></span>`);
+            $inputFalso.before($tag);
+          });
+          // Unimos las palabras con espacio para enviarlas al backend por POST normal
+          $inputOriginal.val(tagsArray.join(' '));
+        }
+
+        $inputFalso.on('keypress', function(e) {
+          if (e.which === 13) { // Tecla Enter
+            e.preventDefault();
+            let valor = $(this).val().trim();
+            if (valor !== '' && !tagsArray.includes(valor)) {
+              tagsArray.push(valor);
+              $(this).val('');
+              renderizarTags();
+            }
+          }
+        });
+
+        // Al hacer clic en la "X" eliminamos la etiqueta
+        $contenedor.on('click', '.remove-tag', function() {
+          let index = $(this).data('index');
+          tagsArray.splice(index, 1);
+          renderizarTags();
+        });
+
+        // Foco visual al hacer clic en el contenedor
+        $contenedor.on('click', function() {
+          $inputFalso.focus();
+        });
+
+        // Limpiar cuando se resetee el formulario
+        $('#btnLimpiarFiltros').on('click', function() {
+          tagsArray = [];
+          renderizarTags();
+        });
+      }
+
+      // Inicializamos la funcionalidad en los dos inputs requeridos
+      inicializarTags('#filtro_busqueda_rapida');
+      inicializarTags('#filtro_principios');
 
       // Escuchar el cambio en el select de descripción de medicamento
       $('#Id_descripcion_medicamento').on('change', function() {
@@ -570,18 +716,17 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
           return;
         }
 
-        /*if (stock_minimo > existencia ) {
+        if (stock_minimo <= 0) {
           $('#stock_minimo').addClass('input-error');
-          mostrarAviso('⚠️ Error: Disculpe el stock minimo no puede ser mayor que la existencia en este momento, por favor disminuya o aumente la existencia.');
+          mostrarAviso('El stock minimo debe ser mayor a 0.');
           return;
-        }*/
+        }
 
         if (!formularioValido) {
           mostrarAviso('⚠️ Error: Todos los campos obligatorios (*) deben estar llenos.');
           return;
         }
 
-        // 1.3. Si todo es válido, abrimos el modal de confirmación
         abrirModalGuardar();
       });
 

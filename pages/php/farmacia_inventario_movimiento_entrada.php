@@ -2,6 +2,13 @@
 // Incluir la conexión a la base de datos (se asume esta ruta)
 include("../../cfg/conexion.php");
 $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
+
+$sql_ultimo_id = "SELECT MAX(Id_detalle_inventario) AS ultimo FROM detalle_inventario";
+$resultado_id = $conexion->query($sql_ultimo_id);
+$row_id = $resultado_id->fetch_assoc();
+$proximo_id = ($row_id['ultimo'] ? $row_id['ultimo'] : 0) + 1;
+// Formateamos el número para que tenga 6 dígitos (ej: 000281)
+$numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
 ?>
 
 <!DOCTYPE html>
@@ -53,12 +60,60 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       }
     }
 
+    /* --- ESTILOS NUEVOS PARA ERRORES Y ETIQUETAS (TAGS) --- */
+
+    /* 1. Botón rojo sombreado para cuando falta el medicamento */
+    .btn-error-sombreado {
+      background-color: #f8d7da !important;
+      color: #721c24 !important;
+      border: 1px solid #f5c6cb !important;
+      box-shadow: 0 0 10px rgba(220, 53, 69, 0.6) !important;
+      transition: all 0.3s ease;
+    }
+
+    /* 2. Diseño del contenedor de Etiquetas (Tags) */
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 4px;
+      border: 1px solid #d2d6de;
+      background-color: #fff;
+      min-height: 34px;
+      cursor: text;
+    }
+
+    .tags-input-container .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .tags-input-container .tag-badge i {
+      margin-left: 6px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      min-width: 150px;
+      padding: 2px;
+    }
+
     .modal.in .modal-dialog,
     #avisoModal,
     #modalEntradaGuardar,
     #modalBúsquedaAvanzadaMedicamento,
     #modalRegresarInventario,
-    #modalAgregarMedicamento {
+    #modalAgregarMedicamento,
+    #med_modal_principal,
+    #modalCargarPedido {
       animation: fadeIn 0.4s ease-out;
     }
 
@@ -68,7 +123,10 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
     .modal-open .modal-backdrop {
       opacity: 0.7 !important;
-      animation: pulse-opacity 0.3s forwards;
+    }
+
+    .modal-backdrop+.modal-backdrop {
+      opacity: 0 !important;
     }
 
     .modal {
@@ -83,6 +141,21 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
     .modal.in {
       display: block;
+    }
+
+    /* Añadir dentro de tu etiqueta <style> */
+    .table-responsive {
+      max-height: 220px;
+      /* Altura aproximada para 3 filas */
+      overflow-y: auto;
+    }
+
+    /* Fijar el encabezado para que no se pierda al bajar el scroll */
+    .table-detalle thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f4f4f4;
+      z-index: 1;
     }
 
     /* ---------------------------------------------------------------------- */
@@ -137,23 +210,85 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       </ol>
     </section>
 
+    <div id="info_pedido_cargado" class="alert alert-info" style="display: none; margin-bottom: 15px;">
+      <h4 style="margin-bottom: 5px;"><i class="icon fa fa-info-circle"></i> Pedido Vinculado: #<span id="txt_id_pedido_cargado"></span></h4>
+      <p style="margin: 0;">Se ha cargado un pedido. Por favor, use el botón amarillo de Editar (<i class="fa fa-pencil"></i>) en cada fila inferior para asignar el Lote y las Fechas antes de guardar. <b>No se puede cambiar el medicamento ni la cantidad solicitada.</b></p>
+    </div>
+
     <section class="content">
       <form id="formularioEntrada" method="POST" action="../../cfg/movimientos_inventario.php" novalidate autocomplete="off">
         <input type="hidden" name="op" id="op" value="<?php echo $operacion_actual; ?>">
         <input type="hidden" name="detalle_medicamentos" id="detalle_medicamentos" value="[]">
+        <input type="hidden" name="id_pedido" id="id_pedido_oculto" value="0">
 
         <div class="row">
           <div class="col-md-12">
 
             <div class="area-trabajo-blanca">
 
+              <div class="box-tools pull-left" style="margin-top: 2px;">
+                <span style="font-size: 16px; font-weight: bold; color: #555;">
+                  Operación N°: <span class="badge bg-blue" style="font-size: 15px; padding: 5px 10px; letter-spacing: 1px;">#<?php echo $numero_proyectado; ?></span>
+                </span>
+              </div>
+
+              <div class="box-tools pull-right" style="margin-top: -5px;">
+                <button type="button" class="btn btn-danger btn-sm" id="btnAbrirModalPedidos">
+                  <i class="fa fa-download"></i> Cargar Pedido
+                </button>
+              </div>
+
+              <br>
+
               <div class="box box-primary">
                 <div class="box-header with-border">
-                  <h3 class="box-title"><i class="fa fa-truck"></i> Datos de la Recepción:</h3>
+                  <h3 class="box-title"><i class="fa fa-truck"></i> Datos de la recepción:</h3>
                 </div>
                 <div class="box-body">
                   <div class="row">
-                    <div class="col-sm-4 form-group">
+                    <div class="col-sm-3">
+                      <label>Receptor (*):</label>
+                      <?php
+                      // Obtenemos el ID del usuario logueado desde la sesión
+                      $id_persona_logueada = $_SESSION['id'] ?? 0;
+
+                      // Si no hay un receptor seleccionado previamente (por ejemplo, si es un registro nuevo),
+                      // asignamos por defecto el ID del usuario logueado.
+                      if (empty($id_receptor_seleccionado)) {
+                        $id_receptor_seleccionado = $id_persona_logueada;
+                      }
+                      ?>
+
+                      <select name="receptor" id="receptor" class="form-control" required>
+                        <option value="">--- Seleccione el receptor ---</option>
+                        <?php
+                        // NOTA: Agregué 'p.apellido' a la consulta. En tu código original intentabas imprimirlo, 
+                        // pero no lo estabas pidiendo en el SELECT, lo que causaría un error de "Undefined array key".
+                        $sql_receptor = "SELECT p.id, p.nombre, p.apellido, r.Id_rol, p.estatus 
+                        FROM persona p 
+                        INNER JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona
+                        INNER JOIN rol r ON dpr.Id_rol = r.Id_rol
+                        WHERE p.estatus IN (1, 2) AND r.Id_rol IN (1, 6)
+                        ORDER BY p.nombre ASC";
+
+                        $resultado_receptor = $conexion->query($sql_receptor);
+
+                        while ($row_receptor = $resultado_receptor->fetch_assoc()) {
+                          $id_db = (int)$row_receptor['id'];
+                          $id_objetivo = (int)$id_receptor_seleccionado;
+
+                          // Si el ID de la base de datos coincide con el objetivo (usuario logueado), añade el 'selected'
+                          $selected = ($id_db === $id_objetivo) ? 'selected="selected"' : '';
+
+                          echo '<option value="' . $id_db . '" ' . $selected . '>' .
+                            htmlspecialchars($row_receptor['nombre'] . ' ' . $row_receptor['apellido']) .
+                            '</option>';
+                        }
+                        ?>
+                      </select>
+                    </div>
+
+                    <div class="col-sm-3 form-group">
                       <label>Proveedor / Donante (*):</label>
                       <select id="proveedor" name="proveedor" class="form-control" required>
                         <option value="">--- Seleccione un proveedor ---</option>
@@ -169,13 +304,20 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                       </select>
                     </div>
 
-                    <div class="col-sm-4 form-group">
-                      <label>Fecha de Recepción (*):</label>
-                      <input type="date" id="fecha_recepcion" name="fecha_recepcion" class="form-control" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" onkeydown="return false;" readonly>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3 form-group" id="med_group_fecha_recepcion">
+                      <label>Fecha y hora de recepción (*):</label>
+                      <div class="input-group">
+                        <input type="date" id="fecha_recepcion" name="fecha_recepcion" class="form-control" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" onkeydown="return false;" style="width: 100%;">
+                        <div class="input-group-btn" style="width: 100%;">
+                          <input type="time" id="hora_recepcion" name="hora_recepcion" class="form-control" value="<?php date_default_timezone_set('America/Caracas');
+                                                                                                                    echo date('H:i'); ?>">
+                        </div>
+                      </div>
                     </div>
 
-                    <div class="col-sm-4 form-group">
-                      <label>Observaciones Generales:</label>
+                    <div class="col-sm-3 form-group">
+                      <label>Observaciones generales:</label>
                       <input type="text" id="observaciones_generales" name="observaciones_generales" class="form-control" placeholder="Ej: Cajas en buen estado..." maxlength="255">
                     </div>
                   </div>
@@ -184,10 +326,14 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
               <div class="box box-success">
                 <div class="box-header with-border">
-                  <h3 class="box-title"><i class="fa fa-medkit"></i> Medicamentos a Ingresar:</h3>
-                  <div class="box-tools pull-right">
-                    <button type="button" class="btn btn-primary btn-sm" id="btnAbrirModalAgregar">
+                  <h3 class="box-title"><i class="fa fa-medkit"></i> Medicamentos a ingresar:</h3>
+                  <div class="box-tools pull-right" style="margin-left: 5px;">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnAbrirModalAgregar" style="width:200px;">
                       <i class="fa fa-plus"></i> Añadir Medicamento
+                    </button>
+                    <p></p>
+                    <button type="button" class="btn btn-success btn-sm" id="btnAbrirModalCrear" style="width:200px;">
+                      <i class="fa fa-plus"></i> Crear Nuevo Medicamento
                     </button>
                   </div>
                 </div>
@@ -200,7 +346,7 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                           <th>Lote</th>
                           <th>F. Fabricación</th>
                           <th>F. Vencimiento</th>
-                          <th>Cant.</th>
+                          <th>Cantidad</th>
                           <th>Acciones</th>
                         </tr>
                       </thead>
@@ -217,7 +363,6 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                   <button type="submit" class="btn btn-success" id="btnPrepararGuardado"><i class="fa fa-save"></i>Guardar</button>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -225,7 +370,7 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
     </section>
   </div>
 
-  <div class="modal" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
+  <div class="modal" id="modalAgregarMedicamento" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header bg-primary">
@@ -236,6 +381,13 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
         </div>
         <div class="modal-body">
           <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
+                <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre, principio activo, presentacion, etc...">
+              </div>
+            </div>
+            <br><br>
             <div class="col-sm-12 form-group">
               <label>Medicamento del Catálogo (*):</label>
               <div class="input-group">
@@ -293,8 +445,15 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                   <i class="fa fa-copy"></i> Usar Último
                 </button>
               </label>
-              <input type="text" id="lote" class="form-control" list="lista_lotes" placeholder="Ej: L-2026X" style="text-transform: uppercase;">
-              <datalist id="lista_lotes"></datalist>
+              <div class="input-group">
+                <input type="text" id="lote" class="form-control" list="lista_lotes" placeholder="Ej: L-2026X" style="text-transform: uppercase;">
+                <datalist id="lista_lotes"></datalist>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;">
+                    <i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
+              </div>
             </div>
             <div class="col-sm-4 form-group mt-3">
               <label>F. Fabricación (*):</label>
@@ -311,11 +470,36 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
               <label>Unidades a Ingresar (*):</label>
               <input type="text" id="cantidad" class="form-control" placeholder="Solo números, sin 0 inicial" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
             </div>
+
+            <!--<div class="col-sm-4 form-group mt-3">
+              <label>Cantidad por unidad (*):</label>
+              <input type="text" id="cantidad_unidad" class="form-control" placeholder="Ej 20 ML, 10 G, 300 L">
+            </div>-->
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
           <button type="button" class="btn btn-success" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalConfirmarLote" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Confirmar Lote Existente</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="modalConfirmarLoteTexto" style="font-size: 16px;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btnCancelarLote">Cancelar</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnAceptarLote">Aceptar</button>
         </div>
       </div>
     </div>
@@ -447,6 +631,90 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
     </div>
   </div>
 
+  <div class="modal" id="modalCargarPedido" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-yellow" style="background-color: #f39c12; color: white;">
+          <button type="button" class="close text-white" data-dismiss="modal" style="color:white; opacity: 1;">&times;</button>
+          <h4 class="modal-title"><i class="fa fa-list"></i> Seleccionar Pedido Pendiente</h4>
+        </div>
+        <div class="modal-body">
+          <table class="table table-bordered table-striped table-hover">
+            <thead style="background-color: #f4f4f4;">
+              <tr>
+                <th class="text-center">N° Pedido</th>
+                <th class="text-center">Fecha Creación</th>
+                <th class="text-center">Proveedor Solicitado</th>
+                <th class="text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php
+              $sql_pedidos = "SELECT p.id_pedido, p.fecha_creacion, pr.nombre_proveedor, p.id_proveedor 
+                              FROM pedidos p 
+                              INNER JOIN proveedor pr ON p.id_proveedor = pr.Id_proveedor 
+                              WHERE p.estado = 'Pendiente' AND p.estatus = 1";
+              $res_pedidos = $conexion->query($sql_pedidos);
+              if ($res_pedidos && $res_pedidos->num_rows > 0) {
+                while ($row_p = $res_pedidos->fetch_assoc()) {
+                  echo "<tr>
+                            <td class='text-center'><strong>#" . $row_p['id_pedido'] . "</strong></td>
+                            <td class='text-center'>" . date('d/m/Y H:i', strtotime($row_p['fecha_creacion'])) . "</td>
+                            <td class='text-center'>" . $row_p['nombre_proveedor'] . "</td>
+                            <td class='text-center'>
+                              <button type='button' class='btn btn-info btn-xs' onclick='verDetallePedidoPrevio(" . $row_p['id_pedido'] . ")' title='Ver medicamentos de este pedido'>
+                                <i class='fa fa-info-circle'></i> Ver Info
+                              </button>
+                              
+                              <button type='button' class='btn btn-success btn-xs btn-seleccionar-pedido' 
+                                      data-id='" . $row_p['id_pedido'] . "' 
+                                      data-idprov='" . $row_p['id_proveedor'] . "' style='margin-left: 5px;'>
+                                <i class='fa fa-check'></i> Seleccionar
+                              </button>
+                            </td>
+                          </tr>";
+                }
+              } else {
+                echo "<tr><td colspan='4' class='text-center text-muted'>No hay pedidos pendientes en este momento.</td></tr>";
+              }
+              ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalVerDetallePedidoPrevio" tabindex="-1" role="dialog" style="z-index: 1060;">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3498db; color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title"><i class="fa fa-shopping-basket"></i> Vista Previa - Contenido del Pedido <span id="num_pedido_previo_titulo"></span></h4>
+        </div>
+        <div class="modal-body">
+          <div style="max-height: 280px; overflow-y: auto; border-bottom: 1px solid #eee;">
+            <table class="table table-bordered table-striped" style="margin-bottom: 0;">
+              <thead style="background-color: #f8f9fa;">
+                <tr>
+                  <th>Medicamento / Presentación</th>
+                  <th class="text-center" style="width: 150px;">Cant. Solicitada</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo_detalle_pedido_previo">
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar Vista Previa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -501,47 +769,64 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
   </div>
 
 
-  <?php if (isset($conexion)) {
+  <?php
+  include('modales/inventario/medicamentos/medicamentos_agregar_modal.php');
+
+  if (isset($conexion)) {
     $conexion->close();
   }
-  include('includes/footer.php'); ?>
+
+  include('includes/footer.php');
+  ?>
 
   <script>
     $(document).ready(function() {
+
+      $('#infoLote').tooltip({
+        html: true,
+        placement: 'right',
+        title: 'Llene los datos del lote'
+      });
       // ARRAY PRINCIPAL QUE GUARDA LOS MEDICAMENTOS
       let listaDetalles = [];
       let lotesCargados = [];
-      
+
       // NUEVAS VARIABLES PARA EDICIÓN Y REUTILIZACIÓN DE LOTE
       let editandoIndex = -1;
-      let ultimoLoteIngresado = null; 
+      let ultimoLoteIngresado = null;
 
       const hoy = new Date().toISOString().split('T')[0];
       $('#fecha_fabricacion').attr('max', hoy);
 
       // ---------------------------------------------------------------------
-      // LÓGICA DE CIERRE DE MODALES ANIMADOS (Traida de Ajustes)
+      // LÓGICA DE CIERRE DE MODALES ANIMADOS
       // ---------------------------------------------------------------------
-      $('.modal').on('click', '[data-dismiss="modal"]', function() {
+      $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
+        e.preventDefault(); // <-- IMPORTANTE: Evita que Bootstrap lo cierre de golpe
         var $modal = $(this).closest('.modal');
         $modal.removeClass('in').addClass('out');
 
         setTimeout(function() {
           $modal.modal('hide');
-          $modal.removeClass('out');
         }, 400);
       });
 
+      // Limpieza profunda al terminar de ocultarse
       $('.modal').on('hidden.bs.modal', function() {
+        $(this).removeClass('out'); // <-- Previene que la clase se quede pegada
+
         if ($('.modal:visible').length) {
           $('body').addClass('modal-open');
         } else {
           $('body').removeClass('modal-open');
-          // EL BACKDROP SE ELIMINA SOLO SI NO QUEDAN MODALES ABIERTOS
           $('.modal-backdrop').remove();
         }
       });
 
+      // Limpieza preventiva antes de abrir para evitar dobles animaciones
+      $('.modal').on('show.bs.modal', function() {
+        $(this).removeClass('out');
+      });
       // -------------------------------------------------------------
       // FUNCIONES BASE
       // -------------------------------------------------------------
@@ -549,6 +834,13 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
         $('#avisoTexto').html(mensaje);
         $('#avisoModal').modal('show');
       }
+
+      $('#btnAbrirModalCrear').on('click', function() {
+        // Si necesitas limpiar el modal antes de abrirlo, puedes hacerlo aquí
+        $('#med_formularioMedicamento')[0].reset();
+
+        $('#med_modal_principal').modal('show');
+      });
 
       function limpiarFormularioModal() {
         $('#Id_descripcion_medicamento').val('').trigger('change');
@@ -567,20 +859,50 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       // FILTRADO AVANZADO AJAX (Igual a Ajustes)
       // -------------------------------------------------------------
       const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
+      window.opcionesOriginalesMedicamentos = medicamentoSelectPrincipal.html(); // Guardamos las opciones iniciales cargadas por PHP
 
       $('#btnLimpiarFiltros').on('click', function() {
         $('#formFiltroModal')[0].reset();
+        medicamentoSelectPrincipal.html(window.opcionesOriginalesMedicamentos); // Restauramos la lista completa
       });
 
       $('#btnAplicarFiltros').on('click', function(e) {
-        e.preventDefault(); 
+        e.preventDefault();
 
-        const datosFiltro = $('#formFiltroModal').serialize();
+        let datosFiltro = $('#formFiltroModal').serialize();
+        const formValores = $('#formFiltroModal').serializeArray();
+        const busquedaRapida = $('#filtro_busqueda_rapida').val().trim();
+
+        let hayDatos = false;
+
+        // Revisar si algún campo del modal avanzado tiene texto
+        $.each(formValores, function(i, field) {
+          if (field.value.trim() !== "") {
+            hayDatos = true;
+          }
+        });
+
+        if (busquedaRapida !== "") {
+          hayDatos = true;
+          // Agregamos la variable al string que se va a enviar al servidor
+          datosFiltro += (datosFiltro.length > 0 ? '&' : '') + 'filtro_busqueda_rapida=' + encodeURIComponent(busquedaRapida);
+        }
+
+        // --- CÓDIGO NUEVO A AGREGAR ---
+        let modoOperacion = $('#op').val(); // Toma el valor del input hidden de operación
+        datosFiltro += (datosFiltro.length > 0 ? '&' : '') + 'modo=' + encodeURIComponent(modoOperacion);
+        // ------------------------------
+
+        // Si todo está completamente vacío, lanzamos alerta y detenemos la ejecución
+        if (!hayDatos) {
+          mostrarAviso("Todos los filtros están vacíos. Escriba o seleccione al menos una opción para buscar.");
+          return;
+        }
 
         $.ajax({
           url: '../../cfg/ajax/filtrar_medicamentos_completo.php',
           type: 'POST',
-          data: datosFiltro,
+          data: datosFiltro, // <-- Ahora sí incluye la búsqueda rápida
           dataType: 'json',
           success: function(response) {
             medicamentoSelectPrincipal.empty();
@@ -607,7 +929,7 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
         editandoIndex = -1; // Nos aseguramos que es un nuevo registro
         limpiarFormularioModal();
         $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-check"></i> Añadir a la Lista');
-        
+
         // Muestra u oculta el botón de copiar lote dependiendo de si hay uno previo
         if (ultimoLoteIngresado) {
           $('#btnCopiarUltimoLote').show();
@@ -654,6 +976,16 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
                     $('#lista_lotes').append('<option value="' + item.lote + '">');
                   });
                 }
+                // --- NUEVO: Validar inmediatamente si ya se alcanzó el tope ---
+                let extActual = parseInt(data.existencia_actual) || 0;
+                let sMaximo = parseInt(data.stock_maximo) || 0;
+
+                if (sMaximo > 0 && extActual >= sMaximo) {
+                  $('#cantidad').prop('disabled', true).val('').attr('placeholder', 'Bloqueado (Stock Lleno)');
+                  mostrarAviso(`🚫 <b>Atención:</b> La existencia actual (${extActual}) ya es igual o superior al Stock Máximo permitido (${sMaximo}).<br><br>No se permite el ingreso de más unidades de este medicamento.`);
+                } else {
+                  $('#cantidad').prop('disabled', false).attr('placeholder', 'Solo números, sin 0 inicial');
+                }
               }
             }
           });
@@ -674,14 +1006,69 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
         const loteEncontrado = lotesCargados.find(l => l.lote.toUpperCase() === loteEscrito);
 
         if (loteEncontrado) {
-          $('#fecha_fabricacion').val(loteEncontrado.fecha_fabricacion).prop('readonly', true);
-          $('#fecha_vencimiento').prop('disabled', false).val(loteEncontrado.fecha_vencimiento).prop('readonly', true);
-          $(this).css('border-color', '#28a745');
+          if ($(this).data('lote-confirmado') === loteEscrito) {
+            aplicarLoteExistente(loteEncontrado);
+            return;
+          }
+
+          // Bandera para saber si realmente le dio al botón Aceptar
+          let loteAceptado = false;
+
+          $('#modalConfirmarLoteTexto').html(`¿Está seguro de sumar la cantidad al mismo lote <b>(${loteEscrito})</b> que ya existe en el sistema?`);
+          $('#modalConfirmarLote').modal('show');
+
+          // Lógica al dar click en Aceptar explícitamente
+          $('#btnAceptarLote').off('click').on('click', function() {
+            loteAceptado = true; // Marcamos como aceptado
+            $('#modalConfirmarLote').modal('hide');
+            $('#lote').data('lote-confirmado', loteEscrito);
+            aplicarLoteExistente(loteEncontrado);
+          });
+
+          // Lógica al dar click en Cancelar (Solo cierra, el evento hidden hace la limpieza)
+          $('#btnCancelarLote').off('click').on('click', function() {
+            $('#modalConfirmarLote').modal('hide');
+          });
+
+          // FUNDAMENTAL: Si el modal se cierra por cualquier motivo (Botón cancelar, clic afuera o en la X)
+          $('#modalConfirmarLote').off('hidden.bs.modal').on('hidden.bs.modals', function() {
+
+            $('.modal-backdrop').last().remove();
+
+            // Y nos aseguramos de que el modal de abajo siga funcionando correctamente
+            if ($('#modalAgregarMedicamento').is(':visible')) {
+              $('body').addClass('modal-open');
+            }
+
+            // Lógica original de limpieza
+            if (!loteAceptado) {
+              $('#lote').val('').data('lote-confirmado', ''); // Vaciamos el input
+              $('#fecha_fabricacion, #fecha_vencimiento').val('').prop('readonly', false);
+              $('#lote').css('border-color', '#ced4da');
+              $('#infoLote').attr('data-original-title', 'Llene los datos del lote').tooltip('fixTitle');
+            }
+          });
+
         } else {
+          $('#lote').data('lote-confirmado', '');
           $('#fecha_fabricacion, #fecha_vencimiento').prop('readonly', false);
           $(this).css('border-color', '#ced4da');
+          $('#infoLote').attr('data-original-title', 'Lote nuevo. Llene los datos.').tooltip('fixTitle');
         }
       });
+
+      function aplicarLoteExistente(loteEncontrado) {
+        $('#fecha_fabricacion').val(loteEncontrado.fecha_fabricacion).prop('readonly', true);
+        $('#fecha_vencimiento').prop('disabled', false).val(loteEncontrado.fecha_vencimiento).prop('readonly', true);
+        $('#lote').css('border-color', '#28a745');
+        var infoHtml = "<div style='text-align:left; font-size: 12px;'>" +
+          "<b>Proveedor:</b> " + (loteEncontrado.nombre_proveedor || 'No registrado') + "<br>" +
+          "<b>F. Fabricación:</b> " + (loteEncontrado.fecha_fabricacion || 'N/A') + "<br>" +
+          "<b>F. Vencimiento:</b> " + (loteEncontrado.fecha_vencimiento || 'N/A') + "<br>" +
+          "<b>Stock Físico:</b> " + (loteEncontrado.cantidad_actual || 0) +
+          "</div>";
+        $('#infoLote').attr('data-original-title', infoHtml).tooltip('fixTitle');
+      }
 
       $('#fecha_fabricacion').on('change', function() {
         if ($(this).val()) {
@@ -690,6 +1077,115 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
           $('#fecha_vencimiento').prop('disabled', true).val('').removeAttr('min');
         }
       });
+
+      // --- NUEVO: ABRIR MODAL Y CARGAR PEDIDO ---
+      $('#btnAbrirModalPedidos').on('click', function() {
+        $('#modalCargarPedido').modal('show');
+      });
+
+      $('.btn-seleccionar-pedido').on('click', function() {
+        let idPedido = $(this).data('id');
+        let idProveedor = $(this).data('idprov');
+
+        cargarPedidoLogica(idPedido, idProveedor); // Usamos la nueva función centralizada
+
+        $('#modalCargarPedido').removeClass('in').addClass('out');
+        setTimeout(function() {
+          $('#modalCargarPedido').modal('hide');
+          $('#modalCargarPedido').removeClass('out');
+        }, 400);
+      });
+
+      // --- NUEVO: FUNCIÓN PARA CARGAR PEDIDO ---
+      function cargarPedidoLogica(idPedido, idProveedor) {
+        // Asignamos el proveedor y bloqueamos el campo
+        $('#proveedor').val(idProveedor).trigger('change');
+        $('#proveedor').css('pointer-events', 'none').css('background-color', '#eee');
+
+        $('#id_pedido_oculto').val(idPedido);
+
+        // Mostrar indicador visual
+        $('#txt_id_pedido_cargado').text(idPedido.toString().padStart(6, '0'));
+        $('#info_pedido_cargado').slideDown();
+
+        // Ocultamos los botones de agregar extra para evitar descuadres del pedido
+        $('#btnAbrirModalAgregar, #btnAbrirModalCrear').hide();
+
+        $.ajax({
+          url: '../../cfg/ajax/obtener_detalles_pedido.php',
+          type: 'POST',
+          data: {
+            id_pedido: idPedido
+          },
+          dataType: 'json',
+          success: function(data) {
+            if (data && data.length > 0) {
+              listaDetalles = [];
+              data.forEach(function(item) {
+                listaDetalles.push({
+                  id_medicamento: item.id_descripcion_medicamento,
+                  nombre_medicamento: item.nombre_medicamento + ' [' + item.nombre_presentacion + ']',
+                  componentes: item.componentes || 'Sin principios activos registrados',
+                  lote: '',
+                  fecha_fabricacion: '',
+                  fecha_vencimiento: '',
+                  cantidad: parseInt(item.cantidad_solicitada)
+                });
+              });
+              actualizarTablaDetalles();
+              mostrarAviso("✅ <b>Pedido cargado.</b><br><br>Se han traído las cantidades solicitadas. <b>Atención:</b> Use el botón amarillo de Editar en cada fila para asignar el número de Lote y las Fechas correspondientes antes de guardar.");
+            }
+          }
+        });
+      }
+
+      // --- DISPARADOR AUTOMÁTICO DESDE LA URL ---
+      <?php if (isset($_GET['id_pedido_auto']) && isset($_GET['id_proveedor_auto'])) : ?>
+        setTimeout(function() {
+          cargarPedidoLogica("<?php echo (int)$_GET['id_pedido_auto']; ?>", "<?php echo (int)$_GET['id_proveedor_auto']; ?>");
+        }, 500); // Pequeño delay para asegurar que el DOM esté listo
+      <?php endif; ?>
+
+      // --- NUEVO: FUNCIÓN PARA VER CONTENIDO ANTES DE SELECCIONAR ---
+      // --- NUEVO: FUNCIÓN PARA VER CONTENIDO ANTES DE SELECCIONAR ---
+      window.verDetallePedidoPrevio = function(idPedido) {
+        // Formatear el identificador numérico con ceros a la izquierda
+        let idFormateado = idPedido.toString().padStart(6, '0');
+        $('#num_pedido_previo_titulo').text('#' + idFormateado);
+
+        // Insertar un indicador visual de carga rápida
+        $('#cuerpo_detalle_pedido_previo').html('<tr><td colspan="2" class="text-center"><i class="fa fa-spinner fa-spin"></i> Consultando medicamentos...</td></tr>');
+
+        // Desplegar el modal de detalles intermedio
+        $('#modalVerDetallePedidoPrevio').modal('show');
+
+        // Consumir el componente AJAX existente del sistema
+        $.ajax({
+          url: '../../cfg/ajax/obtener_detalle_pedido_modal.php',
+          type: 'POST',
+          data: {
+            id_pedido: idPedido
+          },
+          dataType: 'json',
+          success: function(respuesta) {
+            var html = '';
+            if (respuesta && respuesta.length > 0) {
+              respuesta.forEach(function(item) {
+                html += '<tr>';
+                html += '  <td><strong>' + item.nombre_medicamento + '</strong><br><small class="text-muted">' + item.presentacion + '</small></td>';
+                html += '  <td class="text-center"><span class="badge bg-primary" style="font-size: 14px;">' + item.cantidad_solicitada + '</span></td>';
+                html += '</tr>';
+              });
+            } else {
+              html = '<tr><td colspan="2" class="text-center text-muted">Este pedido no tiene registros asociados.</td></tr>';
+            }
+            $('#cuerpo_detalle_pedido_previo').html(html);
+          },
+          error: function() {
+            $('#cuerpo_detalle_pedido_previo').html('<tr><td colspan="2" class="text-center text-danger"><i class="fa fa-exclamation-triangle"></i> No se pudo establecer conexión con el servidor.</td></tr>');
+          }
+        });
+      };
 
       // -------------------------------------------------------------
       // AGREGAR O EDITAR EN LA LISTA DE DETALLES
@@ -702,6 +1198,10 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
         const f_fab = $('#fecha_fabricacion').val();
         const f_venc = $('#fecha_vencimiento').val();
         const cant = parseInt($('#cantidad').val());
+        const existencia = parseInt($('#existencia_actual').val()) || 0;
+        const sMin = parseInt($('#stock_minimo').val()) || 0;
+        const sMax = parseInt($('#stock_maximo').val()) || 0;
+        const totalProyectado = existencia + cant;
 
         $('.modal-body input, .modal-body select').removeClass('input-error');
 
@@ -723,6 +1223,24 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
         if (!f_venc) {
           $('#fecha_vencimiento').addClass('input-error');
           mostrarAviso('Ingrese la fecha de vencimiento.');
+          return;
+        }
+        // 1. Bloqueo total: Si la existencia ya supera o iguala el stock máximo
+        if (sMax > 0 && existencia >= sMax) {
+          $('#Id_descripcion_medicamento, #cantidad').addClass('input-error');
+          mostrarAviso(`🚫 <b>Acción denegada:</b> No puedes ingresar este medicamento. La existencia actual (${existencia}) ya alcanzó o superó el Stock Máximo permitido (${sMax}).`);
+          return;
+        }
+        // 2. Advertencia de límite: Si la cantidad a ingresar empuja el inventario por encima del límite
+        if (sMax > 0 && totalProyectado > sMax) {
+          $('#cantidad').addClass('input-error');
+          let permitido = sMax - existencia; // Calculamos cuánto es lo máximo que puede ingresar
+          mostrarAviso(`⚠️ <b>Límite excedido:</b> Intentas ingresar demasiadas unidades.<br><br>Actualmente hay ${existencia} unidades y el máximo es ${sMax}. <b>Solo puedes ingresar un máximo de ${permitido} unidades nuevas.</b>`);
+          return;
+        }
+        if (sMin > 0 && totalProyectado < sMin) {
+          $('#cantidad').addClass('input-error');
+          mostrarAviso(`La cantidad ingresada no cubre el Stock Mínimo requerido (${sMin}). Actualmente hay ${existencia} unidades. Debes ingresar al menos ${sMin - existencia} unidades para estabilizar el inventario.`);
           return;
         }
         if (isNaN(cant) || cant <= 0) {
@@ -798,16 +1316,19 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
             let diffDias = (new Date(item.fecha_vencimiento) - new Date(hoy)) / (1000 * 60 * 60 * 24);
             if (diffDias < 180) rowClass = "row-vence-pronto";
 
-            // Se agregó ${item.componentes} debajo del nombre y el botón de editar
+            // Reemplaza la sección del append dentro de actualizarTablaDetalles con esto:
+            let etiquetaLote = item.lote ? `<strong>${item.lote}</strong>` : `<span class="text-danger"><i class="fa fa-exclamation-triangle"></i> Falta Lote</span>`;
+            let etiquetaFab = item.fecha_fabricacion ? item.fecha_fabricacion : `<span class="text-danger">Pendiente</span>`;
+            let etiquetaVenc = item.fecha_vencimiento ? item.fecha_vencimiento : `<span class="text-danger">Pendiente</span>`;
+
             tbody.append(`
               <tr class="${rowClass}">
                 <td style="text-align: left;">
                   ${item.nombre_medicamento}
-                  <br><small class="text-muted" style="font-size: 11px;"><i>${item.componentes}</i></small>
                 </td>
-                <td><strong>${item.lote}</strong></td>
-                <td>${item.fecha_fabricacion}</td>
-                <td>${item.fecha_vencimiento} ${diffDias < 180 ? ' <i class="fa fa-warning text-warning" title="Vence pronto"></i>' : ''}</td>
+                <td>${etiquetaLote}</td>
+                <td>${etiquetaFab}</td>
+                <td>${etiquetaVenc} ${diffDias < 180 ? ' <i class="fa fa-warning text-warning" title="Vence pronto"></i>' : ''}</td>
                 <td><span class="badge bg-green" style="font-size:14px;">${item.cantidad}</span></td>
                 <td>
                   <button type="button" class="btn btn-warning btn-xs btn-editar-fila" data-index="${index}" title="Editar medicamento">
@@ -832,7 +1353,7 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
         editandoIndex = index; // Declaramos en qué posición estamos trabajando
 
         limpiarFormularioModal(); // Limpiamos primero todo el modal
-        
+
         // Rellenamos el modal con los datos del item
         $('#Id_descripcion_medicamento').val(item.id_medicamento).trigger('change');
         $('#lote').val(item.lote);
@@ -842,7 +1363,25 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
 
         $('#btnCopiarUltimoLote').hide(); // Ocultamos el botón de copiar lote para no confundir mientras se edita
         $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-save"></i> Guardar Cambios');
-        
+
+        $('#btnCopiarUltimoLote').hide();
+        $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-save"></i> Guardar Cambios');
+
+        // --- NUEVO: BLOQUEO DE EDICIÓN SI ES UN PEDIDO ---
+        if ($('#id_pedido_oculto').val() !== "0" && $('#id_pedido_oculto').val() !== "") {
+          // Modo Pedido: Bloquear Select y Cantidad
+          $('#Id_descripcion_medicamento').css('pointer-events', 'none').css('background-color', '#eee');
+          $('#btnBuscarFiltrar').prop('disabled', true);
+          $('#cantidad').prop('readonly', true).css('background-color', '#eee');
+          $('#modalAgregarMedicamento .modal-title').html('<i class="fa fa-pencil"></i> Completar Lote (Modo Pedido)');
+        } else {
+          // Modo Normal: Desbloquear
+          $('#Id_descripcion_medicamento').css('pointer-events', 'auto').css('background-color', '');
+          $('#btnBuscarFiltrar').prop('disabled', false);
+          $('#cantidad').prop('readonly', false).css('background-color', '');
+          $('#modalAgregarMedicamento .modal-title').html('<i class="fa fa-plus-circle"></i> Ingresar Lote de Medicamento');
+        }
+
         $('#modalAgregarMedicamento').modal('show');
       });
 
@@ -853,18 +1392,192 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       });
 
       // -------------------------------------------------------------
+      // SISTEMA DE ETIQUETAS (TAGS) PARA BÚSQUEDA RÁPIDA
+      // -------------------------------------------------------------
+      function inicializarTags(selector) {
+        const $inputOriginal = $(selector);
+        $inputOriginal.hide();
+
+        const $contenedor = $('<div class="tags-input-container"></div>');
+        const $inputFalso = $('<input type="text" class="tags-input-fake" placeholder="' + ($inputOriginal.attr('placeholder') || 'Escriba y presione Enter...') + '">');
+
+        $contenedor.append($inputFalso);
+        $inputOriginal.after($contenedor);
+
+        let tagsArray = [];
+
+        function renderizarTags() {
+          $contenedor.find('.tag-badge').remove();
+          tagsArray.forEach((tag, index) => {
+            const $tag = $(`<span class="tag-badge bg-primary">${tag} <i class="fa fa-times remove-tag" data-index="${index}"></i></span>`);
+            $inputFalso.before($tag);
+          });
+          $inputOriginal.val(tagsArray.join(' '));
+        }
+
+        $inputFalso.on('keypress', function(e) {
+          if (e.which === 13) { // Tecla Enter
+            e.preventDefault();
+            let valor = $(this).val().trim();
+
+            if (valor !== '' && !tagsArray.includes(valor)) {
+              tagsArray.push(valor);
+              $(this).val('');
+              renderizarTags();
+              // Apenas aparezca el tag, busca de una vez
+              $('#btnAplicarFiltros').click();
+            } else if (valor === '') {
+              $('#btnAplicarFiltros').click();
+            }
+          }
+        });
+
+        $inputFalso.on('keydown', function(e) {
+          if (e.which === 8 && $(this).val() === '') {
+            e.preventDefault();
+            if (tagsArray.length > 0) {
+              let ultimaEtiqueta = tagsArray.pop();
+              $(this).val(ultimaEtiqueta);
+              renderizarTags();
+
+              // Si al borrar quedó vacío, limpiamos filtros. Si no, re-aplicamos la búsqueda.
+              if (tagsArray.length === 0) {
+                $('#btnLimpiarFiltros').click();
+              } else {
+                $('#btnAplicarFiltros').click();
+              }
+            }
+          }
+        });
+
+        $contenedor.on('click', '.remove-tag', function() {
+          let index = $(this).data('index');
+          tagsArray.splice(index, 1);
+          renderizarTags();
+
+          // Si al eliminar en la "X" queda vacío, resetea a todo. Si no, re-aplica.
+          if (tagsArray.length === 0) {
+            $('#btnLimpiarFiltros').click();
+          } else {
+            $('#btnAplicarFiltros').click();
+          }
+        });
+
+        $contenedor.on('click', function() {
+          $inputFalso.focus();
+        });
+
+        $('#btnLimpiarFiltros').on('click', function() {
+          tagsArray = [];
+          renderizarTags();
+        });
+      }
+
+      // Inicializamos la funcionalidad en los dos inputs requeridos
+      inicializarTags('#filtro_busqueda_rapida');
+      inicializarTags('#filtro_principios');
+
+      // -------------------------------------------------------------
+      // ACTUALIZACIÓN SILENCIOSA DEL SELECT DE MEDICAMENTOS
+      // -------------------------------------------------------------
+      function actualizarSelectMedicamentosSilencio() {
+        // 1. Verificamos si hay alguna búsqueda/filtro activo
+        const hayFiltroBusqueda = $('#filtro_busqueda_rapida').val().trim() !== '';
+        let hayFiltrosAvanzados = false;
+        $.each($('#formFiltroModal').serializeArray(), function(i, field) {
+          if (field.value.trim() !== "") hayFiltrosAvanzados = true;
+        });
+
+        // 2. Solo actualizamos si el usuario NO está usando los filtros
+        if (!hayFiltroBusqueda && !hayFiltrosAvanzados) {
+          // Guardamos el ID del medicamento que el usuario tenga seleccionado actualmente
+          const valorSeleccionado = $('#Id_descripcion_medicamento').val();
+          let modoOperacion = $('#op').val();
+
+          $.ajax({
+            url: '../../cfg/ajax/filtrar_medicamentos_completo.php',
+            type: 'POST',
+            data: {
+              recarga_silenciosa: true,
+              modo: modoOperacion // Envía el modo en la recarga silenciosa
+            },
+            dataType: 'json',
+            success: function(response) {
+              const select = $('#Id_descripcion_medicamento');
+              let nuevasOpciones = '<option value="">--- Seleccione un Medicamento ---</option>';
+
+              if (response.length > 0) {
+                response.forEach(function(item) {
+                  const comp = item.componentes ? ` data-componentes="${item.componentes}"` : '';
+                  nuevasOpciones += `<option value="${item.id_desc}" data-nombre="${item.nombre_completo}"${comp}>${item.nombre_completo}</option>`;
+                });
+              } else {
+                nuevasOpciones += '<option value="" disabled>🛑 No se encontraron medicamentos.</option>';
+              }
+
+              // Actualizamos el DOM sin interrumpir al usuario
+              select.html(nuevasOpciones);
+
+              // Restauramos la selección que tenía
+              if (valorSeleccionado) {
+                select.val(valorSeleccionado);
+              }
+
+              // Actualizamos el respaldo original para cuando limpien los filtros
+              window.opcionesOriginalesMedicamentos = nuevasOpciones;
+            }
+          });
+        }
+      }
+
+      // Ejecutar la actualización silenciosa cada 2000 milisegundos (2 segundos)
+      setInterval(actualizarSelectMedicamentosSilencio, 2000);
+
+      // -------------------------------------------------------------
       // SUBMIT Y GUARDADO FINAL
       // -------------------------------------------------------------
       $('#formularioEntrada').on('submit', function(e) {
         e.preventDefault();
 
+        // Limpiar errores previos
+        $('#proveedor').removeClass('input-error');
+        $('#receptor').removeClass('input-error');
+        $('#fecha_recepcion').removeClass('input-error');
+        $('#hora_recepcion').removeClass('input-error');
+        $('#btnAbrirModalAgregar').removeClass('btn-error-sombreado');
+
+        let faltanDatosLote = listaDetalles.some(item => item.lote === '' || item.fecha_fabricacion === '' || item.fecha_vencimiento === '');
+        if (faltanDatosLote) {
+          mostrarAviso("🚫 <b>Datos Incompletos:</b><br><br>Hay medicamentos en la lista sin Lote o sin Fechas asignadas. Use el botón amarillo de Editar en cada fila para completar la información.");
+          return;
+        }
+
+        if ($('#fecha_recepcion').val() === "") {
+          $('#fecha_recepcion').addClass('input-error');
+          mostrarAviso("La fecha de la recepcion no puede estar vacia.");
+          return;
+        }
+
+        if ($('#hora_recepcion').val() === "") {
+          $('#hora_recepcion').addClass('input-error');
+          mostrarAviso("La hora de la recepcion no puede estar vacia.");
+          return;
+        }
+
+        if ($('#receptor').val() === "") {
+          $('#receptor').addClass('input-error');
+          mostrarAviso("Debe seleccionar el Receptor.");
+          return;
+        }
+
         if ($('#proveedor').val() === "") {
+          $('#proveedor').addClass('input-error');
           mostrarAviso("Debe seleccionar el Proveedor/Donante.");
           return;
-          
         }
 
         if (listaDetalles.length === 0) {
+          $('#btnAbrirModalAgregar').addClass('btn-error-sombreado');
           mostrarAviso("Debe añadir al menos un medicamento a la lista para generar una entrada.");
           return;
         }

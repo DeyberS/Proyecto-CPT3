@@ -164,7 +164,9 @@
                   <td class=""><span class="text-row text-white"><?= ($row['prefijo']) . "-" . ($row['telefono']); ?></span></td>
                   <?php if (in_array('Gestionar acciones de representantes', $_SESSION["permisos"])) : ?>
                     <td>
-                      <!--<a href="representante_info.php?Id=<?php echo $row['id'] ?>" class="btn-sm btn-info"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>-->
+                      <?php if (in_array('Ver Representantes', $_SESSION["permisos"])) : ?>
+                        <a href="representantes_info.php?Id=<?php echo $row['id'] ?>" class="btn-sm btn-info" title="Ver"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
+                      <?php endif; ?>
                       <?php if (in_array('Editar Representantes', $_SESSION["permisos"])) : ?>
                         <a href="representantes_editar.php?Id=<?php echo $row['id'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
                       <?php endif; ?>

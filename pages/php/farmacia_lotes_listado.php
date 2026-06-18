@@ -152,7 +152,7 @@
               JOIN descripcion_medicamento dm ON lm.Id_descripcion_medicamento = dm.Id
               JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
               $donde
-              ORDER BY lm.Id ASC
+              ORDER BY lm.fecha_fabricacion DESC
               LIMIT $inicio, $registros_por_pagina";
 
               $resultado = $conexion->query($sql);

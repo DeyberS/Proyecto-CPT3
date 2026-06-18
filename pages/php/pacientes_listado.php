@@ -109,6 +109,7 @@
               <th>Genero</th>
               <th>Edad</th>
               <th>Telefono</th>
+              <th>Tipo De Paciente</th>
               <?php if (in_array('Gestionar acciones de pacientes', $_SESSION["permisos"])) : ?>
                 <th>Acciones</th>
               <?php endif; ?>
@@ -139,8 +140,9 @@
               $total_paginas = ceil($total_pacientes / $registros_por_pagina);
 
               // Consulta para obtener los registros de la página actual
-              $sql = "SELECT r.Id_rol, pt.prefijo, t.telefono, p.id, p.tipo_cedula, p.cedula, p.nombre, p.apellido, p.genero, p.fecha_nacimiento, p.estatus 
+              $sql = "SELECT r.Id_rol, pt.prefijo, t.telefono, p.id, p.tipo_cedula, p.cedula, p.nombre, p.apellido, p.genero, p.fecha_nacimiento, p.estatus, dp.tipo_paciente 
               FROM persona p 
+              JOIN detalle_paciente dp ON p.id = dp.Id_persona
               JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
               JOIN rol r ON dpr.Id_rol = r.Id_rol
               LEFT JOIN telefonos_personas t ON p.id = t.Id_persona
@@ -163,6 +165,7 @@
                     <td class=""><span class="text-row text-white"><?= ($row['genero']); ?></span></td>
                     <td class=""><span class="text-row text-white"><?= $edad; ?></span></td>
                     <td class=""><span class="text-row text-white"><?= ($row['prefijo']) . "-" . ($row['telefono']); ?></span></td>
+                    <td class=""><span class="text-row text-white"><?= ($row['tipo_paciente']); ?></span></td>
                     <?php if (in_array('Gestionar acciones de pacientes', $_SESSION["permisos"])) : ?>
                       <td>
                         <?php if (in_array('Ver Pacientes', $_SESSION["permisos"])) : ?>

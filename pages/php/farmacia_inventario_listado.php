@@ -88,11 +88,11 @@
     // Definir el filtro dinámico
     $donde = "WHERE 1=1";
 
-    $id_rol_usuario_activo = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0; 
+    $id_rol_usuario_activo = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0;
     $id_persona_activa = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : 0);
-    
+
     if ($id_rol_usuario_activo == 9) {
-        $donde .= " AND di.Id_persona = '$id_persona_activa'";
+      $donde .= " AND di.Id_persona = '$id_persona_activa'";
     }
 
     if ($busqueda != '') {
@@ -151,6 +151,10 @@
         <?php if (in_array('Ajustar Stock de Medicamentos', $_SESSION["permisos"])) : ?>
           <a href="farmacia_inventario_ajustes.php?op=ajuste" class="btn-sm btn-primary pull-right"><i class="fa fa-cog"></i> Ajuste de Stock </a>
         <?php endif; ?>
+        <p class="pull-right" style="width:5px;"></p>
+        <?php if (in_array('Generar Pedidos', $_SESSION["permisos"])) : ?>
+          <a href="farmacia_pedidos_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-cog"></i> Pedidos </a>
+        <?php endif; ?>
         <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="width: 200px;" autocomplete="off">
       </div>
       <br><br>
@@ -192,14 +196,25 @@
             LIMIT $inicio, $registros_por_pagina";
 
             $resultado = $conexion->query($sql);
-            $contador = 0;
+            $primer_activo_encontrado = false;
+            
             if ($resultado && $resultado->num_rows > 0) {
               while ($row = $resultado->fetch_assoc()) {
-                $clase_badge = (strcasecmp($row['tipo_nom'], 'Entrada') == 0) ? 'bg-green' : 'bg-crimson';
-                $es_entrada = (strcasecmp($row['tipo_nom'], 'Entrada') == 0);
-                $simbolo = $es_entrada ? '+' : '-';
-                $color_texto = $es_entrada ? 'text-green' : 'text-red'; // Opcional: para dar color al número
+
                 $tipos_prohibidos = [8, 9];
+
+                // 2. NUEVA VALIDACIÓN: Ignorar si es "Anulado" O si es una reversión (8 y 9)
+                $es_primer_activo = false;
+                if ($row['estado_movimiento'] !== 'Anulado' && !in_array($row['Id_tipoMovimiento'], $tipos_prohibidos) && !$primer_activo_encontrado) {
+                    $es_primer_activo = true;
+                    $primer_activo_encontrado = true;
+                }
+
+                $clase_badge = (strcasecmp($row['tipo_nom'], 'Entrada') == 0 or strcasecmp($row['tipo_nom'], 'Ajuste por Cuadre (Entrada)') == 0) ? 'bg-green' : 'bg-crimson';
+                $es_entrada = (strcasecmp($row['tipo_nom'], 'Entrada') == 0);
+
+                $simbolo = $es_entrada ? '+' : '-';
+                $color_texto = $es_entrada ? 'text-green' : 'text-red';
             ?>
                 <tr>
                   <td><small class="text-row text-white"><?= htmlspecialchars($row['responsable']); ?></small></td>
@@ -214,7 +229,7 @@
                       <?php if (in_array('Anular Movimientos de Inventario', $_SESSION["permisos"])) : ?>
                         <?php if ($row['estado_movimiento'] !== 'Anulado' && !in_array($row['Id_tipoMovimiento'], $tipos_prohibidos)) : ?>
 
-                          <?php if ($contador === 0 && $pagina_actual === 1 && empty($busqueda)) : ?>
+                          <?php if ($es_primer_activo && $pagina_actual === 1 && empty($busqueda)) : ?>
                             <a href="javascript:void(0);" onclick="abrirModalAnulacion(<?= $row['Id_detalle_inventario']; ?>)" title="Anular Movimiento" class="btn-sm btn-danger">
                               <img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;">
                             </a>
@@ -228,19 +243,10 @@
                           <span class="badge badge-secondary">Anulado</span>
                         <?php endif; ?>
                       <?php endif; ?>
-
-                      <?php if (in_array('Elimina Movimientos de Inventario', $_SESSION["permisos"])) : ?>
-                        <?php if ($contador === 0 && $pagina_actual === 1) : ?>
-                          <a href="javascript:void(0);" onclick="confirmarEliminar(<?= $row['Id_detalle_inventario']; ?>)" title="Eliminar" class="btn-sm btn-danger"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
-                        <?php else : ?>
-                          <a href="#" class="btn-sm btn-disabled"><img src="../../recursos/imagenes/iconos/Delete.png" title="No se pueden eliminar registros antiguos, realice un ajuste" style="width:15px; height:15px;"></a>
-                        <?php endif; ?>
-                      <?php endif; ?>
-                      
                     </td>
                   <?php endif; ?>
                 </tr>
-            <?php $contador++;
+            <?php
               }
             } else {
               echo '<tr><td colspan="8" class="text-center">No hay movimientos registrados.</td></tr>';
@@ -352,6 +358,7 @@
                 <button type="button" class="btn btn-secondary" onclick="closeCustomModal($('#modalAnulacion'))">Cancelar</button>
                 <button type="submit" class="btn btn-danger">Confirmar Reversión</button>
               </div>
+            </div>
           </form>
         </div>
       </div>
@@ -368,9 +375,28 @@
             <div class="form-group">
               <label>Tipo de Reporte:</label>
               <select class="form-control" id="tipo_reporte_inv">
-                <option value="existencia">Existencia Actual (Stock)</option>
-                <option value="entradas">Reporte de Entradas (Ingresos)</option>
-                <option value="salidas">Reporte de Salidas (Egresos)</option>
+              <?php $rol_actual = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0; ?>
+                <optgroup label="Estado Actual">
+                  <option value="existencia">Existencia Actual (Stock)</option>
+                  <?php if ($rol_actual != 9): /* Oculto para Despachador */ ?>
+                  <option value="vencimientos">Próximos a Vencer (Control de Lotes)</option>
+                  <?php endif; ?>
+                </optgroup>
+
+                <optgroup label="Movimientos y Trazabilidad">
+                  <?php if ($rol_actual != 9) : /* Oculto para Despachador */ ?>
+                  <option value="entradas">Entradas (Ingresos de Suministros)</option>
+                  <?php endif; ?>
+                  <option value="despacho">Salidas por Dispensación (Récipes)</option>
+                  <?php if ($rol_actual != 9) : /* Oculto para Despachador */ ?>
+                  <option value="bajas">Bajas y Mermas (Vencidos/Dañados)</option>
+                  <option value="ajustes">Ajustes de Inventario (Auditoría)</option>
+                  <?php endif; ?>
+                </optgroup>
+
+                <optgroup label="Análisis y Planificación">
+                  <option value="consumo">Consumo Mensual Actualizado (CMA)</option>
+                </optgroup>
               </select>
             </div>
 
@@ -379,13 +405,13 @@
                 <div class="col-md-6">
                   <div class="form-group">
                     <label>Desde:</label>
-                    <input type="date" class="form-control" id="fecha_desde" value="<?= date('Y-m-d'); ?>">
+                    <input type="date" class="form-control" id="fecha_desde" value="<?= date('Y-m-d'); ?>" max="<?= date('Y-m-d'); ?>">
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="form-group">
                     <label>Hasta:</label>
-                    <input type="date" class="form-control" id="fecha_hasta" value="<?= date('Y-m-d'); ?>">
+                    <input type="date" class="form-control" id="fecha_hasta" value="<?= date('Y-m-d'); ?>" min="<?= date('Y-m-d'); ?>">
                   </div>
                 </div>
               </div>
@@ -421,17 +447,6 @@
   </div>
 
   <script>
-    function confirmarEliminar(id) {
-      // Construimos la URL hacia el archivo que procesa la eliminación
-      var urlEliminar = '../../cfg/eliminar/eliminar_movimiento.php?id=' + id;
-
-      // Asignamos la URL al botón "Aceptar" del modal
-      $('#btnAceptarEliminar').attr('href', urlEliminar);
-
-      // Mostramos el modal
-      $('#ModalConfirmarEliminar').modal('show');
-    }
-
     function abrirModalAnulacion(id) {
       // Asignar el ID al campo oculto del formulario
       document.getElementById('id_anular_input').value = id;
@@ -443,15 +458,14 @@
       $('#modalAnulacion').modal('show');
     }
 
-
     function closeCustomModal(modalElement) {
       modalElement.removeClass('in').addClass('out');
       setTimeout(() => {
         modalElement.modal('hide').removeClass('out');
       }, 100); // Duración de la animación
     }
-
     $(document).ready(function() {
+
       $('.reporte').on('click', function(e) {
         e.preventDefault();
         $('#ModalReporteInventario').modal('show');
@@ -460,19 +474,11 @@
       // Mostrar/Ocultar fechas según el tipo de reporte
       $('#tipo_reporte_inv').on('change', function() {
         var valor = $(this).val();
-        if (valor == 'entradas' || valor == 'salidas') {
+        if (valor == 'entradas' || valor == 'salidas' || valor == 'despacho' || valor == 'bajas' || valor == 'ajustes') {
           $('#seccion_fechas').fadeIn();
         } else {
           $('#seccion_fechas').fadeOut();
         }
-      });
-
-      $('#ModalReporteInventario .close, #ModalReporteInventario .btn-second').on('click', function() {
-        closeCustomModal($('#ModalReporteInventario'));
-      });
-
-      $('#ModalConfirmarEliminar .close, #ModalConfirmarEliminar .btn-second').on('click', function() {
-        closeCustomModal($('#ModalConfirmarEliminar'));
       });
 
       // Ejecutar reporte
@@ -483,13 +489,22 @@
 
         var url = '../../cfg/reportes/generar_pdf_inventario.php?tipo=' + tipo;
 
-        if (tipo == 'entradas' || tipo == 'salidas') {
+        if (tipo == 'entradas' || tipo == 'salidas' || tipo == 'despacho' || tipo == 'bajas' || tipo == 'ajustes') {
           url += '&desde=' + desde + '&hasta=' + hasta;
         }
 
         window.open(url, '_blank');
         $('#ModalReporteInventario').modal('hide');
       });
+
+      $('#ModalReporteInventario .close, #ModalReporteInventario .btn-second').on('click', function() {
+        closeCustomModal($('#ModalReporteInventario'));
+      });
+
+      $('#ModalConfirmarEliminar .close, #ModalConfirmarEliminar .btn-second').on('click', function() {
+        closeCustomModal($('#ModalConfirmarEliminar'));
+      });
+
       <?php if ($mostrar_modal_exito) : ?>
         $('#modalExito').modal('show');
       <?php elseif ($mostrar_modal_error) : ?>

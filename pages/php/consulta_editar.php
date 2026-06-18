@@ -327,7 +327,7 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
                       <select name="tipo_cedula_paciente" id="tipo_cedula_paciente" class="form-control" style="width: 60px;" readonly disabled>
                         <option value="PN" <?php echo ($tipo_cedula ?? '') == 'PN' ? 'selected' : ''; ?>>PN-</option>
                         <option value="V" <?php echo ($tipo_cedula ?? '') == 'V' ? 'selected' : ''; ?>>V-</option>
-                        <option value="E" <?php echo ($tipo_cedula ?? '') == 'E' ? 'selected' : ''; ?>>E-</option>
+                        <!--<option value="E" <?php echo ($tipo_cedula ?? '') == 'E' ? 'selected' : ''; ?>>E-</option>-->
                       </select>
                     </div>
                     <div class="col-sm-3">
@@ -350,27 +350,68 @@ $consulta = $datos_consulta; // Alias para usar la variable $consulta como en el
                     <br><br><br><br>
                     <div class="col-sm-4">
                       <p>Medico (*):</p>
-                      <select id="medico" name="medico" class="form-control" required>
+                      <?php
+                      $id_persona_logueada = $_SESSION['id'] ?? 0;
+                      $rol_usuario = $_SESSION['rol'] ?? 0;
+
+                      $es_admin = ($rol_usuario == 1);
+
+                      // PRIORIDAD EN EDICIÓN:
+                      // 1. El médico que ya está guardado en la consulta ($datos_consulta['Id_medico'])
+                      // 2. Si por alguna razón está vacío, el médico de la cita original
+                      $id_medico_seleccionado = $datos_consulta['Id_medico'] ?? ($id_medico_cita ?? 0);
+
+                      $bloquear_medico = false;
+
+                      // Lógica de validación para usuarios que no son admin
+                      if (!$es_admin) {
+                        // Si el campo está vacío (caso raro en editar), buscamos al logueado
+                        if (empty($id_medico_seleccionado)) {
+                          $sql_logged = "SELECT Id_detalle_medico FROM detalle_medico WHERE Id_persona = ?";
+                          $stmt_logged = $conexion->prepare($sql_logged);
+                          $stmt_logged->bind_param("i", $id_persona_logueada);
+                          $stmt_logged->execute();
+                          $res_logged = $stmt_logged->get_result();
+
+                          if ($row_logged = $res_logged->fetch_assoc()) {
+                            $id_medico_seleccionado = $row_logged['Id_detalle_medico'];
+                          }
+                          $stmt_logged->close();
+                        }
+
+                        // Bloqueamos: Un médico no debería poder cambiarse a sí mismo por otro médico en la edición
+                        $bloquear_medico = true;
+                      }
+                      ?>
+
+                      <select name="medico" id="medico" class="form-control" <?php echo $bloquear_medico ? 'style="pointer-events: none; background-color: #eee;" tabindex="-1"' : ''; ?> required>
                         <option value="">--- Seleccione el medico ---</option>
                         <?php
-                        // 1. Cargar Medicos
-                        $sql_medico = "SELECT p.id, p.nombre, p.apellido 
-                                                               FROM persona p
-                                                               JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona
-                                                               WHERE dpr.Id_rol = 4 ORDER BY p.nombre ASC";
-                        if (isset($conexion)) {
-                          $resultado_medico = $conexion->query($sql_medico);
+                        $sql_medico = "SELECT dm.Id_detalle_medico, p.nombre, p.apellido, dm.tipo_medico 
+                       FROM detalle_medico dm
+                       INNER JOIN persona p ON dm.Id_persona = p.id
+                       WHERE p.estatus IN (1, 2) AND dm.tipo_medico = 'Interno'
+                       ORDER BY p.nombre ASC";
 
-                          if ($resultado_medico && $resultado_medico->num_rows > 0) {
-                            while ($row_medico = $resultado_medico->fetch_assoc()) {
-                              // Selección automática del médico guardado
-                              $selected = ($row_medico['id'] == ($consulta['Id_medico'] ?? 0)) ? 'selected' : '';
-                              echo '<option value="' . $row_medico['id'] . '" ' . $selected . '>' . htmlspecialchars($row_medico['nombre'] . ' ' . $row_medico['apellido']) . '</option>';
-                            }
-                          }
+                        $resultado_medico = $conexion->query($sql_medico);
+
+                        while ($row_medico = $resultado_medico->fetch_assoc()) {
+                          $id_db = (int)$row_medico['Id_detalle_medico'];
+                          $id_objetivo = (int)$id_medico_seleccionado;
+
+                          // Verificamos coincidencia para marcar como seleccionado
+                          $selected = ($id_db === $id_objetivo) ? 'selected="selected"' : '';
+
+                          echo '<option value="' . $id_db . '" ' . $selected . '>' .
+                            htmlspecialchars($row_medico['nombre'] . ' ' . $row_medico['apellido']) .
+                            '</option>';
                         }
                         ?>
                       </select>
+
+                      <?php if ($bloquear_medico) : ?>
+                        <input type="hidden" name="medico" value="<?php echo $id_medico_seleccionado; ?>">
+                      <?php endif; ?>
                     </div>
                     <div class="col-sm-4">
                       <p>Fecha de consulta (*):</p>

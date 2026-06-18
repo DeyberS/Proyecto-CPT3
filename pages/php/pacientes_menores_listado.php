@@ -109,6 +109,7 @@
             <th>Nombres Y Apellidos Del Menor</th>
             <th>Genero</th>
             <th>Edad</th>
+            <th>Tipo De Paciente</th>
             <?php if (in_array('Gestionar acciones de pacientes menores de edad', $_SESSION["permisos"])) : ?>
               <th>Acciones</th>
             <?php endif; ?>
@@ -157,7 +158,8 @@
             p_rep.apellido AS apellido_representante,
             p_rep.tipo_cedula AS tipo_cedula_representante,
             p_rep.cedula AS cedula_representante,
-            dp.parentesco
+            dp.parentesco,
+            dp.tipo_paciente
             FROM
             persona p_menor
             JOIN
@@ -175,9 +177,20 @@
             if ($resultado->num_rows > 0) {
               while ($row = $resultado->fetch_assoc()) {
                 // Calcular la edad a partir de la fecha de nacimiento
-                $fechaNacimiento = new DateTime($row['fecha_nacimiento']);
+                $fecha_nac = new DateTime($row['fecha_nacimiento']);
                 $hoy = new DateTime();
-                $edad = $hoy->diff($fechaNacimiento)->y;
+                $diff = $hoy->diff($fecha_nac);
+
+                // Lógica para determinar el formato de la edad
+                if ($diff->y >= 1) {
+                    $edad_texto = $diff->y . ($diff->y == 1 ? ' año' : ' años');
+                } elseif ($diff->m >= 1) {
+                    $edad_texto = $diff->m . ($diff->m == 1 ? ' mes' : ' meses');
+                } elseif ($diff->d >= 1) {
+                    $edad_texto = $diff->d . ($diff->d == 1 ? ' día' : ' días');
+                } else {
+                    $edad_texto = 'Recién nacido';
+                }
 
                 // Separar la primera letra de la cédula y el resto del número
                 $tipo_cedula = substr($row['cedula_menor'], 0, 1);
@@ -187,8 +200,9 @@
                   <td class=""><span class="text-row text-white"><?= ($row['tipo_cedula_representante']) . "-" . ($row['cedula_representante']); ?></span></td>
                   <td class=""><span class="text-row text-white"><?= ($row['nombre_representante']) . " " . ($row['apellido_representante']); ?></span></td>
                   <td class=""><span class="text-row text-white"><?= ($row['nombre_menor']) . " " . ($row['apellido_menor']); ?></span></td>
-                  <td class=""><span class="text-row text-white"><?= ($row['genero_menor']); ?></span></td>
-                  <td class=""><span class="text-row text-white"><?= $edad; ?></span></td>
+                  <td class=""><span class="text-row text-white"><?= ($row['genero_menor']); ?></span></td>           
+                  <td class=""><span class="text-row text-white"><?= $edad_texto; ?></span></td>
+                  <td class=""><span class="text-row text-white"><?= ($row['tipo_paciente']); ?></span></td>
                   <?php if (in_array('Gestionar acciones de pacientes', $_SESSION["permisos"])) : ?>
                     <td>
                       <?php if (in_array('Ver Pacientes', $_SESSION["permisos"])) : ?>

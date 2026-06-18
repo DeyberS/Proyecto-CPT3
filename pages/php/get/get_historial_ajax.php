@@ -115,7 +115,8 @@ try {
             c.tratamiento_indicado,
             CONCAT(pm.nombre, ' ', pm.apellido) AS medico_nombre
         FROM consulta c
-        JOIN persona pm ON c.Id_medico = pm.id  
+        JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+        JOIN persona pm ON dm.Id_persona = pm.id
         WHERE c.Id_paciente = $id_persona
         ORDER BY c.fecha_consulta DESC
         LIMIT 5 

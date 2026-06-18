@@ -6,13 +6,11 @@ require_once('../../../cfg/conexion.php');
 if (isset($_POST['id_especialidad']) && !empty($_POST['id_especialidad'])) {
     $id_especialidad = $_POST['id_especialidad'];
 
-    // Consulta para obtener médicos vinculados a la especialidad seleccionada
-    // Relacionamos detalle_medico con persona para obtener el nombre
-    $query = "SELECT m.Id_detalle_medico, p.nombre, p.apellido 
+    $query = "SELECT m.Id_detalle_medico, p.nombre, p.apellido, m.tipo_medico 
               FROM detalle_medico m
               INNER JOIN persona p ON m.Id_persona = p.id
               INNER JOIN especialidades_medicos em ON m.Id_detalle_medico = em.Id_detalle_medico
-              WHERE em.Id_especialidad = ? AND p.estatus = 1";
+              WHERE em.Id_especialidad = ? AND p.estatus IN (1, 2) AND m.tipo_medico = 'Interno'";
 
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("i", $id_especialidad);

@@ -5,6 +5,7 @@ session_start();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $id_usuario = $_SESSION['id'] ?? 0;
+    $id_receptor = isset($_POST['receptor']) ? intval($_POST['receptor']) : $id_usuario;
     $op = $_POST['op'] ?? '';
 
     /* =====================================================
@@ -24,13 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $obs_final = $_POST['observaciones_generales'] ?? '';
+                    
             $fecha_recepcion = $_POST['fecha_recepcion'] ?? date('Y-m-d');
-            $fecha_hora = $fecha_recepcion . ' ' . date('H:i:s');
-            
+            $hora_recepcion = $_POST['hora_recepcion'] ?? date('H:i');
+            $fecha_hora_exacta = $fecha_recepcion . ' ' . $hora_recepcion . ':00';
+
+
             // Insertar Cabecera
-            $sql_cabecera = "INSERT INTO detalle_inventario (Id_TipoMovimiento, Id_Persona, fecha, observaciones) VALUES (1, ?, NOW(), ?)";
+            $sql_cabecera = "INSERT INTO detalle_inventario (Id_TipoMovimiento, Id_Persona, Id_receptor, fecha, observaciones) VALUES (1, ?, ?, ?, ?)";
             $stmt_cab = $conexion->prepare($sql_cabecera);
-            $stmt_cab->bind_param("is", $id_usuario, $obs_final);
+            $stmt_cab->bind_param("iiss", $id_usuario, $id_receptor, $fecha_hora_exacta, $obs_final);
             $stmt_cab->execute();
             $id_mov = $conexion->insert_id;
 
@@ -81,6 +85,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt_ex->execute();
             }
 
+            $id_pedido_asociado = intval($_POST['id_pedido'] ?? 0);
+            
+            if ($id_pedido_asociado > 0) {
+                // Cambia 'Recibido' por el estado exacto que uses en tu base de datos (ej: 'Completado', 'Cerrado')
+                $sql_upd_pedido = "UPDATE pedidos SET estado = 'Recibido' WHERE id_pedido = ?";
+                $stmt_upd_ped = $conexion->prepare($sql_upd_pedido);
+                $stmt_upd_ped->bind_param("i", $id_pedido_asociado);
+                $stmt_upd_ped->execute();
+            }
+
             $conexion->commit();
             $_SESSION['mensaje_user_exito'] = "Entrada procesada correctamente.";
         } catch (Exception $e) {
@@ -121,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $detalles = json_decode($_POST['detalle_medicamentos'], true);
             $tipo_despacho = $_POST['tipo_despacho'] ?? 'interno';
+            $entregado_a = $_POST['entregado_a'] ?? '';
             $id_presc_form = intval($_POST['id_prescripcion'] ?? 0);
             
             // --- 1. LÓGICA DE OBSERVACIONES DINÁMICAS ---
@@ -185,20 +200,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!$id_solicitud_existente) {
                     $tipo_cedula_ext = $_POST['tipo_cedula_externo'] ?? '';
                     $cedula_ext = $_POST['cedula_externo'] ?? '';
-                    $medico_ext = $_POST['medico_externo'] ?? '';
+                    $tipo_cedula_med = $_POST['tipo_cedula_medico'] ?? '';
+                    $cedula_med = $_POST['cedula_medico'] ?? '';
 
-                    $sql_sol = "INSERT INTO solicitud_medicamento (origen, datos_paciente_externo, tipo_cedula_externo, cedula_externo, datos_medico_externo, fecha_solicitud, estatus_general) 
-                                VALUES ('Externo', ?, ?, ?, ?, NOW(), 'Pendiente')";
+                    // 1. Buscar el ID del Paciente en la tabla persona
+                    $id_paciente_ext = null;
+                    $sql_pac = "SELECT id FROM persona WHERE tipo_cedula = ? AND cedula = ?";
+                    $stmt_pac = $conexion->prepare($sql_pac);
+                    $stmt_pac->bind_param("ss", $tipo_cedula_ext, $cedula_ext);
+                    $stmt_pac->execute();
+                    $res_pac = $stmt_pac->get_result();
+
+                    if ($row_pac = $res_pac->fetch_assoc()
+                    ) {
+                        $id_paciente_ext = $row_pac['id'];
+                    } else {
+                        throw new Exception("El paciente con documento {$tipo_cedula_ext}-{$cedula_ext} no se encuentra registrado en el sistema.");
+                    }
+
+                    // 2. Buscar el ID del Médico en detalle_medico a través de la tabla persona
+                    $id_medico_ext = null;
+                    $sql_med = "SELECT dm.Id_detalle_medico FROM persona p 
+                    INNER JOIN detalle_medico dm ON p.id = dm.Id_persona 
+                    WHERE p.tipo_cedula = ? AND p.cedula = ?";
+                    $stmt_med = $conexion->prepare($sql_med);
+                    $stmt_med->bind_param("ss", $tipo_cedula_med, $cedula_med);
+                    $stmt_med->execute();
+                    $res_med = $stmt_med->get_result();
+
+                    if ($row_med = $res_med->fetch_assoc()
+                    ) {
+                        $id_medico_ext = $row_med['Id_detalle_medico'];
+                    } else {
+                        throw new Exception("El médico con documento {$tipo_cedula_med}-{$cedula_med} no se encuentra registrado en el sistema.");
+                    }
+
+                    // 3. Insertar la solicitud externa usando los IDs obtenidos
+                    $sql_sol = "INSERT INTO solicitud_medicamento (origen, id_paciente, id_medico, entregado_a, estatus_general, fecha_solicitud) 
+                VALUES ('Externo', ?, ?, ?, 'Pendiente', NOW())";
                     $stmt_sol = $conexion->prepare($sql_sol);
-                    $stmt_sol->bind_param("ssss", $paciente_ext, $tipo_cedula_ext, $cedula_ext, $medico_ext);
+
+                    // "iis" significa: integer (id_paciente), integer (id_medico), string (entregado_a)
+                    $stmt_sol->bind_param("iis", $id_paciente_ext, $id_medico_ext, $entregado_a);
                     $stmt_sol->execute();
                     $id_solicitud_ext = $conexion->insert_id;
                 }
             } else {
                 if ($id_presc_form > 0) {
-                    // ¡CORRECCIÓN AQUÍ!
-                    // Como el frontend ahora envía el Id_consulta directamente,
-                    // verificamos directamente en la tabla consulta.
                     $res = $conexion->query("SELECT Id_consulta FROM consulta WHERE Id_consulta = " . $id_presc_form);
                     if ($row = $res->fetch_assoc()) {
                         $id_consulta_interno = $row['Id_consulta'];
@@ -207,12 +255,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             // ------------------------------------------------
 
+            // Reemplazar la lógica de $foto_base64 = $_POST['foto_base64'] ?? ''; por esto:
+
+            $fotos_json = $_POST['fotos_base64_array'] ?? '[]';
+            $fotos_array = json_decode($fotos_json, true);
+            $rutas_comprobantes = [];
+            $ruta_comprobante = null;
+
+            if (is_array($fotos_array) && count($fotos_array) > 0) {
+                $dir_absoluto = '../recursos/comprobantes/';
+
+                // Crear directorio si no existe
+                if (!file_exists($dir_absoluto)) {
+                    if (!mkdir($dir_absoluto, 0777, true)) {
+                        throw new Exception("Error de servidor: No se pudo crear la carpeta de comprobantes. Verifica los permisos.");
+                    }
+                }
+
+                foreach ($fotos_array as $index => $foto_base64) {
+                    if (strpos($foto_base64, ';base64,') !== false) {
+                        $image_parts = explode(";base64,", $foto_base64);
+                        $image_base64 = base64_decode($image_parts[1]);
+                    } else {
+                        $image_base64 = base64_decode($foto_base64);
+                    }
+
+                    if ($image_base64 !== false) {
+                        $nombre_archivo = 'evidencia_' . $op . '_' . time() . '_' . rand(1000, 9999) . '_' . $index . '.jpg';
+                        $ruta_guardado = $dir_absoluto . $nombre_archivo;
+
+                        if (file_put_contents($ruta_guardado, $image_base64)) {
+                            $rutas_comprobantes[] = '../recursos/comprobantes/' . $nombre_archivo;
+                        } else {
+                            throw new Exception("Error de servidor: No se pudo guardar una de las imágenes en el disco.");
+                        }
+                    }
+                }
+            }
+
+            // Codificamos el arreglo de rutas resultantes en JSON para guardarlo en la columna 'comprobante'
+            if (count($rutas_comprobantes) > 0) {
+                $ruta_comprobante = json_encode($rutas_comprobantes, JSON_UNESCAPED_SLASHES);
+            }
+
             // CREAR CABECERA DE INVENTARIO CON LA OBSERVACIÓN DINÁMICA
             // Nota: Aquí se usa $obs_final en lugar de la variable directa del form
-            $sql_cab = "INSERT INTO detalle_inventario (Id_TipoMovimiento, Id_Persona, fecha, observaciones) 
-                        VALUES (2, ?, NOW(), ?)";
+            $sql_cab = "INSERT INTO detalle_inventario (Id_TipoMovimiento, Id_Persona, fecha, observaciones, comprobante) 
+                        VALUES (2, ?, NOW(), ?, ?)";
             $stmt_cab = $conexion->prepare($sql_cab);
-            $stmt_cab->bind_param("is", $id_usuario, $obs_final);
+            $stmt_cab->bind_param("iss", $id_usuario, $obs_final, $ruta_comprobante);
             $stmt_cab->execute();
             $id_mov_inv = $conexion->insert_id;
 
@@ -389,52 +480,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $detalles = json_decode($_POST['detalle_medicamentos'], true);
             if (!is_array($detalles) || count($detalles) === 0) {
-                throw new Exception("No se recibieron medicamentos para dar de baja.");
+                throw new Exception("No se recibieron medicamentos para ajustar.");
             }
 
             // Datos de la cabecera
-            $id_tipo_mov = intval($_POST['id_tipo_movimiento']); // IDs 3, 4, 5, 7...
+            $id_tipo_mov = intval($_POST['id_tipo_movimiento']); // Ej: 3, 4, 5, 7...
             $obs_final = $_POST['observaciones_generales'] ?? '';
             
+            // NUEVO: Capturar el tipo de ajuste (Suma o Resta). Por defecto será 'resta'
+            $tipo_ajuste = $_POST['tipo_ajuste'] ?? 'resta';
+
+            $fecha_recepcion = $_POST['fecha_recepcion'] ?? date('Y-m-d');
+            $hora_recepcion = $_POST['hora_recepcion'] ?? date('H:i');
+            $fecha_hora_exacta = $fecha_recepcion . ' ' . $hora_recepcion . ':00';
+
             // Procesamiento de la Evidencia (Imagen Base64)
-            $foto_base64 = $_POST['foto_base64'] ?? '';
+            // Reemplazar la lógica de $foto_base64 = $_POST['foto_base64'] ?? ''; por esto:
+
+            $fotos_json = $_POST['fotos_base64_array'] ?? '[]';
+            $fotos_array = json_decode($fotos_json, true);
+            $rutas_comprobantes = [];
             $ruta_comprobante = null;
 
-            if (!empty($foto_base64)) {
-                $image_parts = explode(";base64,", $foto_base64);
-                if (count($image_parts) == 2) {
-                    $image_base64 = base64_decode($image_parts[1]);
-                    // Generar un nombre único para la imagen
-                    $nombre_archivo = 'evidencia_ajuste_' . time() . '_' . rand(1000,9999) . '.jpg';
-                    // Asumiendo que este script está en la carpeta cfg/, subimos a la raíz y entramos a recursos
-                    $dir_absoluto = '../../recursos/imagenes/comprobantes/';
-                    
-                    // Crear el directorio si no existe
-                    if (!file_exists($dir_absoluto)) {
-                        mkdir($dir_absoluto, 0777, true);
+            if (is_array($fotos_array) && count($fotos_array) > 0) {
+                $dir_absoluto = '../recursos/comprobantes/';
+
+                // Crear directorio si no existe
+                if (!file_exists($dir_absoluto)) {
+                    if (!mkdir($dir_absoluto, 0777, true)) {
+                        throw new Exception("Error de servidor: No se pudo crear la carpeta de comprobantes. Verifica los permisos.");
                     }
-                    
-                    $ruta_guardado = $dir_absoluto . $nombre_archivo;
-                    if (file_put_contents($ruta_guardado, $image_base64)) {
-                        // Guardamos la ruta en la BD (la ruta relativa útil para mostrarla luego)
-                        $ruta_comprobante = 'recursos/imagenes/comprobantes/' . $nombre_archivo;
+                }
+
+                foreach ($fotos_array as $index => $foto_base64) {
+                    if (strpos($foto_base64, ';base64,') !== false) {
+                        $image_parts = explode(";base64,", $foto_base64);
+                        $image_base64 = base64_decode($image_parts[1]);
+                    } else {
+                        $image_base64 = base64_decode($foto_base64);
+                    }
+
+                    if ($image_base64 !== false) {
+                        $nombre_archivo = 'evidencia_' . $op . '_' . time() . '_' . rand(1000, 9999) . '_' . $index . '.jpg';
+                        $ruta_guardado = $dir_absoluto . $nombre_archivo;
+
+                        if (file_put_contents($ruta_guardado, $image_base64)) {
+                            $rutas_comprobantes[] = '../recursos/comprobantes/' . $nombre_archivo;
+                        } else {
+                            throw new Exception("Error de servidor: No se pudo guardar una de las imágenes en el disco.");
+                        }
                     }
                 }
             }
 
-            // 1. Insertar Cabecera en detalle_inventario (Incluyendo el comprobante)
-            $sql_cab = "INSERT INTO detalle_inventario (Id_TipoMovimiento, Id_Persona, fecha, observaciones, comprobante) 
-                        VALUES (?, ?, NOW(), ?, ?)";
+            // Codificamos el arreglo de rutas resultantes en JSON para guardarlo en la columna 'comprobante'
+            if (count($rutas_comprobantes) > 0) {
+                $ruta_comprobante = json_encode($rutas_comprobantes, JSON_UNESCAPED_SLASHES);
+            }
+
+            // 1. Insertar Cabecera en detalle_inventario
+            $sql_cab = "INSERT INTO detalle_inventario (Id_TipoMovimiento, Id_Persona, Id_receptor, fecha, observaciones, comprobante) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt_cab = $conexion->prepare($sql_cab);
-            $stmt_cab->bind_param("iiss", $id_tipo_mov, $id_usuario, $obs_final, $ruta_comprobante);
+            $stmt_cab->bind_param("iiisss", $id_tipo_mov, $id_usuario, $id_receptor, $fecha_hora_exacta, $obs_final, $ruta_comprobante);
             $stmt_cab->execute();
             $id_mov_inv = $conexion->insert_id;
 
-            // 2. Recorrer los detalles de la baja
+            // 2. Recorrer los detalles del ajuste
             foreach ($detalles as $item) {
                 $id_desc = intval($item['id_medicamento']);
-                $id_lote = intval($item['lote_id']); // En el frontend de bajas, lo envías directamente como lote_id
-                $cant_baja = intval($item['cantidad']);
+                $id_lote = intval($item['lote_id']);
+                
+                $observacion_item = $item['observacion'] ?? '';
+
+                $cant_ajuste = intval($item['cantidad']);
+                
+                // Si tienes la posibilidad de que cada ítem sea diferente (suma/resta), puedes leerlo así:
+                $accion_item = $item['tipo_ajuste'] ?? $tipo_ajuste;
 
                 // Buscar stock actual por Lote
                 $sql_l = "SELECT cantidad_actual FROM existencias_stock 
@@ -444,24 +565,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt_l->execute();
                 $res_l = $stmt_l->get_result()->fetch_assoc();
 
-                if (!$res_l || $res_l['cantidad_actual'] < $cant_baja) {
-                    throw new Exception("Stock insuficiente para procesar la baja del medicamento. (ID Desc: $id_desc, Lote: $id_lote)");
+                $stock_actual = $res_l ? $res_l['cantidad_actual'] : 0;
+
+                // 3. Lógica matemática de Suma o Resta
+                if ($accion_item === 'resta') {
+                    if (!$res_l || $stock_actual < $cant_ajuste) {
+                        throw new Exception("Stock insuficiente para restar. (ID Desc: $id_desc, Lote: $id_lote)");
+                    }
+                    $nuevo_stock = $stock_actual - $cant_ajuste;
+                } else {
+                    // Es una SUMA (Sobrante por cuadre)
+                    $nuevo_stock = $stock_actual + $cant_ajuste;
                 }
 
-                $nuevo_stock = $res_l['cantidad_actual'] - $cant_baja;
-
-                // Detalle del movimiento
-                $sql_det_inv = "INSERT INTO medicamentos_detalle_inventario (Id_detalle_inventario, Id_descripcion_medicamento, Id_lote, cantidad, stock_momento) 
-                                VALUES (?, ?, ?, ?, ?)";
+                // 4. Guardar Detalle del movimiento
+                $sql_det_inv = "INSERT INTO medicamentos_detalle_inventario (Id_detalle_inventario, Id_descripcion_medicamento, Id_lote, cantidad, stock_momento, observacion) 
+                                VALUES (?, ?, ?, ?, ?, ?)";
                 $stmt_det = $conexion->prepare($sql_det_inv);
-                $stmt_det->bind_param("iiiii", $id_mov_inv, $id_desc, $id_lote, $cant_baja, $nuevo_stock);
+                $stmt_det->bind_param("iiiiis", $id_mov_inv, $id_desc, $id_lote, $cant_ajuste, $nuevo_stock, $observacion_item);
                 $stmt_det->execute();
 
-                // Actualizar Existencias
-                $sql_upd = "UPDATE existencias_stock SET cantidad_actual = ? WHERE Id_lote = ? AND Id_descripcion_medicamento = ?";
-                $stmt_upd = $conexion->prepare($sql_upd);
-                $stmt_upd->bind_param("iii", $nuevo_stock, $id_lote, $id_desc);
-                $stmt_upd->execute();
+                // 5. Actualizar o Insertar Existencias
+                if ($res_l) {
+                    $sql_upd = "UPDATE existencias_stock SET cantidad_actual = ? WHERE Id_lote = ? AND Id_descripcion_medicamento = ?";
+                    $stmt_upd = $conexion->prepare($sql_upd);
+                    $stmt_upd->bind_param("iii", $nuevo_stock, $id_lote, $id_desc);
+                    $stmt_upd->execute();
+                } else {
+                    // Si el lote no existía en stock pero lo estamos sumando, lo insertamos
+                    $sql_ins = "INSERT INTO existencias_stock (Id_descripcion_medicamento, Id_lote, cantidad_actual) VALUES (?, ?, ?)";
+                    $stmt_ins = $conexion->prepare($sql_ins);
+                    $stmt_ins->bind_param("iii", $id_desc, $id_lote, $nuevo_stock);
+                    $stmt_ins->execute();
+                }
             }
 
             $conexion->commit();
@@ -470,10 +606,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } catch (Exception $e) {
             $conexion->rollback();
-            $_SESSION['mensaje_user_error'] = "Error al procesar la baja: " . $e->getMessage();
+            $_SESSION['mensaje_user_error'] = "Error al procesar el ajuste: " . $e->getMessage();
             header("Location: ../pages/php/farmacia_inventario_listado.php");
             exit;
         }
+    
     }
 
     /* =====================================================
@@ -508,7 +645,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Detectar si fue despacho externo leyendo las observaciones que tu mismo sistema guarda
             $es_externo = (strpos($observaciones_orig, 'externo') !== false);
 
-            $nuevo_tipo_mov = ($tipo_original == 1) ? 8 : 9; // 8: Reversión de Entrada, 9: Reversión de Salida
+            // Validamos si es Entrada normal (1) o Ajuste por entrada (6)
+            $nuevo_tipo_mov = ($tipo_original == 1 || $tipo_original == 6) ? 8 : 9; // 8: Reversión de Entrada, 9: Reversión de Salida
             $obs_reversion = "ANULACIÓN DE MOV. #" . $id_movimiento_original . " | Motivo: " . $motivo_anulacion;
 
             // 2. Insertar la Cabecera del Movimiento de Reversión
@@ -543,7 +681,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $nuevo_stock = 0;
 
-                if ($tipo_original == 1) {
+                if ($tipo_original == 1 || $tipo_original == 6) {
                     // ---> ES UNA ENTRADA: RESTAMOS STOCK <---
                     if ($stock_actual < $cant_revertir) {
                         throw new Exception("No se puede anular esta Entrada. El stock actual ($stock_actual) es menor a la cantidad original ($cant_revertir) del ID $id_desc. Esto significa que ya fueron despachados a pacientes.");

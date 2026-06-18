@@ -1,214 +1,177 @@
-<!-- Filtro De Busqueda -->
 <script>
-  /* --- Buscador Global AJAX --- */
   function buscadorGlobal(idInput, idContenedor, idPaginacion) {
     let timeout = null;
-
     $(document).on('keyup', idInput, function() {
       clearTimeout(timeout);
       let valor = $(this).val();
       let urlActual = window.location.href.split('?')[0];
 
-      // Esperar 300ms después de escribir para enviar la petición
       timeout = setTimeout(function() {
         $.ajax({
           url: urlActual,
           type: "GET",
-          data: {
-            buscar: valor
-          },
-          beforeSend: function() {
-            $(idContenedor).css('opacity', '0.5');
-          },
+          data: { buscar: valor },
+          beforeSend: function() { $(idContenedor).css('opacity', '0.5'); },
           success: function(data) {
-            // Reemplaza el cuerpo de la tabla
             $(idContenedor).html($(data).find(idContenedor).html());
-            // Reemplaza la paginación
             if (idPaginacion) {
               $(idPaginacion).html($(data).find(idPaginacion).html());
             }
             $(idContenedor).css('opacity', '1');
           },
-          error: function() {
-            $(idContenedor).css('opacity', '1');
-          }
+          error: function() { $(idContenedor).css('opacity', '1'); }
         });
       }, 300);
     });
   }
 
-  /* --- Inicialización --- */
-  $(document).ready(function() {
-    // Si el input con id "buscar" existe, activamos el buscador
-    if ($('#buscar').length > 0) {
-      buscadorGlobal('#buscar', '#contenedorTabla', 'nav[aria-label="Page navigation"]');
-    }
-  });
-</script>
-<script>
   window.onload = function() {
     const full_loader = document.getElementById('full_loader');
-
     if (full_loader) {
-      setTimeout(function() {
-        full_loader.style.display = 'none';
-      }, 200);
+      setTimeout(function() { full_loader.style.display = 'none'; }, 200);
     }
   };
 </script>
+
 <script>
-  let notificacion = new Set();
-  let historialEstados = JSON.parse(sessionStorage.getItem('historial_estados')) || {};
-  let notificacionesLeidas = JSON.parse(sessionStorage.getItem('notificaciones_leidas')) || [];
-  //let notificacionesLeidas = JSON.parse(localStorage.getItem('notificaciones_leidas')) || [];
+  window.idsRecetasActuales = "";
 
-  function revisionGlobalDeNotificaciones() {
+  function getRutaBase() {
     let path = window.location.pathname;
-    let rutaBase = "";
-    if (path.includes('/pages/php/papelera/')) {
-      rutaBase = "../../../";
-    } else if (path.includes('/pages/php/')) {
-      rutaBase = "../../";
-    }
+    if (path.includes('/pages/php/papelera/')) return "../../../";
+    if (path.includes('/pages/php/')) return "../../";
+    return "";
+  }
 
-    let urlAlertas = rutaBase + 'cfg/ajax/alertas.php';
+  // TRABAJO PESADO: Ejecuta las verificaciones de base de datos e Inserts
+  function procesarGeneradorAlertas() {
+    let urlGenerar = getRutaBase() + 'cfg/ajax/generar_alertas.php';
+    $.ajax({ url: urlGenerar, type: 'GET', cache: false });
+  }
 
-    if ($('#contenedorTabla').length > 0) {
+  // INTERFAZ GRÁFICA: Refresca el dropdown y la iluminación del menú en 1 sola llamada
+  function revisionGlobalDeNotificaciones() {
+    let urlAlertas = getRutaBase() + 'cfg/ajax/alertas.php';
+
+    // Recargar tablas si es necesario
+    if ($('#contenedorTabla').length > 0 && !window.location.pathname.includes('farmacia_inventario_kardex.php')) {
       $('#contenedorTabla').load(window.location.href + ' #t_user');
     }
 
-    $.getJSON(urlAlertas, function(data) {
-      // 1. Limpiamos el DOM y el contador antes de repoblar
-      $('#lista-notificaciones-dropdown').empty();
-      $('#contador-notificaciones').text('0').hide();
-      $('#titulo-notificaciones').text('No tienes notificaciones nuevas');
-      notificacion.clear(); // Vaciamos el Set de control
+    $.ajax({
+      url: urlAlertas,
+      type: 'GET',
+      dataType: 'json',
+      cache: false,
+      success: function(response) {
+        // 1. Limpiar la UI actual
+        $('#lista-notificaciones-dropdown').empty();
+        $('#contador-notificaciones').text('0').hide();
+        $('#titulo-notificaciones').text('No tienes notificaciones nuevas');
 
-      let totalNuevas = 0;
+        let totalNuevas = 0;
+        let listaIdsRecetas = [];
 
-      data.forEach(function(item) {
-        // Quitamos el estatus del ID para que no se dupliquen si el estatus cambia (de 'bajo' a 'critico')
-        let idUnico = item.id;
+        // 2. Llenar notificaciones
+        if (response && response.data && Array.isArray(response.data)) {
+          response.data.forEach(function(item) {
+            let tipoAlerta = "success";
+            let tituloMinusculas = item.titulo.toLowerCase();
 
-        if (notificacionesLeidas.includes(idUnico)) {
-          return;
+            if (tituloMinusculas.includes("vencid") || tituloMinusculas.includes("perdida") || tituloMinusculas.includes("crítico") || tituloMinusculas.includes("inasistente") || tituloMinusculas.includes("agotado")) {
+              tipoAlerta = "danger";
+            } else if (tituloMinusculas.includes("próxim") || tituloMinusculas.includes("reprogramada") || tituloMinusculas.includes("confirmada")) {
+              tipoAlerta = "warning";
+            }
+
+            let liHtml = '<li>' +
+                         '  <a href="' + item.ruta + '" style="white-space: normal; display: block; padding: 10px 15px; border-bottom: 1px solid #f4f4f4;">' +
+                         '    <strong class="text-' + tipoAlerta + '">' + item.titulo + '</strong><br>' +
+                         '    <small style="color: #666; display:block; margin-top:2px;">' + item.mensaje + '</small>' +
+                         '  </a>' +
+                         '</li>';
+            
+            $('#lista-notificaciones-dropdown').append(liHtml);
+            totalNuevas++;
+
+            if (item.categoria === 'receta_disponible') {
+              listaIdsRecetas.push(item.id_notificacion);
+            }
+          });
         }
 
-        // --- Lógica para CITAS ---
-        if (item.categoria === 'cita') {
-          if (item.proxima && item.estatus === 'Confirmada') {
-            añadirNotificacionAlPanel("¡Tiene Una Cita próxima!", item.titulo + " - " + item.detalle, "warning", idUnico, item.ruta);
-            totalNuevas++;
-          } else if (item.estatus === 'Inasistente') {
-            añadirNotificacionAlPanel("¡Tiene Una Cita Perdida!", item.titulo + " (No asistió)", "danger", idUnico, item.ruta);
-            totalNuevas++;
-          } else if (item.estatus === 'Vencida') {
-            añadirNotificacionAlPanel("¡Tiene Una Cita Vencida!", item.titulo + " (No confirmó)", "danger", idUnico, item.ruta);
-            totalNuevas++;
-          } else if (item.estatus === 'Reprogramada') {
-            añadirNotificacionAlPanel("¡Cita Reprogramada!", item.titulo, "warning", idUnico, item.ruta);
-            totalNuevas++;
-          }
+        if (totalNuevas > 0) {
+          $('#contador-notificaciones').text(totalNuevas).fadeIn();
+          $('#titulo-notificaciones').text("Tienes " + totalNuevas + " notificaciones nuevas");
         }
 
-        // --- Lógica para INVENTARIO (Stock) ---
-        else if (item.categoria === 'inventario_stock') {
-          let color = (item.estatus === 'critico') ? "danger" : "warning";
-          añadirNotificacionAlPanel(item.titulo, item.detalle, color, idUnico, item.ruta);
-          totalNuevas++;
-        }
+        // 3. Manejar la Iluminación del Menú Récipes
+        window.idsRecetasActuales = listaIdsRecetas.sort().join(',');
+        let recetasVistas = sessionStorage.getItem('recetas_vistas_ids') || '';
 
-        // --- Lógica para INVENTARIO (Lotes) ---
-        else if (item.categoria === 'inventario_lote') {
-          let color = (item.estatus === 'vencido') ? "danger" : "warning";
-          añadirNotificacionAlPanel(item.titulo, item.detalle, color, idUnico, item.ruta);
-          totalNuevas++;
+        if (response.iluminar_recetas && window.idsRecetasActuales !== recetasVistas) {
+          $('#menu-link-recetas').addClass('glow-active');
+        } else {
+          $('#menu-link-recetas').removeClass('glow-active');
         }
-      });
-
-      // 2. Actualizamos el contador visual con el total real
-      if (totalNuevas > 0) {
-        $('#contador-notificaciones').text(totalNuevas).fadeIn();
-        $('#titulo-notificaciones').text("Tienes " + totalNuevas + " notificaciones nuevas");
       }
-
-    }).fail(function() {
-      // Fallback
-      $.getJSON('cfg/ajax/alertas.php', function(data) {
-        // Si llega a fallar y necesitas el fallback, asegúrate de replicar la misma lógica de limpieza aquí
-      });
     });
   }
 
-  function añadirNotificacionAlPanel(titulo, mensaje, tipo, idUnico, ruta) {
-    // Como ya limpiamos la lista entera en cada petición AJAX, no hace falta validar duplicados en el DOM
-    let colorIcono = tipo === 'danger' ? 'text-red' : (tipo === 'warning' ? 'text-yellow' : 'text-green');
-    let iconoFa = tipo === 'danger' ? 'fa-ban' : (tipo === 'warning' ? 'fa-warning' : 'fa-check');
-
-    const itemHtml = `
-        <li id="notif-item-${idUnico}" class="item-notificacion" style="border-bottom: 1px solid #f4f4f4;">
-            <a href="${ruta}" style="white-space: normal; display: block; padding: 10px;">
-                <i class="fa ${iconoFa} ${colorIcono}" style="width: 20px;"></i> 
-                <span style="font-weight: bold;">${titulo}</span>
-                <p style="margin: 0 0 0 25px; font-size: 11px; color: #666;">${mensaje}</p>
-            </a>
-        </li>`;
-
-    $('#lista-notificaciones-dropdown').append(itemHtml); // Cambiado a append para mantener orden lógico
-  }
-
-  // Ejecutar una vez al cargar para no esperar el primer minuto
+  /* --- Inicialización General --- */
   $(document).ready(function() {
-    revisionGlobalDeNotificaciones();
+    if ($('#buscar').length > 0) {
+      buscadorGlobal('#buscar', '#contenedorTabla', '#contenedorPaginacion');
+    }
+
+    // 1. Backend: Correr script pesado cada 2 minutos
+    procesarGeneradorAlertas();
+    setInterval(procesarGeneradorAlertas, 120000); 
+
+    // 2. Frontend: Revisar BD para la UI cada 12 segundos (consolidado)
+    setTimeout(revisionGlobalDeNotificaciones, 2000); 
+    setInterval(revisionGlobalDeNotificaciones, 12000);
+
+    // 3. Apagar iluminación al hacer clic en Récipes
+    $(document).on('click', '#menu-link-recetas', function() {
+      $(this).removeClass('glow-active');
+      if (window.idsRecetasActuales) {
+        sessionStorage.setItem('recetas_vistas_ids', window.idsRecetasActuales);
+      }
+    });
   });
 
   function limpiarNotificaciones() {
-    // 1. Buscamos todos los IDs presentes en la lista actual y los mandamos a "leídos"
-    $('#lista-notificaciones-dropdown li').each(function() {
-      let id = $(this).attr('id').replace('notif-item-', '');
-      if (!notificacionesLeidas.includes(id)) {
-        notificacionesLeidas.push(id);
+    let urlMarcarLeidas = getRutaBase() + 'cfg/ajax/marcar_leidos.php';
+
+    $.ajax({
+      url: urlMarcarLeidas,
+      type: 'POST',
+      dataType: 'json',
+      success: function(response) {
+        if (response.status === 'success') {
+          // Vaciar visualmente en cuanto responda
+          $('#lista-notificaciones-dropdown').empty();
+          $('#contador-notificaciones').text('0').fadeOut();
+          $('#titulo-notificaciones').text('No tienes notificaciones nuevas');
+          
+          // Refrescar el estado general (para apagar brillos residuales)
+          revisionGlobalDeNotificaciones();
+        }
       }
     });
-
-    // 2. LA CLAVE: Guardar el array actualizado en sessionStorage antes de que el usuario recargue
-    sessionStorage.setItem('notificaciones_leidas', JSON.stringify(notificacionesLeidas));
-
-    // 3. Limpiar la interfaz visual inmediatamente
-    $('#lista-notificaciones-dropdown').empty();
-    $('#contador-notificaciones').text('0').hide();
-    $('#titulo-notificaciones').text('No tienes notificaciones nuevas');
   }
-</script>
-<script>
+
   function actualizarReloj() {
     const ahora = new Date();
-
-    // Formatear Fecha (ejemplo: 24/12/2025)
-    const opcionesFecha = {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    };
+    const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
     const fechaTexto = ahora.toLocaleDateString('es-ES', opcionesFecha);
+    const horaTexto = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
-    // Formatear Hora (ejemplo: 14:30:05)
-    const horaTexto = ahora.toLocaleTimeString('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    });
-
-    document.getElementById('fecha-actual').textContent = fechaTexto;
-    document.getElementById('reloj-actual').textContent = horaTexto;
+    if(document.getElementById('fecha-actual')) document.getElementById('fecha-actual').textContent = fechaTexto;
+    if(document.getElementById('reloj-actual')) document.getElementById('reloj-actual').textContent = horaTexto;
   }
 
-  // Ejecutar la función cada segundo
   setInterval(actualizarReloj, 1000);
-
-  // Llamar de inmediato para que no aparezca vacío al cargar
-  $(document).ready(function() {
-    actualizarReloj();
-  });
+  $(document).ready(function() { actualizarReloj(); });
 </script>

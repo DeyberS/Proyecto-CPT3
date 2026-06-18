@@ -326,21 +326,66 @@
           $('#modalGuardarUsuario').modal('show');
         }
 
-        // =====================================================================
-        // 1. VALIDACIÓN AL INTENTAR GUARDAR (FLUJO SEGURO)
-        //    Ahora usando el evento 'click' del nuevo botón
-        // =====================================================================
-        $('#abrirModalGuardar').on('click', function(e) {
-          e.preventDefault(); // Prevenimos cualquier acción si el tipo fuera submit
+        function verificarUsuarioYMostrarModal() {
+          var nombreUsuario = $('#nombre').val().trim();
+          var emailUsuario = $('#email').val().trim(); // Capturamos el email
+          var idUsuario = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+          var btnSubmit = $('#abrirModalGuardar');
+          var textoOriginal = btnSubmit.text();
+          
+          btnSubmit.text('Verificando...').attr('disabled', true);
 
+          $.ajax({
+            url: 'get/verificar_existencia_usuario.php',
+            type: 'POST',
+            data: { 
+                nombre: nombreUsuario, 
+                email: emailUsuario, // Enviamos el email al servidor
+                id: idUsuario 
+            },
+            dataType: 'json',
+            success: function(response) {
+              btnSubmit.text(textoOriginal).attr('disabled', false);
+              
+              // Verificamos las diferentes combinaciones de duplicados
+              if (response.existe_nombre && response.existe_email) {
+                $('#nombre').addClass('input-error');
+                $('#email').addClass('input-error');
+                mostrarAviso('⚠️ Error: El nombre de usuario y el correo electrónico ya están en uso.');
+              } else if (response.existe_nombre) {
+                $('#nombre').addClass('input-error');
+                mostrarAviso('⚠️ Error: El nombre de usuario "' + nombreUsuario + '" ya está en uso.');
+              } else if (response.existe_email) {
+                $('#email').addClass('input-error');
+                mostrarAviso('⚠️ Error: El correo electrónico "' + emailUsuario + '" ya está en uso.');
+              } else {
+                // Si ninguno existe, abrimos el modal de confirmación
+                $('#modalGuardarUsuario').modal('show');
+              }
+            },
+            error: function() {
+              btnSubmit.text(textoOriginal).attr('disabled', false);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
+            }
+          });
+        }
+
+        // Interceptamos el envío por Enter o botón submit
+        $('#formularioUsuario').on('submit', function(e) {
+          e.preventDefault();
+        });
+
+        // Evento principal del botón guardar
+        $('#abrirModalGuardar').off('click').on('click', function(e) {
+          e.preventDefault();
           limpiarErrores();
           var formularioValido = true;
 
-          // 1.1. Verificación de campos obligatorios (*)
+          // 1. Verificación de campos obligatorios
           $('input[required], select[required]').each(function() {
             var $input = $(this);
             if (($input.is('select') && ($input.val() === null || $input.val() === "")) ||
-              (!$input.is('select') && $input.val().trim() === "")) {
+                (!$input.is('select') && $input.val().trim() === "")) {
               $input.addClass('input-error');
               formularioValido = false;
             }
@@ -351,94 +396,41 @@
             return;
           }
 
-          // 1.2. Verificación de Contraseñas (Condicional)
-          var password = $('#password').val().trim();
-          var confirmPassword = $('#confirm_password').val().trim();
-
-          // Detectar si el usuario INTENTA cambiar la contraseña (al llenar al menos uno)
+          // 2. Verificación de Contraseñas
+          var password = $('#password').val() ? $('#password').val().trim() : "";
+          var confirmPassword = $('#confirm_password').val() ? $('#confirm_password').val().trim() : "";
           var cambiandoPassword = (password !== "" || confirmPassword !== "");
+          var esNuevoUsuario = !$('input[name="Id"]').length; // True en agregar, false en editar
 
-          if (cambiandoPassword) {
-
-            // 1.2.1. Validar que ambos campos de contraseña estén llenos
+          if (esNuevoUsuario || cambiandoPassword) {
             if (password === "" || confirmPassword === "") {
               $('#password').addClass('input-error');
               $('#confirm_password').addClass('input-error');
-              mostrarAviso('❌ Error: Si desea cambiar la contraseña, debe llenar ambos campos. De lo contrario, déjelos vacíos.');
+              mostrarAviso('❌ Error: Debe llenar ambos campos de contraseña.');
               return;
             }
-
-            // 1.2.2. Validación de Longitud (6 a 16 dígitos)
             if (password.length < 6 || password.length > 16) {
               $('#password').addClass('input-error');
-              mostrarAviso('🔒 Error de Contraseña: La longitud debe ser mínimo 6 y máximo 16 dígitos.');
+              mostrarAviso('🔒 Error de Contraseña: La longitud debe ser entre 6 y 16 dígitos.');
               return;
             }
-
-            // 1.2.3. Verificación de Coincidencia de Contraseñas
             if (password !== confirmPassword) {
               $('#password').addClass('input-error');
               $('#confirm_password').addClass('input-error');
-              mostrarAviso('❌ Error: Las contraseñas no coinciden. Por favor, verifíquelas.');
+              mostrarAviso('❌ Error: Las contraseñas no coinciden.');
               return;
             }
           }
 
-          // Si todo es válido (campos obligatorios y, opcionalmente, contraseñas), abrimos el modal
-          abrirModalGuardar();
+          // 3. Validar existencia de usuario antes del modal
+          verificarUsuarioYMostrarModal();
         });
 
-        function verificarUsuarioYEnviar() {
-          var nombreUsuario = $('#nombre').val();
-          // Capturamos el ID del input hidden (asegúrate de que el input tenga name="Id")
-          var idUsuario = $('input[name="Id"]').val();
-
-          console.log("Validando usuario:", nombreUsuario, "ID excluido:", idUsuario);
-
-          $.ajax({
-            url: 'get/get_verificar_usuario.php',
-            type: 'POST',
-            data: {
-              nombre: nombreUsuario,
-              id: idUsuario
-            },
-            dataType: 'json',
-            // Importante: async false puede trabar el navegador, 
-            // pero garantiza que el código espere la respuesta.
-            success: function(response) {
-              if (response.existe) {
-                console.log("El usuario ya existe.");
-                // Si existe, mostramos modal de aviso y NO hacemos nada más
-                $('#avisoModal .modal-body p').text('Error: El nombre de usuario "' + nombreUsuario + '" ya está siendo usado por otra persona.');
-                $('#avisoModal').modal('show');
-              } else {
-                console.log("Usuario disponible o es el mismo. Enviando...");
-                // SI NO EXISTE: Quitamos cualquier evento y enviamos manualmente
-                $('#formularioUsuario')[0].submit();
-              }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-              console.log("Error en AJAX:", textStatus, errorThrown);
-              // Si falla la red, enviamos para no bloquear el sistema
-              $('#formularioUsuario')[0].submit();
-            }
-          });
-        }
-
-        // 1.4. Lógica para el botón 'Guardar' dentro del modal de confirmación
         $('#confirmarGuardadoFinal').off('click').on('click', function(e) {
-          e.preventDefault(); // Detiene cualquier acción por defecto
-          e.stopPropagation(); // Evita que el evento suba
-
           $('#modalGuardarUsuario').modal('hide');
-
-          // Llamamos a la validación
-          verificarUsuarioYEnviar();
-
-          return false; // Refuerzo para no enviar el form
+          $('#formularioUsuario')[0].submit();
         });
 
-        // 1.5. Lógica para el botón Regresar (Abre el modal)
         $('#abrirModalRegresar').on('click', function() {
           $('#modalRegresarUsuario').modal('show');
         });

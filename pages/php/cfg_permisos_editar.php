@@ -176,37 +176,64 @@
           e.target.value = e.target.value.replace(/[0-9]/g, "");
         }
 
-        // --- VISUALIZACIÓN UNIFICADA EN DISPLAY PRINCIPAL ---
+        function verificarPermisoYMostrarModal() {
+          const nombre = $('#nombre_permiso').val().trim();
+          const idPermiso = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+          const btnGuardar = $('#btnGuardar');
+          const textoOriginal = btnGuardar.text();
+          
+          btnGuardar.text('Verificando...').attr('disabled', true);
 
-        // 3. ENVÍO DEL FORMULARIO
-        // Se usa la validación local (sin la validación de duplicidad AJAX que solicitaste omitir)
+          $.ajax({
+            url: 'get/verificar_existencia_permiso.php',
+            method: 'POST',
+            dataType: 'json',
+            data: { nombre: nombre, id: idPermiso },
+            success: function(response) {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+
+              if (response.existe_nombre) {
+                $('#group_nombre').addClass('has-error');
+                $('#nombre_permiso').addClass('input-error');
+                mostrarAviso('⚠️ Error: Ya existe un permiso con el nombre: ' + nombre);
+              } else {
+                // Si NO existe, mostramos el modal
+                $('#modalGuardar').modal('show');
+              }
+            },
+            error: function() {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
+            }
+          });
+        }
+
         $('#formularioPermiso').on('submit', function(e) {
-          e.preventDefault(); 
+          e.preventDefault();
           limpiarErrores();
           let errores = [];
-          
+
           if ($('#nombre_permiso').val().trim() === "") {
             errores.push("Falta el nombre del permiso.");
             $('#group_nombre').addClass('has-error');
           }
-          
           if ($('#descripcion').val().trim() === "") {
             errores.push("Falta la descripcion del permiso.");
             $('#group_descripcion').addClass('has-error');
           }
-
+          
           if (errores.length > 0) {
-            mostrarAviso('⚠️ Errores de Formulario: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+            mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
           } else {
-            // Si pasa la validación local, muestra el modal de confirmación
-            $('#modalGuardar').modal('show');
+            // Validar antes del modal
+            verificarPermisoYMostrarModal();
           }
         });
-        
+
         $('#confirmarGuardar').on('click', function() {
-            $('#modalGuardar').modal('hide');
-            // Al no requerir la validación AJAX de duplicidad, se envía directamente el formulario
-            $('#formularioPermiso').off('submit').submit(); 
+          $('#modalGuardar').modal('hide');
+          // Al confirmar, se envía directo
+          $('#formularioPermiso')[0].submit(); 
         });
 
         // --- Aplicar validaciones a campos de solo texto ---

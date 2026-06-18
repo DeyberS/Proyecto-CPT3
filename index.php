@@ -50,7 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql = "SELECT r.Id_rol, r.nombre_rol, p.id, p.email, p.password, p.nombre, p.estatus, p.login_attempts, p.last_login_attempt 
         FROM persona p 
         JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
-        JOIN rol r ON dpr.Id_rol = r.Id_rol WHERE p.email = ?";
+        JOIN rol r ON dpr.Id_rol = r.Id_rol WHERE p.email = ? AND p.password IS NOT NULL AND p.password != ''";
+        
 
         if ($stmt = mysqli_prepare($conexion, $sql)) {
             // Bind variables to the prepared statement as parameters
@@ -264,11 +265,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             100% { transform: translateX(-100%); }
         }
 
-        /* Ajuste para que el login no se pegue a la barra */
-        body {
-            padding-top: 50px; 
-        }
-
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -313,7 +309,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="icon" type="image/x-ico" href="recursos/imagenes/cpt3.ico">
 </head>
 
-<body class="container text-center">
+<body class="text-center">
     <div id="full_loader">
         <div id="loader"></div>
     </div>
@@ -346,8 +342,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-group">
                 <input type="submit" class="btn btn-primary" value="Ingresar">
             </div class="login-footer">
-            <p>¿Olvido Su Contraseña? <a href="recuperacion.php" class="recovery" style="color: cyan;">Recuperar</a>.</p>
-            <p>¿Su Usuario Esta Bloqueado? <a href="recuperacion_bloqueo.php" class="recovery" style="color: crimson;">Desbloquear</a>.</p>
+                <p>¿Olvido Su Contraseña? <a href="recuperacion.php" class="recovery" style="color: cyan;">Recuperar</a>.</p>
+                 <p>¿Su Usuario Esta Bloqueado? <a href="recuperacion_bloqueo.php" class="recovery" style="color: crimson;">Desbloquear</a>.</p>
+            </div>
         </form>
     </div>
 </body>

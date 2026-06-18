@@ -1,10 +1,24 @@
 
 html,
-body{
+body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
   width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; 
+  background-color: #f4f6f9; 
+}
+
+.wrapper {
+  zoom: 85%;
+  min-height: calc(100vh / 0.8); 
+  display: flex;
+  flex-direction: column;
+}
+
+.wrapper > .content-wrapper {
+  flex: 1;
 }
 
 .bd-placeholder-img {
@@ -21,11 +35,6 @@ body{
   }
 }
 
-/*
- * Skin: Black
- * -----------
- */
-/* skin-black navbar */
 .skin-black .main-header {
   -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.05);

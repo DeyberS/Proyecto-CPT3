@@ -6,487 +6,622 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Patologias | Editar</title>
   <?php
-    include('includes/headerNav2.php');
+  include('includes/headerNav2.php');
   ?>
   <style>
     /* ---------------------------------------------------------------------- */
     /* ESTILOS Y ANIMACIONES DE MODALES (Copiados de patologias_agregar.php) */
     /* ---------------------------------------------------------------------- */
-    @keyframes pulse-opacity { 0% { opacity: 0; } 100% { opacity: 1; } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }
+    @keyframes pulse-opacity {
+      0% {
+        opacity: 0;
+      }
 
-    .modal.in .modal-dialog, #avisoModal, #modalGuardar { animation: fadeIn 0.4s ease-out; }
-    .modal.out .modal-dialog { animation: fadeOut 0.4s ease-in; }
-    .modal-open .modal-backdrop { opacity: 0.7 !important; animation: pulse-opacity 0.3s forwards; }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+    }
+
+    .modal.in .modal-dialog,
+    #avisoModal,
+    #modalGuardar {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .modal.out .modal-dialog {
+      animation: fadeOut 0.4s ease-in;
+    }
+
+    .modal-open .modal-backdrop {
+      opacity: 0.7 !important;
+      animation: pulse-opacity 0.3s forwards;
+    }
 
     /* ESTILOS DE VALIDACIÓN */
-    .has-error input[type="text"], .has-error #enfermedad_contagiosa, .input-error {
+    .has-error input[type="text"],
+    .has-error #enfermedad_contagiosa,
+    .input-error {
       border: 2px solid crimson !important;
       box-shadow: 0 0 5px crimson;
     }
+
     #display_sintomas_seleccionados.input-error {
       border: 2px solid crimson !important;
       box-shadow: 0 0 5px crimson;
     }
 
     /* Modales por encima */
-    .modal { position: fixed !important; z-index: 99999 !important; }
-    .modal-backdrop { z-index: 99998 !important; transition: .5s; }
-    .modal.in { display: block; }
+    .modal {
+      position: fixed !important;
+      z-index: 99999 !important;
+    }
+
+    .modal-backdrop {
+      z-index: 99998 !important;
+      transition: .5s;
+    }
+
+    .modal.in {
+      display: block;
+    }
   </style>
 
-    <div class="content-wrapper">
-      <section class="content-header">
-        <h1>
-          Editar Patologia
-        </h1>
-        <ol class="breadcrumb">
-          <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
-          <li><a href="#"><i class="fa fa-users"></i>Patologias</a></li>
-          <li class="active"><a href="#"><i class="fa fa-user-plus"></i>Editar</a></li>
-        </ol>
-      </section>
+  <div class="content-wrapper">
+    <section class="content-header">
+      <h1>
+        Editar Patologia
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
+        <li><a href="#"><i class="fa fa-users"></i>Patologias</a></li>
+        <li class="active"><a href="#"><i class="fa fa-user-plus"></i>Editar</a></li>
+      </ol>
+    </section>
 
-      <section class="content">
+    <section class="content">
 
-        <div class="row">
-          <div class="col-md-12">
-            <div class="nav-tabs-custom">
-              <ul class="nav nav-tabs">
-                <li class="active"><a href="#tab_1" data-toggle="tab">Informacion de la Patologia</a></li>
-              </ul>
-              <div class="tab-content">
-                <div class="tab-pane active" id="tab_1" style="padding-bottom:5%;">
-                  <div class="box-body">
-                    <form id="formularioPatologia" action="../../cfg/editar/editar_patologia.php" class="form-group" method="POST" novalidate>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#tab_1" data-toggle="tab">Informacion de la Patologia</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab_1" style="padding-bottom:3%;">
+                <div class="box-body">
+                  <form id="formularioPatologia" action="../../cfg/editar/editar_patologia.php" class="form-group" method="POST" novalidate>
                     <?php
-                      include("../../cfg/conexion.php");
+                    include("../../cfg/conexion.php");
 
-                      // 1. Cargar datos de la patología a editar
-                      $patologia_id = $_GET['Id'] ?? 0;
-                      $sql = "SELECT * FROM patologias WHERE Id_patologia =" . $patologia_id;
-                      $resultado = $conexion->query($sql);
-                      $row = $resultado->fetch_assoc();
+                    // 1. Cargar datos de la patología a editar
+                    $patologia_id = $_GET['Id'] ?? 0;
+                    $sql = "SELECT * FROM patologias WHERE Id_patologia =" . $patologia_id;
+                    $resultado = $conexion->query($sql);
+                    $row = $resultado->fetch_assoc();
 
-                      // 2. Cargar todos los síntomas para el <select>
-                      $opciones_sintomas = "";
-                      $sql_todos_sintomas = "SELECT Id_sintomas, nombre_sintoma FROM sintomas ORDER BY nombre_sintoma ASC";
-                      $res_todos_sintomas = $conexion->query($sql_todos_sintomas);
+                    // 2. Cargar todos los síntomas para el <select>
+                    $opciones_sintomas = "";
+                    $sql_todos_sintomas = "SELECT Id_sintomas, nombre_sintoma FROM sintomas ORDER BY nombre_sintoma ASC";
+                    $res_todos_sintomas = $conexion->query($sql_todos_sintomas);
 
-                      if ($res_todos_sintomas->num_rows > 0) {
-                          while($sintoma_row = $res_todos_sintomas->fetch_assoc()) {
-                              $id = $sintoma_row['Id_sintomas'];
-                              $nombre = htmlspecialchars($sintoma_row['nombre_sintoma']);
-                              $opciones_sintomas .= "<option value='$id' data-nombre='$nombre'>$nombre</option>";
-                          }
-                      } else {
-                          $opciones_sintomas = "<option value=''>No hay síntomas registrados</option>";
+                    if ($res_todos_sintomas->num_rows > 0) {
+                      while ($sintoma_row = $res_todos_sintomas->fetch_assoc()) {
+                        $id = $sintoma_row['Id_sintomas'];
+                        $nombre = htmlspecialchars($sintoma_row['nombre_sintoma']);
+                        $opciones_sintomas .= "<option value='$id' data-nombre='$nombre'>$nombre</option>";
                       }
+                    } else {
+                      $opciones_sintomas = "<option value=''>No hay síntomas registrados</option>";
+                    }
 
-                      // 3. Cargar los síntomas ASOCIADOS a esta patología
-                      $sintomas_asociados_json = "[]";
-                      $sql_asociados = "SELECT s.Id_sintomas, s.nombre_sintoma 
+                    // 3. Cargar los síntomas ASOCIADOS a esta patología
+                    $sintomas_asociados_json = "[]";
+                    $sql_asociados = "SELECT s.Id_sintomas, s.nombre_sintoma 
                                         FROM sintomas s
                                         INNER JOIN detalle_patologia_sintomas ps ON s.Id_sintomas = ps.Id_sintoma
                                         WHERE ps.Id_patologia = $patologia_id";
-                      $res_asociados = $conexion->query($sql_asociados);
-                      $sintomas_asociados = [];
+                    $res_asociados = $conexion->query($sql_asociados);
+                    $sintomas_asociados = [];
 
-                      if ($res_asociados->num_rows > 0) {
-                          while($asociado_row = $res_asociados->fetch_assoc()) {
-                              $sintomas_asociados[] = [
-                                  'id' => (int)$asociado_row['Id_sintomas'], 
-                                  'nombre' => htmlspecialchars($asociado_row['nombre_sintoma'])
-                              ];
-                          }
+                    if ($res_asociados->num_rows > 0) {
+                      while ($asociado_row = $res_asociados->fetch_assoc()) {
+                        $sintomas_asociados[] = [
+                          'id' => (int)$asociado_row['Id_sintomas'],
+                          'nombre' => htmlspecialchars($asociado_row['nombre_sintoma'])
+                        ];
                       }
-                      $sintomas_asociados_json = json_encode($sintomas_asociados);
-                      
-                      // Cierre de conexión si ya no se usa
-                      $conexion->close();
-                      ?>
+                    }
+                    $sintomas_asociados_json = json_encode($sintomas_asociados);
 
-                      <input type="hidden" name="Id" value="<?= $row['Id_patologia']; ?>">
-                      <input type="hidden" name="sintomas_ids" id="sintomas_ids" value="">
+                    // Cierre de conexión si ya no se usa
+                    $conexion->close();
+                    ?>
+
+                    <input type="hidden" name="Id" value="<?= $row['Id_patologia']; ?>">
+                    <input type="hidden" name="sintomas_ids" id="sintomas_ids" value="">
 
                     <label class="control-label"></label>
-                      <div class="col-sm-4 form-group" id="group_nombre">
-                        <p>Nombre de la patologia (*)</p>
-                        <input type="text" class="form-control" placeholder="" name="nombre_patologia" id="nombre_patologia" value="<?php echo htmlspecialchars($row['nombre_patologia']); ?>" required>
-                      </div>
-                      <label class="control-label"></label>
-                      <div class="col-sm-4 form-group" id="group_codigo">
-                        <p>Código CIE-10 (*):</p>
-                        <input type="text" class="form-control" name="codigo_cie" id="codigo_cie" placeholder="Ej: A00.0" maxlength="8" value="<?php echo htmlspecialchars($row['codigo_cie']); ?>" required>
-                      </div>
-                      <label class="control-label"></label>
-                      <div class="col-sm-3 form-group" id="group_contagiosa">
-                        <p>Enfermedad contagiosa (*):</p>
-                        <select name="enfermedad_contagiosa" id="enfermedad_contagiosa" class="form-control">
-                          <option value="">--- Seleccione Una Respuesta ---</option>
-                          <?php
-                          $contagiosa = $row['contagioso'];
-                          // Opción 'SI' seleccionada si el valor guardado es 'SI'
-                          echo "<option value='SI' " . ($contagiosa == 'SI' ? 'selected' : '') . ">Si</option>";
-                          // Opción 'NO' seleccionada si el valor guardado es 'NO'
-                          echo "<option value='NO' " . ($contagiosa == 'NO' ? 'selected' : '') . ">No</option>";
-                          ?>
-                        </select>
-                      </div>  
-                      
-                      <br><br><br><br>
+                    <div class="col-sm-4 form-group" id="group_nombre">
+                      <p>Nombre de la patologia (*)</p>
+                      <input type="text" class="form-control" placeholder="" name="nombre_patologia" id="nombre_patologia" value="<?php echo htmlspecialchars($row['nombre_patologia']); ?>" required>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_codigo">
+                      <p>Código CIE-10 (*):</p>
+                      <input type="text" class="form-control" name="codigo_cie" id="codigo_cie" placeholder="Ej: A00.0" maxlength="8" value="<?php echo htmlspecialchars($row['codigo_cie']); ?>" required>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3 form-group" id="group_contagiosa">
+                      <p>Enfermedad contagiosa (*):</p>
+                      <select name="enfermedad_contagiosa" id="enfermedad_contagiosa" class="form-control">
+                        <option value="">--- Seleccione Una Respuesta ---</option>
+                        <?php
+                        $contagiosa = $row['contagioso'];
+                        // Opción 'SI' seleccionada si el valor guardado es 'SI'
+                        echo "<option value='SI' " . ($contagiosa == 'SI' ? 'selected' : '') . ">Si</option>";
+                        // Opción 'NO' seleccionada si el valor guardado es 'NO'
+                        echo "<option value='NO' " . ($contagiosa == 'NO' ? 'selected' : '') . ">No</option>";
+                        ?>
+                      </select>
+                    </div>
 
-                      <div class="col-sm-12">
-                          <p>Síntomas asociados (*):</p>
-                          <div id="display_sintomas_seleccionados" class="well well-sm" style="min-height: 50px; background-color: #f9f9f9; padding: 10px;">
-                            Cargando síntomas...
-                          </div>
-                          <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modalSintomas">
-                            <i class="fa fa-list"></i> Editar Síntomas
-                          </button>
-                          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalNuevoSintoma">
-                            <i class="fa fa-plus"></i> Agregar Nuevo Síntoma
-                          </button>
-                      </div>
-                      <br><br><br><br><br><br>
-                      
-                      <div style="float:right; margin-top: 1%;">
-                        <button type="button" class="btn btn-secondary regresar" data-toggle="modal" data-target="#modalRegresar">Regresar</button>
-                        <button type="submit" class="btn btn-success guardar" id="btnGuardar">Actualizar</button>
-                      </div>
-                    </form>
+                    <br><br><br><br>
+
+                    <div class="col-sm-4 form-group" id="group_sintomas">
+                      <p>Síntomas asociados (*):</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_sintomas" data-toggle="modal" data-placement="top" title="Cargando síntomas..." data-target="#modal_sintomas">
+                        <i></i> Gestionar Síntomas
+                      </button>
+                    </div>
+                    <br><br><br><br><br><br>
+
+                    <div style="float:right; margin-top: 1%;">
+                      <button type="button" class="btn btn-secondary regresar" data-toggle="modal" data-target="#modalRegresar">Regresar</button>
+                      <button type="submit" class="btn btn-success guardar" id="btnGuardar">Actualizar</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal fade" id="modal_sintomas" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Gestionar Síntomas</h4>
+                  </div>
+                  <div class="modal-body">
+                    <div id="contenedor_filas_sintomas"></div>
+                    <button type="button" class="btn btn-success btn-sm pull-left" id="add_fila_sintoma">
+                      <i class="fa fa-plus"></i> Añadir otro
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoSintoma" style="margin-left:5px;">
+                      <i class="fa fa-star"></i> Nuevo Sintoma
+                    </button>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="guardar_sintomas_listo" data-dismiss="modal">Listo</button>
                   </div>
                 </div>
               </div>
-              
-              <div class="modal fade" id="modalSintomas" tabindex="-1" role="dialog">
-                    <div class="modal-dialog" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header" style="background-color: #31b0d5; color: white;">
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                          <h4 class="modal-title">Seleccionar Síntomas</h4>
-                        </div>
-                        <div class="modal-body">
-                          <p>Síntomas seleccionados actualmente:</p>
-                          <div id="lista_sintomas_seleccionadas_modal" class="well well-sm" style="min-height: 50px;"></div>
-                          <br>
-                          <p>Síntomas disponibles:</p>
-                          <select id="lista_todos_sintomas" class="form-control" style="max-height: 200px; overflow-y: auto;">
-                            <option value="">--- Seleccione un Síntoma ---</option>
-                            <?php echo $opciones_sintomas; // Se cargan todas las opciones ?>
-                          </select>
-                          <button type="button" class="btn btn-sm btn-info pull-right" id="añadirSintomasSeleccionados" style="margin-top: 10px;">
-                            <i class="fa fa-plus-circle"></i> Añadir
-                          </button>
-                          <br><br>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                          <button type="button" class="btn btn-success" id="guardarSeleccionSintomas">Guardar Selección</button>
-                        </div>
-                      </div>
-                    </div>
-                </div>
+            </div>
 
-                <div class="modal fade" id="modalNuevoSintoma" tabindex="-1" role="dialog">
-                    <div class="modal-dialog" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header bg-primary" style="color: white;">
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                          <h4 class="modal-title">Añadir Nuevo Síntoma</h4>
-                        </div>
-                        <div class="modal-body">
-                          <form id="formNuevoSintoma">
-                            <div class="form-group">
-                              <label for="nuevo_nombre_sintoma">Nombre del Síntoma (*)</label>
-                              <input type="text" class="form-control" id="nuevo_nombre_sintoma" name="nombre_sintoma" required>
-                            </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                          <button type="button" class="btn btn-success" id="btnGuardarNuevoSintoma">Guardar</button>
-                        </div>
-                      </div>
+            <div class="modal fade" id="modalNuevoSintoma" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Crear Nuevo Síntoma</h4>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label>Nombre del Síntoma</label>
+                      <input type="text" id="nombre_nuevo_sintoma" class="form-control" placeholder="Ej. Dolor de cabeza">
                     </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="btnGuardarSintomaBD">Guardar y Seleccionar</button>
+                  </div>
                 </div>
-              <?php
-                include('includes/footer.php');
-              ?>
+              </div>
+            </div>
+
+            <div class="modal" id="modalBuscarSintoma" role="dialog">
+              <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                  <div class="modal-header bg-info" style="background-color: #3c8dbc; color: white;">
+                    <h4 class="modal-title">Buscar Síntoma</h4>
+                  </div>
+                  <div class="modal-body">
+                    <input type="text" id="inputBuscarSintoma" class="form-control" placeholder="Escriba para filtrar...">
+                    <div class="list-group" id="listaResultadosSintoma" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <?php
+            include('includes/footer.php');
+            ?>
           </div>
         </div>
-      </section>
-    </div>
-    
-    <div class="modal" id="avisoModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-crimson" style="color: white;">
-                    <h5 class="modal-title">Aviso de Validación</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                </div>
-                <div class="modal-body"><p id="avisoTexto"></p></div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal fade" id="modalRegresar" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-crimson" style="color: white;">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Confirmación de Regreso</h4>
-                </div>
-                <div class="modal-body"><p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <a href="salud_patologias_listado.php" class="btn btn-danger">Abandonar Formulario</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal" id="modalGuardar" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header" style="background-color: #00a65a; color: white;">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Confirmación de Guardado</h4>
-                </div>
-                <div class="modal-body"><p>¿Está seguro de que desea actualizar la informacion de la Patología?</p></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="confirmarGuardar">Guardar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    </section>
+  </div>
 
-    <script>
-      $(document).ready(function() {
-        // Inicializar el array de síntomas con los datos cargados de PHP
-        // Se utiliza la variable JSON que se creó en PHP
-        let sintomasSeleccionados = <?php echo $sintomas_asociados_json; ?>;
+  <div class="modal" id="avisoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson" style="color: white;">
+          <h5 class="modal-title">Aviso de Validación</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>
+      </div>
+    </div>
+  </div>
 
-        // =====================================================================
-        // FUNCIONES DE VISUALIZACIÓN
-        // =====================================================================
+  <div class="modal fade" id="modalRegresar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson" style="color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Confirmación de Regreso</h4>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <a href="salud_patologias_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        function mostrarAviso(mensaje) {
-          $('#avisoTexto').html(mensaje);
-          $('#avisoModal').modal('show');
+  <div class="modal" id="modalGuardar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #00a65a; color: white;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Confirmación de Guardado</h4>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea actualizar la informacion de la Patología?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardar">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      let sintomasSeleccionados = <?php echo $sintomas_asociados_json; ?>;
+
+      // =====================================================================
+      // FUNCIONES DE VISUALIZACIÓN
+      // =====================================================================
+
+      function mostrarAviso(mensaje) {
+        $('#avisoTexto').html(mensaje);
+        $('#avisoModal').modal('show');
+      }
+
+      function limpiarErrores() {
+        $('input, select').removeClass('input-error');
+        $('.form-group').removeClass('has-error');
+        $('#display_sintomas_seleccionados').removeClass('input-error');
+      }
+
+      function agregarFilaSintoma(idSeleccionado = "") {
+        let htmlSintoma = `
+            <div class="row fila-sintoma" style="margin-bottom: 10px;">
+                <div class="col-sm-10">
+                    <div class="input-group">
+                        <select class="form-control select-sintoma">
+                            <option value="">--- Seleccione un síntoma ---</option>
+                            <?php echo $opciones_sintomas; ?>
+                        </select>
+                        <span class="input-group-btn">
+                            <button class="btn btn-info btn-search-sintoma" type="button" title="Buscar Síntoma">
+                              <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" class="btn btn-danger btn-remove-sintoma">
+                        <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
+                    </button>
+                </div>
+            </div>`;
+
+        $('#contenedor_filas_sintomas').append(htmlSintoma);
+        if (idSeleccionado) {
+          $('#contenedor_filas_sintomas .fila-sintoma:last .select-sintoma').val(idSeleccionado);
+        }
+      }
+
+      // Inicializar los tooltips
+      $('#btn_modal_sintomas').tooltip();
+
+      // Cargar los síntomas existentes al iniciar
+      if (sintomasSeleccionados.length > 0) {
+        let nombresInit = [];
+        let idsInit = [];
+        sintomasSeleccionados.forEach(s => {
+          agregarFilaSintoma(s.id);
+          nombresInit.push(s.nombre);
+          idsInit.push(s.id);
+        });
+        $('#sintomas_ids').val(idsInit.join(','));
+        $('#btn_modal_sintomas').attr('data-original-title', nombresInit.join(', ')).tooltip('fixTitle');
+      } else {
+        $('#btn_modal_sintomas').attr('data-original-title', 'Ningún síntoma seleccionado').tooltip('fixTitle');
+      }
+
+      // =====================================================================
+      // MANEJADORES DE EVENTOS DE LOS SÍNTOMAS
+      // =====================================================================
+      $('#btn_modal_sintomas').click(function() {
+        if ($('#contenedor_filas_sintomas').children().length === 0) agregarFilaSintoma();
+      });
+
+      $('#add_fila_sintoma').click(() => agregarFilaSintoma());
+
+      $(document).on('click', '.btn-remove-sintoma', function() {
+        $(this).closest('.fila-sintoma').remove();
+      });
+
+      $('#guardar_sintomas_listo').click(function() {
+        let ids = [];
+        let nombres = [];
+        $('.select-sintoma').each(function() {
+          let val = $(this).val();
+          if (val && val !== "") {
+            ids.push(val);
+            nombres.push($(this).find('option:selected').text().trim());
+          }
+        });
+
+        $('#sintomas_ids').val(ids.join(','));
+        let textoTooltip = ids.length > 0 ? nombres.join(', ') : 'Ningún síntoma seleccionado';
+        $('#btn_modal_sintomas').attr('data-original-title', textoTooltip).tooltip('fixTitle');
+      });
+
+      // Prevenir síntomas duplicados en los selects
+      $(document).on('change', '.select-sintoma', function() {
+        let selectActual = $(this);
+        let valorActual = selectActual.val();
+        if (valorActual === "") return;
+
+        let conteo = 0;
+        $('.select-sintoma').each(function() {
+          if ($(this).val() === valorActual) conteo++;
+        });
+        if (conteo > 1) {
+          mostrarAviso("⚠️ <b>Atención:</b> Este síntoma ya ha sido seleccionado. Por favor, elija uno diferente.");
+          selectActual.val("");
+        }
+      });
+
+      // =====================================================================
+      // BUSCADOR DE SÍNTOMAS EN TIEMPO REAL
+      // =====================================================================
+      let selectDestinoTargetSintoma = null;
+      $(document).on('click', '.btn-search-sintoma', function() {
+        selectDestinoTargetSintoma = $(this).closest('.input-group').find('.select-sintoma');
+        $('#modalBuscarSintoma').modal('show');
+        $('#inputBuscarSintoma').val('').trigger('keyup');
+      });
+
+      $('#inputBuscarSintoma').on('keyup', function() {
+        let texto = $(this).val().toLowerCase();
+        let html = '';
+        let opciones = $('.select-sintoma:first option').not('[value=""]');
+        opciones.each(function() {
+          let nombre = $(this).text();
+          if (nombre.toLowerCase().includes(texto)) {
+            html += `<a href="#" class="list-group-item list-group-item-action seleccionar-sintoma" data-id="${$(this).val()}">${nombre}</a>`;
+          }
+        });
+        $('#listaResultadosSintoma').html(html);
+      });
+
+      $(document).on('click', '.seleccionar-sintoma', function(e) {
+        e.preventDefault();
+        selectDestinoTargetSintoma.val($(this).data('id')).trigger('change');
+        $('#modalBuscarSintoma').modal('hide');
+      });
+
+      // =====================================================================
+      // CREAR NUEVO SÍNTOMA (AJAX) - CORRECCIÓN DEL BUG DEL BACKDROP
+      // =====================================================================
+      $('#btnGuardarSintomaBD').click(function() {
+        let nombreSintoma = $('#nombre_nuevo_sintoma').val().trim();
+
+        if (nombreSintoma === "") {
+          mostrarAviso("⚠️ El nombre del síntoma no puede estar vacío.");
+          return;
         }
 
-        function limpiarErrores() {
-          $('input, select').removeClass('input-error');
-          $('.form-group').removeClass('has-error');
-          $('#display_sintomas_seleccionados').removeClass('input-error');
-        }
+        let btn = $(this);
+        btn.prop('disabled', true).text('Guardando...');
 
-        // --- VISUALIZACIÓN UNIFICADA EN DISPLAY PRINCIPAL ---
-        function actualizarDisplaySintomas() {
-          const display = $('#display_sintomas_seleccionados');
-          const inputHidden = $('#sintomas_ids');
-          const nombres = sintomasSeleccionados.map(s => s.nombre);
-          const ids = sintomasSeleccionados.map(s => s.id);
-          const LIMITE_DISPLAY = 3;
+        $.ajax({
+          url: '../../cfg/ajax/ajax_guardar_sintoma.php', // Usamos la misma ruta de edición original
+          type: 'POST',
+          data: {
+            nombre_sintoma: nombreSintoma
+          },
+          dataType: 'json',
+          success: function(response) {
+            if (response.success) {
+              let nuevoId = response.id;
+              let nuevoNombre = response.nombre;
 
-          inputHidden.val(ids.join(','));
+              // 1. Agregar la nueva opción a TODOS los selects existentes (para que esté disponible)
+              let nuevaOpcion = `<option value="${nuevoId}">${nuevoNombre}</option>`;
+              $('.select-sintoma').append(nuevaOpcion);
 
-          if (nombres.length > 0) {
-            let htmlContent = '';
+              // FIX DEL BUG: Solo ocultamos el modal. No destruimos el backdrop manualmente
+              $('#nombre_nuevo_sintoma').val('');
+              $('#modalNuevoSintoma').modal('hide');
 
-            for (let i = 0; i < Math.min(nombres.length, LIMITE_DISPLAY); i++) {
-              htmlContent += `<span class="text" style="margin-right: 5px; margin-bottom: 5px; display: inline-block; padding: 6px;">${nombres[i]},</span>`;
+
+            } else {
+              mostrarAviso("Error al guardar: " + (response.message || response.error || "Desconocido"));
             }
-
-            if (nombres.length > LIMITE_DISPLAY) {
-              let restantes = nombres.length - LIMITE_DISPLAY;
-              htmlContent += `<span class="text-muted" style="margin-left:5px; font-weight:bold;">... y ${restantes} más.</span>`;
-            }
-
-            display.html(htmlContent);
-
-          } else {
-            display.html('Ningún síntoma seleccionado.');
+          },
+          error: function() {
+            mostrarAviso("Error de conexión al intentar guardar el síntoma.");
+          },
+          complete: function() {
+            btn.prop('disabled', false).text('Guardar y Seleccionar');
           }
+        });
+      });
+
+      // Limpiar el input cuando se cierre el modal
+      $('#modalNuevoSintoma').on('hidden.bs.modal', function() {
+        $('#nombre_nuevo_sintoma').val('');
+      });
+
+      // 3. ENVÍO DEL FORMULARIO Y VERIFICACIÓN PREVIA
+      $('#formularioPatologia').on('submit', function(e) {
+        e.preventDefault();
+        limpiarErrores();
+        let errores = [];
+
+        if ($('#nombre_patologia').val().trim() === "") {
+          errores.push("Falta el Nombre de la patología.");
+          $('#group_nombre').addClass('has-error');
         }
-        
-        // --- RENDERIZADO EN EL MODAL (CON BOTÓN DE ELIMINAR 'X') ---
-        function renderizarSeleccionadosModal() {
-          $('#lista_sintomas_seleccionadas_modal').empty();
-          sintomasSeleccionados.forEach(sintoma => {
-            $('#lista_sintomas_seleccionadas_modal').append(
-              // El icono ahora va pegado al nombre, y el padding del span se ajusta para contener ambos.
-              `<span class="label label-primary" style="margin-right: 5px; margin-bottom: 5px; display: inline-block; font-size: 14px; padding: 6px 10px 6px 10px;">
-                ${sintoma.nombre} 
-                <i class="quitar-sintoma" data-id="${sintoma.id}" 
-                   style="cursor: pointer; margin-left: 8px; color: white:#dc3545;" 
-                   title="Eliminar">x</i>
-            </span>`
-            );
-          });
+        if ($('#codigo_cie').val().trim() === "") {
+          errores.push("Falta el Código CIE-10.");
+          $('#group_codigo').addClass('has-error');
         }
-        
-        // =====================================================================
-        // MANEJADORES DE EVENTOS
-        // =====================================================================
+        if ($('#enfermedad_contagiosa').val() === "") {
+          errores.push("Seleccione si es contagiosa.");
+          $('#group_contagiosa').addClass('has-error');
+        }
+        if ($('#sintomas_ids').val().trim() === "") {
+          errores.push("Debe seleccionar al menos un Síntoma.");
+          $('#group_sintomas').addClass('has-error');
+        }
 
-        // 1. GESTIÓN DE SÍNTOMAS (Modal Seleccionar/Eliminar)
-        // 1. GESTIÓN DE SÍNTOMAS (Modal Seleccionar/Eliminar)
-        $('#modalSintomas').on('show.bs.modal', function() {
-          $('#lista_todos_sintomas').val("");
-          renderizarSeleccionadosModal();
-        });
+        if (errores.length > 0) {
+          mostrarAviso('⚠️ Errores:<ul><li>' + errores.join('</li><li>') + '</li></ul>');
+        } else {
+          const nombre = $('#nombre_patologia').val().trim();
+          const codigo = $('#codigo_cie').val().trim();
+          const idActual = $('input[name="Id"]').length > 0 ? $('input[name="Id"]').val() : 0;
+          const btnGuardar = $('#btnGuardar');
+          const textoOriginal = btnGuardar.text();
 
-        $('#añadirSintomasSeleccionados').on('click', function() {
-          const select = $('#lista_todos_sintomas');
-          const selectedOption = select.find('option:selected');
-          const id = selectedOption.val();
-          const nombre = selectedOption.data('nombre');
+          btnGuardar.text('Verificando...').attr('disabled', true);
 
-          if (!id) {
-            mostrarAviso('⚠️ Seleccione un síntoma de la lista.');
-            return;
-          }
-          // Se asegura de que no se añada dos veces
-          if (sintomasSeleccionados.some(s => s.id == id)) {
-            mostrarAviso('⚠️ Este síntoma ya está añadido.');
-            return;
-          }
-
-          sintomasSeleccionados.push({
-            id: parseInt(id),
-            nombre: nombre
-          });
-          renderizarSeleccionadosModal();
-          select.val("");
-        });
-
-        // Evento Delegado para ELIMINAR SÍNTOMA (La "X") de la lista TEMPORAL
-        $('#lista_sintomas_seleccionadas_modal').on('click', '.quitar-sintoma', function() {
-          const idQuitar = $(this).data('id');
-          sintomasSeleccionados = sintomasSeleccionados.filter(s => s.id != idQuitar);
-          $(this).closest('.label').remove();
-          mostrarAviso(`Síntoma eliminado de la **lista temporal**. Recuerde guardar los cambios.`);
-        });
-
-        $('#guardarSeleccionSintomas').on('click', function() {
-          actualizarDisplaySintomas();
-          if (sintomasSeleccionados.length > 0) $('#display_sintomas_seleccionados').removeClass('input-error');
-          $('#modalSintomas').modal('hide');
-        });
-
-
-        // 2. NUEVO SÍNTOMA RÁPIDO (Guardar en BD)
-        $('#btnGuardarNuevoSintoma').on('click', function() {
-          const nombreSintoma = $('#nuevo_nombre_sintoma').val().trim();
-          const btn = $(this);
-
-          if (nombreSintoma === "") {
-            mostrarAviso('🛑 El nombre es obligatorio.');
-            return;
-          }
-
-          const textoOriginal = btn.text();
-          btn.text('Guardando...').attr('disabled', true);
-
-          // LLAMADA AJAX para guardar en la BD y obtener el ID real
           $.ajax({
-            url: '../../cfg/agregar_sintoma.php',
+            url: 'get/verificar_existencia_patologia.php',
             method: 'POST',
             dataType: 'json',
             data: {
-              nombre_sintoma: nombreSintoma
+              nombre: nombre,
+              codigo: codigo,
+              id_actual: idActual
             },
             success: function(response) {
-              btn.text(textoOriginal).attr('disabled', false);
+              let errores_ajax = [];
+              btnGuardar.text(textoOriginal).attr('disabled', false);
 
-              if (response.success && response.id_sintoma) {
-                const nuevoId = parseInt(response.id_sintoma);
+              if (response.existe_nombre) {
+                errores_ajax.push(`⚠️ Ya existe una patología con el nombre: ${nombre}`);
+                $('#group_nombre').addClass('has-error');
+                $('#nombre_patologia').addClass('input-error');
+              }
+              if (response.existe_codigo) {
+                errores_ajax.push(`⚠️ Ya existe una patología con el Código CIE-10: ${codigo}`);
+                $('#group_codigo').addClass('has-error');
+                $('#codigo_cie').addClass('input-error');
+              }
 
-                // SOLUCIÓN 2: Solo agregamos a la lista de opciones (Select)
-                // NO se agrega al array sintomasSeleccionados ni se llama a actualizarDisplaySintomas()
-                $('#lista_todos_sintomas').append(`<option value='${nuevoId}' data-nombre='${nombreSintoma}'>${nombreSintoma}</option>`);
-
-                // Cerrar y limpiar
-                $('#modalNuevoSintoma').modal('hide');
-                $('#formNuevoSintoma')[0].reset();
-                mostrarAviso(`✅ Síntoma **${nombreSintoma}** añadido a la base de datos y disponible para ser seleccionado.`);
-
+              if (errores_ajax.length > 0) {
+                mostrarAviso('🛑 Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
               } else {
-                const mensaje = response.message || 'Error desconocido al guardar el síntoma.';
-                mostrarAviso(`🛑 Error de guardado: ${mensaje}`);
+                $('#modalGuardar').modal('show');
               }
             },
-            error: function() {
-              btn.text(textoOriginal).attr('disabled', false);
-              mostrarAviso('🛑 Error de Conexión: No se pudo contactar al servidor para guardar el síntoma.');
+            error: function(xhr, status, error) {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
             }
           });
-        });
-
-        // 3. ENVÍO DEL FORMULARIO
-        // Se usa la validación local (sin la validación de duplicidad AJAX que solicitaste omitir)
-        $('#formularioPatologia').on('submit', function(e) {
-          e.preventDefault(); 
-          limpiarErrores();
-          let errores = [];
-          
-          if ($('#nombre_patologia').val().trim() === "") {
-            errores.push("Falta el **Nombre** de la patología.");
-            $('#group_nombre').addClass('has-error');
-          }
-          if ($('#codigo_cie').val().trim() === "") {
-            errores.push("Falta el **Código CIE-10**.");
-            $('#group_codigo').addClass('has-error');
-          }
-          if ($('#enfermedad_contagiosa').val() === "") {
-            errores.push("Seleccione si es **contagiosa**.");
-            $('#group_contagiosa').addClass('has-error');
-          }
-          if (sintomasSeleccionados.length === 0) {
-             errores.push("Debe seleccionar al menos **un Síntoma**.");
-             $('#display_sintomas_seleccionados').addClass('input-error'); 
-          }
-
-          if (errores.length > 0) {
-            mostrarAviso('⚠️ **Errores de Formulario:**<ul><li>' + errores.join('</li><li>') + '</li></ul>');
-          } else {
-            // Si pasa la validación local, muestra el modal de confirmación
-            $('#modalGuardar').modal('show');
-          }
-        });
-        
-        $('#confirmarGuardar').on('click', function() {
-            $('#modalGuardar').modal('hide');
-            // Al no requerir la validación AJAX de duplicidad, se envía directamente el formulario
-            $('#formularioPatologia').off('submit').submit(); 
-        });
-
-        // FIX DE MODALES (Cierre suave y gestión de backdrop)
-        $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
-            e.stopPropagation(); 
-            var $modal = $(this).closest('.modal');
-            if ($modal.hasClass('in')) { 
-                $modal.removeClass('in').addClass('out');
-                setTimeout(function() { $modal.modal('hide'); $modal.removeClass('out'); }, 400); 
-            } else { $modal.modal('hide'); }
-        });
-        
-        $('.modal').on('hidden.bs.modal', function () {
-            if (!$('.modal.in').length) { 
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove(); 
-            } else { $('body').addClass('modal-open'); }
-        });
-        
-        // Inicializar la visualización de los síntomas cargados al iniciar
-        actualizarDisplaySintomas();
+        }
       });
-    </script>
-</body>
+
+      $('#confirmarGuardar').on('click', function() {
+        $('#modalGuardar').modal('hide');
+        $('#formularioPatologia').off('submit').submit();
+      });
+
+      // FIX DE MODALES (Cierre suave y gestión de backdrop)
+      $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
+        e.stopPropagation();
+        var $modal = $(this).closest('.modal');
+        if ($modal.hasClass('in')) {
+          $modal.removeClass('in').addClass('out');
+          setTimeout(function() {
+            $modal.modal('hide');
+            $modal.removeClass('out');
+          }, 400);
+        } else {
+          $modal.modal('hide');
+        }
+      });
+
+      $('.modal').on('hidden.bs.modal', function() {
+        if (!$('.modal.in').length) {
+          $('body').removeClass('modal-open');
+          $('.modal-backdrop').remove();
+        } else {
+          $('body').addClass('modal-open');
+        }
+      });
+
+      // Inicializar la visualización de los síntomas cargados al iniciar
+      actualizarDisplaySintomas();
+    });
+  </script>
+  </body>
 
 </html>

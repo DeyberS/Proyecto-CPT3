@@ -22,7 +22,8 @@ if ($tipo_receta === 'Interna') {
                 rep.cedula AS cedula_representante
               FROM consulta c
               INNER JOIN persona paciente ON c.Id_paciente = paciente.id
-              INNER JOIN persona medico ON c.Id_medico = medico.id
+              INNER JOIN detalle_medico dmd ON c.Id_medico = dmd.Id_detalle_medico
+              INNER JOIN persona medico ON dmd.Id_persona = medico.id
               LEFT JOIN detalle_paciente_menor dpm_menor ON paciente.id = dpm_menor.id_persona
               LEFT JOIN persona rep ON dpm_menor.id_representante = rep.id
               WHERE c.Id_consulta = '$id_pres'";
@@ -63,19 +64,24 @@ if ($tipo_receta === 'Interna') {
     }
 
 } else {
-    // NUEVA CONSULTA GENERAL ADAPTADA PARA RECETAS EXTERNAS
+    // NUEVA CONSULTA GENERAL ADAPTADA PARA RECETAS EXTERNAS (CORREGIDA)
     $query_general = "SELECT 
                 sm.id_solicitud AS Id, 
                 sm.fecha_solicitud AS fecha_consulta, 
                 'Receta Externa - Sin indicaciones detalladas registradas en el sistema.' AS tratamiento_indicado,
-                sm.datos_paciente_externo AS nom_pac, '' AS ape_pac, 
-                sm.tipo_cedula_externo AS tipo_cedula_pac, sm.cedula_externo AS cedula_pac,
-                NULL AS fecha_nacimiento, 'No Especificado' AS genero,
-                sm.datos_medico_externo AS nom_med, '' AS ape_med,
+                paciente.nombre AS nom_pac, paciente.apellido AS ape_pac, 
+                paciente.tipo_cedula AS tipo_cedula_pac, paciente.cedula AS cedula_pac,
+                paciente.fecha_nacimiento, paciente.genero,
+                medico.nombre AS nom_med, medico.apellido AS ape_med,
                 sm.estatus_general,
-                0 AS es_menor,
-                NULL AS cedula_representante
+                TIMESTAMPDIFF(YEAR, paciente.fecha_nacimiento, CURDATE()) < 18 AS es_menor,
+                rep.cedula AS cedula_representante
               FROM solicitud_medicamento sm
+              INNER JOIN persona paciente ON sm.id_paciente = paciente.id
+              INNER JOIN detalle_medico dmd ON sm.id_medico = dmd.Id_detalle_medico
+              INNER JOIN persona medico ON dmd.Id_persona = medico.id
+              LEFT JOIN detalle_paciente_menor dpm_menor ON paciente.id = dpm_menor.id_persona
+              LEFT JOIN persona rep ON dpm_menor.id_representante = rep.id
               WHERE sm.id_solicitud = '$id_pres'";
 
     // Obtenemos los medicamentos pertenecientes a esta solicitud externa
@@ -96,7 +102,14 @@ if ($tipo_receta === 'Interna') {
               WHERE ds.id_solicitud = '$id_pres'";
 }
 
+// Ejecutar consulta con protección de errores
 $res_general = $conexion->query($query_general);
+
+// Validar que la consulta fue exitosa antes de extraer los datos
+if (!$res_general) {
+    die("Error de sintaxis en la consulta general SQL: " . $conexion->error);
+}
+
 $data = $res_general->fetch_assoc();
 
 if (!$data) {
@@ -173,8 +186,22 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
     <?php include('includes/headerNav2.php'); ?>
 
     <style>
-        .content-wrapper { background-color: #f4f7f9 !important; }
-        .content-custom { padding: 40px 15px; }
+        .wrapper {
+            display: block !important; 
+            min-height: 100% !important; 
+            overflow-x: hidden !important; 
+            background-color: #f4f7f9 !important; 
+        }
+
+        .content-wrapper {
+            background-color: #f4f7f9 !important;
+            min-height: 125vh !important; /* Aseguramos que el contenido baje por completo */
+        }
+
+        .content-custom {
+            padding: 50px 10px;
+            margin-left: 60px;
+        }
         .main-container { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); overflow: hidden; margin-bottom: 30px; }
         .hero-header { background: linear-gradient(135deg, #605ca8 0%, #333152 100%); color: white; padding: 30px; border-bottom: 5px solid <?php echo $status_color; ?>; position: relative; }
         .hero-status-badge { position: absolute; top: 20px; right: 30px; background: <?php echo $status_color; ?>; color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }

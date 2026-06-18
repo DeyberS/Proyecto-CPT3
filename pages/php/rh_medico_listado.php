@@ -71,7 +71,7 @@ include('includes/headerNav2.php');
   $sqlMedicos = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p 
   JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
   JOIN rol r ON dpr.Id_rol = r.Id_rol
-  HAVING r.Id_rol = 4 AND p.estatus = 1 ORDER BY id ASC");
+  HAVING r.Id_rol = 7 AND p.estatus IN (1, 2) ORDER BY id ASC");
   $queryData   = mysqli_query($conexion, $sqlMedicos);
   $total_medicos = mysqli_num_rows($queryData);
   ?>
@@ -109,6 +109,7 @@ include('includes/headerNav2.php');
           <th>Nombres Y Apellidos</th>
           <th>Genero</th>
           <th>Telefono</th>
+          <th>Tipo De Medico</th>
           <?php if (in_array('Gestionar acciones de medicos', $_SESSION["permisos"])) : ?>
             <th>Acciones</th>
           <?php endif; ?>
@@ -123,7 +124,7 @@ include('includes/headerNav2.php');
             $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
             // 2. Definir el filtro base (Buscamos en nombres, apellidos, cédula o especialidad)
-            $donde = "WHERE r.Id_rol = 4 AND p.estatus = 1";
+            $donde = "WHERE r.Id_rol = 7 AND p.estatus IN (1, 2)";
             if ($busqueda != '') {
               $donde .= " AND (p.nombre LIKE '%$busqueda%' 
                             OR p.apellido LIKE '%$busqueda%' 
@@ -143,8 +144,10 @@ include('includes/headerNav2.php');
             $total_paginas = ceil($total_medicos / $registros_por_pagina);
 
             // Consulta para obtener los registros de la página actual
-            $sql = "SELECT r.Id_rol, pt.prefijo, t.telefono, p.id, p.tipo_cedula, p.cedula, p.nombre, p.apellido, p.genero, p.fecha_nacimiento, p.estatus 
-            FROM persona p 
+            $sql = "SELECT r.Id_rol, pt.prefijo, t.telefono, p.id, p.tipo_cedula, p.cedula, 
+            p.nombre, p.apellido, p.genero, p.fecha_nacimiento, p.estatus, dm.tipo_medico 
+            FROM persona p
+            JOIN detalle_medico dm ON  p.id = dm.Id_persona 
             JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
             JOIN rol r ON dpr.Id_rol = r.Id_rol
             LEFT JOIN telefonos_personas t ON p.id = t.Id_persona
@@ -163,6 +166,7 @@ include('includes/headerNav2.php');
             <td class=""><span class="text-row text-white"><?= ($row['nombre']) . " " . ($row['apellido']); ?></span></td>
             <td class=""><span class="text-row text-white"><?= ($row['genero']); ?></span></td>
             <td class=""><span class="text-row text-white"><?= ($row['prefijo']) . "-" . ($row['telefono']); ?></span></td>
+            <td class=""><span class="text-row text-white"><?= ($row['tipo_medico']); ?></span></td>
             <?php if (in_array('Gestionar acciones de medicos', $_SESSION["permisos"])) : ?>
               <td>
                 <?php if (in_array('Ver Medicos', $_SESSION["permisos"])) : ?>

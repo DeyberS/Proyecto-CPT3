@@ -3,6 +3,14 @@
  // Include config file
  require_once "../conexion.php";
 
+ use PHPMailer\PHPMailer\PHPMailer;
+ use PHPMailer\PHPMailer\Exception;
+
+ require '../../plugins/PHPMailer/src/Exception.php';
+ require '../../plugins/PHPMailer/src/PHPMailer.php';
+ require '../../plugins/PHPMailer/src/SMTP.php';
+ require '../../plugins/vendor/autoload.php';
+
  // --- 1. Recolección y Sanitización de Datos ---
  $id_medico = (int) ($_POST['Id'] ?? 0); // ID principal para el UPDATE
 
@@ -14,16 +22,30 @@
  $fecha_nacimiento = $_POST['fecha_nacimiento'] ?? '';
  $genero = $_POST['genero'] ?? '';
  $email = $_POST['correo'] ?? null;
- $estado = 1;
+ $estado = 2;
 
  // Datos del Médico, Departamento y Especialidad (NUEVO CAMPO)
+ $codigo_colegiatura = $_POST['cod_colegiatura'] ?? '';
  $fecha_ingreso = $_POST['fecha_ingreso'] ?? '';
- $area = (int) ($_POST['area'] ?? 0); // Id_departamento
- $especialidad = (int) ($_POST['especialidad'] ?? 0); // Id_especialidad (NUEVO)
+ $areas_seleccionadas = $_POST['areas_seleccionadas'] ?? '';
+ $especialidades_seleccionadas = $_POST['especialidades_seleccionadas'] ?? '';
+
+ // Convertir los strings en arreglos (arrays) e ignorar valores vacíos
+ $areas_array = array_filter(explode('|', $areas_seleccionadas));
+ $especialidades_array = array_filter(explode('|', $especialidades_seleccionadas));
  
  // Teléfonos
  $prefijo = $_POST['prefijo'] ?? '';
  $telefono = $_POST['telefono'] ?? '';
+
+$password_plana = $_POST['password'] ?? '';
+$sql_password_part = ""; // Parte extra de la consulta SQL
+
+if (!empty($password_plana)) {
+    // Si el usuario escribió una clave, la encriptamos
+    $password_hash = password_hash($password_plana, PASSWORD_DEFAULT);
+    $sql_password_part = ", password = '$password_hash'";
+}
 
  if ($id_medico <= 0) {
     // Usar mensaje de sesión para error
@@ -38,32 +60,31 @@
  try {
     // 2.1. UPDATE en PERSONA (Datos personales)
     $sql_medico = "UPDATE persona 
-                   SET nombre = ?, apellido = ?, tipo_cedula = ?, cedula = ?, fecha_nacimiento = ?, genero = ?, email = ?, estatus = ? 
+                   SET nombre = ?, apellido = ?, tipo_cedula = ?, cedula = ?, fecha_nacimiento = ?, genero = ?, email = ? $sql_password_part
                    WHERE id = ?";
+    
     $stmt_medico = $conexion->prepare($sql_medico);
     
     if (!$stmt_medico) {
         throw new Exception("Error al preparar UPDATE en persona: " . $conexion->error);
     }
     
-    $stmt_medico->bind_param("sssssssii", 
-        $nombre, $apellido, $tipo_cedula, $cedula, $fecha_nacimiento, $genero, $email, $estado, $id_medico);
+    $stmt_medico->bind_param("sssssssi", $nombre, $apellido, $tipo_cedula, $cedula, $fecha_nacimiento, $genero, $email, $id_medico);
     
     if (!$stmt_medico->execute()) {
-        throw new Exception("Error al actualizar persona (Médico): " . $stmt_medico->error);
+        throw new Exception("Error al actualizar persona: " . $stmt_medico->error);
     }
     $stmt_medico->close();
 
-
     // 2.2. UPDATE en DETALLE_MEDICO (Fecha de ingreso)
-    $sql_detalle_medico = "UPDATE detalle_medico SET fecha_ingreso = ? WHERE Id_persona = ?";
+    $sql_detalle_medico = "UPDATE detalle_medico SET cod_colegiatura = ?, fecha_ingreso = ? WHERE Id_persona = ?";
     $stmt_detalle_medico = $conexion->prepare($sql_detalle_medico);
     
     if (!$stmt_detalle_medico) {
         throw new Exception("Error al preparar UPDATE en detalle_medico: " . $conexion->error);
     }
     
-    $stmt_detalle_medico->bind_param("si", $fecha_ingreso, $id_medico);
+    $stmt_detalle_medico->bind_param("isi", $codigo_colegiatura, $fecha_ingreso, $id_medico);
     
     if (!$stmt_detalle_medico->execute()) {
         throw new Exception("Error al actualizar detalle médico: " . $stmt_detalle_medico->error);
@@ -91,28 +112,30 @@
     }
     $stmt_get_detalle_id->close();
 
-
     // --- 2.4. Gestión del Departamento (MEDICOS_DEPARTAMENTOS) ---
     if ($id_detalle_medico > 0) {
-        // Usamos REPLACE INTO para actualizar o insertar la relación Departamento
-        $sql_medicos_departamentos = "REPLACE INTO medicos_departamentos(Id_departamento, Id_detalle_medico) VALUES(?, ?)";
-        $stmt_medicos_departamentos = $conexion->prepare($sql_medicos_departamentos);
+        // Primero BORRAR todas las áreas anteriores del médico
+        $sql_delete_areas = "DELETE FROM medicos_departamentos WHERE Id_detalle_medico = ?";
+        $stmt_delete_areas = $conexion->prepare($sql_delete_areas);
+        $stmt_delete_areas->bind_param("i", $id_detalle_medico);
+        $stmt_delete_areas->execute();
+        $stmt_delete_areas->close();
 
-        if (!$stmt_medicos_departamentos) {
-            throw new Exception("Error al preparar REPLACE en medicos_departamentos: " . $conexion->error);
+        // Luego INSERTAR las nuevas áreas recorriendo el arreglo
+        if (!empty($areas_array)) {
+            $sql_insert_area = "INSERT INTO medicos_departamentos(Id_departamento, Id_detalle_medico) VALUES(?, ?)";
+            $stmt_insert_area = $conexion->prepare($sql_insert_area);
+            foreach ($areas_array as $area_id) {
+                $area_id_int = (int) $area_id;
+                $stmt_insert_area->bind_param("ii", $area_id_int, $id_detalle_medico);
+                $stmt_insert_area->execute();
+            }
+            $stmt_insert_area->close();
         }
-
-        $stmt_medicos_departamentos->bind_param("ii", $area, $id_detalle_medico);
-        
-        if (!$stmt_medicos_departamentos->execute()) {
-            throw new Exception("Error al actualizar médicos/departamentos: " . $stmt_medicos_departamentos->error);
-        }
-        $stmt_medicos_departamentos->close();
     }
     
-    
     // --- 2.5. Gestión de la Especialidad (ESPECIALIDADES_MEDICOS) ---
-    if ($id_detalle_medico > 0 && $especialidad > 0) {
+    if ($id_detalle_medico > 0) {
         // Primero BORRAR todas las especialidades anteriores del médico
         $sql_delete_esp = "DELETE FROM especialidades_medicos WHERE Id_detalle_medico = ?";
         $stmt_delete_esp = $conexion->prepare($sql_delete_esp);
@@ -120,20 +143,18 @@
         $stmt_delete_esp->execute();
         $stmt_delete_esp->close();
         
-        // Luego INSERTAR la nueva especialidad
-        $sql_insert_esp = "INSERT INTO especialidades_medicos(Id_especialidad, Id_detalle_medico) VALUES(?, ?)";
-        $stmt_insert_esp = $conexion->prepare($sql_insert_esp);
-        
-        if (!$stmt_insert_esp) {
-            throw new Exception("Error al preparar INSERT en especialidades_medicos: " . $conexion->error);
+        // Luego INSERTAR las nuevas especialidades recorriendo el arreglo
+        if (!empty($especialidades_array)) {
+            $sql_insert_esp = "INSERT INTO especialidades_medicos(Id_especialidad, Id_detalle_medico) VALUES(?, ?)";
+            $stmt_insert_esp = $conexion->prepare($sql_insert_esp);
+            
+            foreach ($especialidades_array as $esp_id) {
+                $esp_id_int = (int) $esp_id;
+                $stmt_insert_esp->bind_param("ii", $esp_id_int, $id_detalle_medico);
+                $stmt_insert_esp->execute();
+            }
+            $stmt_insert_esp->close();
         }
-
-        $stmt_insert_esp->bind_param("ii", $especialidad, $id_detalle_medico);
-        
-        if (!$stmt_insert_esp->execute()) {
-            throw new Exception("Error al insertar especialidad: " . $stmt_insert_esp->error);
-        }
-        $stmt_insert_esp->close();
     }
 
 
@@ -151,6 +172,44 @@
 
     // --- 3. Commit y Redirección Final ---
     $conexion->commit();
+
+    $mensaje_correo = "."; // Mensaje por defecto si no hay envío de correo
+
+    // Verificar si se introdujo una nueva contraseña y existe un correo
+    if (!empty($password_plana) && !empty($email)) {
+        $mail = new PHPMailer(true);
+        try {
+            // Configuración del servidor SMTP
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com'; 
+            $mail->SMTPAuth = true;
+            $mail->Username = 'cpt3sistema@gmail.com'; 
+            $mail->Password = 'rqgltslfvazhjqix'; // Contraseña de aplicación
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            // Destinatarios
+            $mail->setFrom('cpt3sistema@gmail.com', 'Sistema CPT3');
+            $mail->addAddress($email, $nombre . ' ' . $apellido);
+
+            // Contenido del correo adaptado para ACTUALIZACIÓN
+            $mail->isHTML(true);
+            $mail->Subject = 'Actualizacion de Credenciales - Sistema CPT3';
+            $mail->Body    = "<h3>Actualización de Credenciales, Dr./Dra. $apellido</h3>
+                              <p>Su contraseña de acceso al <b>Sistema CPT3</b> ha sido modificada exitosamente.</p>
+                              <p><b>Tus nuevos datos de acceso:</b></p>
+                              <ul>
+                                <li><b>Usuario (Correo):</b> $email</li>
+                                <li><b>Nueva Contraseña:</b> $password_plana</li>
+                              </ul>
+                              <p>Por seguridad, te recomendamos resguardar esta información.</p>";
+
+            $mail->send();
+            $mensaje_correo = " y las nuevas credenciales fueron enviadas por correo.";
+        } catch (Exception $e) {
+            $mensaje_correo = ", pero hubo un problema al enviar el correo de notificación.";
+        }
+    }
     
     // Mensaje de Éxito
     $_SESSION['mensaje_user_exito'] = '✅ Éxito: El médico ' . $nombre . ' ' . $apellido . ' ha sido actualizado correctamente.';

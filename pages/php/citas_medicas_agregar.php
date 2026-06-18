@@ -129,7 +129,8 @@
                         <select name="tipo_cedula_paciente" id="tipo_cedula_paciente" class="form-control" style="width: 60px;">
                           <option value="PN">PN-</option>
                           <option value="V">V-</option>
-                          <option value="E">E-</option>
+                          <option value="RP">REP-</option>
+                          <!--<option value="E">E-</option>-->
                         </select>
                       </div>
                       <div class="col-sm-3 form-group" id="group_cedula">
@@ -323,19 +324,37 @@
         $('.form-group').removeClass('has-error');
       }
 
-      function aplicarRestricciones() {
-        $('#cedula_paciente').on('input', function() {
-          // 1. Solo permite números (bloquea letras y símbolos)
-          this.value = this.value.replace(/[^0-9]/g, '');
+      function filtrarCedulaCita() {
+        const tipo = $('#tipo_cedula_paciente').val();
+        let valor = cedulaPacienteInput.value;
+        let nuevoValor = valor;
+        let longitudMaxima = 20;
 
-          // 2. Obtener límites según el tipo seleccionado
-          const tipo = $('#tipo_cedula_paciente').val();
-          const maxLength = (tipo === 'PN') ? 20 : 8;
-
-          // 3. Si por alguna razón (como pegar texto) supera el máximo, recortar
-          if (this.value.length > maxLength) {
-            this.value = this.value.substring(0, maxLength);
+        if (tipo === 'V' || tipo === 'E') {
+          nuevoValor = valor.replace(/[^0-9]/g, '');
+          longitudMaxima = 8;
+        } else if (tipo === 'RP') {
+          // Deja solo números primero
+          nuevoValor = valor.replace(/[^0-9]/g, '');
+          // Si pasa de 8 dígitos, inserta el guion antes del noveno
+          if (nuevoValor.length > 8) {
+            nuevoValor = nuevoValor.substring(0, 8) + '-' + nuevoValor.substring(8, 9);
           }
+          longitudMaxima = 10; // 8 números + guion + 1 número
+        } else if (tipo === 'PN') {
+          nuevoValor = valor.replace(/[^0-9a-zA-Z- ]/g, '');
+          longitudMaxima = 20;
+        }
+
+        cedulaPacienteInput.maxLength = longitudMaxima;
+        cedulaPacienteInput.value = nuevoValor;
+      }
+
+      function aplicarRestricciones() {
+        $('#cedula_paciente').on('input', filtrarCedulaCita);
+        $('#tipo_cedula_paciente').on('change', function() {
+           $('#cedula_paciente').val(''); // Limpiamos al cambiar para evitar choques
+           filtrarCedulaCita();
         });
       }
 
@@ -355,6 +374,17 @@
         const tipo = $('#tipo_cedula_paciente').val();
         const cedula = $('#cedula_paciente').val().trim();
         const longitud = cedula.length;
+
+        if (tipo === 'RP') {
+           const regexRP = /^[0-9]{8}-[0-9]{1}$/;
+           if (!regexRP.test(cedula)) {
+             return {
+                valido: false,
+                mensaje: `Formato incorrecto. El documento REP debe tener el formato 12345678-1.`
+             };
+           }
+           return { valido: true };
+        }
 
         let min = 2;
         let max = (tipo === 'PN') ? 20 : 8;
@@ -414,8 +444,6 @@
           $(this).closest('.form-group').removeClass('has-error');
         }
       });
-
-        
 
       // AÑADIDO: Nueva función para cargar el formulario de registro en el modal
       function cargarFormularioRegistro(tipo, cedula) {

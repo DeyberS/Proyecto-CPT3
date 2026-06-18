@@ -3,9 +3,10 @@
 include("../conexion.php");
 
 $response = array();
+// Recibimos el modo (si no viene, por seguridad asumimos 'despacho')
+$modo = isset($_POST['modo']) ? $_POST['modo'] : 'despacho';
 
-// 1. Iniciar la consulta SQL base con todos los INNER JOINS necesarios
-// 1. Consulta SQL base actualizada
+// 1. Iniciar la consulta SQL base
 $sql = "SELECT 
             dm.Id AS id_desc,
             m.nombre_medicamento,
@@ -17,11 +18,22 @@ $sql = "SELECT
         INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
         INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
         LEFT JOIN laboratorio l ON dm.Id_laboratorio = l.Id_laboratorio
-        -- Joins adicionales para los componentes --
         INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
         INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
         INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
-        WHERE dm.estatus = 1";
+        WHERE dm.estatus = 1 AND m.estatus = 1 AND p.estatus = 1 AND l.estatus = 1";
+
+// SOLO aplicar el filtro estricto de stock y vencimiento si NO es una entrada
+if ($modo !== 'entrada') {
+    $sql .= " AND EXISTS (
+                SELECT 1 FROM lotes_medicamentos lm 
+                INNER JOIN existencias_stock ex ON lm.Id = ex.Id_lote 
+                WHERE lm.Id_descripcion_medicamento = dm.Id 
+                AND lm.estado_lote = 'Disponible' 
+                AND ex.cantidad_actual > 0 
+                AND lm.fecha_vencimiento > CURDATE()
+            )";
+}
 
 // Array para guardar las condiciones de filtrado
 $condiciones = array();
@@ -30,6 +42,26 @@ $params = array(); // Valores para bind_param
 
 // 2. Revisar cada campo del filtro POST y añadir condiciones
 // Usamos prepared statements para seguridad
+
+// Filtro por Búsqueda Rápida (Etiquetas / Tags)
+if (!empty($_POST['filtro_busqueda_rapida'])) {
+    $tags = explode(' ', $_POST['filtro_busqueda_rapida']);
+    foreach ($tags as $tag) {
+        if(trim($tag) != "") {
+            $busqueda = '%' . trim($tag) . '%';
+            // Usamos EXISTS para buscar en los principios activos sin alterar el GROUP_CONCAT principal
+            $condiciones[] = "(m.nombre_medicamento LIKE ? OR dm.excipientes LIKE ? OR p.nombre_presentacion LIKE ? OR 
+                              EXISTS (SELECT 1 FROM detalle_principio_medicamento dsub 
+                                      INNER JOIN principio_activo psub ON dsub.id_principio_activo = psub.Id_principio_activo 
+                                      WHERE dsub.id_medicamento = dm.Id AND psub.nombre LIKE ?))";
+            $tipos_params .= "ssss";
+            $params[] = $busqueda;
+            $params[] = $busqueda;
+            $params[] = $busqueda;
+            $params[] = $busqueda;
+        }
+    }
+}
 
 // Filtro por Nombre o ID (busca en ambos campos)
 if (!empty($_POST['filtro_nombre'])) {
@@ -47,18 +79,20 @@ if (!empty($_POST['filtro_presentacion'])) {
     $params[] = $_POST['filtro_presentacion'];
 }
 
-// Filtro por Principios Activos (contiene texto)
+// Filtro por Principios Activos (Etiquetas / Tags)
 if (!empty($_POST['filtro_principios'])) {
-    $busqueda = '%' . $_POST['filtro_principios'] . '%';
-    // Esta consulta es compleja porque los principios están en tablas relacionadas
-    $condiciones[] = "dm.Id IN (
-        SELECT dpm.id_medicamento
-        FROM detalle_principio_medicamento dpm
-        INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.id_principio_activo
-        WHERE pa.nombre LIKE ?
-    )";
-    $tipos_params .= "s";
-    $params[] = $busqueda;
+    $tags_principios = explode(' ', $_POST['filtro_principios']);
+    foreach ($tags_principios as $tag) {
+        if(trim($tag) != "") {
+            $busqueda_pa = '%' . trim($tag) . '%';
+            // Usamos EXISTS para aislar el filtro del componente
+            $condiciones[] = "EXISTS (SELECT 1 FROM detalle_principio_medicamento dsub2 
+                                      INNER JOIN principio_activo psub2 ON dsub2.id_principio_activo = psub2.Id_principio_activo 
+                                      WHERE dsub2.id_medicamento = dm.Id AND psub2.nombre LIKE ?)";
+            $tipos_params .= "s";
+            $params[] = $busqueda_pa;
+        }
+    }
 }
 
 // Filtro por Presentación

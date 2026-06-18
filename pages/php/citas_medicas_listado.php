@@ -176,7 +176,6 @@
         <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
           <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
             <th>Paciente</th>
-            <th>Motivo</th>
             <th>Medico</th>
             <th>Fecha</th>
             <th>Hora</th>
@@ -239,24 +238,23 @@
 
                 $estatus = $row['estado'];
                 $clase_badge = 'bg-gray'; // Default
-
-                if ($estatus == 'Pendiente') $clase_badge = 'bg-orange';
-                if ($estatus == 'Confirmada') $clase_badge = 'bg-info';
-                if ($estatus == 'Finalizada') $clase_badge = 'bg-green';
-                if ($estatus == 'Cancelada') $clase_badge = 'bg-crimson';
+       
+                if ($estatus == 'Pendiente') $clase_badge = 'label-warning';
+                if ($estatus == 'Confirmada') $clase_badge = 'label-info';
+                if ($estatus == 'Finalizada') $clase_badge = 'label-success';
+                if ($estatus == 'Cancelada') $clase_badge = 'label-danger';
                 if ($estatus == 'Inasistente') $clase_badge = 'label-default';
                 if ($estatus == 'Vencida') $clase_badge = 'label-default';
-                if ($estatus == 'Reprogramada') $clase_badge = 'bg-green';
+                if ($estatus == 'Reprogramada') $clase_badge = 'label-success';
 
               ?>
             </tr>
             <tr>
               <td class=""><span class="text-row text-white"><?= $row['nombre_paciente']; ?> <?= $row['apellido_paciente']; ?></span></td>
-              <td class=""><span class="text-row text-white"><?= $row['motivo']; ?></span></td>
               <td class=""><span class="text-row text-white"><?= $row['nombre_medico']; ?> <?= $row['apellido_medico']; ?></span></td>
               <td class=""><span class="text-row text-white"><?= date('d/m/Y', strtotime($row['fecha_cita'])); ?></span></td>
               <td class=""><span class="text-row text-white"><?= date('h:i A', strtotime($row['hora_cita'])); ?></span></td>
-              <td class=""><span class="badge <?= $clase_badge; ?>" style="font-size: 11px;"><?= strtoupper($estatus); ?></span></td>
+              <td class=""><span class="label <?= $clase_badge; ?>" style="font-size: 11px;"><?= strtoupper($estatus); ?></span></td>
               <?php if (in_array('Gestionar acciones de citas', $_SESSION["permisos"])) : ?>
                 <td>
                   <?php if (in_array('Gestionar acciones de citas', $_SESSION["permisos"])) : ?>
@@ -291,7 +289,7 @@
                     <?php endif; ?>
 
                     <?php if ($estatus == 'Reprogramada') : ?>
-                      <a href="consulta_agregar.php?tipo_cedula=<?php echo $row['tipo_cedula_paciente']; ?>&cedula=<?php echo $row['cedula_paciente']; ?>&Id=<?php echo $row['Id_cita']; ?>" class="btn btn-xs btn-info btn-accion" title="Atender Paciente">
+                      <a href="consulta_agregar.php?tipo_cedula=<?php echo $row['tipo_cedula_paciente']; ?>&cedula=<?php echo $row['cedula_paciente']; ?>&Id=<?php echo $row['Id_cita']; ?>&medico=<?php echo $row['Id_medico']; ?>&motivo=<?php echo $row['motivo']; ?>&fecha=<?php echo $row['fecha_cita']; ?>" class="btn btn-xs btn-info btn-accion" title="Atender Paciente">
                         <img src="../../recursos/imagenes/iconos/atender.png" style="width:15px; height:15px;">
                       </a>
                       <button onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Finalizada')" class="btn btn-xs btn-success btn-accion-rapida" title="Finalizar"><img src="../../recursos/imagenes/iconos/finalizada.png" style="width:15px; height:15px;"></button>

@@ -216,42 +216,34 @@
         // =====================================================================
         // LÓGICA DE VERIFICACIÓN AJAX (CONEXIÓN A BD REAL)
         // =====================================================================
-        function verificarProveedorYEnviar() {
+        function verificarProveedorYMostrarModal() {
           const nombre = $('#nombre_proveedor').val().trim();
-          const btnGuardar = $('#confirmarGuardar');
-
+          const btnGuardar = $('#btnGuardar'); // Seleccionamos el botón inicial
+          
           // Estado de carga
           const textoOriginal = btnGuardar.text();
           btnGuardar.text('Verificando...').attr('disabled', true);
 
           $.ajax({
-            url: 'get/verificar_existencia_proveedor.php',
+            url: 'get/verificar_existencia_proveedor.php', // Verifica que la ruta sea correcta
             method: 'POST',
             dataType: 'json',
-            data: {
-              nombre: nombre
-            },
+            data: { nombre: nombre }, // Al crear, no enviamos ID
             success: function(response) {
-              let errores_ajax = [];
               limpiarErrores();
               btnGuardar.text(textoOriginal).attr('disabled', false);
 
               if (response.existe_nombre) {
-                errores_ajax.push(`⚠️ Ya existe un proveedor con el nombre: ${nombre}`);
                 $('#group_nombre').addClass('has-error');
                 $('#nombre_proveedor').addClass('input-error');
-              }
-
-              if (errores_ajax.length > 0) {
-                mostrarAviso('🛑 Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
+                mostrarAviso(`🛑 Error de Duplicidad:<ul><li>Ya existe un proveedor registrado con el nombre: <b>${nombre}</b></li></ul>`);
               } else {
-                // Si no hay errores, ENVIAR FORMULARIO
-                $('#formularioProveedor').off('submit').submit();
+                // Si la BD dice que no existe, mostramos el modal para confirmar
+                $('#modalGuardar').modal('show');
               }
             },
             error: function(xhr, status, error) {
               btnGuardar.text(textoOriginal).attr('disabled', false);
-              // Fallback visual en caso de error de red (opcional) o mostrar alerta
               mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos. <br>Detalle: ' + error);
             }
           });
@@ -271,14 +263,15 @@
           if (errores.length > 0) {
             mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
           } else {
-            $('#modalGuardar').modal('show');
+            // Hacemos la consulta a la BD antes de mostrar el modal
+            verificarProveedorYMostrarModal();
           }
         });
 
+        // 4. CONFIRMACIÓN FINAL
         $('#confirmarGuardar').on('click', function() {
-          $('#modalGuardar').modal('hide');
-
-          verificarProveedorYEnviar() 
+          // Al confirmar el modal, simplemente enviamos el formulario porque ya fue validado
+          $('#formularioProveedor').off('submit').submit();
         });
 
         // --- Aplicar validaciones a campos de solo texto ---

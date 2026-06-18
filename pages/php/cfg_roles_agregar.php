@@ -272,51 +272,38 @@
           $(".check-permiso").prop('checked', false);
         });
 
-        // =====================================================================
-        // LÓGICA DE VERIFICACIÓN AJAX (CONEXIÓN A BD REAL)
-        // =====================================================================
-        function verificarRolYEnviar() {
+        function verificarRolYMostrarModal() {
           const nombre = $('#nombre_rol').val().trim();
-          const btnGuardar = $('#confirmarGuardar');
-
-          // Estado de carga
+          const idRol = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+          const btnGuardar = $('#btnGuardar');
           const textoOriginal = btnGuardar.text();
+          
           btnGuardar.text('Verificando...').attr('disabled', true);
 
           $.ajax({
             url: 'get/verificar_existencia_rol.php',
             method: 'POST',
             dataType: 'json',
-            data: {
-              nombre: nombre
-            },
+            data: { nombre: nombre, id: idRol },
             success: function(response) {
-              let errores_ajax = [];
-              limpiarErrores();
               btnGuardar.text(textoOriginal).attr('disabled', false);
 
               if (response.existe_nombre) {
-                errores_ajax.push(`⚠️ Ya existe un rol con el nombre: ${nombre}`);
                 $('#group_nombre').addClass('has-error');
                 $('#nombre_rol').addClass('input-error');
-              }
-
-              if (errores_ajax.length > 0) {
-                mostrarAviso('🛑 Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
+                mostrarAviso('⚠️ Error: Ya existe un rol con el nombre: ' + nombre);
               } else {
-                // Si no hay errores, ENVIAR FORMULARIO
-                $('#formularioRol').off('submit').submit();
+                // Si NO existe, mostramos el modal
+                $('#modalGuardar').modal('show');
               }
             },
-            error: function(xhr, status, error) {
+            error: function() {
               btnGuardar.text(textoOriginal).attr('disabled', false);
-              // Fallback visual en caso de error de red (opcional) o mostrar alerta
-              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos. <br>Detalle: ' + error);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
             }
           });
         }
 
-        // 3. ENVÍO DEL FORMULARIO
         $('#formularioRol').on('submit', function(e) {
           e.preventDefault();
           limpiarErrores();
@@ -326,17 +313,18 @@
             errores.push("Falta el nombre del rol.");
             $('#group_nombre').addClass('has-error');
           }
+          
           if (errores.length > 0) {
             mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
           } else {
-            $('#modalGuardar').modal('show');
+            // Validar antes del modal
+            verificarRolYMostrarModal();
           }
         });
 
         $('#confirmarGuardar').on('click', function() {
           $('#modalGuardar').modal('hide');
-
-          verificarRolYEnviar()
+          $('#formularioRol')[0].submit();
         });
 
         // --- Aplicar validaciones a campos de solo texto ---

@@ -171,10 +171,46 @@
           e.target.value = e.target.value.replace(/[0-9]/g, "");
         }
 
-        // --- VISUALIZACIÓN UNIFICADA EN DISPLAY PRINCIPAL ---
+        // =====================================================================
+        // LÓGICA DE VERIFICACIÓN AJAX (CONEXIÓN A BD REAL)
+        // =====================================================================
+        function verificarLaboratorioYMostrarModal() {
+          const nombre = $('#nombre_laboratorio').val().trim();
+          const id_laboratorio = $('input[name="Id"]').val(); // Capturamos el ID del input hidden
+          const btnGuardar = $('#btnGuardar');
+          
+          const textoOriginal = btnGuardar.text();
+          btnGuardar.text('Verificando...').attr('disabled', true);
+
+          $.ajax({
+            url: 'get/verificar_existencia_laboratorio.php', // Ajusta la ruta según tu estructura
+            method: 'POST',
+            dataType: 'json',
+            data: { 
+                nombre: nombre,
+                id: id_laboratorio // Enviamos el ID para que la BD no choque consigo mismo
+            },
+            success: function(response) {
+              limpiarErrores();
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+
+              if (response.existe_nombre) {
+                $('#group_nombre').addClass('has-error');
+                $('#nombre_laboratorio').addClass('input-error');
+                mostrarAviso(`🛑 Error de Duplicidad:<ul><li>Ya existe otro laboratorio registrado con el nombre: <b>${nombre}</b></li></ul>`);
+              } else {
+                // Si está libre (o es su propio nombre), mostramos modal
+                $('#modalGuardar').modal('show');
+              }
+            },
+            error: function(xhr, status, error) {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos. <br>Detalle: ' + error);
+            }
+          });
+        }
 
         // 3. ENVÍO DEL FORMULARIO
-        // Se usa la validación local (sin la validación de duplicidad AJAX que solicitaste omitir)
         $('#formularioLaboratorio').on('submit', function(e) {
           e.preventDefault(); 
           limpiarErrores();
@@ -188,14 +224,14 @@
           if (errores.length > 0) {
             mostrarAviso('⚠️ Errores de Formulario: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
           } else {
-            // Si pasa la validación local, muestra el modal de confirmación
-            $('#modalGuardar').modal('show');
+            // Validar en BD antes del modal
+            verificarLaboratorioYMostrarModal();
           }
         });
         
         $('#confirmarGuardar').on('click', function() {
             $('#modalGuardar').modal('hide');
-            // Al no requerir la validación AJAX de duplicidad, se envía directamente el formulario
+            // Ya verificado sin colisiones, forzamos el submit
             $('#formularioLaboratorio').off('submit').submit(); 
         });
 

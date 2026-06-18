@@ -70,7 +70,7 @@ include('../includes/headerPapelera.php');
   $sqlMedicos = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p 
   JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
   JOIN rol r ON dpr.Id_rol = r.Id_rol
-  HAVING r.Id_rol = 4 AND p.estatus = 0 ORDER BY id ASC");
+  HAVING r.Id_rol = 7 AND p.estatus = 0 ORDER BY id ASC");
   $queryData   = mysqli_query($conexion, $sqlMedicos);
   $total_medicos = mysqli_num_rows($queryData);
   ?>
@@ -114,7 +114,7 @@ include('../includes/headerPapelera.php');
             $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
             // 3. Definir el filtro base (Médicos inactivos: rol 4 y estatus 0)
-            $donde = "WHERE r.Id_rol = 4 AND p.estatus = 0";
+            $donde = "WHERE r.Id_rol = 7 AND p.estatus = 0";
 
             // 4. Agregar condición de búsqueda si existe
             if ($busqueda != '') {

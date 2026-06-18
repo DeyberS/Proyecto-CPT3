@@ -8,9 +8,12 @@ if (!$id_medico) {
     exit;
 }
 
+// Se añadió GROUP_CONCAT y GROUP BY para traer todas las especialidades y departamentos juntos
 $sql = "SELECT p.id, p.nombre, p.apellido, p.tipo_cedula, p.cedula, p.fecha_nacimiento, p.genero, p.email,
                tp.telefono, pt.prefijo,
-               dm.fecha_ingreso, d.nombre_departamento, e.nombre_especialidad
+               dm.fecha_ingreso, dm.tipo_medico, dm.cod_colegiatura,
+               GROUP_CONCAT(DISTINCT d.nombre_departamento SEPARATOR ', ') as nombre_departamento, 
+               GROUP_CONCAT(DISTINCT e.nombre_especialidad SEPARATOR ', ') as nombre_especialidad
         FROM persona p
         LEFT JOIN telefonos_personas tp ON p.id = tp.Id_persona
         LEFT JOIN prefijos_telefonos pt ON tp.Id_prefijo = pt.Id
@@ -19,7 +22,8 @@ $sql = "SELECT p.id, p.nombre, p.apellido, p.tipo_cedula, p.cedula, p.fecha_naci
         LEFT JOIN departamento d ON md.Id_departamento = d.Id_departamento
         LEFT JOIN especialidades_medicos em ON dm.Id_detalle_medico = em.Id_detalle_medico
         LEFT JOIN especialidad e ON em.Id_especialidad = e.Id_especialidad
-        WHERE p.id = '$id_medico' LIMIT 1";
+        WHERE p.id = '$id_medico'
+        GROUP BY p.id LIMIT 1";
 
 $resultado = $conexion->query($sql);
 
@@ -43,6 +47,21 @@ if ($resultado && $resultado->num_rows > 0) {
             --primary-dark: #2c3e50;
             --medical-blue: #007bff;
             --bg-gray: #f4f7f6;
+        }
+
+        .wrapper {
+            display: block !important; 
+            background-color: #f4f7f9 !important; 
+        }
+
+        .content-wrapper {
+            background-color: #f4f7f9 !important;
+
+        }
+
+        .content-custom {
+            padding: 0px 10px;
+            margin-left: 60px;
         }
 
         body {
@@ -128,6 +147,31 @@ if ($resultado && $resultado->num_rows > 0) {
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
+        /* Clases nuevas para los badges de diseño múltiple */
+        .badge-depto {
+            background-color: var(--medical-blue);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .badge-espec {
+            background-color: #2ecc71;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
         @media print {
             .no-print { display: none !important; }
             .profile-card { box-shadow: none; border: 1px solid #eee; }
@@ -146,19 +190,23 @@ if ($resultado && $resultado->num_rows > 0) {
                         </div>
                         <div class="col-sm-10">
                             <h2 style="margin: 5px 0; font-weight: 800;"><?php echo $row['nombre'] . " " . $row['apellido']; ?></h2>
-                            <p style="font-size: 18px; opacity: 0.9;"><i class="fa fa-user-md"></i> Especialista en <?php echo $row['nombre_especialidad']; ?></p>
+                            <p style="font-size: 18px; opacity: 0.9;"><i class="fa fa-user-md"></i> Especialista en <?php echo !empty($row['nombre_especialidad']) ? $row['nombre_especialidad'] : 'Sin asignar'; ?></p>
                             <div class="row" style="margin-top: 20px;">
-                                <div class="col-xs-4">
+                                <div class="col-sm-3">
                                     <span class="label-custom" style="color: #bdc3c7;">Identificación</span>
                                     <span style="font-size: 18px; font-weight: bold;"><?php echo $row['tipo_cedula'] . "-" . $row['cedula']; ?></span>
                                 </div>
-                                <div class="col-xs-4">
+                                <div class="col-sm-3">
                                     <span class="label-custom" style="color: #bdc3c7;">Fecha Ingreso</span>
                                     <span class="val-custom" style="color: #fff;"><?php echo date("d/m/Y", strtotime($row['fecha_ingreso'])); ?></span>
                                 </div>
-                                <div class="col-xs-4">
-                                    <span class="label-custom" style="color: #bdc3c7;">ID Sistema</span>
-                                    <span class="val-custom" style="color: #fff;">#<?php echo str_pad($row['id'], 5, "0", STR_PAD_LEFT); ?></span>
+                                <div class="col-sm-3">
+                                    <span class="label-custom" style="color: #bdc3c7;">Número de Colegiatura</span>
+                                    <span class="val-custom" style="color: #fff;">#<?php echo str_pad($row['cod_colegiatura'], 5, "0", STR_PAD_LEFT); ?></span>
+                                </div>
+                                <div class="col-sm-3">
+                                    <span class="label-custom" style="color: #bdc3c7;">Tipo de Medico</span>
+                                    <span class="val-custom" style="color: #fff;"><?php echo str_pad($row['tipo_medico'], 5, "0", STR_PAD_LEFT); ?></span>
                                 </div>
                             </div>
                         </div>
@@ -195,7 +243,7 @@ if ($resultado && $resultado->num_rows > 0) {
                             <div class="obs-box">
                                 <span class="label-custom" style="color: #e67e22;">Observaciones Administrativas</span>
                                 <p style="font-size: 13px; font-style: italic; color: #555; margin-bottom: 0;">
-                                    "Personal médico debidamente acreditado para el área de <?php echo $row['nombre_departamento']; ?>."
+                                    "Personal médico debidamente acreditado para su área de trabajo."
                                 </p>
                             </div>
                         </div>
@@ -207,13 +255,35 @@ if ($resultado && $resultado->num_rows > 0) {
                                 </h4>
 
                                 <div class="data-item-card">
-                                    <span class="label-custom">Departamento / Área</span>
-                                    <span class="val-custom"><?php echo $row['nombre_departamento']; ?></span>
+                                    <span class="label-custom">Departamentos / Áreas</span>
+                                    <div style="margin-top: 8px;">
+                                        <?php 
+                                        if (!empty($row['nombre_departamento'])) {
+                                            $departamentos = explode(', ', $row['nombre_departamento']);
+                                            foreach($departamentos as $dep) {
+                                                echo '<span class="badge-depto"><i class="fa fa-building-o"></i> ' . trim($dep) . '</span>';
+                                            }
+                                        } else {
+                                            echo '<span class="val-custom">No asignado</span>';
+                                        }
+                                        ?>
+                                    </div>
                                 </div>
 
                                 <div class="data-item-card">
-                                    <span class="label-custom">Especialidad Principal</span>
-                                    <span class="val-custom"><?php echo $row['nombre_especialidad']; ?></span>
+                                    <span class="label-custom">Especialidades</span>
+                                    <div style="margin-top: 8px;">
+                                        <?php 
+                                        if (!empty($row['nombre_especialidad'])) {
+                                            $especialidades = explode(', ', $row['nombre_especialidad']);
+                                            foreach($especialidades as $esp) {
+                                                echo '<span class="badge-espec"><i class="fa fa-stethoscope"></i> ' . trim($esp) . '</span>';
+                                            }
+                                        } else {
+                                            echo '<span class="val-custom">No asignado</span>';
+                                        }
+                                        ?>
+                                    </div>
                                 </div>
 
                                 <div class="text-center" style="margin-top: 25px; opacity: 0.6;">

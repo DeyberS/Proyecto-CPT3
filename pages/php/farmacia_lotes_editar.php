@@ -145,7 +145,7 @@
 
                     <div class="col-sm-4 form-group" id="group_vencimiento">
                       <p>F. Vencimiento (*):</p>
-                      <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" value="<?php echo $row['fecha_vencimiento'] ?>" required>
+                      <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" min="<?php echo date('Y-m-d'); ?>" value="<?php echo $row['fecha_vencimiento'] ?>" required>
                     </div>
 
                     <br><br><br><br><br>
@@ -285,13 +285,20 @@
 
     <script>
       $(document).ready(function() {
-        const formulario = document.getElementById('formularioLote');
+        const formulario = $('#formularioLote');
         const fechaFabricacionInput = $('#fecha_fabricacion');
         const fechaVencimientoInput = $('#fecha_vencimiento');
+
+        // =====================================================================
+        // BLOQUEO DE ESCRITURA EN FECHAS
+        // =====================================================================
+        $('#fecha_fabricacion, #fecha_vencimiento').on('keydown', function(e) {
+          e.preventDefault(); // Solo calendarios
+        });
+
         // =====================================================================
         // FUNCIONES DE VISUALIZACIÓN
         // =====================================================================
-
         function mostrarAviso(mensaje) {
           $('#avisoTexto').html(mensaje);
           $('#avisoModal').modal('show');
@@ -302,38 +309,9 @@
           $('.form-group').removeClass('has-error');
         }
 
-        // Función que bloquea números (solo texto)
-        function bloquearNumeros(e) {
-          const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
-          if (teclasPermitidas.includes(e.key)) return;
-          if (e.key >= "0" && e.key <= "9") {
-            e.preventDefault();
-          }
-        }
-        // Función que limpia números pegados (solo texto)
-        function limpiarNumeros(e) {
-          e.target.value = e.target.value.replace(/[0-9]/g, "");
-        }
-
-        function checkFormValidity() {
-          let allRequiredFieldsFilled = true;
-          const requiredFields = fechaVencimientoInput;
-
-          requiredFields.forEach(field => {
-            if (field && field.id === 'fecha_vencimiento') {
-              // No bloquea si está deshabilitado
-            } else if (!field.value.trim()) {
-              allRequiredFieldsFilled = false;
-            }
-          });
-        }
-
-        // --- VALIDACIÓN DE FECHAS (No futuras para fabricación) ---
+        // --- VALIDACIÓN DE FECHAS ---
         const today = new Date().toISOString().split('T')[0];
         fechaFabricacionInput.attr('max', today);
-
-        // --- EVENTOS DE VALIDACIÓN ---
-        $(formulario).on('input change', checkFormValidity);
 
         fechaFabricacionInput.on('change', function() {
           const fabricacionDate = $(this).val();
@@ -342,7 +320,6 @@
           } else {
             fechaVencimientoInput.prop('disabled', true).val('').removeAttr('min');
           }
-          checkFormValidity();
         });
 
         fechaVencimientoInput.on('change', function() {
@@ -356,15 +333,55 @@
             mostrarAviso('La fecha de vencimiento debe ser una fecha futura.');
             $(this).val('');
           }
-          checkFormValidity();
         });
 
         // =====================================================================
         // LÓGICA DE VERIFICACIÓN AJAX (CONEXIÓN A BD REAL)
-        // ====================================================================
+        // =====================================================================
+        function verificarLoteYMostrarModal() {
+          const nombre = $('#nombre_lote').val().trim();
+          const id_medicamento = $('#medicamento').val();
+          const id_lote = $('input[name="Id"]').val(); // ID del lote que estamos editando
+          const btnGuardar = $('#btnGuardar');
+
+          const textoOriginal = btnGuardar.text();
+          btnGuardar.text('Verificando...').attr('disabled', true);
+
+          $.ajax({
+            // ⚠️ Asegúrate de que esta URL apunte correctamente a tu script PHP ⚠️
+            // Si el editar está en la misma carpeta que agregar, pon la misma ruta
+            url: 'get/verificar_existencia_lote.php',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+              nombre: nombre,
+              id_medicamento: id_medicamento,
+              id_lote: id_lote // Excluimos este ID
+            },
+            success: function(response) {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+              limpiarErrores();
+
+              if (response.existe_lote) {
+                $('#group_nombre').addClass('has-error');
+                $('#nombre_lote').addClass('input-error');
+                mostrarAviso('🛑 Error de Duplicidad:<br>Ya existe OTRO lote con el nombre <b>' + nombre + '</b> asignado a este mismo medicamento.');
+              } else if (response.error) {
+                mostrarAviso('🛑 Error: ' + response.mensaje);
+              } else {
+                // Todo correcto: Mostrar Modal de Confirmación
+                $('#modalGuardar').modal('show');
+              }
+            },
+            error: function(xhr, status, error) {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.<br>Detalle: ' + error);
+            }
+          });
+        }
 
         // 3. ENVÍO DEL FORMULARIO
-        $('#formularioLote').on('submit', function(e) {
+        formulario.on('submit', function(e) {
           e.preventDefault();
           limpiarErrores();
           let errores = [];
@@ -389,22 +406,14 @@
           if (errores.length > 0) {
             mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
           } else {
-            $('#modalGuardar').modal('show');
+            // Llama a AJAX en lugar de abrir el modal directo
+            verificarLoteYMostrarModal();
           }
         });
 
         $('#confirmarGuardar').on('click', function() {
           $('#modalGuardar').modal('hide');
-          $('#formularioLote').off('submit').submit();
-        });
-
-        // --- Aplicar validaciones a campos de solo texto ---
-        const campos = [];
-        campos.forEach(campo => {
-          if (campo) {
-            campo.addEventListener("keydown", bloquearNumeros);
-            campo.addEventListener("input", limpiarNumeros);
-          }
+          formulario[0].submit(); // Envío directo del DOM bypassando jQuery
         });
 
         // FIX DE MODALES (Cierre suave)

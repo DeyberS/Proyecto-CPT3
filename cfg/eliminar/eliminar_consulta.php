@@ -27,15 +27,8 @@ $mensaje_error = '';
 
 try {
     
-    $stmt_presc = $conexion->prepare("DELETE FROM prescripcion_medicamentos WHERE Id_consulta = ?");
-    $stmt_presc->bind_param("i", $id_consulta);
-    if (!$stmt_presc->execute()) {
-         throw new Exception("Error al eliminar prescripciones asociadas: " . $stmt_presc->error);
-    }
-    $stmt_presc->close();
-    
     // --------------------------------------------------------------------------
-    // PASO 2: ELIMINAR LA CONSULTA PRINCIPAL
+    // PASO 1: ELIMINAR LA CONSULTA PRINCIPAL
     // --------------------------------------------------------------------------
     
     $sql_eliminar = "DELETE FROM consulta WHERE id_consulta = ?";
@@ -53,7 +46,7 @@ try {
     $stmt_eliminar->close();
 
     // ----------------------------------------------------------
-    // PASO 3: CONFIRMAR TRANSACCIÓN
+    // PASO 2: CONFIRMAR TRANSACCIÓN
     // ----------------------------------------------------------
     $conexion->commit();
     
@@ -64,7 +57,7 @@ try {
 
 } catch (Exception $e) {
     // ----------------------------------------------------------
-    // PASO 4: MANEJO DE ERRORES Y ROLLBACK
+    // PASO 3: MANEJO DE ERRORES Y ROLLBACK
     // ----------------------------------------------------------
     // Redirección con error
     $_SESSION['mensaje_user_error'] = "❌ Error al eliminar. Detalle: " . $e->getMessage();

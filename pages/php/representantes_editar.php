@@ -264,7 +264,7 @@
                     <div class="col-sm-1 pull-left" style="margin-top: 30px;">
                       <select name="tipo_cedula" id="tipo_cedula" class="form-control" style="width: 60px;" required>
                         <option value="V" <?php echo ($row['tipo_cedula'] == 'V' ? 'selected' : ''); ?>>V-</option>
-                        <option value="E" <?php echo ($row['tipo_cedula'] == 'E' ? 'selected' : ''); ?>>E-</option>
+                        <!--<option value="E" <?php echo ($row['tipo_cedula'] == 'E' ? 'selected' : ''); ?>>E-</option>-->
                       </select>
                     </div>
                     <div class="col-sm-3">
@@ -320,18 +320,32 @@
                     <div class="col-sm-4">
                       <p>Estado de nacimiento:</p>
                       <select name="estado_nacimiento" id="estado_nacimiento" class="form-control">
-                        <option value="<?php echo $id_estado_nac; ?>" selected>
-                          <?php echo ($id_estado_nac ? "Cargando..." : "--- Seleccione Un Estado ---"); ?>
-                        </option>
+                        <option value="">--- Seleccione Un Estado ---</option>
+                        <?php
+                        if ($id_pais_nac) {
+                            $res_est_nac = $conexion->query("SELECT Id_Estado, nombre_estado FROM estado WHERE Id_Pais = $id_pais_nac");
+                            while ($row_est_nac = $res_est_nac->fetch_assoc()) {
+                                $selected = ($row_est_nac['Id_Estado'] == $id_estado_nac) ? 'selected' : '';
+                                echo "<option value='{$row_est_nac['Id_Estado']}' {$selected}>{$row_est_nac['nombre_estado']}</option>";
+                            }
+                        }
+                        ?>
                       </select>
                     </div>
                     <label class="control-label"></label>
                     <div class="col-sm-4">
                       <p>Municipio de nacimiento:</p>
                       <select name="municipio_nacimiento" id="municipio_nacimiento" class="form-control">
-                        <option value="<?php echo $id_municipio_nac; ?>" selected>
-                          <?php echo ($id_municipio_nac ? "Cargando..." : "--- Seleccione Un Municpio ---"); ?>
-                        </option>
+                        <option value="">--- Seleccione Un Municipio ---</option>
+                        <?php
+                        if ($id_estado_nac) {
+                            $res_mun_nac = $conexion->query("SELECT Id_Municipio, nombre_municipio FROM municipio WHERE Id_Estado = $id_estado_nac");
+                            while ($row_mun_nac = $res_mun_nac->fetch_assoc()) {
+                                $selected = ($row_mun_nac['Id_Municipio'] == $id_municipio_nac) ? 'selected' : '';
+                                echo "<option value='{$row_mun_nac['Id_Municipio']}' {$selected}>{$row_mun_nac['nombre_municipio']}</option>";
+                            }
+                        }
+                        ?>
                       </select>
                     </div>
                     <label class="control-label"></label>
@@ -369,15 +383,12 @@
                   <div class="col-sm-4">
                     <p>Estado:</p>
                     <select name="estado" id="estado" class="form-control">
-                      <option value="<?php echo $id_estado_dir; ?>" selected>
-                        <?php echo ($id_estado_dir ? "Cargando..." : "--- Seleccione Un Estado ---"); ?>
-                      </option>
+                      <option value="">--- Seleccione Un Estado ---</option>
                       <?php
-                      // Carga de estados, asumiendo Id_Pais = 1 es Venezuela
-                      $result_dir = $conexion->query("SELECT Id_Estado, nombre_estado, Id_Pais FROM estado HAVING Id_Pais = 1");
+                      $result_dir = $conexion->query("SELECT Id_Estado, nombre_estado FROM estado WHERE Id_Pais = 1");
                       while ($row_dir = $result_dir->fetch_assoc()) {
-                        $selected = ($row_dir['Id_Estado'] == $id_estado_dir) ? 'selected' : "";
-                        echo "<option value='{$row_dir['Id_Estado']}'{$selected}>{$row_dir['nombre_estado']}</option>";
+                        $selected = ($row_dir['Id_Estado'] == $id_estado_dir) ? 'selected' : '';
+                        echo "<option value='{$row_dir['Id_Estado']}' {$selected}>{$row_dir['nombre_estado']}</option>";
                       }
                       ?>
                     </select>
@@ -386,18 +397,32 @@
                   <div class="col-sm-4">
                     <p>Municipio:</p>
                     <select name="municipio" id="municipio" class="form-control">
-                      <option value="<?php echo $id_municipio_dir; ?>" selected>
-                        <?php echo ($id_municipio_dir ? "Cargando..." : "--- Seleccione Un Municipio ---"); ?>
-                      </option>
+                      <option value="">--- Seleccione Un Municipio ---</option>
+                      <?php
+                      if ($id_estado_dir) {
+                          $res_mun_dir = $conexion->query("SELECT Id_Municipio, nombre_municipio FROM municipio WHERE Id_Estado = $id_estado_dir");
+                          while ($row_mun_dir = $res_mun_dir->fetch_assoc()) {
+                              $selected = ($row_mun_dir['Id_Municipio'] == $id_municipio_dir) ? 'selected' : '';
+                              echo "<option value='{$row_mun_dir['Id_Municipio']}' {$selected}>{$row_mun_dir['nombre_municipio']}</option>";
+                          }
+                      }
+                      ?>
                     </select>
                   </div>
                   <label class="control-label"></label>
                   <div class="col-sm-3">
                     <p>Sector:</p>
                     <select name="sector" id="sector" class="form-control">
-                      <option value="<?php echo $id_sector_dir; ?>" selected>
-                        <?php echo ($id_sector_dir ? "Cargando..." : "--- Seleccione Un Sector ---"); ?>
-                      </option>
+                      <option value="">--- Seleccione Un Sector ---</option>
+                      <?php
+                      if ($id_municipio_dir) {
+                          $res_sec_dir = $conexion->query("SELECT Id_Sector, nombre_sector FROM sector WHERE Id_Municipio = $id_municipio_dir");
+                          while ($row_sec_dir = $res_sec_dir->fetch_assoc()) {
+                              $selected = ($row_sec_dir['Id_Sector'] == $id_sector_dir) ? 'selected' : '';
+                              echo "<option value='{$row_sec_dir['Id_Sector']}' {$selected}>{$row_sec_dir['nombre_sector']}</option>";
+                          }
+                      }
+                      ?>
                     </select>
                   </div>
                   <br><br><br><br>
@@ -744,166 +769,230 @@
     const cedulaInput = document.getElementById('cedula');
     const tipoCedulaSelect = document.getElementById('tipo_cedula');
 
-    function validarCedulaFormato() {
-      const cedula = parseInt(cedulaInput.value.trim());
-      const tipo = tipoCedulaSelect.value;
-      let esValido = true;
+    // Capturar el ID del registro actual (ya está en un input hidden llamado 'Id' en tu HTML)
+    const idActualRegistro = document.querySelector('input[name="Id"]').value;
 
-      $(cedulaInput).removeClass('input-error');
-      $(tipoCedulaSelect).removeClass('input-error');
-
-      if (cedulaInput.value.trim() === "") {
-        $(cedulaInput).addClass('input-error');
-        return true;
+    // --- 1. FUNCIÓN AJAX UNIFICADA (CÉDULA Y EMAIL) ---
+async function verificarDatosUnicosBD(tipo, cedula, email, idPersona) {
+  return new Promise((resolve) => {
+    if (cedula === "" && email === "") {
+      resolve({ existe_cedula: false, existe_email: false });
+      return;
+    }
+    $.ajax({
+      url: 'get/verificar_existencia_cedula.php',
+      method: 'POST',
+      dataType: 'json',
+      data: {
+        tipo_cedula: tipo,
+        cedula: cedula,
+        email: email,
+        id: idPersona
+      },
+      success: function(response) {
+        resolve(response);
+      },
+      error: function() {
+        resolve({ existe_cedula: false, existe_email: false });
       }
+    });
+  });
+}
 
-      if (isNaN(cedula) || cedula <= 0) {
-        $(cedulaInput).addClass('input-error');
-        esValido = false;
-      } else if (tipo === 'V' && cedula > 80000000) {
-        mostrarAviso('Para el tipo V-, la cédula no debe ser mayor a 80.000.000', '⚠️');
-        $(cedulaInput).addClass('input-error');
-        esValido = false;
-      } else if (tipo === 'E' && cedula < 80000000) {
-        mostrarAviso('Para el tipo E-, la cédula no debe ser menor a 80.000.000', '⚠️');
-        $(cedulaInput).addClass('input-error');
-        esValido = false;
-      }
+// --- 2. VALIDACIÓN UNIFICADA DE FORMATO Y EXISTENCIA ---
+async function validarDatosUnicos() {
+  // Referencias dinámicas (detecta automáticamente si es paciente normal o representante)
+  const cedulaInput = document.getElementById('cedula') || document.getElementById('cedula_rep');
+  const tipoSelect = document.getElementById('tipo_cedula') || document.getElementById('tipo_cedula_rep');
+  const emailInput = document.getElementById('email') || document.getElementById('email_rep');
 
-      return esValido;
+  const cedula = cedulaInput ? cedulaInput.value.trim() : "";
+  const tipo = tipoSelect ? tipoSelect.value : "";
+  const email = emailInput ? emailInput.value.trim() : "";
+
+  // Capturar ID en caso de edición para excluirlo
+  let idActual = 0;
+  const inputId = document.querySelector('input[name="Id_representante"]') || document.querySelector('input[name="Id"]');
+  if (inputId && inputId.value) idActual = inputId.value;
+
+  let esValido = true;
+  let errores = [];
+
+  // Limpiar bordes rojos previos
+  if (cedulaInput) $(cedulaInput).removeClass('input-error');
+  if (tipoSelect) $(tipoSelect).removeClass('input-error');
+  if (emailInput) $(emailInput).removeClass('input-error');
+
+  // --- Validaciones Locales de Formato ---
+  if (email !== "" && (email.indexOf('@') === -1 || email.indexOf('.') === -1)) {
+    if (emailInput) $(emailInput).addClass('input-error');
+    errores.push("El campo Email debe tener un formato válido (ej: usuario@correo.com).");
+    esValido = false;
+  }
+
+  if (cedula !== "" && !isNaN(parseInt(cedula))) {
+    const cedNum = parseInt(cedula);
+    if (tipo === 'V' && cedNum > 80000000) {
+      if (cedulaInput) $(cedulaInput).addClass('input-error');
+      if (tipoSelect) $(tipoSelect).addClass('input-error');
+      errores.push("Para tipo V-, la cédula no puede ser mayor a 80.000.000.");
+      esValido = false;
+    } else if (tipo === 'E' && cedNum < 80000000) {
+      if (cedulaInput) $(cedulaInput).addClass('input-error');
+      if (tipoSelect) $(tipoSelect).addClass('input-error');
+      errores.push("Para tipo E-, la cédula no puede ser menor a 80.000.000.");
+      esValido = false;
+    }
+  }
+
+  if (!esValido) {
+    mostrarAviso("🛑 <b>Errores de formato:</b><br>" + errores.join("<br>"));
+    return false; // Aborta antes de golpear la BD si el formato está mal
+  }
+
+  // --- Verificación Combinada en Base de Datos ---
+  if (cedula !== "" || email !== "") {
+    const bd = await verificarDatosUnicosBD(tipo, cedula, email, idActual);
+
+    if (bd.existe_cedula) {
+      if (cedulaInput) $(cedulaInput).addClass('input-error');
+      if (tipoSelect) $(tipoSelect).addClass('input-error');
+      errores.push(`El documento <b>${tipo}-${cedula}</b> ya se encuentra registrado en el sistema.`);
+      esValido = false;
     }
 
-    // Se aplica la validación en el cambio y desenfoque (blur)
-    $(cedulaInput).on('blur', validarCedulaFormato);
-    $(tipoCedulaSelect).on('change', validarCedulaFormato);
-
-
-    function loadAndSelect(parentId, targetId, url, keyName, savedId) {
-      const $targetSelect = $('#' + targetId);
-      $targetSelect.html(`<option value="${savedId}" selected>Cargando...</option>`);
-
-      return new Promise((resolve) => {
-        if (!parentId) {
-          $targetSelect.html('<option value="">--- Seleccione Una Opción ---</option>');
-          resolve(null);
-          return;
-        }
-
-        $.ajax({
-          url: url + '?' + keyName + '=' + parentId,
-          method: 'GET',
-          dataType: 'json',
-          success: function(data) {
-            $targetSelect.html('<option value="">--- Seleccione Una Opción ---</option>');
-            data.forEach(item => {
-              // Asumiendo que los campos de retorno son consistentes (Id_Estado, nombre_estado, Id_Municipio, nombre_municipio, Id_Sector, nombre_sector)
-              const idField = item.Id_Estado || item.Id_Municipio || item.Id_Sector;
-              const nameField = item.nombre_estado || item.nombre_municipio || item.nombre_sector;
-              const isSelected = (idField.toString() === savedId.toString()) ? 'selected' : '';
-              $targetSelect.append(`<option value="${idField}" ${isSelected}>${nameField}</option>`);
-            });
-            resolve(savedId);
-          },
-          error: function() {
-            $targetSelect.html('<option value="">Error al cargar datos</option>');
-            resolve(null);
-          }
-        });
-      });
+    if (bd.existe_email) {
+      if (emailInput) $(emailInput).addClass('input-error');
+      errores.push(`El correo <b>${email}</b> ya está siendo usado por otra persona.`);
+      esValido = false;
     }
 
-    // --- ENLACE DE EVENTOS PARA CARGA DINÁMICA DE UBICACIÓN (Copiada y adaptada de pacientes_agregar.php) ---
+    if (!esValido) {
+      mostrarAviso("🛑 <b>Datos duplicados detectados:</b><br>" + errores.join("<br>"));
+    }
+  }
 
-    // 1. NACIMIENTO: PAIS -> ESTADO
+  return esValido;
+}
+
+// --- 3. DISPARADORES AUTOMÁTICOS ---
+if (document.getElementById('cedula')) document.getElementById('cedula').addEventListener('blur', validarDatosUnicos);
+if (document.getElementById('tipo_cedula')) document.getElementById('tipo_cedula').addEventListener('change', validarDatosUnicos);
+if (document.getElementById('email')) document.getElementById('email').addEventListener('blur', validarDatosUnicos);
+if (document.getElementById('email_rep')) document.getElementById('email_rep').addEventListener('blur', validarDatosUnicos);
+
+    // ==========================================================================
+    // --- LÓGICA DE DEPENDENCIAS DE UBICACIÓN (Nacimiento y Residencia) ---
+    // ==========================================================================
+
+    // 1. PAÍS NACIMIENTO -> ESTADO NACIMIENTO
     document.getElementById('pais_nacimiento').addEventListener('change', function() {
-      const paisId = this.value;
-      const estadoSelect = document.getElementById('estado_nacimiento');
-      const municipioSelect = document.getElementById('municipio_nacimiento');
+      var paisId = this.value;
+      var estadoSelect = document.getElementById('estado_nacimiento');
+      var municipioSelect = document.getElementById('municipio_nacimiento');
+
       estadoSelect.innerHTML = '<option value="">--- Seleccione Un Estado ---</option>';
-      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municpio ---</option>';
+      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
 
       if (paisId) {
-        loadAndSelect(paisId, 'estado_nacimiento', 'get/get_estados.php', 'Id_Pais', '').then(() => {
-          // No hacemos nada más aquí, la carga se detiene hasta que el usuario seleccione un estado
+        $.ajax({
+          url: 'get/get_estados.php',
+          method: 'GET',
+          data: { Id_Pais: paisId },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var estado = data[i];
+              estadoSelect.innerHTML += '<option value="' + estado.Id_Estado + '">' + estado.nombre_estado + '</option>';
+            }
+          }
         });
       }
     });
 
-    // 2. NACIMIENTO: ESTADO -> MUNICIPIO
+    // 2. ESTADO NACIMIENTO -> MUNICIPIO NACIMIENTO
     document.getElementById('estado_nacimiento').addEventListener('change', function() {
-      const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio_nacimiento');
-      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municpio ---</option>';
+      var estadoId = this.value;
+      var municipioSelect = document.getElementById('municipio_nacimiento');
 
-      if (estadoId) {
-        loadAndSelect(estadoId, 'municipio_nacimiento', 'get/get_municipios.php', 'Id_Estado', '');
-      }
-    });
-
-    // 3. DIRECCIÓN: ESTADO -> MUNICIPIO
-    document.getElementById('estado').addEventListener('change', function() {
-      const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio');
-      const sectorSelect = document.getElementById('sector');
       municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
-      sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
 
       if (estadoId) {
-        loadAndSelect(estadoId, 'municipio', 'get/get_municipios.php', 'Id_Estado', '');
+        $.ajax({
+          url: 'get/get_municipios.php',
+          method: 'GET',
+          data: { Id_Estado: estadoId },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var municipio = data[i];
+              municipioSelect.innerHTML += '<option value="' + municipio.Id_Municipio + '">' + municipio.nombre_municipio + '</option>';
+            }
+          }
+        });
       }
     });
 
-    // 4. DIRECCIÓN: MUNICIPIO -> SECTOR
+    // 3. ESTADO RESIDENCIA (NORMAL) -> MUNICIPIO RESIDENCIA
+    document.getElementById('estado').addEventListener('change', function() {
+      var estadoId = this.value;
+      var municipioSelect = document.getElementById('municipio');
+      var sectorSelect = document.getElementById('sector');
+
+      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
+      if (sectorSelect) {
+        sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
+      }
+
+      if (estadoId) {
+        $.ajax({
+          url: 'get/get_municipios.php',
+          method: 'GET',
+          data: { Id_Estado: estadoId },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var municipio = data[i];
+              municipioSelect.innerHTML += '<option value="' + municipio.Id_Municipio + '">' + municipio.nombre_municipio + '</option>';
+            }
+          }
+        });
+      }
+    });
+
+    // 4. MUNICIPIO RESIDENCIA (NORMAL) -> SECTOR RESIDENCIA
     document.getElementById('municipio').addEventListener('change', function() {
-      const municipioId = this.value;
-      const sectorSelect = document.getElementById('sector');
+      var municipioId = this.value;
+      var sectorSelect = document.getElementById('sector');
+
       sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
 
       if (municipioId) {
-        loadAndSelect(municipioId, 'sector', 'get/get_sectores.php', 'Id_Municipio', '');
+        $.ajax({
+          url: 'get/get_sectores.php',
+          method: 'GET',
+          data: { Id_Municipio: municipioId },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var sector = data[i];
+              sectorSelect.innerHTML += '<option value="' + sector.Id_Sector + '">' + sector.nombre_sector + '</option>';
+            }
+          }
+        });
       }
     });
 
-
-    // --- INICIALIZACIÓN DE CARGA DE DATOS AL CARGAR LA PÁGINA (EXISTENTE EN EDITAR.PHP, PERO REFINADA) ---
+    // Inicializar Patologías y Alergias (Si borraste el DOMContentLoaded)
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. LÓGICA DE NACIMIENTO (Tab 1)
-      const initNacimiento = loadAndSelect(saved_id_pais_nac, 'estado_nacimiento', 'get/get_estados.php', 'Id_Pais', saved_id_estado_nac);
-
-      initNacimiento
-        .then((savedStateId) => {
-          if (savedStateId) {
-            return loadAndSelect(savedStateId, 'municipio_nacimiento', 'get/get_municipios.php', 'Id_Estado', saved_id_municipio_nac);
-          }
-        })
-        .catch(error => console.error('Fallo en la cadena de Nacimiento:', error));
-
-      // 2. LÓGICA DE DIRECCIÓN (Tab 3)
-      const initDireccionMun = loadAndSelect(saved_id_estado_dir, 'municipio', 'get/get_municipios.php', 'Id_Estado', saved_id_municipio_dir);
-
-      initDireccionMun
-        .then((savedMunId) => {
-          if (savedMunId) {
-            return loadAndSelect(savedMunId, 'sector', 'get/get_sectores.php', 'Id_Municipio', saved_id_sector_dir);
-          }
-        })
-        .catch(error => console.error('Fallo en la cadena de Dirección:', error));
-
-
-      // 3. Inicializar Patologías y Alergias
       if (typeof parseData === 'function') {
-        // Se llama al final de los scripts para parsear los datos de PHP y cargarlos.
         inicializarDatosMedicos();
       }
     });
-
-    // --- MODIFICACIÓN SOLICITADA: Lógica Analfabeta y Validación de Misiones (Copiada de pacientes_agregar.php) ---
-
-    // =====================================================================
-    // LÓGICA PARA PATOLOGÍAS Y ALERGIAS (Copiada y adaptada de pacientes_agregar.php)
-    // =====================================================================
-
-    // --- INICIALIZACIÓN DE ARRAYS CON DATOS DE EDICIÓN ---
 
     // Función de ayuda para parsear datos (Id::Nombre::CIE-10 o Id::Nombre)
     function parseData(dataString, separator, itemParser) {
@@ -1229,7 +1318,7 @@
       // 2. Validaciones Específicas por Pestaña
       if (tabSelector === '#info') {
         // 2a. Validación de Cédula (Formato y Duplicado en BD)
-        if (validarCedulaFormato() === false) {
+        if (validarDatosUnicos() === false) {
           esValido = false;
           errores.push('Error en el formato o la cédula ya existe.');
         }
@@ -1247,48 +1336,54 @@
 
         const edad = parseInt($('#edad').val());
         if (isNaN(edad) || edad < 18 || edad > 120) {
-          errores.push("El paciente debe ser mayor de **18 años** (Fecha de Nacimiento).");
+          errores.push("El paciente debe ser mayor de 18 años (Fecha de Nacimiento).");
           $('#fechaN').addClass('input-error');
           esValido = false;
         }
 
         const email = $('#email').val().trim();
         if (email !== "" && (email.indexOf('@') === -1 || email.indexOf('.') === -1)) {
-          errores.push("El campo **Email** debe tener un formato válido (ej: nombre@dominio.com).");
+          errores.push("El campo Email debe tener un formato válido (ej: nombre@dominio.com).");
           $('#email').addClass('input-error');
           esValido = false;
         }
       }
 
       if (!esValido && errores.length > 0) {
-        mostrarAviso('⚠️ **Errores de Formulario:**<ul><li>' + errores.join('</li><li>') + '</li></ul>');
+        mostrarAviso('⚠️ Errores de Formulario:<ul><li>' + errores.join('</li><li>') + '</li></ul>');
       }
 
       return esValido;
     }
 
-    // --- LÓGICA DE NAVEGACIÓN (Copiada de pacientes_agregar.php) ---
-    $('.next-tab').on('click', async function() {
+    // --- 3. BOTÓN SIGUIENTE Y VALIDACIÓN FINAL ---
+    $('.next-tab').off('click').on('click', async function() {
       const $btn = $(this);
       const tabActualSelector = $btn.data('tab-actual');
       const tabSiguienteName = $btn.data('tab-siguiente');
       const nextTabLink = $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"] a`);
 
-      $btn.prop('disabled', false).text('Guardar');
+      $btn.prop('disabled', true).text('Validando...');
 
       const esValido = await validarPestana(tabActualSelector);
 
+      $btn.prop('disabled', false).text(tabSiguienteName === 'confirmar' ? 'Actualizar' : 'Siguiente');
+
       if (esValido) {
         if (tabSiguienteName === 'confirmar') {
-          $('#modalGuardarMedico').modal('show');
+          // ULTIMA VERIFICACIÓN ANTES DE MOSTRAR EL MODAL
+          const cedulaFinalValida = await validarDatosUnicos();
+          if(!cedulaFinalValida) {
+             mostrarAviso("🛑 Conflicto de Cédula. Regrese a la pestaña 'Datos Personales' y corrija la información.");
+             return;
+          }
+          
+          const modalSelector = $('#modalGuardarPaciente').length ? '#modalGuardarPaciente' : '#modalGuardarMedico';
+          $(modalSelector).modal('show');
         } else {
-          const $siguienteTabLi = $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"]`);
-          // 1. Quitar la clase disabled-tab y la clase active
           $('.nav-tabs li').removeClass('active');
           $('.tab-content .tab-pane').removeClass('active');
-          $siguienteTabLi.removeClass('disabled-tab').addClass('active');
-
-          // 2. Activar la pestaña siguiente
+          $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"]`).removeClass('disabled-tab').addClass('active');
           nextTabLink.tab('show');
           $('#' + tabSiguienteName).addClass('active');
         }

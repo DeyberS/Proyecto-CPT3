@@ -52,13 +52,21 @@ $texto_almacenamiento = [
     <?php include('includes/headerNav2.php'); ?>
 
     <style>
-        /* Evita que se pegue a la barra superior y bordes */
+        .wrapper {
+            display: block !important; 
+            min-height: 100% !important; 
+            overflow-x: hidden !important; 
+            background-color: #f4f7f9 !important; 
+        }
+
         .content-wrapper {
             background-color: #f4f7f9 !important;
+            min-height: 125vh !important; /* Aseguramos que el contenido baje por completo */
         }
 
         .content-custom {
-            padding: 50px 15px;
+            padding: 50px 10px;
+            margin-left: 60px;
         }
 
         .main-container {

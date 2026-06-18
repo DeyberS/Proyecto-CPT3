@@ -143,7 +143,8 @@
                     c.estatus
                   FROM consulta c
                   JOIN persona p_paciente ON c.Id_paciente = p_paciente.id
-                  JOIN persona p_medico ON c.Id_medico = p_medico.id
+                  JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+                  JOIN persona p_medico ON dm.Id_persona = p_medico.id
                   $donde
                   ORDER BY c.fecha_consulta DESC
                   LIMIT $inicio, $registros_por_pagina";

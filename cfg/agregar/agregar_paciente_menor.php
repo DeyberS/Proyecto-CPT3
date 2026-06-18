@@ -55,8 +55,8 @@ $grupo_sanguineo = $_POST['grupo_sanguineo'] ?? '';
 $analfabeta = $_POST['analfabeta'] ?? 'No';
 $discapacidad = $_POST['discapacidad'] ?? 'No';
 $tipo_discapacidad = $_POST['tipo_discapacidad'] ?? 'Ninguna';
-$patologias_ids_string = $_POST['patologias_ids'] ?? '';
-$alergias_ids_string = $_POST['alergias_ids'] ?? '';
+$patologias_json = $_POST['patologias_data'] ?? '';
+$alergias_json = $_POST['alergias_data'] ?? '';
 
 // Datos del REPRESENTANTE
 $tipo_cedula_rep = $_POST['tipo_cedula_rep'] ?? '';
@@ -243,19 +243,25 @@ try {
     $stmt_rol->close();
 
     // --- 6. Manejo de Patologías y Alergias (M:M) ---
+    
     // 6.1. Patologías (historial_patologias)
-    if (!empty($patologias_ids_string)) {
-        $patologias_array = array_filter(array_map('trim', explode(',', $patologias_ids_string)));
+    if (!empty($patologias_json)) {
+        $patologias_array = json_decode($patologias_json, true); // Decodificamos el JSON
         
-        $sql_patologia_m2m = "INSERT INTO historial_patologias(Id_patologia, Id_historial, Id_persona, estatus) VALUES(?, ?, ?, ?)";
+        // Añadimos el campo fecha_registro a la consulta
+        $sql_patologia_m2m = "INSERT INTO historial_patologias(Id_patologia, Id_historial, Id_persona, fecha_registro, estatus) VALUES(?, ?, ?, ?, ?)";
         $stmt_patologia_m2m = $conexion->prepare($sql_patologia_m2m);
         
         if ($stmt_patologia_m2m === false) {
              throw new Exception("Error al preparar la inserción de patologías: " . $conexion->error);
         }
 
-        foreach ($patologias_array as $patologia_id) {
-            $stmt_patologia_m2m->bind_param("iiii", $patologia_id, $id_historial_medico, $id_paciente, $estado);
+        foreach ($patologias_array as $patologia) {
+            $patologia_id = $patologia['id'];
+            $fecha_registro = $patologia['fecha'];
+            
+            // "iiiis" -> 4 enteros y 1 string (para la fecha)
+            $stmt_patologia_m2m->bind_param("iiisi", $patologia_id, $id_historial_medico, $id_paciente, $fecha_registro, $estado);
             if (!$stmt_patologia_m2m->execute()) {
                 throw new Exception("Error al insertar patología ID $patologia_id: " . $stmt_patologia_m2m->error);
             }
@@ -264,18 +270,23 @@ try {
     }
 
     // 6.2. Alergias (historial_alergias)
-    if (!empty($alergias_ids_string)) {
-        $alergias_array = array_filter(array_map('trim', explode(',', $alergias_ids_string)));
+    if (!empty($alergias_json)) {
+        $alergias_array = json_decode($alergias_json, true); // Decodificamos el JSON
 
-        $sql_alergia_m2m = "INSERT INTO historial_alergias(Id_alergia, Id_historial, Id_persona, estatus) VALUES(?, ?, ?, ?)";
+        // Añadimos el campo fecha_registro a la consulta
+        $sql_alergia_m2m = "INSERT INTO historial_alergias(Id_alergia, Id_historial, Id_persona, fecha_registro, estatus) VALUES(?, ?, ?, ?, ?)";
         $stmt_alergia_m2m = $conexion->prepare($sql_alergia_m2m);
         
         if ($stmt_alergia_m2m === false) {
              throw new Exception("Error al preparar la inserción de alergias: " . $conexion->error);
         }
 
-        foreach ($alergias_array as $alergia_id) {
-            $stmt_alergia_m2m->bind_param("iiii", $alergia_id, $id_historial_medico, $id_paciente, $estado);
+        foreach ($alergias_array as $alergia) {
+            $alergia_id = $alergia['id'];
+            $fecha_registro = $alergia['fecha'];
+            
+            // "iiiis" -> 4 enteros y 1 string (para la fecha)
+            $stmt_alergia_m2m->bind_param("iiisi", $alergia_id, $id_historial_medico, $id_paciente, $fecha_registro, $estado);
             if (!$stmt_alergia_m2m->execute()) {
                 throw new Exception("Error al insertar alergia ID $alergia_id: " . $stmt_alergia_m2m->error);
             }

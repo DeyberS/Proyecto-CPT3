@@ -40,10 +40,9 @@ $id_medico_cita = null;
 
 if ($id_cita) {
 
-  $sql_cita = "SELECT p.id AS medico_id, c.fecha_cita
+  $sql_cita = "SELECT dm.Id_detalle_medico AS medico_id, c.fecha_cita
   FROM citas c
   JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
-  JOIN persona p ON dm.Id_persona = p.id
   WHERE c.id_cita = ?";
 
   $stmt = $conexion->prepare($sql_cita);
@@ -298,7 +297,8 @@ if (!empty($cedula) && isset($conexion)) {
                       <select name="tipo_cedula_paciente" id="tipo_cedula_paciente" class="form-control" style="width: 60px; <?php echo !empty($cedula) ? 'pointer-events: none; background-color: #eee;' : ''; ?>" <?php echo !empty($cedula) ? 'tabindex="-1"' : ''; ?>>
                         <option value="PN" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'PN') ? 'selected' : ''; ?>>PN-</option>
                         <option value="V" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'V' || (isset($tipo_cedula) && $tipo_cedula == 'V') || !isset($_GET['tipo_cedula'])) ? 'selected' : ''; ?>>V-</option>
-                        <option value="E" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'E' || (isset($tipo_cedula) && $tipo_cedula == 'E')) ? 'selected' : ''; ?>>E-</option>
+                        <option value="RP" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'RP' || (isset($tipo_cedula) && $tipo_cedula == 'RP') || !isset($_GET['tipo_cedula'])) ? 'selected' : ''; ?>>REP-</option>
+                        <!--<option value="E" <?php echo (isset($_GET['tipo_cedula']) && $_GET['tipo_cedula'] == 'E' || (isset($tipo_cedula) && $tipo_cedula == 'E')) ? 'selected' : ''; ?>>E-</option>-->
                       </select>
                     </div>
                     <div class="col-sm-3">
@@ -321,20 +321,50 @@ if (!empty($cedula) && isset($conexion)) {
                     <br><br><br><br>
                     <div class="col-sm-4">
                       <p>Medico (*):</p>
-                      <select name="medico" id="medico" class="form-control" <?php if (!empty($id_medico_cita)) : ?> style="pointer-events: none; background-color: #eee;" tabindex="-1" <?php endif; ?> required>
+                      <?php
+                      $id_persona_logueada = $_SESSION['id'] ?? 0; 
+                      $rol_usuario = $_SESSION['rol'] ?? 0; 
+
+                      $es_admin = ($rol_usuario == 1); // 1 es Administrador en tu BD
+                      $id_medico_seleccionado = $id_medico_cita; // Prioridad 1: Si viene de una cita agendada
+                      $bloquear_medico = false;
+
+                      // Si no hay un médico ya asignado por una cita, y el usuario NO es admin
+                      if (empty($id_medico_seleccionado) && !$es_admin) {
+                          // Buscamos si el usuario logueado está registrado como médico
+                          $sql_logged = "SELECT Id_detalle_medico FROM detalle_medico WHERE Id_persona = ?";
+                          $stmt_logged = $conexion->prepare($sql_logged);
+                          $stmt_logged->bind_param("i", $id_persona_logueada);
+                          $stmt_logged->execute();
+                          $res_logged = $stmt_logged->get_result();
+                          
+                          if ($row_logged = $res_logged->fetch_assoc()) {
+                              $id_medico_seleccionado = $row_logged['Id_detalle_medico'];
+                          }
+                          $stmt_logged->close();
+                      }
+
+                      // Bloqueamos el select si viene de una cita, o si es un médico haciendo su propia consulta
+                      if (!empty($id_medico_cita) || (!$es_admin && !empty($id_medico_seleccionado))) {
+                          $bloquear_medico = true;
+                      }
+                      ?>
+
+                      <select name="medico" id="medico" class="form-control" 
+                          <?php echo $bloquear_medico ? 'style="pointer-events: none; background-color: #eee;" tabindex="-1"' : ''; ?> required>
                         <option value="">--- Seleccione el medico ---</option>
                         <?php
-                        $sql_medico = "SELECT p.id, p.nombre, p.apellido 
-                        FROM persona p
-                        JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona
-                        WHERE dpr.Id_rol = 4 
+                        $sql_medico = "SELECT dm.Id_detalle_medico, dm.Id_persona AS id, p.nombre, p.apellido, dm.tipo_medico 
+                        FROM detalle_medico dm
+                        INNER JOIN persona p ON dm.Id_persona = p.id
+                        WHERE p.estatus IN (1, 2) AND dm.tipo_medico = 'Interno'
                         ORDER BY p.nombre ASC";
 
                         $resultado_medico = $conexion->query($sql_medico);
 
                         while ($row_medico = $resultado_medico->fetch_assoc()) {
-                          $id_db = (int)$row_medico['id'];
-                          $id_objetivo = (int)$id_medico_cita;
+                          $id_db = (int)$row_medico['Id_detalle_medico'];
+                          $id_objetivo = (int)$id_medico_seleccionado;
 
                           // Si coinciden, añade el atributo 'selected'
                           $selected = ($id_db === $id_objetivo) ? 'selected="selected"' : '';
@@ -345,7 +375,6 @@ if (!empty($cedula) && isset($conexion)) {
                         }
                         ?>
                       </select>
-
                     </div>
                     <div class="col-sm-4">
                       <p>Fecha de consulta (*):</p>
@@ -1259,7 +1288,7 @@ if (!empty($cedula) && isset($conexion)) {
     });
 
     // Permite solo números
-    $('#talla, #frecuencia_cardiaca, #saturacion, #frecuencia_respiratoria, #inputDosisCantidad, #cedula_paciente').on('input', function() {
+    $('#talla, #frecuencia_cardiaca, #saturacion, #frecuencia_respiratoria, #inputDosisCantidad').on('input', function() {
       this.value = this.value.replace(/[^0-9]/g, '');
     });
 
@@ -1453,17 +1482,30 @@ if (!empty($cedula) && isset($conexion)) {
     });
   }
 
-  function ajustarLongitudCedulaConsulta(tipo) {
-    let maxLength = 15;
-    if (tipo === 'PN') {
-      maxLength = 20;
-    } else if (tipo === 'E' || tipo === 'V') {
-      maxLength = 8;
+  function filtrarCedulaConsulta() {
+    const tipo = tipoCedulaPacienteSelect.value;
+    let valor = cedulaPacienteInput.value;
+    let nuevoValor = valor;
+    let longitudMaxima = 20;
+
+    if (tipo === 'V' || tipo === 'E') {
+      nuevoValor = valor.replace(/[^0-9]/g, '');
+      longitudMaxima = 8;
+    } else if (tipo === 'RP') {
+      // Deja solo números primero
+      nuevoValor = valor.replace(/[^0-9]/g, '');
+      // Si pasa de 8 dígitos, inserta el guion antes del noveno
+      if (nuevoValor.length > 8) {
+        nuevoValor = nuevoValor.substring(0, 8) + '-' + nuevoValor.substring(8, 9);
+      }
+      longitudMaxima = 10; // 8 números + guion + 1 número
+    } else if (tipo === 'PN') {
+      nuevoValor = valor.replace(/[^0-9a-zA-Z- ]/g, '');
+      longitudMaxima = 20;
     }
-    cedulaPacienteInput.setAttribute('maxlength', maxLength);
-    if (cedulaPacienteInput.value.length > maxLength) {
-      cedulaPacienteInput.value = cedulaPacienteInput.value.substring(0, maxLength);
-    }
+
+    cedulaPacienteInput.maxLength = longitudMaxima;
+    cedulaPacienteInput.value = nuevoValor;
   }
 
   // AÑADIDO: Nueva función para cargar el formulario de registro en el modal
@@ -2105,14 +2147,14 @@ if (!empty($cedula) && isset($conexion)) {
     // LISTENERS PARA CÉDULA
     tipoCedulaPacienteSelect.addEventListener('change', function() {
       const tipo = this.value;
-      ajustarLongitudCedulaConsulta(tipo);
-      if (cedulaPacienteInput.value.length >= 7) {
-        verificarCedulaYObtenerDatosConsulta(tipo, cedulaPacienteInput.value);
-      }
+      cedulaPacienteInput.value = ''; // Limpiar para evitar conflicto de formatos
+      filtrarCedulaConsulta();
     });
 
     cedulaPacienteInput.addEventListener('input', function() {
       const tipo = tipoCedulaPacienteSelect.value;
+      
+      filtrarCedulaConsulta(); // Aplicar el formateo en tiempo real
 
       if (this.value.length < 7) {
         $(cedulaPacienteInput).removeClass('input-error');
@@ -2124,21 +2166,28 @@ if (!empty($cedula) && isset($conexion)) {
         mostrarUltimasConsultas([]);
         gestionarPerinatales(100);
       }
-
-      if (this.value.length === 8 && (tipo === 'V' || tipo === 'E')) {
-        verificarCedulaYObtenerDatosConsulta(tipo, this.value);
-      }
     });
 
     cedulaPacienteInput.addEventListener('blur', function() {
       const tipo = tipoCedulaPacienteSelect.value;
-      if (this.value.length >= 1) {
-        verificarCedulaYObtenerDatosConsulta(tipo, this.value);
+      const valor = this.value;
+      
+      if (tipo === 'RP') {
+          const regexRP = /^[0-9]{8}-[0-9]{1}$/;
+          if (!regexRP.test(valor)) {
+              mostrarAviso("🛑 Formato incorrecto. El documento REP debe tener el formato <b>12345678-1</b>.");
+              $(this).addClass('input-error');
+              return;
+          }
+      }
+
+      if (valor.length >= 1) {
+        verificarCedulaYObtenerDatosConsulta(tipo, valor);
       }
     });
 
     // Llamadas de inicialización
-    ajustarLongitudCedulaConsulta(tipoCedulaPacienteSelect.value);
+    filtrarCedulaConsulta();
     aplicarRestriccionesConsulta();
 
     // Cargar historial si la cédula ya viene en el input (desde PHP inicial)

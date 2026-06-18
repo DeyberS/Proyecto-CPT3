@@ -51,7 +51,8 @@
   .modal.in .modal-dialog,
   #DesactivarPrescripcion,
   #ModalReportePrescripcion,
-  #modalConfirmarEstado {
+  #modalConfirmarEstado,
+  #modalListadoEstados {
     animation: fadeIn 0.4s ease-out;
   }
 
@@ -96,7 +97,8 @@
         FROM consulta c
         INNER JOIN prescripcion_medicamentos pm ON c.Id_consulta = pm.Id_consulta
         INNER JOIN persona paciente ON c.Id_paciente = paciente.id
-        INNER JOIN persona medico ON c.Id_medico = medico.id
+        INNER JOIN detalle_medico dmd ON c.Id_medico = dmd.Id_detalle_medico
+        INNER JOIN persona medico ON dmd.Id_persona = medico.id
         INNER JOIN descripcion_medicamento dm ON pm.Id_descripcion_medicamento = dm.Id
         INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
         LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
@@ -121,19 +123,22 @@
             sm.id_solicitud AS id_prescripcion,
             sm.estatus_general AS estado_entrega,
             DATE(sm.fecha_solicitud) AS fecha_solicitud,
-            sm.datos_paciente_externo AS nom_pac,
-            '' AS ape_pac,
-            sm.tipo_cedula_externo AS tipo_cedula_pac,
-            sm.cedula_externo AS cedula_pac,
-            NULL AS cedula_representante,
-            sm.datos_medico_externo AS nom_med,
-            '' AS ape_med,
+            paciente.nombre AS nom_pac,
+            paciente.apellido AS ape_pac,
+            paciente.tipo_cedula AS tipo_cedula_pac,
+            paciente.cedula AS cedula_pac,
+            rep.cedula AS cedula_representante,
+            medico.nombre AS nom_med,
+            medico.apellido AS ape_med,
             GROUP_CONCAT(CONCAT('• ', m.nombre_medicamento, ' (Cant: ', ds.cantidad_recetada, ')') SEPARATOR '<br>') AS nombre_medicamento,
-            0 AS es_menor
+            TIMESTAMPDIFF(YEAR, paciente.fecha_nacimiento, CURDATE()) < 18 AS es_menor
         FROM solicitud_medicamento sm
         INNER JOIN detalle_solicitud ds ON sm.id_solicitud = ds.id_solicitud
         INNER JOIN descripcion_medicamento dm ON ds.id_medicamento = dm.Id
         INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+        INNER JOIN persona paciente ON sm.id_paciente = paciente.id
+        INNER JOIN detalle_medico dmd ON sm.id_medico = dmd.Id_detalle_medico
+        INNER JOIN persona medico ON dmd.Id_persona = medico.id
         LEFT JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
         LEFT JOIN (
             SELECT 
@@ -144,6 +149,8 @@
             LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
             GROUP BY dpm.id_medicamento
         ) comp_tbl ON dm.Id = comp_tbl.id_desc
+        LEFT JOIN detalle_paciente_menor dpm_menor ON paciente.id = dpm_menor.id_persona
+        LEFT JOIN persona rep ON dpm_menor.id_representante = rep.id
         WHERE sm.origen = 'Externo'
         GROUP BY sm.id_solicitud
     ";
@@ -158,6 +165,7 @@
     if ($busqueda != '') {
       $donde .= " AND (nom_pac LIKE '%$busqueda%' 
                      OR ape_pac LIKE '%$busqueda%' 
+                     OR CONCAT(nom_pac, ' ', ape_pac) LIKE '%$busqueda%'
                      OR cedula_pac LIKE '%$busqueda%' 
                      OR nombre_medicamento LIKE '%$busqueda%')";
     }
@@ -168,10 +176,30 @@
     $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
     $total_registros = $fila_conteo['total'];
     $total_paginas = ceil($total_registros / $registros_por_pagina);
+
+    // --- CONTEO PARA LOS BOTONES DE ESTADO ---
+    $pendientes = $completadas = $parciales = $canceladas = 0;
+    $sql_totales = "SELECT estado_entrega, COUNT(*) as total FROM ($sql_base) AS base_unificada GROUP BY estado_entrega";
+    $res_totales = mysqli_query($conexion, $sql_totales);
+
+    while ($tot = mysqli_fetch_assoc($res_totales)) {
+      $estado = strtolower($tot['estado_entrega']);
+
+      // Corregido: Usamos += para acumular y reparamos la lógica de las condiciones condicionales
+      if ($estado == 'pendiente') {
+        $pendientes += $tot['total'];
+      } elseif ($estado == 'entregado' || $estado == 'completado' || $estado == 'completada') {
+        $completadas += $tot['total'];
+      } elseif ($estado == 'parcial' || $estado == 'parcialmente entregado') {
+        $parciales += $tot['total'];
+      } elseif ($estado == 'cancelado' || $estado == 'no entregado') {
+        $canceladas += $tot['total'];
+      }
+    }
     ?>
 
     <section class="content-header">
-      <h1>Control de Despacho de Medicamentos (<?php echo $total_registros; ?> Recipes)</h1>
+      <h1>Control de Despacho de Medicamentos (<?php echo $total_registros; ?> Récipes)</h1>
     </section>
 
     <section class="content">
@@ -180,10 +208,21 @@
           <div class="box box-primary">
             <div class="box-header with-border">
               <p class="pull-right" style="width:5px;"></p>
-              <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"> <i class="fa fa-cubes"></i> Ver Inventario General</a>
+              <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"> Ver Inventario General</a>
+
+              <p class="pull-right" style="width:5px;"></p>
               <form method="GET" action="" style="display:inline;">
                 <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off" style="width:250px; display:inline-block;">
               </form>
+        
+              <p class="pull-right" style="width:5px;"></p>
+              <button class="btn-sm btn-primary pull-right btn-sm btn-abrir-modal-estado" data-estado="Cancelado">Canceladas (<?php echo $canceladas; ?>)</button>      
+              <p class="pull-right" style="width:5px;"></p>
+              <button class="btn-sm btn-primary pull-right btn-sm btn-abrir-modal-estado" data-estado="Parcial">Parciales (<?php echo $parciales; ?>)</button>
+              <p class="pull-right" style="width:5px;"></p>
+              <button class="btn-sm btn-primary pull-right btn-sm btn-abrir-modal-estado" data-estado="Pendiente">Pendientes (<?php echo $pendientes; ?>)</button>
+              <p class="pull-right" style="width:5px;"></p>
+              <button class="btn-sm btn-primary pull-right btn-sm btn-abrir-modal-estado" data-estado="Entregado">Completadas (<?php echo $completadas; ?>)</button>
             </div>
           </div>
           <br><br>
@@ -260,41 +299,41 @@
                       </td>
 
                       <?php if (in_array('Gestionar acciones de recetas', $_SESSION["permisos"])) : ?>
-                      <td class="text-center">
-                        <?php if ($row['estado_entrega'] == 'pendiente' || $row['estado_entrega'] == 'Parcialmente Entregado' || $row['estado_entrega'] == 'Parcial' || $row['estado_entrega'] == 'Pendiente') : ?>
-                          <?php
-                          $cedula_a_enviar = ($row['es_menor'] == 1 && !empty($row['cedula_representante'])) ? $row['cedula_representante'] : $row['cedula_pac'];
-                          ?>
-                          <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
-                            <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
-                          </a>
-                          <?php endif; ?>
-                          <?php if (in_array('Generar Despacho de Inventario', $_SESSION["permisos"])) : ?>
-                          <a href="farmacia_inventario_movimiento_despacho.php?id_pres=<?php echo $row['id_prescripcion']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&tipo=<?php echo $row['tipo_receta']; ?>&from=prescripciones" class="btn btn-success btn-sm" title="Despachar Receta">
-                            <img src="../../recursos/imagenes/iconos/enviar.png" style="width:15px; height:15px;">
-                          </a>
-                          <?php endif; ?>
-                          <?php if (in_array('Cancelar Recetas', $_SESSION["permisos"])) : ?>
-                          <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado', '<?php echo $row['tipo_receta'] ?>')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar">
-                            <img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;">
-                          </button>
-                          <?php endif; ?>
+                        <td class="text-center">
+                          <?php if ($row['estado_entrega'] == 'pendiente' || $row['estado_entrega'] == 'Parcialmente Entregado' || $row['estado_entrega'] == 'Parcial' || $row['estado_entrega'] == 'Pendiente') : ?>
+                            <?php
+                            $cedula_a_enviar = ($row['es_menor'] == 1 && !empty($row['cedula_representante'])) ? $row['cedula_representante'] : $row['cedula_pac'];
+                            ?>
+                            <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
+                              <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
+                                <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
+                              </a>
+                            <?php endif; ?>
+                            <?php if (in_array('Generar Despacho de Inventario', $_SESSION["permisos"])) : ?>
+                              <a href="farmacia_inventario_movimiento_despacho.php?id_pres=<?php echo $row['id_prescripcion']; ?>&pac=<?php echo urlencode($cedula_a_enviar); ?>&menor=<?php echo $row['es_menor']; ?>&tipo=<?php echo $row['tipo_receta']; ?>&from=prescripciones" class="btn btn-success btn-sm" title="Despachar Receta">
+                                <img src="../../recursos/imagenes/iconos/enviar.png" style="width:15px; height:15px;">
+                              </a>
+                            <?php endif; ?>
+                            <?php if (in_array('Cancelar Recetas', $_SESSION["permisos"])) : ?>
+                              <button onclick="cambiarEstado(<?php echo $row['id_prescripcion'] ?>, 'no entregado', '<?php echo $row['tipo_receta'] ?>')" class="btn btn-sm btn-danger btn-accion-rapida" title="Cancelar">
+                                <img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;">
+                              </button>
+                            <?php endif; ?>
 
-                        <?php elseif ($row['estado_entrega'] == 'no entregado' || $row['estado_entrega'] == 'Cancelado') : ?>
-                          <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
-                            <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
-                          </a>
+                          <?php elseif ($row['estado_entrega'] == 'no entregado' || $row['estado_entrega'] == 'Cancelado') : ?>
+                            <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
+                              <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
+                                <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
+                              </a>
+                            <?php endif; ?>
+                          <?php else : ?>
+                            <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
+                              <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
+                                <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
+                              </a>
+                            <?php endif; ?>
                           <?php endif; ?>
-                        <?php else : ?>
-                          <?php if (in_array('Ver informacion de recetas', $_SESSION["permisos"])) : ?>
-                          <a href="farmacia_prescripciones_ver.php?id=<?php echo $row['id_prescripcion']; ?>&tipo=<?php echo $row['tipo_receta']; ?>" class="btn btn-info btn-sm" title="Ver Informacion">
-                            <img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;">
-                          </a>
-                          <?php endif; ?>
-                        <?php endif; ?>
-                      </td>
+                        </td>
                       <?php endif; ?>
                     </tr>
                   <?php } ?>
@@ -387,6 +426,25 @@
     </div>
   </div>
 
+  <div class="modal" id="modalListadoEstados" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document" style="width: 90%;">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white;"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="tituloModalEstados" style="color:white;">Recetas</h4>
+        </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+          <div id="loader-modal-estados" class="text-center" style="display:none;">
+            <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+            <p>Cargando recetas...</p>
+          </div>
+          <div id="contenido-modal-estados">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     $(document).ready(function() {
       // Se añade el parámetro tipoReceta para enviar por AJAX
@@ -411,6 +469,31 @@
         // 3. Abrimos el modal
         $('#modalConfirmarEstado').modal('show');
       };
+
+      // Abrir modal de estados
+      $('.btn-abrir-modal-estado').on('click', function() {
+        var estado = $(this).data('estado');
+        $('#tituloModalEstados').text('Recetas - Estado: ' + estado);
+        $('#contenido-modal-estados').empty();
+        $('#loader-modal-estados').show();
+        $('#modalListadoEstados').modal('show');
+
+        $.ajax({
+          url: '../../cfg/ajax/get_recetas_por_estado.php',
+          type: 'GET',
+          data: {
+            estado: estado
+          },
+          success: function(response) {
+            $('#loader-modal-estados').hide();
+            $('#contenido-modal-estados').html(response);
+          },
+          error: function() {
+            $('#loader-modal-estados').hide();
+            $('#contenido-modal-estados').html('<div class="alert alert-danger">Error al cargar los datos.</div>');
+          }
+        });
+      });
 
       // Escuchador para el botón "Aceptar" dentro del modal
       $(document).ready(function() {

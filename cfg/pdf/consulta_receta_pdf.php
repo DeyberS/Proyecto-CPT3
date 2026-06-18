@@ -29,7 +29,8 @@ $sql_consulta = "
         m.nombre AS nombre_medico, m.apellido AS apellido_medico, m.tipo_cedula AS tipo_cedula_medico, m.cedula AS cedula_medico
     FROM consulta c
     JOIN persona p ON c.Id_paciente = p.id
-    JOIN persona m ON c.Id_medico = m.id
+    JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+    JOIN persona m ON dm.Id_persona = m.id
     WHERE c.Id_consulta = $id_consulta
     LIMIT 1;
 ";

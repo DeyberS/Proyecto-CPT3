@@ -12,17 +12,17 @@ $es_admin = false;
 $es_visitante = false;
 
 if (isset($_SESSION["permisos"])) {
-    // Es administrador si tiene el permiso de configuraciones
-    if (in_array('Gestionar Configuraciones', $_SESSION["permisos"])) {
-        $es_admin = true;
-    }
-    
-    // Es visitante (supervisión). 
-    // OJO: Cambia 'Modulo Supervision' por un permiso real que tenga el visitante 
-    // o usa tu propia validación (ej: si usas $_SESSION['rol'] == 'Visitante')
-    if (in_array('Ver panel de visitante', $_SESSION["permisos"])) {
-        $es_visitante = true;
-    }
+  // Es administrador si tiene el permiso de configuraciones
+  if (in_array('Gestionar Configuraciones', $_SESSION["permisos"])) {
+    $es_admin = true;
+  }
+
+  // Es visitante (supervisión). 
+  // OJO: Cambia 'Modulo Supervision' por un permiso real que tenga el visitante 
+  // o usa tu propia validación (ej: si usas $_SESSION['rol'] == 'Visitante')
+  if (in_array('Ver panel de visitante', $_SESSION["permisos"])) {
+    $es_visitante = true;
+  }
 }
 
 // Bandera que determina si el usuario usará la vista anidada clásica
@@ -39,6 +39,16 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
     display: none !important;
   }
 
+  @keyframes glow-recipes-yellow {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(243, 156, 18, 0.4); box-shadow: 0 0 10px rgba(243, 156, 18, 0.6); }
+    100% { background-color: transparent; }
+  }
+  .glow-active {
+    animation: glow-recipes-yellow 2s infinite;
+    border-radius: 4px;
+  }
+
   .sidebar-footer {
     position: absolute;
     bottom: 0;
@@ -46,6 +56,22 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
     /* Color de fondo del sidebar */
     padding: 15px;
     z-index: 1000;
+  }
+
+  .wrapper {
+    display: block !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    background-color: #f4f7f9 !important;
+  }
+
+  .content-wrapper {
+    background-color: #f4f7f9 !important;
+  }
+
+  .content-custom {
+    padding: 50px 10px;
+    margin-left: 60px;
   }
 
   /* Añade un margen al final del menú para que el último item no quede tapado por el reloj */
@@ -133,21 +159,21 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
         </div>
         <ul class="sidebar-menu">
           <li class="header">MENU DE NAVEGACION</li>
-          
+
           <li class="treeview">
             <a href="inicio.php">
               <img src="recursos/imagenes/iconos/inicio.png" style="height:18px; width:18; margin-top:-4px; margin-right:10px;">
               <span>Inicio</span>
               <?php if ($usar_vista_anidada) : ?>
-              <span class="pull-right-container">
-                <i class="fa fa-angle-right pull-left"></i>
-              </span>
+                <span class="pull-right-container">
+                  <i class="fa fa-angle-right pull-left"></i>
+                </span>
               <?php endif; ?>
             </a>
           </li>
 
           <?php if (isset($_SESSION["permisos"])) : ?>
-            
+
             <?php if ($usar_vista_anidada) : ?>
               <?php if (in_array('Gestionar Consultas', $_SESSION["permisos"])) : ?>
                 <li class="treeview">
@@ -182,11 +208,11 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                   </a>
                   <ul class="treeview-menu">
                     <?php if (in_array('Ver Pacientes', $_SESSION["permisos"])) : ?>
-                    <li><a href="pages/php/pacientes_listado.php"></i>Censo</a></li>
-                    <li><a href="pages/php/pacientes_menores_listado.php"></i>Censo - Menores de Edad</a></li>
+                      <li><a href="pages/php/pacientes_listado.php"></i>Censo</a></li>
+                      <li><a href="pages/php/pacientes_menores_listado.php"></i>Censo - Menores de Edad</a></li>
                     <?php endif; ?>
                     <?php if (in_array('Ver Representantes', $_SESSION["permisos"])) : ?>
-                    <li><a href="pages/php/representantes_listado.php">Representantes</a></li>
+                      <li><a href="pages/php/representantes_listado.php">Representantes</a></li>
                     <?php endif; ?>
                   </ul>
                 </li>
@@ -202,7 +228,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                   </a>
                   <ul class="treeview-menu">
                     <?php if (in_array('Ver Patologias', $_SESSION["permisos"])) : ?>
-                    <li><a href="pages/php/salud_patologias_listado.php">Patologias</a></li>
+                      <li><a href="pages/php/salud_patologias_listado.php">Patologias</a></li>
                     <?php endif; ?>
                     <?php if (in_array('Ver Alergias', $_SESSION["permisos"])) : ?>
                       <li><a href="pages/php/salud_alergias_listado.php">Alergias</a></li>
@@ -240,11 +266,11 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                     <?php if (in_array('Ver Proveedores', $_SESSION["permisos"])) : ?>
                       <li><a href="pages/php/farmacia_proveedores_listado.php"><i class="fa fa-user-plus"></i>Proveedores</a></li>
                     <?php endif; ?>
-                    <?php if (in_array('Ver Laboratorios', $_SESSION["permisos"])) : ?>  
+                    <?php if (in_array('Ver Laboratorios', $_SESSION["permisos"])) : ?>
                       <li><a href="pages/php/farmacia_laboratorio_listado.php"><i class="fa fa-user-plus"></i>Laboratorios</a></li>
-                    <?php endif; ?>    
+                    <?php endif; ?>
                     <?php if (in_array('Ver Recetas', $_SESSION["permisos"])) : ?>
-                      <li><a href="pages/php/farmacia_prescripciones_listado.php"><i class="fa fa-user-plus"></i>Recipes</a></li>
+                      <li><a href="pages/php/farmacia_prescripciones_listado.php" id="menu-link-recetas"><i class="fa fa-user-plus"></i>Récipes</a></li>
                     <?php endif; ?>
                   </ul>
                 </li>
@@ -271,7 +297,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                   </ul>
                 </li>
               <?php endif; ?>
-              
+
               <?php if (in_array('Gestionar Configuraciones', $_SESSION["permisos"])) : ?>
                 <li class="treeview">
                   <a href="#">
@@ -356,7 +382,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                   <li><a href="pages/php/farmacia_laboratorio_listado.php"><i class="fa fa-flask" style="margin-right:10px; font-size:18px;"><img src="recursos/imagenes/iconos/filled/places/rural_post@2x.png" style="height:18px; width:18; margin-top:-4px; margin-right:0px; filter:invert();"></i> <span>Laboratorios</span></a></li>
                 <?php endif; ?>
                 <?php if (in_array('Ver Recetas', $_SESSION["permisos"])) : ?>
-                  <li><a href="pages/php/farmacia_prescripciones_listado.php"><i class="fa fa-file-text-o" style="margin-right:10px; font-size:18px;"><img src="recursos/imagenes/iconos/filled/symbols/i_note_action@2x.png" style="height:20px; width:20; margin-top:-4px; margin-right:0px; filter:invert();"></i> <span>Récipes (Prescripciones)</span></a></li>
+                  <li><a href="pages/php/farmacia_prescripciones_listado.php" id="menu-link-recetas"><i class="fa fa-file-text-o" style="margin-right:10px; font-size:18px;"><img src="recursos/imagenes/iconos/filled/symbols/i_note_action@2x.png" style="height:20px; width:20; margin-top:-4px; margin-right:0px; filter:invert();"></i> <span>Récipes (Prescripciones)</span></a></li>
                 <?php endif; ?>
                 <?php if (in_array('Ver Lotes', $_SESSION["permisos"])) : ?>
                   <li><a href="pages/php/farmacia_lotes_listado.php"><i class="fa fa-cubes" style="margin-right:10px; font-size:18px;"><img src="recursos/imagenes/iconos/filled/objects/rdt_result_out_stock@2x.png" style="height:20px; width:20; margin-top:-4px; margin-right:0px; filter:invert();"></i> <span>Lotes</span></a></li>
@@ -376,7 +402,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                 <?php endif; ?>
               <?php endif; ?>
 
-            <?php endif; ?> 
+            <?php endif; ?>
           <?php endif; ?>
 
           <div class="sidebar-footer ocultar-al-colapsar" style="padding: 15px; color: #b8c7ce; border-top: 1px solid #374850; margin-top: 80%;">

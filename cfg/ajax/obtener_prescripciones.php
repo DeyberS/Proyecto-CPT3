@@ -20,7 +20,8 @@ $sql = "SELECT
             per.cedula AS cedula_paciente,
             per.nombre AS nombre_paciente,
             per.apellido AS apellido_paciente,
-            TIMESTAMPDIFF(YEAR, per.fecha_nacimiento, CURDATE()) AS edad";
+            per.fecha_nacimiento,
+            per.genero";
 
 if ($es_menor) {
     $sql .= ", rep.nombre AS nombre_rep, rep.apellido AS apellido_rep, rep.tipo_cedula AS tipo_cedula_rep, rep.cedula AS cedula_rep 
@@ -70,6 +71,7 @@ $sql .= " GROUP BY c.Id_consulta ORDER BY c.fecha_consulta DESC LIMIT 15";
 
 $resultado = mysqli_query($conexion, $sql);
 
+// ELIMINA EL BLOQUE COMPLETO DESDE "echo '<option value="">...'" HASTA EL CIERRE DEL WHILE Y REEMPLAZA CON:
 if ($resultado && mysqli_num_rows($resultado) > 0) {
     echo '<option value="">-- Seleccione una prescripción --</option>';
     while ($fila = mysqli_fetch_assoc($resultado)) {
@@ -79,16 +81,35 @@ if ($resultado && mysqli_num_rows($resultado) > 0) {
         $ced_p      = $fila['cedula_paciente'] ?? '';
         $tipo_ced_r = $fila['tipo_cedula_rep'] ?? '';
         $ced_r      = $fila['cedula_rep'] ?? '';
+        
+        // --- NUEVO: Cálculo exacto de la edad ---
+        $fecha_formateada = date("d-m-Y", strtotime($fila['fecha_consulta']));
+        $fecha_nac = new DateTime($fila['fecha_nacimiento']);
+        $hoy = new DateTime();
+        $diff = $hoy->diff($fecha_nac);
+        
+        if ($diff->y > 0) {
+            $edad_str = $diff->y . " años";
+        } elseif ($diff->m > 0) {
+            $edad_str = $diff->m . " meses";
+        } else {
+            $edad_str = $diff->d . " dias de nacido";
+        }
+        
+        $genero_str = isset($fila['genero']) ? $fila['genero'] : 'No especificado';
     
         echo "<option value='{$fila['id_prescripcion_medicamento']}' 
                 data-paciente='{$paciente_completo}'
                 data-tipo-cedula-p='{$tipo_ced_p}'
                 data-cedula-p='{$ced_p}'
+                data-edad='{$edad_str}'
+                data-genero='{$genero_str}'
                 data-representante='{$rep_completo}'
                 data-tipo-cedula-r='{$tipo_ced_r}'
                 data-cedula-r='{$ced_r}'>";
         
-        echo "{$tipo_ced_p}-{$fila['cedula_paciente']} - {$paciente_completo} - Edad: {$fila['edad']} años";
+        // --- NUEVO: Muestra solo cédula y nombre en el select ---
+        echo "{$fecha_formateada} - {$paciente_completo}";
         echo "</option>";
     }
 } else {

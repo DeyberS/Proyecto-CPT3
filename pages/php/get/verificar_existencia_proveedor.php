@@ -1,11 +1,5 @@
 <?php
-// ARCHIVO: cfg/verificar_existencia_patologia.php
-
-// 1. Incluir archivo de conexión (AJUSTA LA RUTA SEGÚN TU PROYECTO)
 require '../../../cfg/conexion.php'; 
-// Asegúrate de que $conexion es la variable de tu conexión mysqli
-
-// 2. Configurar cabecera JSON
 header('Content-Type: application/json');
 
 $response = [
@@ -18,13 +12,15 @@ $response = [
 if (isset($_POST['nombre'])) {
     
     $nombre = trim($_POST['nombre']);
+    // Recibir ID opcional para el caso de edición. Si no viene, será 0.
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0; 
 
     try {
-        // --- A. VERIFICAR NOMBRE (Insensible a mayúsculas/minúsculas) ---
-        $sql_nombre = "SELECT Id_proveedor FROM proveedor WHERE LOWER(nombre_proveedor) = LOWER(?) LIMIT 1";
+        // --- A. VERIFICAR NOMBRE (Insensible a mayúsculas/minúsculas y excluyendo el ID actual) ---
+        $sql_nombre = "SELECT Id_proveedor FROM proveedor WHERE LOWER(nombre_proveedor) = LOWER(?) AND Id_proveedor != ? LIMIT 1";
         
         if ($stmt = $conexion->prepare($sql_nombre)) {
-            $stmt->bind_param("s", $nombre);
+            $stmt->bind_param("si", $nombre, $id);
             $stmt->execute();
             $stmt->store_result();
             

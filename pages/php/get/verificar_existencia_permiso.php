@@ -1,30 +1,26 @@
 <?php
-// ARCHIVO: cfg/verificar_existencia_patologia.php
-
-// 1. Incluir archivo de conexión (AJUSTA LA RUTA SEGÚN TU PROYECTO)
 require '../../../cfg/conexion.php'; 
-// Asegúrate de que $conexion es la variable de tu conexión mysqli
-
-// 2. Configurar cabecera JSON
 header('Content-Type: application/json');
 
-$response = [
-    'existe_nombre' => false,
-    'error' => false,
-    'mensaje' => ''
-];
+$response = ['existe_nombre' => false, 'error' => false, 'mensaje' => ''];
 
-// Validar que lleguen los datos
 if (isset($_POST['nombre'])) {
-    
     $nombre = trim($_POST['nombre']);
+    $id_excluir = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
     try {
-        // --- A. VERIFICAR NOMBRE (Insensible a mayúsculas/minúsculas) ---
-        $sql_nombre = "SELECT Id_permiso FROM permiso WHERE LOWER(nombre_permiso) = LOWER(?) LIMIT 1";
+        $sql = "SELECT Id_permiso FROM permiso WHERE LOWER(nombre_permiso) = LOWER(?)";
+        if ($id_excluir > 0) {
+            $sql .= " AND Id_permiso != ?";
+        }
+        $sql .= " LIMIT 1";
         
-        if ($stmt = $conexion->prepare($sql_nombre)) {
-            $stmt->bind_param("s", $nombre);
+        if ($stmt = $conexion->prepare($sql)) {
+            if ($id_excluir > 0) {
+                $stmt->bind_param("si", $nombre, $id_excluir);
+            } else {
+                $stmt->bind_param("s", $nombre);
+            }
             $stmt->execute();
             $stmt->store_result();
             
@@ -33,9 +29,8 @@ if (isset($_POST['nombre'])) {
             }
             $stmt->close();
         } else {
-            throw new Exception("Error al preparar consulta de nombre.");
+            throw new Exception("Error al preparar consulta.");
         }
-
     } catch (Exception $e) {
         $response['error'] = true;
         $response['mensaje'] = $e->getMessage();

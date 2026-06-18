@@ -51,6 +51,7 @@
     }
 
     .modal.in .modal-dialog,
+    #ModalAdvertencia,
     #ModalReporteKardex {
         animation: fadeIn 0.4s ease-out;
     }
@@ -77,7 +78,7 @@
         bottom: 0; /* Lo mantiene pegado abajo de forma alargada */
         z-index: 100;
         box-shadow: 0 -4px 10px rgba(0,0,0,0.4);  
-        width: 80%;
+        width: 83%;
     }
 
     /* Paginación adaptada al fondo negro */
@@ -152,8 +153,8 @@
 
             $resultado = $conexion->query($sql_kardex);
 
-            // 3. Consulta para los totales del medicamento
-            $sql_totales = "SELECT tm.nombre as tipo, SUM(mdi.cantidad) as total_cantidad 
+        // 3. Consulta para los totales del medicamento
+        $sql_totales = "SELECT tm.nombre as tipo, SUM(mdi.cantidad) as total_cantidad 
                             FROM medicamentos_detalle_inventario mdi
                             JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
                             JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
@@ -161,15 +162,26 @@
                             JOIN tipo_movimiento tm ON di.Id_tipoMovimiento = tm.Id_tipo_movimiento
                             $donde
                             GROUP BY tm.nombre";
-            $res_totales = $conexion->query($sql_totales);
-            while($tot = $res_totales->fetch_assoc()) {
-                if($tot['tipo'] == 'Entrada') {
-                    $total_entradas = $tot['total_cantidad'];
-                } elseif($tot['tipo'] == 'Salida') {
-                    $total_salidas = $tot['total_cantidad'];
+
+                $res_totales = $conexion->query($sql_totales);
+
+                $total_entradas = 0;
+                $total_salidas = 0;
+
+                while ($tot = $res_totales->fetch_assoc()) {
+                    $tipo = $tot['tipo'];
+                    $cantidad = $tot['total_cantidad'];
+
+                    // Movimientos que suman al inventario
+                    if (in_array($tipo, ['Entrada', 'Ajuste por Cuadre (Entrada)', 'Reversión de Salida (Anulación)'])) {
+                        $total_entradas += $cantidad;
+                    }
+                    // Movimientos que restan al inventario
+                    elseif (in_array($tipo, ['Salida por Despacho', 'Salida por Vencimiento', 'Salida por Dañado', 'Salida por Pérdida o Robo', 'Ajuste por Cuadre (Salida)', 'Reversión de Entrada (Anulación)'])) {
+                        $total_salidas += $cantidad;
+                    }
                 }
             }
-        }
         ?>
 
         <section class="content-header">
@@ -240,7 +252,7 @@
                                                 <td><small class="text-row text-black"><?php echo date('d/m/Y H:i', strtotime($row['fecha'])); ?></td>
                                                 <td><small class="text-row text-black"><?php echo $row['observaciones']; ?></small></td>
                                                 <td>
-                                                    <span class="badge <?php echo ($row['tipo'] == 'Entrada') ? 'bg-green' : 'bg-red'; ?>">
+                                                    <span class="badge <?php echo ($row['tipo'] == 'Entrada' OR $row['tipo'] == 'Ajuste por Cuadre (Entrada)') ? 'bg-green' : 'bg-crimson'; ?>">
                                                         <?php echo $row['tipo']; ?>
                                                     </span>
                                                 </td>
@@ -298,6 +310,7 @@
                                 <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"><i class="fa fa-arrow-down text-danger"></i> Salidas Totales: <strong style="color:#e74c3c; font-size: 16px;"><?php echo $total_salidas ?: 0; ?></strong></span>
                                 <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"><i class="fa fa-cube text-warning"></i> Stock Total: <strong style="color:#f39c12; font-size: 16px;"><?php echo (($total_entradas ?: 0) - ($total_salidas ?: 0)); ?></strong></span>
                                 <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"><i class="fa fa-exchange text-info"></i> Movimientos: <strong style="color:#3498db; font-size: 16px;"><?php echo $total_registros ?: 0; ?></strong></span>
+                                <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"></span>
                             <?php endif; ?>
                         </div>
 
@@ -306,6 +319,23 @@
                 </div>
             </div>
         </section>
+    </div>
+
+    <div class="modal" id="ModalAdvertencia" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-crimson">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Atención</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <p style="font-size: 16px; margin-top: 10px;">Debe seleccionar o buscar un medicamento primero para poder generar su reporte de Kardex.</p>
+                </div>
+                <div class="modal-footer text-center">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal" id="ModalReporteKardex" tabindex="-1" role="dialog">
@@ -322,7 +352,7 @@
                     </div>
                     <div class="form-group">
                         <label>Fecha Hasta:</label>
-                        <input type="date" id="k_hasta" class="form-control" max="<?php echo date('Y-m-d'); ?>">
+                        <input type="date" id="k_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -343,18 +373,39 @@
             }, 100);
         }
 
+        $('#ModalAdvertencia .close, #ModalAdvertencia .btn-secondary').on('click', function() {
+            closeCustomModal($('#ModalAdvertencia'));
+        });
+
         $('#ModalReporteKardex .close, #ModalReporteKardex .btn-second').on('click', function() {
             closeCustomModal($('#ModalReporteKardex'));
         });
         
-        $('.reporte').on('click', function() {
-            $('#ModalReporteKardex').modal('show');
+        // Abrir el modal de reporte solo si hay un medicamento seleccionado
+        $('.reporte').on('click', function(e) {
+            e.preventDefault();
+            var med = $('#med_search_input').val().trim();
+            
+            if(med === '') {
+                // Si está vacío, mostramos la advertencia
+                $('#ModalAdvertencia').modal('show');
+            } else {
+                // Si hay medicamento, mostramos las fechas
+                $('#ModalReporteKardex').modal('show');
+            }
         });
 
+        // Generar el PDF enviando el parámetro del medicamento
         $('#btnEjecutarKardex').on('click', function() {
             var desde = $('#k_desde').val();
             var hasta = $('#k_hasta').val();
-            window.open('../../cfg/reportes/generar_pdf_kardex.php?desde=' + desde + '&hasta=' + hasta, '_blank');
+            var med = $('#med_search_input').val().trim();
+            
+            // Añadimos el parámetro &medicamento= a la URL
+            window.open('../../cfg/reportes/generar_pdf_kardex.php?desde=' + desde + '&hasta=' + hasta + '&medicamento=' + encodeURIComponent(med), '_blank');
+            
+            // Opcional: Cerrar el modal después de darle click
+            closeCustomModal($('#ModalReporteKardex'));
         });
 
         // -----------------------------------------------------

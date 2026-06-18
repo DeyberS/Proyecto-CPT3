@@ -247,99 +247,108 @@
           $('#modalGuardarUsuario').modal('show');
         }
 
-        // =====================================================================
-        // 2. FUNCIÓN PARA VERIFICAR NOMBRE DE USUARIO (PHP/AJAX)
-        // =====================================================================
-        // Busca y reemplaza tu función por esta:
-        function verificarUsuarioYEnviar() {
-          var nombreUsuario = $('#nombre').val();
-          // IMPORTANTE: Capturamos el ID del input hidden que ya tienes en el form
-          var idUsuario = $('input[name="Id"]').val();
+        function verificarUsuarioYMostrarModal() {
+          var nombreUsuario = $('#nombre').val().trim();
+          var emailUsuario = $('#email').val().trim(); // Capturamos el email
+          var idUsuario = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+          var btnSubmit = $('#abrirModalGuardar');
+          var textoOriginal = btnSubmit.text();
+          
+          btnSubmit.text('Verificando...').attr('disabled', true);
 
           $.ajax({
-            url: 'get/get_verificar_usuario.php',
+            url: 'get/verificar_existencia_usuario.php',
             type: 'POST',
-            data: {
-              nombre: nombreUsuario,
-              id: idUsuario
+            data: { 
+                nombre: nombreUsuario, 
+                email: emailUsuario, // Enviamos el email al servidor
+                id: idUsuario 
             },
             dataType: 'json',
             success: function(response) {
-              if (response.existe) {
-                // Si el nombre existe en otro ID, mostramos el aviso y NO enviamos
-                $('#avisoModal .modal-body p').text('Error: El nombre de usuario "' + nombreUsuario + '" ya está siendo usado por otra persona.');
-                $('#avisoModal').modal('show');
+              btnSubmit.text(textoOriginal).attr('disabled', false);
+              
+              // Verificamos las diferentes combinaciones de duplicados
+              if (response.existe_nombre && response.existe_email) {
+                $('#nombre').addClass('input-error');
+                $('#email').addClass('input-error');
+                mostrarAviso('⚠️ Error: El nombre de usuario y el correo electrónico ya están en uso.');
+              } else if (response.existe_nombre) {
+                $('#nombre').addClass('input-error');
+                mostrarAviso('⚠️ Error: El nombre de usuario "' + nombreUsuario + '" ya está en uso.');
+              } else if (response.existe_email) {
+                $('#email').addClass('input-error');
+                mostrarAviso('⚠️ Error: El correo electrónico "' + emailUsuario + '" ya está en uso.');
               } else {
-                // Si está libre o es el propio nombre del usuario actual, enviamos el form
-                // Usamos [0].submit() para ignorar bloqueos de JQuery y enviar directo
-                $('#formularioUsuario')[0].submit();
+                // Si ninguno existe, abrimos el modal de confirmación
+                $('#modalGuardarUsuario').modal('show');
               }
             },
             error: function() {
-              // En caso de error de red, enviamos para no bloquear al administrador
-              $('#formularioUsuario')[0].submit();
+              btnSubmit.text(textoOriginal).attr('disabled', false);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
             }
           });
         }
 
-        // =====================================================================
-        // 1. VALIDACIÓN AL INTENTAR GUARDAR (FLUJO SEGURO)
-        // =====================================================================
+        // Interceptamos el envío por Enter o botón submit
         $('#formularioUsuario').on('submit', function(e) {
           e.preventDefault();
+        });
 
+        // Evento principal del botón guardar
+        $('#abrirModalGuardar').off('click').on('click', function(e) {
+          e.preventDefault();
           limpiarErrores();
           var formularioValido = true;
 
-          // 1.1. Verificación de campos obligatorios vacíos
+          // 1. Verificación de campos obligatorios
           $('input[required], select[required]').each(function() {
             var $input = $(this);
-
             if (($input.is('select') && ($input.val() === null || $input.val() === "")) ||
-              (!$input.is('select') && $input.val().trim() === "")) {
+                (!$input.is('select') && $input.val().trim() === "")) {
               $input.addClass('input-error');
               formularioValido = false;
             }
           });
 
           if (!formularioValido) {
-            mostrarAviso('⚠️ Error: Todos los campos obligatorios (*) deben estar llenos.');
+            mostrarAviso('⚠️ Error: Los campos obligatorios (*) deben estar llenos.');
             return;
           }
 
-          // 1.2. Verificación de Contraseñas y LONGITUD 
-          var password = $('#password').val();
-          var confirmPassword = $('#confirm_password').val();
+          // 2. Verificación de Contraseñas
+          var password = $('#password').val() ? $('#password').val().trim() : "";
+          var confirmPassword = $('#confirm_password').val() ? $('#confirm_password').val().trim() : "";
+          var cambiandoPassword = (password !== "" || confirmPassword !== "");
+          var esNuevoUsuario = !$('input[name="Id"]').length; // True en agregar, false en editar
 
-          // VALIDACIÓN DE LONGITUD DE CONTRASEÑA
-          if (password.length < 6 || password.length > 16) {
-            $('#password').addClass('input-error');
-            mostrarAviso('🔒 Error de Contraseña: La longitud debe ser mínimo 6 y máximo 16 dígitos.');
-            return;
+          if (esNuevoUsuario || cambiandoPassword) {
+            if (password === "" || confirmPassword === "") {
+              $('#password').addClass('input-error');
+              $('#confirm_password').addClass('input-error');
+              mostrarAviso('❌ Error: Debe llenar ambos campos de contraseña.');
+              return;
+            }
+            if (password.length < 6 || password.length > 16) {
+              $('#password').addClass('input-error');
+              mostrarAviso('🔒 Error de Contraseña: La longitud debe ser entre 6 y 16 dígitos.');
+              return;
+            }
+            if (password !== confirmPassword) {
+              $('#password').addClass('input-error');
+              $('#confirm_password').addClass('input-error');
+              mostrarAviso('❌ Error: Las contraseñas no coinciden.');
+              return;
+            }
           }
-
-          if (confirmPassword.length < 6 || confirmPassword.length > 16) {
-            $('#confirm_password').addClass('input-error');
-            mostrarAviso('🔒 Error al confirmar la contraseña: La longitud debe ser mínimo 6 y máximo 16 dígitos.');
-            return;
-          }
-
-          // Verificación de Coincidencia de Contraseñas
-          if (password !== confirmPassword) {
-            $('#password').addClass('input-error');
-            $('#confirm_password').addClass('input-error');
-            mostrarAviso('❌ Error: Las contraseñas no coinciden. Por favor, verifíquelas.');
-            return;
-          }
-
-          abrirModalGuardar();
+          // 3. Validar existencia de usuario antes del modal
+          verificarUsuarioYMostrarModal();
         });
 
-        // BUSCA ESTA PARTE AL FINAL Y REEMPLÁZALA:
         $('#confirmarGuardadoFinal').off('click').on('click', function(e) {
           $('#modalGuardarUsuario').modal('hide');
-          // Llamamos a la validación
-          verificarUsuarioYEnviar();
+          $('#formularioUsuario')[0].submit();
         });
 
         // 1.5. Lógica para el botón Regresar (Abre el modal)

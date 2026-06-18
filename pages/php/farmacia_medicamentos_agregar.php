@@ -104,7 +104,11 @@ if (isset($_GET['duplicar_id'])) {
 
     .modal.in .modal-dialog,
     #avisoModal,
-    #modalGuardar {
+    #modalGuardar,
+    #modalBuscarPA,
+    #modalBuscarPat,
+    #modalNuevoPA,
+    #modalNuevaPatologia {
       animation: fadeIn 0.4s ease-out;
     }
 
@@ -206,9 +210,9 @@ if (isset($_GET['duplicar_id'])) {
                     </div>
                     <label class="control-label"></label>
                     <div class="col-sm-4 form-group" id="group_presentacion">
-                      <p>Presentacion (*):</p>
+                      <p>Presentación (*):</p>
                       <select class="form-control" name="presentacion" id="presentacion" class="form-control" required>
-                        <option value="">--- Seleccione la presentacion del medicamento ---</option>
+                        <option value="">--- Seleccione la presentación del medicamento ---</option>
                         <?php
                         $sql = $conexion->query("SELECT * FROM presentacion");
                         while ($r = $sql->fetch_assoc()) {
@@ -219,8 +223,26 @@ if (isset($_GET['duplicar_id'])) {
                       </select>
                     </div>
                     <label class="control-label"></label>
-                    <div class="col-sm-3 form-group" id="group_via">
-                      <p>Via de aplicación (*):</p>
+                    <div class="col-sm-3 form-group" id="group_contenido_neto">
+                      <p>Cantidad en la presentación (*):</p>
+                      <input id="contenido_neto" name="contenido_neto" class="form-control" type="text" value="<?php echo $datos_d['contenido_neto'] ?? ''; ?>" maxlength="100" placeholder="Ej. Capsulas de 20mg">
+                    </div>
+                    <br><br><br>  
+                    <label class="control-label"></label>
+                    <div class="col-sm-4" id="group_concentracion">
+                      <p>Unidad de presentación:</p>
+                      <div class="input-group">
+                        <input type="text" class="form-control cantidad-pre" name="cantidad_concentracion" id="cantidad_concentracion" placeholder="Cant." value="<?php echo $datos_d['cantidad_concentracion'] ?? ''; ?>" inputmode="numeric">
+                        <div class="input-group-btn" style="width: 60%;">
+                          <select class="form-control uni-concentracion" name="tipo_concentracion" id="tipo_concentracion" required style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0;">
+                            <option selected value="">--- Primero seleccione una presentación --- </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_via">
+                      <p>Vía de aplicación (*):</p>
                       <select name="via" id="via_aplicacion" class="form-control">
                         <option value="">--- Seleccione una vía de aplicación ---</option>
                         <?php
@@ -239,25 +261,6 @@ if (isset($_GET['duplicar_id'])) {
                         ?>
                       </select>
                     </div>
-
-                    <br><br><br><br>
-                    <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_contenido_neto">
-                      <p>Contenido neto (*):</p>
-                      <input id="contenido_neto" name="contenido_neto" class="form-control" type="text" value="<?php echo $datos_d['contenido_neto'] ?? ''; ?>" maxlength="100" placeholder="Ej. Capsulas de 20mg">
-                    </div>
-                    <label class="control-label"></label>
-                    <div class="col-sm-4" id="group_concentracion">
-                      <p>Concentración:</p>
-                      <div class="input-group">
-                        <input type="text" class="form-control cantidad-pre" name="cantidad_concentracion" id="cantidad_concentracion" placeholder="Cant." value="<?php echo $datos_d['cantidad_concentracion'] ?? ''; ?>" inputmode="numeric">
-                        <div class="input-group-btn" style="width: 60%;">
-                          <select class="form-control uni-concentracion" name="tipo_concentracion" id="tipo_concentracion" required style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0;">
-                            <option selected value="">--- Primero seleccione una presentación --- </option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
                     <label class="control-label"></label>
                     <div class="col-sm-3 form-group" id="group_almacenamiento">
                       <p>Condición de almacenamiento (*):</p>
@@ -270,7 +273,7 @@ if (isset($_GET['duplicar_id'])) {
                           "2_a_8"     => "Refrigeración (2°C a 8°C)",
                           "8_a_15"    => "Lugar Fresco (8°C a 15°C)",
                           "15_a_25"   => "Temperatura Ambiente (15°C a 25°C)",
-                          "max_30"    => "Temperatura Maxima (30°C)"
+                          "max_30"    => "Temperatura Máxima (30°C)"
                         ];
 
                         foreach ($condiciones as $valor => $etiqueta) {
@@ -281,28 +284,6 @@ if (isset($_GET['duplicar_id'])) {
                         ?>
                       </select>
                     </div>
-                    <br><br><br><br>
-                    <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_principio_activo">
-                      <p>Principios activos (*):</p>
-                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pa" data-toggle="modal" data-placement="top" title="Ninguno seleccionado" data-target="#modalPrincipios">
-                        <i></i> Gestionar Principios Activos
-                      </button>
-                    </div>
-                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" value="<?php echo $comp_string ?? ''; ?>" required>
-                    <label class="control-label"></label>
-                    <div class="col-sm-4 form-group" id="group_excipientes">
-                      <p>Excipientes:</p>
-                      <input type="text" id="excipientes" name="excipientes" value="<?php echo $datos_d['excipientes'] ?? ''; ?>" placeholder="Ej: Microcristalina celulosa, dióxido de titanio y gelatina." class="form-control">
-                    </div>
-                    <label class="control-label"></label>
-                    <div class="col-sm-3 form-group" id="group_patologia">
-                      <p>Patologías asociadas:</p>
-                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pat" data-toggle="modal" data-placement="top" title="Ninguna seleccionada" data-target="#modal_pat">
-                        <i></i> Gestionar Patologías Asociadas
-                      </button>
-                    </div>
-                    <input type="hidden" name="patologias_seleccionadas" id="patologias_seleccionadas" value="<?php echo $patologias_string ?? ''; ?>">
                     <br><br><br><br>
                     <label class="control-label"></label>
                     <div class="col-sm-4" id="group_laboratorio">
@@ -321,7 +302,6 @@ if (isset($_GET['duplicar_id'])) {
                           }
                           ?>
                         </select>
-
                         <span class="input-group-btn">
                           <button class="btn btn-info" type="button" id="btnInfoMedicamento" data-toggle="modal" data-target="#modalNuevoLaboratorio" title="Agregar Laboratorio" style="height: 34px;">
                             <i><img src="../../recursos/imagenes/iconos/agregar.png" style="width:10px; height:10px;"></i>
@@ -330,12 +310,29 @@ if (isset($_GET['duplicar_id'])) {
                       </div>
                     </div>
                     <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_principio_activo">
+                      <p>Composición (*):</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pa" data-toggle="modal" data-placement="top" title="Ninguno seleccionado" data-target="#modalPrincipios">
+                        <i></i> Gestionar Composición
+                      </button>
+                    </div>
+                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" value="<?php echo $comp_string ?? ''; ?>" required>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3 form-group" id="group_patologia">
+                      <p>Patologías asociadas:</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pat" data-toggle="modal" data-placement="top" title="Ninguna seleccionada" data-target="#modal_pat">
+                        <i></i> Gestionar Patologías Asociadas
+                      </button>
+                    </div>
+                    <input type="hidden" name="patologias_seleccionadas" id="patologias_seleccionadas" value="<?php echo $patologias_string ?? ''; ?>">
+                    <br><br><br><br>         
+                    <label class="control-label"></label>
                     <div class="col-sm-4 form-group" id="group_codigo_barras">
-                      <p>Codigo de barras:</p>
+                      <p>Código de barras:</p>
                       <input type="text" id="codigo_barras" name="codigo_barras" placeholder="Ej. 234758383" class="form-control">
                     </div>
                     <br><br><br><br>
-                    <div style="float:right; margin-top: 2%;">
+                    <div style="float:right; margin-top: 4%;">
                       <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalRegresar">Regresar</button>
                       <button type="submit" class="btn btn-success" id="btnGuardar">Guardar</button>
                     </div>
@@ -349,7 +346,7 @@ if (isset($_GET['duplicar_id'])) {
     </section>
   </div>
 
-  <div class="modal fade" id="modal_pat" tabindex="-1" role="dialog">
+  <div class="modal fade" id="modal_pat" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header" style="background-color: #3c8dbc; color: white;">
@@ -358,41 +355,51 @@ if (isset($_GET['duplicar_id'])) {
         <div class="modal-body">
           <div id="contenedor_filas_patologias">
           </div>
-          <button type="button" class="btn btn-primary btn-sm" id="add_fila_pat">
-            <i class="fa fa-plus"></i> Añadir otra
+          <button type="button" class="btn btn-success btn-sm" id="add_fila_pat">
+            <i class="fa fa-plus"></i> Añadir Otra Patología
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologia">
+            <i class="fa fa-plus-circle"></i> Nueva Patología
           </button>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-success" id="guardar_pat_listo" data-dismiss="modal">Listo</button>
+          <button type="button" class="btn btn-primary" id="guardar_pat_listo" data-dismiss="modal">Listo</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="modal fade" id="modalPrincipios" tabindex="-1" role="dialog">
+  <div class="modal fade" id="modalPrincipios" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header" style="background-color: #3c8dbc; color: white;">
-          <h4 class="modal-title">Agregar Principios Activos</h4>
+          <h4 class="modal-title">Agregar Composición del Medicamento</h4>
         </div>
         <div class="modal-body">
           <div id="contenedor_filas_principios">
             <div class="row fila-pa" style="margin-bottom: 10px;">
               <div class="col-sm-6">
-                <select class="form-control select-pa" id="principio_activo">
-                  <option value="" name="id_pa">--- Seleccione un principio activo ---</option>
-                  <?php
-                  $sql_pa = $conexion->query("SELECT * FROM principio_activo");
-                  while ($r = $sql_pa->fetch_assoc()) {
-                    echo "<option value='" . $r['id_principio_activo'] . "' data-nombre='" . $r['nombre'] . "'>" . $r['nombre'] . "</option>";
-                  }
-                  ?>
-                </select>
+                <div class="input-group">
+                  <select class="form-control select-pa" id="principio_activo">
+                    <option value="" name="id_pa">--- Seleccione un principio activo ---</option>
+                    <?php
+                    $sql_pa = $conexion->query("SELECT * FROM principio_activo");
+                    while ($r = $sql_pa->fetch_assoc()) {
+                      echo "<option value='" . $r['id_principio_activo'] . "' data-nombre='" . $r['nombre'] . "'>" . $r['nombre'] . "</option>";
+                    }
+                    ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button class="btn btn-info btn-search-pa" type="button" title="Buscar P.A.">
+                      <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                    </button>
+                  </span>
+                </div>
               </div>
               <div class="col-sm-2 form-group" id="group_unidad">
                 <input type="text" class="form-control cant-pa" name="cantidad_unidad_medida" id="u_medida" placeholder="Cant." inputmode="numeric" required>
               </div>
-              <div class="col-lg-2 pull-left form-group" id="group_tipo_unidad" style="margin-left:-20px;">
+              <div class="col-sm-2 pull-left form-group" id="group_tipo_unidad" style="margin-left:-20px;">
                 <select class="form-control uni-pa" name="tipo_unidad_medida" id="tipo_unidad_medida" required>
                   <option selected value="">--- Primero seleccione una presentación ---</option>
                 </select>
@@ -401,9 +408,16 @@ if (isset($_GET['duplicar_id'])) {
                 <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
               </div>
             </div>
-          </div>
+          </div>  
+          <div class="col-sm-12 form-group" id="group_excipientes" style="left:-10px;">
+            <p>Excipientes:</p>
+            <input type="text" id="excipientes" name="excipientes" value="<?php echo $datos_d['excipientes'] ?? ''; ?>" placeholder="Ej: Microcristalina celulosa, dióxido de titanio y gelatina." class="form-control">
+          </div>    
           <button type="button" class="btn btn-success btn-sm" id="btn_add_pa">
-            <i class="fa fa-plus"></i> Añadir otro
+            <i class="fa fa-plus"></i> Añadir Otro Principio Activo
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoPA">
+            <i class="fa fa-plus-circle"></i> Nuevo Principio Activo
           </button>
         </div>
         <div class="modal-footer">
@@ -449,6 +463,91 @@ if (isset($_GET['duplicar_id'])) {
           <div id="lista_medicamentos_plantilla" style="max-height: 400px; overflow-y: auto;">
             <p class="text-center">Cargando medicamentos...</p>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalBuscarPA" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title">Buscar Principio Activo</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="inputBuscarPA" class="form-control" placeholder="Escriba para filtrar...">
+          <div class="list-group" id="listaResultadosPA" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalBuscarPat" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title">Buscar Patología</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="inputBuscarPat" class="form-control" placeholder="Escriba para filtrar...">
+          <div class="list-group" id="listaResultadosPat" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalNuevoPA" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Añadir Nuevo Principio Activo</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre (*):</label>
+            <input type="text" id="nombre_pa_nuevo" class="form-control" placeholder="Ej. Paracetamol">
+          </div>
+          <div class="form-group">
+            <label>Descripción:</label>
+            <input type="text" id="desc_pa_nuevo" class="form-control" placeholder="Opcional">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btnGuardarNuevoPA">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalNuevaPatologia" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Añadir Nueva Patología</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre (*):</label>
+            <input type="text" id="nombre_pat_nuevo" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Código CIE (*):</label>
+            <input type="text" id="cie_pat_nuevo" class="form-control" placeholder="Ej. A00">
+          </div>
+          <div class="form-group">
+            <label>Contagioso (*):</label>
+            <select id="contagioso_pat_nuevo" class="form-control">
+              <option value="NO">NO</option>
+              <option value="SI">SI</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btnGuardarNuevaPat">Guardar</button>
         </div>
       </div>
     </div>
@@ -526,6 +625,11 @@ if (isset($_GET['duplicar_id'])) {
       function limpiarErrores() {
         $('input, select').removeClass('input-error');
         $('.form-group').removeClass('has-error');
+        $('#btn_modal_pa').css({
+          'border': '',
+          'background-color': '',
+          'color': ''
+        });
       }
 
       // Función que bloquea números (solo texto)
@@ -582,6 +686,27 @@ if (isset($_GET['duplicar_id'])) {
       });
 
       $(document).on('input', '.cantidad-pre', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
+      // Validación para CANTIDAD (Solo números y decimales) - Delegación de eventos
+      $(document).on('input', '#stock_minimo', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
+      $(document).on('input', '#stock_maximo', function() {
         let valor = this.value;
         valor = valor.replace(/[^0-9.]/g, '');
         const partes = valor.split('.');
@@ -790,6 +915,132 @@ if (isset($_GET['duplicar_id'])) {
         $('#modalCopiarMedicamento').modal('hide');
       });
 
+      // ==========================================
+      // FILTROS Y BÚSQUEDA (SIN RECARGAR AJAX)
+      // ==========================================
+      let selectDestinoTarget = null;
+
+      // Mostrar modal P.A.
+      $(document).on('click', '.btn-search-pa', function() {
+        selectDestinoTarget = $(this).closest('.input-group').find('.select-pa');
+        $('#modalBuscarPA').modal('show');
+        $('#inputBuscarPA').val('').trigger('keyup');
+      });
+
+      // Filtrar P.A.
+      $('#inputBuscarPA').on('keyup', function() {
+        let texto = $(this).val().toLowerCase();
+        let html = '';
+        // Extraemos opciones del select oculto original o de cualquier .select-pa activo
+        let opciones = $('.select-pa:first option').not('[value=""]');
+
+        opciones.each(function() {
+          let nombre = $(this).text();
+          if (nombre.toLowerCase().includes(texto)) {
+            html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pa" data-id="${$(this).val()}">${nombre}</a>`;
+          }
+        });
+        $('#listaResultadosPA').html(html);
+      });
+
+      // Aplicar P.A seleccionado
+      $(document).on('click', '.seleccionar-pa', function(e) {
+        e.preventDefault();
+        selectDestinoTarget.val($(this).data('id')).trigger('change');
+        $('#modalBuscarPA').modal('hide');
+      });
+
+      // --- Lo mismo para Patologías ---
+      $(document).on('click', '.btn-search-pat', function() {
+        selectDestinoTarget = $(this).closest('.input-group').find('.select-pat');
+        $('#modalBuscarPat').modal('show');
+        $('#inputBuscarPat').val('').trigger('keyup');
+      });
+
+      $('#inputBuscarPat').on('keyup', function() {
+        let texto = $(this).val().toLowerCase();
+        let html = '';
+        let opciones = $('.select-pat:first option').not('[value=""]');
+
+        opciones.each(function() {
+          let nombre = $(this).text();
+          if (nombre.toLowerCase().includes(texto)) {
+            html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pat" data-id="${$(this).val()}">${nombre}</a>`;
+          }
+        });
+        $('#listaResultadosPat').html(html);
+      });
+
+      $(document).on('click', '.seleccionar-pat', function(e) {
+        e.preventDefault();
+        selectDestinoTarget.val($(this).data('id')).trigger('change');
+        $('#modalBuscarPat').modal('hide');
+      });
+
+      // ==========================================
+      // AÑADIR NUEVOS REGISTROS MEDIANTE AJAX
+      // ==========================================
+      $('#btnGuardarNuevoPA').click(function() {
+        let nombre = $('#nombre_pa_nuevo').val();
+        let desc = $('#desc_pa_nuevo').val();
+
+        if (nombre.trim() === '') {
+          mostrarAviso("Nombre obligatorio");
+          return;
+        }
+
+        $.ajax({
+          url: 'get/guardar_principio_activo.php',
+          type: 'POST',
+          data: {
+            nombre: nombre,
+            descripcion: desc
+          },
+          success: function(response) {
+            if (response !== "error") {
+              $('#modalNuevoPA').modal('hide');
+              let nuevaOpcion = `<option value="${response}" data-nombre="${nombre}">${nombre}</option>`;
+              $('.select-pa').append(nuevaOpcion);
+              $('#nombre_pa_nuevo, #desc_pa_nuevo').val('');
+              mostrarAviso("Principio Activo guardado con éxito");
+            } else {
+              mostrarAviso("Error al guardar en DB");
+            }
+          }
+        });
+      });
+
+      $('#btnGuardarNuevaPat').click(function() {
+        let nombre = $('#nombre_pat_nuevo').val();
+        let cie = $('#cie_pat_nuevo').val();
+        let contagioso = $('#contagioso_pat_nuevo').val();
+
+        if (nombre.trim() === '' || cie.trim() === '') {
+          mostrarAviso("Nombre y CIE obligatorios");
+          return;
+        }
+
+        $.ajax({
+          url: 'get/guardar_patologia.php',
+          type: 'POST',
+          data: {
+            nombre: nombre,
+            cie: cie,
+            contagioso: contagioso
+          },
+          success: function(response) {
+            if (response !== "error") {
+              $('#modalNuevaPatologia').modal('hide');
+              let nuevaOpcion = `<option value="${response}">${nombre}</option>`;
+              $('.select-pat').append(nuevaOpcion);
+              $('#nombre_pat_nuevo, #cie_pat_nuevo').val('');
+              mostrarAviso("Patología guardada con éxito");
+            } else {
+              mostrarAviso("Error al guardar en DB (Posible código CIE duplicado)");
+            }
+          }
+        });
+      });
 
       const presentacionCargada = $('#presentacion').val();
       const unidadCargada = '<?php echo $datos_d['Id_tipo_concentracion'] ?? $datos_d['id_tipo_concentracion'] ?? $datos_d['tipo_concentracion'] ?? $datos_d['id_tipo_unidad_medida'] ?? ''; ?>';
@@ -818,15 +1069,14 @@ if (isset($_GET['duplicar_id'])) {
         inicializarUnidades($(this).val(), "");
       });
 
-
       // =====================================================================
-      // LÓGICA DE VERIFICACIÓN AJAX (CONEXIÓN A BD REAL)
+      // LÓGICA DE VERIFICACIÓN AJAX (AGREGAR)
       // =====================================================================
-      function verificarMedicamentoYEnviar() {
+      function verificarMedicamentoYMostrarModal() {
         const nombre = $('#medicamento').val().trim();
         const id_presentacion = $('#presentacion').val();
         const codigo_barras = $('#codigo_barras').val().trim();
-        const btnGuardar = $('#confirmarGuardar');
+        const btnGuardar = $('#btnGuardar');
 
         const textoOriginal = btnGuardar.text();
         btnGuardar.text('Verificando...').attr('disabled', true);
@@ -838,15 +1088,14 @@ if (isset($_GET['duplicar_id'])) {
           data: {
             nombre: nombre,
             id_presentacion: id_presentacion,
-            codigo_barras: codigo_barras
+            codigo_barras: codigo_barras,
+            id_actual: 0 // Enviamos el ID para excluirlo
           },
           success: function(response) {
-            limpiarErrores();
             btnGuardar.text(textoOriginal).attr('disabled', false);
 
             if (response.existe_duplicado) {
               let mensaje = "";
-
               if (response.tipo_error === 'codigo') {
                 mensaje = `⚠️ El código de barras ya está registrado para el medicamento: <b>${response.detalle}</b>.`;
                 $('#group_codigo_barras').addClass('has-error');
@@ -854,11 +1103,10 @@ if (isset($_GET['duplicar_id'])) {
                 mensaje = `⚠️ Ya existe un registro de <b>${nombre}</b> con esa misma presentación.`;
                 $('#group_nombre, #group_presentacion').addClass('has-error');
               }
-
               mostrarAviso('🛑 Error de Duplicidad:<br>' + mensaje);
             } else {
-              // Si todo está bien, enviamos el formulario
-              $('#formularioMedicamento').off('submit').submit();
+              // Si TODO ESTÁ BIEN, recién ahora mostramos el modal de confirmación
+              $('#modalGuardar').modal('show');
             }
           },
           error: function() {
@@ -874,48 +1122,25 @@ if (isset($_GET['duplicar_id'])) {
         limpiarErrores();
         let errores = [];
 
-        if ($('#medicamento').val().trim() === "") {
-          errores.push("Falta el nombre del medicamento.");
-          $('#group_nombre').addClass('has-error');
-        }
-
-        if ($('#presentacion').val().trim() === "") {
-          errores.push("Falta la presentacion del medicamento.");
-          $('#group_presentacion').addClass('has-error');
-        }
-
-        // Validación de los principios activos (revisando el campo oculto que llena el modal)
-        if ($('#composicion_detallada').val().trim() === "") {
-          errores.push("Debe gestionar al menos un principio activo en el modal.");
-          $('#group_principio_activo').addClass('has-error');
-        }
-
-        if ($('#via_aplicacion').val().trim() === "") {
-          errores.push("Falta el tipo de aplicacion.");
-          $('#group_via').addClass('has-error');
-        }
-
-        if ($('#contenido_neto').val().trim() === "") {
-          errores.push("Falta el contenido neto del medicamento.");
-          $('#group_contenido_neto').addClass('has-error');
-        }
-
-        if ($('#almacenamiento').val().trim() === "") {
-          errores.push("Falta el tipo de almacenamiento.");
-          $('#group_almacenamiento').addClass('has-error');
-        }
+        if ($('#medicamento').val().trim() === "") { errores.push("Falta el nombre del medicamento."); $('#group_nombre').addClass('has-error'); }
+        if ($('#presentacion').val().trim() === "") { errores.push("Falta la presentacion del medicamento."); $('#group_presentacion').addClass('has-error'); }
+        if ($('#composicion_detallada').val().trim() === "") { errores.push("Debe gestionar al menos un principio activo en el modal."); $('#group_principio_activo').addClass('has-error');   $('#btn_modal_pa').css({'border': '2px solid #dc3545', 'background-color': '#f8d7da', 'color': '#721c24'});}
+        if ($('#via_aplicacion').val().trim() === "") { errores.push("Falta el tipo de aplicacion."); $('#group_via').addClass('has-error'); }
+        if ($('#contenido_neto').val().trim() === "") { errores.push("Falta el contenido neto del medicamento."); $('#group_contenido_neto').addClass('has-error'); }
+        if ($('#almacenamiento').val().trim() === "") { errores.push("Falta el tipo de almacenamiento."); $('#group_almacenamiento').addClass('has-error'); }
 
         if (errores.length > 0) {
           mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
         } else {
-          $('#modalGuardar').modal('show');
+          // Primero validamos en la BD, no mostramos el modal directamente
+          verificarMedicamentoYMostrarModal();
         }
       });
 
+      // Cuando se confirma en el modal, se hace el envío real
       $('#confirmarGuardar').on('click', function() {
         $('#modalGuardar').modal('hide');
-
-        verificarMedicamentoYEnviar()
+        $('#formularioMedicamento').off('submit').submit();
       });
 
       // --- Aplicar validaciones a campos de solo texto ---
@@ -1023,15 +1248,22 @@ if (isset($_GET['duplicar_id'])) {
         let htmlPat = `
         <div class="row fila-pat" style="margin-bottom: 10px;">
             <div class="col-sm-10">
-                <select class="form-control select-pat">
-                    <option value="">--- Seleccione una patología ---</option>
-                    <?php
-                    $q = $conexion->query("SELECT Id_patologia, nombre_patologia FROM patologias WHERE estatus = 1 ORDER BY nombre_patologia ASC");
-                    while ($p = $q->fetch_assoc()) {
-                      echo "<option value='" . $p['Id_patologia'] . "'>" . $p['nombre_patologia'] . "</option>";
-                    }
-                    ?>
-                </select>
+                <div class="input-group">
+                    <select class="form-control select-pat">
+                        <option value="">--- Seleccione una patología ---</option>
+                        <?php
+                        $q = $conexion->query("SELECT Id_patologia, nombre_patologia FROM patologias WHERE estatus = 1 ORDER BY nombre_patologia ASC");
+                        while ($p = $q->fetch_assoc()) {
+                          echo "<option value='" . $p['Id_patologia'] . "'>" . $p['nombre_patologia'] . "</option>";
+                        }
+                        ?>
+                    </select>
+                    <span class="input-group-btn">
+                        <button class="btn btn-info btn-search-pat" type="button" title="Buscar Patología">
+                          <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                        </button>
+                    </span>
+                </div>
             </div>
             <div class="col-sm-2">
                 <button type="button" class="btn btn-danger btn-remove-pat">
@@ -1118,14 +1350,19 @@ if (isset($_GET['duplicar_id'])) {
                     let nuevaFila = `
                     <div class="row fila-pa" style="margin-bottom: 10px;">
                       <div class="col-sm-6">
-                        <select class="form-control select-pa">
-                          ${opcionesCatalogo} 
-                        </select>
+                        <div class="input-group">
+                          <select class="form-control select-pa">
+                            ${opcionesCatalogo}
+                          </select>
+                          <span class="input-group-btn">
+                            <button class="btn btn-info btn-search-pa" type="button" title="Buscar P.A."><i class="fa fa-search"></i></button>
+                          </span>
+                        </div>
                       </div>
                       <div class="col-sm-2">
                         <input type="text" class="form-control cant-pa" value="${pa.cantidad_unidad_medida}">
                       </div>
-                      <div class="col-lg-2">
+                      <div class="col-sm-2">
                         <select class="form-control uni-pa">${htmlUnidades}</select>
                       </div>
                       <div class="col-sm-2">

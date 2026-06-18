@@ -4,11 +4,6 @@ session_start();
 // Incluir el archivo de conexión
 require_once "../conexion.php";
 
-// ******************************************************************
-// 🛑 CONFIGURACIÓN DE ERRORES (QUITAR EN PRODUCCIÓN FINAL)
-// ******************************************************************
-
-
 // Función de redirección centralizada
 function redireccionar_error($mensaje) {
     // Almacenar el mensaje de error en la sesión
@@ -56,8 +51,8 @@ $analfabeta = $_POST['analfabeta'] ?? 'No';
 $grupo_sanguineo = $_POST['grupo_sanguineo'] ?? 'Ninguno Conocido';
 $discapacidad = $_POST['discapacidad'] ?? 'No';
 $tipo_discapacidad = $_POST['tipo_discapacidad'] ?? 'Ninguna';
-$patologias_ids_string = $_POST['patologias_ids'] ?? 'Ninguna Conocida';
-$alergias_ids_string = $_POST['alergias_ids'] ?? 'Ninguna Conocida';
+$patologias_json = $_POST['patologias_data'] ?? '[]'; 
+$alergias_json = $_POST['alergias_data'] ?? '[]';
 
  // Datos del REPRESENTANTE
 $tipo_cedula_rep = $_POST['tipo_cedula_rep'] ?? '';
@@ -229,7 +224,6 @@ try {
     }
     $stmt_historia->close();
 
-    
     // --- 7. Manejo de Patologías y Alergias (M:M) ---
 
     // 7.1. Patologías (historial_patologias)
@@ -241,13 +235,21 @@ try {
     }
     $stmt_delete_patologias->close();
     
-    if (!empty($patologias_ids_string)) {
-        $patologias_array = array_filter(array_map('trim', explode(',', $patologias_ids_string)));
-        $sql_patologia_m2m = "INSERT INTO historial_patologias(Id_patologia, Id_historial, Id_persona, estatus) VALUES(?, ?, ?, ?)";
+    // Decodificar el JSON que envía el frontend
+    $patologias_array = json_decode($patologias_json, true);
+    
+    if (is_array($patologias_array) && !empty($patologias_array)) {
+        // Se añade la columna fecha_registro a la consulta
+        $sql_patologia_m2m = "INSERT INTO historial_patologias(Id_patologia, Id_historial, Id_persona, fecha_registro, estatus) VALUES(?, ?, ?, ?, ?)";
         $stmt_patologia_m2m = $conexion->prepare($sql_patologia_m2m);
         
-        foreach ($patologias_array as $patologia_id) {
-            $stmt_patologia_m2m->bind_param("iiii", $patologia_id, $id_historial_medico, $id_paciente_a_actualizar, $estado); 
+        foreach ($patologias_array as $patologia) {
+            $patologia_id = $patologia['id'];
+            // Si la fecha viene vacía, usamos la fecha actual por defecto
+            $fecha_reg = !empty($patologia['fecha']) ? $patologia['fecha'] : date('Y-m-d');
+            
+            // iiisi = entero, entero, entero, string, entero
+            $stmt_patologia_m2m->bind_param("iiisi", $patologia_id, $id_historial_medico, $id_paciente_a_actualizar, $fecha_reg, $estado); 
             if (!$stmt_patologia_m2m->execute()) {
                 throw new Exception("Error al insertar patología ID $patologia_id (7.1): " . $stmt_patologia_m2m->error);
             }
@@ -264,13 +266,20 @@ try {
     }
     $stmt_delete_alergias->close();
 
-    if (!empty($alergias_ids_string)) {
-        $alergias_array = array_filter(array_map('trim', explode(',', $alergias_ids_string)));
-        $sql_alergia_m2m = "INSERT INTO historial_alergias(Id_alergia, Id_historial, Id_persona, estatus) VALUES(?, ?, ?, ?)";
+    // Decodificar el JSON que envía el frontend
+    $alergias_array = json_decode($alergias_json, true);
+    
+    if (is_array($alergias_array) && !empty($alergias_array)) {
+        // Se añade la columna fecha_registro a la consulta
+        $sql_alergia_m2m = "INSERT INTO historial_alergias(Id_alergia, Id_historial, Id_persona, fecha_registro, estatus) VALUES(?, ?, ?, ?, ?)";
         $stmt_alergia_m2m = $conexion->prepare($sql_alergia_m2m);
         
-        foreach ($alergias_array as $alergia_id) {
-            $stmt_alergia_m2m->bind_param("iiii", $alergia_id, $id_historial_medico, $id_paciente_a_actualizar, $estado);
+        foreach ($alergias_array as $alergia) {
+            $alergia_id = $alergia['id'];
+            // Si la fecha viene vacía, usamos la fecha actual por defecto
+            $fecha_reg = !empty($alergia['fecha']) ? $alergia['fecha'] : date('Y-m-d');
+            
+            $stmt_alergia_m2m->bind_param("iiisi", $alergia_id, $id_historial_medico, $id_paciente_a_actualizar, $fecha_reg, $estado);
             if (!$stmt_alergia_m2m->execute()) {
                 throw new Exception("Error al insertar alergia ID $alergia_id (7.2): " . $stmt_alergia_m2m->error);
             }

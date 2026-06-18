@@ -171,31 +171,64 @@
           e.target.value = e.target.value.replace(/[0-9]/g, "");
         }
 
-        // --- VISUALIZACIÓN UNIFICADA EN DISPLAY PRINCIPAL ---
+        function verificarAreaYMostrarModal() {
+          const nombre = $('#nombre_area').val().trim();
+          const id_area = $('input[name="Id"]').val(); // Captura el ID para ignorarlo
+          const btnGuardar = $('#formularioArea button[type="submit"]');
 
-        // 3. ENVÍO DEL FORMULARIO
-        // Se usa la validación local (sin la validación de duplicidad AJAX que solicitaste omitir)
+          const textoOriginal = btnGuardar.text();
+          btnGuardar.text('Verificando...').attr('disabled', true);
+
+          $.ajax({
+            url: 'get/verificar_existencia_area.php', // Ojo con la ruta según tu estructura
+            method: 'POST',
+            dataType: 'json',
+            data: { nombre: nombre, id: id_area },
+            success: function(response) {
+              let errores_ajax = [];
+              limpiarErrores();
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+
+              if (response.existe_nombre) {
+                errores_ajax.push(`⚠️ Ya existe otra área registrada con el nombre: ${nombre}`);
+                $('#group_nombre').addClass('has-error');
+                $('#nombre_area').addClass('input-error');
+              }
+
+              if (errores_ajax.length > 0) {
+                mostrarAviso('🛑 Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
+              } else {
+                // Si no hay duplicado, mostrar el modal de confirmación
+                $('#modalGuardar').modal('show');
+              }
+            },
+            error: function(xhr, status, error) {
+              btnGuardar.text(textoOriginal).attr('disabled', false);
+              mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
+            }
+          });
+        }
+
         $('#formularioArea').on('submit', function(e) {
           e.preventDefault(); 
           limpiarErrores();
           let errores = [];
           
           if ($('#nombre_area').val().trim() === "") {
-            errores.push("Falta el Nombre del area.");
+            errores.push("Falta el Nombre del área.");
             $('#group_nombre').addClass('has-error');
           }
 
           if (errores.length > 0) {
             mostrarAviso('⚠️ Errores de Formulario: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
           } else {
-            // Si pasa la validación local, muestra el modal de confirmación
-            $('#modalGuardar').modal('show');
+            // Realizar validación AJAX antes de mostrar el modal
+            verificarAreaYMostrarModal();
           }
         });
         
         $('#confirmarGuardar').on('click', function() {
             $('#modalGuardar').modal('hide');
-            // Al no requerir la validación AJAX de duplicidad, se envía directamente el formulario
             $('#formularioArea').off('submit').submit(); 
         });
 

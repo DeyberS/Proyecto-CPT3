@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email_err = "Por favor ingrese su correo electrónico.";
     } else {
         // 2. Verificar si el email existe en la tabla persona
-        $sql = "SELECT id FROM persona WHERE email = ?";
+        $sql = "SELECT id FROM persona WHERE email = ? AND password IS NOT NULL AND password != ''";
         if ($stmt = mysqli_prepare($conexion, $sql)) {
             mysqli_stmt_bind_param($stmt, "s", $param_email);
             $param_email = $email;

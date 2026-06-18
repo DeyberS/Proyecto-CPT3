@@ -157,6 +157,9 @@
               <td class=""><span class="text-row text-white"></span><?= $row['contagioso']; ?></td>
               <?php if (in_array('Gestionar acciones de patologias', $_SESSION["permisos"])) : ?>
                 <td>
+                  <?php if (in_array('Ver Patologias', $_SESSION["permisos"])) : ?>
+                    <a href="salud_patologias_info.php?Id=<?php echo $row['Id_patologia'] ?>" class="btn-sm btn-info" title="Ver"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
+                  <?php endif; ?>
                   <?php if (in_array('Editar Patologias', $_SESSION["permisos"])) : ?>
                     <a href="salud_patologias_editar.php?Id=<?php echo $row['Id_patologia'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
                   <?php endif; ?>

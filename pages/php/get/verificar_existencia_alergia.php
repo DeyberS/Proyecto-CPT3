@@ -18,13 +18,14 @@ $response = [
 if (isset($_POST['nombre'])) {
     
     $nombre = trim($_POST['nombre']);
+    $id_actual = isset($_POST['id_actual']) ? intval($_POST['id_actual']) : 0;
 
     try {
-        // --- A. VERIFICAR NOMBRE (Insensible a mayúsculas/minúsculas) ---
-        $sql_nombre = "SELECT Id_alergias_conocidas FROM alergias_conocidas WHERE LOWER(nombre_alergia) = LOWER(?) LIMIT 1";
+        // --- A. VERIFICAR NOMBRE (Insensible a mayúsculas/minúsculas y excluyendo el actual) ---
+        $sql_nombre = "SELECT Id_alergias_conocidas FROM alergias_conocidas WHERE LOWER(nombre_alergia) = LOWER(?) AND Id_alergias_conocidas != ? LIMIT 1";
         
         if ($stmt = $conexion->prepare($sql_nombre)) {
-            $stmt->bind_param("s", $nombre);
+            $stmt->bind_param("si", $nombre, $id_actual);
             $stmt->execute();
             $stmt->store_result();
             

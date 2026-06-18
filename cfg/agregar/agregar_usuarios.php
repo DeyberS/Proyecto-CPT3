@@ -65,7 +65,7 @@ if (!validarEmailReal($_POST['email'])) {
                 $mail->Host       = 'smtp.gmail.com'; // Cambiar por tu servidor
                 $mail->SMTPAuth   = true;
                 $mail->Username   = 'cpt3sistema@gmail.com'; // Tu correo
-                $mail->Password   = 'rqgltslfvazhjqix'; // Tu clave de aplicación
+                $mail->Password   = 'Jrjjfgomexsyyxqg'; // Tu clave de aplicación
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port       = 587;
 

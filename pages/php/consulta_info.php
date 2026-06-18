@@ -44,7 +44,10 @@ if (!$id_consulta || !is_numeric($id_consulta)) {
 
             // A. OBTENER NOMBRE DEL MÉDICO
             $nombre_medico = "No asignado";
-            $sql_medico_info = "SELECT nombre, apellido FROM persona WHERE Id = '$id_medico_consulta'";
+            $sql_medico_info = "SELECT dm.Id_detalle_medico, dm.Id_persona AS id, p.nombre, p.apellido 
+            FROM detalle_medico dm
+            INNER JOIN persona p ON dm.Id_persona = p.id
+            WHERE dm.Id_detalle_medico = '$id_medico_consulta'";
             $res_med_info = $conexion->query($sql_medico_info);
             if ($res_med_info && $med_row = $res_med_info->fetch_assoc()) {
                 $nombre_medico = $med_row['nombre'] . ' ' . $med_row['apellido'];

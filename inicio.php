@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>CPT3 | Inicio</title>
   <meta content="width=device-width, initial-scale=1" name="viewport">
-  
+
   <style>
     /* --- Estilos Personalizados del Dashboard Profesional --- */
     .welcome-banner {
@@ -14,56 +15,66 @@
       padding: 25px 30px;
       border-radius: 12px;
       margin-bottom: 30px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
+
     .welcome-banner h2 {
       margin: 0 0 5px 0;
       font-weight: 700;
       font-size: 28px;
     }
+
     .welcome-banner p {
       margin: 0;
       font-size: 15px;
       opacity: 0.9;
     }
+
     .modern-card {
-      background-color: #2b3035; /* Color oscuro pero no negro */
+      background-color: #2b3035;
+      /* Color oscuro pero no negro */
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 25px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      height: 140px; /* Altura fija para uniformidad */
+      height: 140px;
+      /* Altura fija para uniformidad */
       justify-content: center;
     }
+
     .modern-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
     }
+
     .modern-card .card-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
       z-index: 2;
     }
+
     .modern-card .info {
       color: #ffffff;
       flex: 1;
       padding-right: 15px;
     }
+
     .modern-card .info h3 {
       font-size: 32px;
       font-weight: 700;
       margin: 0 0 5px 0;
       color: #f8f9fa;
     }
+
     .modern-card .info p {
       font-size: 13px;
       color: #adb5bd;
@@ -71,6 +82,7 @@
       line-height: 1.3;
       font-weight: 500;
     }
+
     /* Cuadriculas para las imagenes/iconos */
     .modern-card .icon-box {
       width: 65px;
@@ -81,10 +93,11 @@
       justify-content: center;
       font-size: 28px;
       color: #ffffff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       flex-shrink: 0;
       z-index: 2;
     }
+
     .modern-card .card-footer {
       position: absolute;
       bottom: 0;
@@ -96,9 +109,11 @@
       z-index: 2;
       transition: background 0.3s ease;
     }
+
     .modern-card .card-footer:hover {
       background: rgba(0, 0, 0, 0.4);
     }
+
     .modern-card .card-footer a {
       color: #00bcd4;
       font-size: 12px;
@@ -106,25 +121,63 @@
       text-decoration: none;
       display: block;
     }
-    
+
     /* Fondos de colores para las cuadriculas (Iconos) */
-    .bg-gradient-blue { background: linear-gradient(135deg, #36D1DC, #5B86E5); }
-    .bg-gradient-green { background: linear-gradient(135deg, #11998e, #38ef7d); }
-    .bg-gradient-orange { background: linear-gradient(135deg, #FF8008, #FFC837); }
-    .bg-gradient-red { background: linear-gradient(135deg, #ED213A, #93291E); }
-    .bg-gradient-purple { background: linear-gradient(135deg, #8E2DE2, #4A00E0); }
-    .bg-gradient-teal { background: linear-gradient(135deg, #00c6ff, #0072ff); }
-    .bg-gradient-pink { background: linear-gradient(135deg, #ec008c, #fc6767); }
-    .bg-gradient-gray { background: linear-gradient(135deg, #606c88, #3f4c6b); }
+    .bg-gradient-blue {
+      background: linear-gradient(135deg, #36D1DC, #5B86E5);
+    }
+
+    .bg-gradient-green {
+      background: linear-gradient(135deg, #11998e, #38ef7d);
+    }
+
+    .bg-gradient-orange {
+      background: linear-gradient(135deg, #FF8008, #FFC837);
+    }
+
+    .bg-gradient-red {
+      background: linear-gradient(135deg, #ED213A, #93291E);
+    }
+
+    .bg-gradient-purple {
+      background: linear-gradient(135deg, #8E2DE2, #4A00E0);
+    }
+
+    .bg-gradient-teal {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+    }
+
+    .bg-gradient-pink {
+      background: linear-gradient(135deg, #ec008c, #fc6767);
+    }
+
+    .bg-gradient-gray {
+      background: linear-gradient(135deg, #606c88, #3f4c6b);
+    }
 
     /* Ajustes especiales para tarjetas con listas (Top 2 especialidades) */
     .card-list {
       height: auto;
       min-height: 140px;
     }
-    .card-list h3 { font-size: 22px !important; margin-bottom: 10px !important;}
-    .card-list ul { margin:0; padding:0; font-size: 13px; color: #ced4da; }
-    .card-list li { margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+
+    .card-list h3 {
+      font-size: 22px !important;
+      margin-bottom: 10px !important;
+    }
+
+    .card-list ul {
+      margin: 0;
+      padding: 0;
+      font-size: 13px;
+      color: #ced4da;
+    }
+
+    .card-list li {
+      margin-bottom: 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 5px;
+    }
   </style>
 </head>
 
@@ -142,7 +195,7 @@ include('pages/php/includes/headerNav.php');
   </section>
 
   <section class="content">
-    
+
     <div class="row">
       <div class="col-md-12">
         <div class="welcome-banner">
@@ -267,7 +320,9 @@ include('pages/php/includes/headerNav.php');
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <?php
             $mysqli = new mysqli('localhost', 'root', '', 'cpt3db');
-            if ($mysqli->connect_error) { die("Conexión fallida: " . $mysqli->connect_error); }
+            if ($mysqli->connect_error) {
+              die("Conexión fallida: " . $mysqli->connect_error);
+            }
             $sql_citas = "SELECT COUNT(*) AS total FROM citas WHERE estatus = 1 AND DATE(fecha_cita) = CURDATE()";
             $resultado = $mysqli->query($sql_citas);
             $datos_iniciales = $resultado->fetch_assoc();
@@ -292,7 +347,9 @@ include('pages/php/includes/headerNav.php');
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <?php
             $mysqli = new mysqli('localhost', 'root', '', 'cpt3db');
-            if ($mysqli->connect_error) { die("Conexión fallida: " . $mysqli->connect_error); }
+            if ($mysqli->connect_error) {
+              die("Conexión fallida: " . $mysqli->connect_error);
+            }
             $sql_consulta = "SELECT COUNT(*) AS total FROM consulta WHERE estatus = 1 AND DATE(fecha_consulta) = CURDATE()";
             $resultado = $mysqli->query($sql_consulta);
             $datos_iniciales = $resultado->fetch_assoc();
@@ -432,44 +489,50 @@ include('pages/php/includes/headerNav.php');
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <?php
             include('cfg/conexion.php');
-            $sqlMedicamentosExistentes = ("SELECT COUNT(DISTINCT Id_descripcion_medicamento) AS total FROM medicamentos_detalle_inventario");
-            $queryData = mysqli_query($conexion, $sqlMedicamentosExistentes);
-            $row = mysqli_fetch_assoc($queryData);
-            $total_medicamentos_existentes = $row['total'];
-            ?>
-            <div class="modern-card">
-              <div class="card-content">
-                <div class="info">
-                  <h3><?php echo $total_medicamentos_existentes; ?></h3>
-                  <p>Med. Existentes en Inventario</p>
-                </div>
-                <div class="icon-box bg-gradient-teal">
-                  <i><img src="recursos/imagenes/iconos/filled/medications/blister_pills_round_x14@2x.png" style="width:40px; height:40px; filter:invert();"></i>
-                </div>
-              </div>
-              <div class="card-footer"><a href="pages/php/farmacia_inventario_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
-            </div>
-          </div>
+            $sqlTotalRecetasPendientes = "
+              SELECT 
+                  (SELECT COUNT(DISTINCT Id) FROM prescripcion_medicamentos WHERE estado_prescripcion = 'pendiente') + 
+                  (SELECT COUNT(DISTINCT id_detalle) FROM detalle_solicitud WHERE estatus_item = 'Pendiente') 
+              AS total
+          ";
 
-          <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
-            <?php
-            include('cfg/conexion.php');
-            $sqlMedicamentosStockBajo = ("SELECT COUNT(*) AS total FROM medicamentos_detalle_inventario WHERE Id <= Id_lote");
-            $queryData = mysqli_query($conexion, $sqlMedicamentosStockBajo);
+            $queryData = mysqli_query($conexion, $sqlTotalRecetasPendientes);
             $row = mysqli_fetch_assoc($queryData);
-            $total_medicamentos_stock_bajo = $row['total'];
+            $total_recetas_pendientes = $row['total'] ?? 0; // Usamos ?? 0 por si devuelve null
             ?>
             <div class="modern-card">
               <div class="card-content">
                 <div class="info">
-                  <h3><?php echo $total_medicamentos_stock_bajo; ?></h3>
-                  <p>Medicamentos Stock Bajo</p>
+                  <h3><?php echo $total_recetas_pendientes; ?></h3>
+                  <p>Recetas Pendientes</p>
                 </div>
                 <div class="icon-box bg-gradient-orange">
                   <i><img src="recursos/imagenes/iconos/filled/symbols/alert_triangle@2x.png" style="width:40px; height:40px; filter:invert();"></i>
                 </div>
               </div>
-              <div class="card-footer"><a href="pages/php/farmacia_inventario_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
+              <div class="card-footer"><a href="pages/php/farmacia_prescripciones_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
+            </div>
+          </div>
+          
+          <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <?php
+            include('cfg/conexion.php');
+            $sqlPedidosPendientes = "SELECT COUNT(id_pedido) AS total FROM pedidos WHERE estado = 'Pendiente' AND estatus = 1";
+            $queryData = mysqli_query($conexion, $sqlPedidosPendientes);
+            $row = mysqli_fetch_assoc($queryData);
+            $total_pedidos_pendientes = $row['total'];
+            ?>
+            <div class="modern-card">
+              <div class="card-content">
+                <div class="info">
+                  <h3><?php echo $total_pedidos_pendientes; ?></h3>
+                  <p>Pedidos Pendientes</p>
+                </div>
+                <div class="icon-box bg-gradient-pink">
+                  <i><img src="recursos/imagenes/iconos/filled/symbols/alert_triangle@2x.png" style="width:40px; height:40px; filter:invert();"></i>
+                </div>
+              </div>
+              <div class="card-footer"><a href="pages/php/farmacia_pedidos_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
             </div>
           </div>
 
@@ -539,6 +602,113 @@ include('pages/php/includes/headerNav.php');
 
         <?php endif; ?>
 
+        <?php if (in_array('Ver panel de despachador', $_SESSION["permisos"])) : ?>
+
+          <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <?php
+            include('cfg/conexion.php');
+            $sqlTotalRecetasPendientes = "
+              SELECT 
+                  (SELECT COUNT(DISTINCT Id) FROM prescripcion_medicamentos WHERE estado_prescripcion = 'pendiente') + 
+                  (SELECT COUNT(DISTINCT id_detalle) FROM detalle_solicitud WHERE estatus_item = 'Pendiente') 
+              AS total
+            ";
+            $queryData = mysqli_query($conexion, $sqlTotalRecetasPendientes);
+            $row = mysqli_fetch_assoc($queryData);
+            $total_recetas_pendientes = $row['total'] ?? 0;
+            ?>
+            <div class="modern-card">
+              <div class="card-content">
+                <div class="info">
+                  <h3><?php echo $total_recetas_pendientes; ?></h3>
+                  <p>Recetas Pendientes</p>
+                </div>
+                <div class="icon-box bg-gradient-orange">
+                  <i><img src="recursos/imagenes/iconos/filled/symbols/alert_triangle@2x.png" style="width:40px; height:40px; filter:invert();"></i>
+                </div>
+              </div>
+              <div class="card-footer"><a href="pages/php/farmacia_prescripciones_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <?php
+            include('cfg/conexion.php');
+            $sqlRecetasParciales = "
+              SELECT 
+                  (SELECT COUNT(Id) FROM prescripcion_medicamentos WHERE estado_prescripcion = 'parcial' AND estatus = 1) + 
+                  (SELECT COUNT(id_solicitud) FROM solicitud_medicamento WHERE estatus_general = 'Parcial') 
+              AS total
+            ";
+            $queryData = mysqli_query($conexion, $sqlRecetasParciales);
+            $row = mysqli_fetch_assoc($queryData);
+            $total_recetas_parciales = $row['total'] ?? 0;
+            ?>
+            <div class="modern-card">
+              <div class="card-content">
+                <div class="info">
+                  <h3><?php echo $total_recetas_parciales; ?></h3>
+                  <p>Entregas Parciales</p>
+                </div>
+                <div class="icon-box bg-gradient-pink">
+                  <i><img src="recursos/imagenes/iconos/filled/objects/rdt_result_out_stock@2x.png" style="width:40px; height:40px; filter:invert();"></i>
+                </div>
+              </div>
+              <div class="card-footer"><a href="pages/php/farmacia_prescripciones_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <?php
+            include('cfg/conexion.php');
+            $sqlRecetasEntregadas = "
+              SELECT 
+                  (SELECT COUNT(Id) FROM prescripcion_medicamentos WHERE estado_prescripcion = 'entregado' AND estatus = 1) + 
+                  (SELECT COUNT(id_solicitud) FROM solicitud_medicamento WHERE estatus_general = 'Completado') 
+              AS total
+            ";
+            $queryData = mysqli_query($conexion, $sqlRecetasEntregadas);
+            $row = mysqli_fetch_assoc($queryData);
+            $total_recetas_entregadas = $row['total'] ?? 0;
+            ?>
+            <div class="modern-card">
+              <div class="card-content">
+                <div class="info">
+                  <h3><?php echo $total_recetas_entregadas; ?></h3>
+                  <p>Recetas Despachadas</p>
+                </div>
+                <div class="icon-box bg-gradient-green">
+                  <i><img src="recursos/imagenes/iconos/filled/objects/health_worker_form@2x.png" style="width:40px; height:40px; filter:invert();"></i>
+                </div>
+              </div>
+              <div class="card-footer"><a href="pages/php/farmacia_prescripciones_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <?php
+            include('cfg/conexion.php');
+            $sqlMedicamentos = "SELECT COUNT(*) AS total FROM medicamento WHERE estatus = 1";
+            $queryData = mysqli_query($conexion, $sqlMedicamentos);
+            $row = mysqli_fetch_assoc($queryData);
+            $total_medicamentos = $row['total'] ?? 0;
+            ?>
+            <div class="modern-card">
+              <div class="card-content">
+                <div class="info">
+                  <h3><?php echo $total_medicamentos; ?></h3>
+                  <p>Medicamentos Activos</p>
+                </div>
+                <div class="icon-box bg-gradient-blue">
+                  <i><img src="recursos/imagenes/iconos/filled/medications/medicines@2x.png" style="width:40px; height:40px; filter:invert();"></i>
+                </div>
+              </div>
+              <div class="card-footer"><a href="pages/php/farmacia_medicamentos_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
+            </div>
+          </div>
+
+        <?php endif; ?>
+
         <?php if (in_array('Ver panel de recursos humanos', $_SESSION["permisos"])) : ?>
 
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
@@ -565,7 +735,7 @@ include('pages/php/includes/headerNav.php');
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <?php
             include('cfg/conexion.php');
-            $sqlMedicos = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona JOIN rol r ON dpr.Id_rol = r.Id_rol HAVING r.Id_rol = 4 AND p.estatus = 1 ORDER BY id ASC");
+            $sqlMedicos = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona JOIN rol r ON dpr.Id_rol = r.Id_rol HAVING r.Id_rol = 7 AND p.estatus IN (1,2) ORDER BY id ASC");
             $queryData = mysqli_query($conexion, $sqlMedicos);
             $total_medicos = mysqli_num_rows($queryData);
             ?>
@@ -610,7 +780,7 @@ include('pages/php/includes/headerNav.php');
             $sql_vol = "SELECT p.nombre, p.apellido, COUNT(c.Id_consulta) as total FROM persona p JOIN consulta c ON p.id = c.Id_medico WHERE MONTH(c.fecha_consulta) = MONTH(CURDATE()) AND YEAR(c.fecha_consulta) = YEAR(CURDATE()) GROUP BY p.id ORDER BY total DESC LIMIT 1";
             $res_vol = $conexion->query($sql_vol);
             $data_vol = $res_vol->fetch_assoc();
-            $medico_vol = isset($data_vol['nombre']) ? $data_vol['nombre']." ".$data_vol['apellido'] : "N/A";
+            $medico_vol = isset($data_vol['nombre']) ? $data_vol['nombre'] . " " . $data_vol['apellido'] : "N/A";
             $total_vol = $data_vol['total'] ?? 0;
             ?>
             <div class="modern-card card-list">
@@ -659,10 +829,13 @@ include('pages/php/includes/headerNav.php');
                 <div class="info" style="width: 100%;">
                   <h4 style="margin-top:0; color:#fff; font-weight:bold; font-size: 16px;">Top 2 Especialidades (Semana)</h4>
                   <ul style="list-style: none;">
-                    <?php $cont = 1; if ($res_top_esp->num_rows > 0): while($row = $res_top_esp->fetch_assoc()): ?>
-                      <li><strong><?php echo $cont; ?>.</strong> <?php echo $row['nombre_especialidad']; ?> 
-                      <span class="pull-right" style="color: #00bcd4; font-weight:bold;"><?php echo $row['total_semanal']; ?> Citas</span></li>
-                    <?php $cont++; endwhile; else: ?>
+                    <?php $cont = 1;
+                    if ($res_top_esp->num_rows > 0) : while ($row = $res_top_esp->fetch_assoc()) : ?>
+                        <li><strong><?php echo $cont; ?>.</strong> <?php echo $row['nombre_especialidad']; ?>
+                          <span class="pull-right" style="color: #00bcd4; font-weight:bold;"><?php echo $row['total_semanal']; ?> Citas</span></li>
+                      <?php $cont++;
+                      endwhile;
+                    else : ?>
                       <li>No hay citas registradas en la semana</li>
                     <?php endif; ?>
                   </ul>
@@ -723,7 +896,8 @@ include('pages/php/includes/headerNav.php');
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <?php
             include('cfg/conexion.php');
-            $sqlUsuarios = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona JOIN rol r ON dpr.Id_rol = r.Id_rol HAVING r.Id_rol IN (1, 2, 6, 7, 8) AND p.estatus IN (1, 2) ORDER BY id ASC");
+            $sqlUsuarios = ("SELECT r.Id_rol, p.id, p.password, p.estatus FROM persona p JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona JOIN rol r ON dpr.Id_rol = r.Id_rol WHERE r.Id_rol IN (1, 2, 6, 7, 8, 9) AND p.estatus IN (1, 2) 
+            AND (r.Id_rol != 7 OR (r.Id_rol = 7 AND p.password != '')) ORDER BY id ASC");
             $queryData = mysqli_query($conexion, $sqlUsuarios);
             $total_usuarios = mysqli_num_rows($queryData);
             ?>
@@ -744,7 +918,7 @@ include('pages/php/includes/headerNav.php');
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <?php
             include('cfg/conexion.php');
-            $sqlMedicos = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona JOIN rol r ON dpr.Id_rol = r.Id_rol HAVING r.Id_rol = 4 AND p.estatus = 1 ORDER BY id ASC");
+            $sqlMedicos = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona JOIN rol r ON dpr.Id_rol = r.Id_rol HAVING r.Id_rol = 7 AND p.estatus IN (1,2) ORDER BY id ASC");
             $queryData = mysqli_query($conexion, $sqlMedicos);
             $total_medicos = mysqli_num_rows($queryData);
             ?>
@@ -755,7 +929,7 @@ include('pages/php/includes/headerNav.php');
                   <p>Médicos Registrados</p>
                 </div>
                 <div class="icon-box bg-gradient-purple">
-                 <i><img src="recursos/imagenes/iconos/filled/people/health_worker@2x.png" style="width:40px; height:40px; filter:invert();"></i>
+                  <i><img src="recursos/imagenes/iconos/filled/people/health_worker@2x.png" style="width:40px; height:40px; filter:invert();"></i>
                 </div>
               </div>
               <div class="card-footer"><a href="pages/php/rh_medico_listado.php">Más info <i class="fa fa-arrow-circle-right"></i></a></div>
@@ -913,7 +1087,7 @@ include('pages/php/includes/headerNav.php');
           <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <?php
             include('cfg/conexion.php');
-            $sqlMedicos = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona JOIN rol r ON dpr.Id_rol = r.Id_rol HAVING r.Id_rol = 4 AND p.estatus = 1 ORDER BY id ASC");
+            $sqlMedicos = ("SELECT r.Id_rol, p.id, p.estatus FROM persona p JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona JOIN rol r ON dpr.Id_rol = r.Id_rol HAVING r.Id_rol = 7 AND p.estatus IN (1,2) ORDER BY id ASC");
             $queryData = mysqli_query($conexion, $sqlMedicos);
             $total_medicos = mysqli_num_rows($queryData);
             ?>
@@ -984,7 +1158,7 @@ include('pages/php/includes/headerNav.php');
                   <p>Especialidades Clínicas</p>
                 </div>
                 <div class="icon-box bg-gradient-green">
-                <i><img src="recursos/imagenes/iconos/filled/specialties/coronary_care_unit@2x.png" style="width:40px; height:40px; filter:invert();"></i>
+                  <i><img src="recursos/imagenes/iconos/filled/specialties/coronary_care_unit@2x.png" style="width:40px; height:40px; filter:invert();"></i>
                 </div>
               </div>
             </div>
@@ -1024,4 +1198,5 @@ include('pages/php/includes/headerNav.php');
 <?php
 include('pages/php/includes/footer.php');
 ?>
+
 </html>

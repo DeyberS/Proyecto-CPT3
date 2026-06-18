@@ -26,10 +26,6 @@ function handle_error($conexion, $ubicacion, $sql, $mensaje_extra = '') {
     exit();
 }
 
-/**
- * Función inteligente para antecedentes:
- * Solo guarda si NO existen registros previos para este historial (REGLA: una sola vez).
- */
 function verificar_y_guardar_antecedente($conexion, $id_historial, $texto_antecedente, $tabla_catalogo, $tabla_relacion, $campo_fk_catalogo = 'Id_antecedente') {
     if (empty($texto_antecedente) || $texto_antecedente === 'N/A o no aplica') return;
 
@@ -64,7 +60,7 @@ function verificar_y_guardar_antecedente($conexion, $id_historial, $texto_antece
 // ==========================================================
 // Datos principales
 $cedula_paciente = sanitizar($conexion, $_POST['cedula_paciente']);
-$id_medico       = (int)$_POST['medico'];
+$id_persona_medico = (int)$_POST['medico']; // Aquí recibes el 329
 $fecha_consulta  = sanitizar($conexion, $_POST['fecha_consulta']);
 $motivo_consulta = sanitizar($conexion, $_POST['motivo_consulta']);
 $diagnostico     = sanitizar($conexion, $_POST['diagnostico_text']);
@@ -76,9 +72,9 @@ $peso          = !empty($_POST['peso']) ? "'" . (float)$_POST['peso'] . "'" : "N
 $talla         = !empty($_POST['talla']) ? "'" . (float)$_POST['talla'] . "'" : "NULL";
 $temperatura   = !empty($_POST['temperatura']) ? "'" . (float)$_POST['temperatura'] . "'" : "NULL";
 $tension       = !empty($_POST['tension']) ? "'" . sanitizar($conexion, $_POST['tension']) . "'" : "NULL"; 
-$frec_cardiaca = !empty($_POST['frecuencia_cardiaca']) ? (int)$_POST['frecuencia_cardiaca'] : "NULL";
-$saturacion    = !empty($_POST['saturacion']) ? (int)$_POST['saturacion'] : "NULL";
-$frec_resp     = !empty($_POST['frecuencia_respiratoria']) ? (int)$_POST['frecuencia_respiratoria'] : "NULL";
+$frec_cardiaca = !empty($_POST['frecuencia_cardiaca']) ? "'" . (int)$_POST['frecuencia_cardiaca'] . "'" : "NULL";
+$saturacion    = !empty($_POST['saturacion']) ? "'" . (int)$_POST['saturacion'] . "'" : "NULL";
+$frec_resp     = !empty($_POST['frecuencia_respiratoria']) ? "'" . (int)$_POST['frecuencia_respiratoria'] . "'" : "NULL";
 $fecha_cita  = !empty($_POST['fecha_cita']) ? sanitizar($conexion, $_POST['fecha_cita']) : "NULL";
 $hora_cita  = !empty($_POST['hora_cita']) ? sanitizar($conexion, $_POST['hora_cita']) : "NULL";
 
@@ -96,8 +92,8 @@ $evolucion_resultado   = mysqli_real_escape_string($conexion, $_POST['evolucion_
 $lectura_examenes   = mysqli_real_escape_string($conexion, $_POST['lectura_examenes']);
 $examenes_solicitados   = mysqli_real_escape_string($conexion, $_POST['examenes_solicitados']);
 
-$entregado_a   = mysqli_real_escape_string($conexion, $_POST['entregado_a']);
-$parentesco_representante   = mysqli_real_escape_string($conexion, $_POST['parentesco_representante']);
+$entregado_a   = mysqli_real_escape_string($conexion, $_POST['entregado_a'] ?? '');
+$parentesco_representante   = mysqli_real_escape_string($conexion, $_POST['parentesco_representante'] ?? '');
 
 $id_cita_atendida = $_POST['id_cita_atendida'] ?? '';
 
@@ -127,9 +123,9 @@ $sql_consulta = "INSERT INTO consulta (
     peso, talla, temperatura, tension, frecuencia_cardiaca, saturacion, frecuencia_respiratoria, estado_paciente, reaccion_adversa, 
     detalle_reaccion, evolucion_resultado, lectura_examenes, examenes_solicitados, entregado_a, parentesco
 ) VALUES (
-    '$id_persona', '$id_medico', '$id_historial', '$fecha_consulta', '$motivo_consulta',
+    '$id_persona', '$id_persona_medico', '$id_historial', '$fecha_consulta', '$motivo_consulta',
     '$diagnostico', '$indicaciones',
-    '$peso', '$talla', '$temperatura', '$tension', '$frec_cardiaca', '$saturacion', '$frec_resp', '$estado_paciente', '$reaccion_adversa', 
+     $peso, $talla, $temperatura, $tension, $frec_cardiaca, $saturacion, $frec_resp, '$estado_paciente', '$reaccion_adversa', 
     '$detalle_reaccion', '$evolucion_resultado', '$lectura_examenes', '$examenes_solicitados', '$entregado_a', '$parentesco_representante'
 )";
 
@@ -151,7 +147,7 @@ if ($id_consulta) {
     $sql_med_esp = "SELECT dm.Id_detalle_medico, em.Id_especialidad 
                     FROM detalle_medico dm
                     INNER JOIN especialidades_medicos em ON dm.Id_detalle_medico = em.Id_detalle_medico
-                    WHERE dm.Id_persona = '$id_medico' 
+                    WHERE dm.Id_detalle_medico = '$id_persona_medico' 
                     LIMIT 1"; // Traemos la primera especialidad encontrada
     
     $res_med_esp = mysqli_query($conexion, $sql_med_esp);
@@ -167,7 +163,8 @@ if ($id_consulta) {
                 fecha_cita, 
                 hora_cita, 
                 motivo, 
-                estatus, 
+                estatus,
+                estado, 
                 Id_paciente, 
                 Id_medico, 
                 Id_especialidad, 
@@ -175,7 +172,8 @@ if ($id_consulta) {
             ) VALUES (
                 '$fecha_cita', 
                 '$hora_cita', 
-                '$motivo_consulta', 
+                '$motivo_consulta',
+                '1', 
                 'Pendiente', 
                 '$id_paciente_real', 
                 '$id_detalle_medico_real', 
@@ -189,7 +187,7 @@ if ($id_consulta) {
         }
     } else {
         // Este error saldrá si el médico no tiene ninguna especialidad configurada en la tabla intermedia
-        handle_error($conexion, "Médico sin especialidad", "Persona ID: $id_medico", "No se encontró una especialidad vinculada a este médico en 'especialidades_medicos'.");
+        handle_error($conexion, "Médico sin especialidad", "Persona ID: $id_persona_medico", "No se encontró una especialidad vinculada a este médico en 'especialidades_medicos'.");
     }
 }
 
@@ -237,8 +235,8 @@ if (!empty($medicamento_input)) {
         // Insertamos la solicitud. Al ser de una consulta, el origen es 'Interno'.
         // Llenamos los campos de externos vacíos/0 por defecto.
         $sql_solicitud = "INSERT INTO solicitud_medicamento 
-                          (origen, id_consulta, tipo_cedula_externo, cedula_externo, estatus_general, fecha_solicitud) 
-                          VALUES ('Interno', $id_consulta, '', 0, 'Pendiente', NOW())";
+                  (origen, id_consulta, id_paciente, id_medico, entregado_a, estatus_general, fecha_solicitud) 
+                  VALUES ('Interno', $id_consulta, '$id_persona', '$id_persona_medico', '$entregado_a', 'Pendiente', NOW())";
 
         if (!mysqli_query($conexion, $sql_solicitud)) {
             handle_error($conexion, "Error al crear solicitud de farmacia", $sql_solicitud);
@@ -279,7 +277,7 @@ if (!empty($medicamento_input)) {
 // E. GUARDAR OBSERVACIONES AL HISTORIAL
 if (!empty($notas_adicionales)) {
     $sql_notas = "INSERT INTO observaciones_historial_medico (Id_historial_medico, Id_medico, observacion, fecha) 
-                  VALUES ($id_historial, $id_medico, '$notas_adicionales', NOW())";
+                  VALUES ($id_historial, $id_persona_medico, '$notas_adicionales', NOW())";
     if (!mysqli_query($conexion, $sql_notas)) {
         // La inserción de notas no es crítica.
     }

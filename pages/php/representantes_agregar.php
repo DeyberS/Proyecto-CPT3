@@ -219,7 +219,7 @@
                     <div class="col-sm-1 pull-left" style="margin-top: 30px;">
                       <select name="tipo_cedula" id="tipo_cedula" class="form-control" style="width: 60px;" required>
                         <option value="V">V-</option>
-                        <option value="E">E- </option>
+                        <!--<option value="E">E-</option>-->
                       </select>
                     </div>
                     <div class="col-sm-3">
@@ -383,7 +383,7 @@
                     <p>Patologias:</p>
                     <input type="hidden" name="patologias_ids" id="patologias_ids" value="">
                     <div id="patologias_agregadas" class="well well-sm" style="height: auto; min-height: 34px;">
-                    <span class="text-muted">Ninguna Patologia seleccionada.</span></div>
+                      <span class="text-muted">Ninguna Patologia seleccionada.</span></div>
                   </div>
                   <div class="col-sm-1" style="margin-top: 30px;">
                     <button type="button" class="form-control pull-right bt-sm btn-primary" data-toggle="modal" data-target="#modalPatologias">+</button>
@@ -393,7 +393,7 @@
                     <p>Alergias:</p>
                     <input type="hidden" name="alergias_ids" id="alergias_ids" value="">
                     <div id="alergias_agregadas" class="well well-sm" style="height: auto; min-height: 34px;">
-                    <span class="text-muted">Ninguna Alergia seleccionada.</span></div>
+                      <span class="text-muted">Ninguna Alergia seleccionada.</span></div>
                   </div>
                   <div class="col-sm-1" style="margin-top: 30px;">
                     <button type="button" class="form-control pull-right bt-sm btn-primary" data-toggle="modal" data-target="#modalAlergias">+
@@ -708,157 +708,248 @@
       document.getElementById('edad').value = edad;
     }
 
-
-    // --- LÓGICA DE VALIDACIÓN DE CÉDULA ---
-
-    const cedulaInput = document.getElementById('cedula');
-    const tipoCedulaSelect = document.getElementById('tipo_cedula');
-
-    async function verificarCedulaEnBD(tipo, cedula) {
-      return new Promise((resolve, reject) => {
-        if (cedula === "" || tipo === "") {
-          resolve(false);
+    // --- 1. FUNCIÓN AJAX PARA VERIFICAR EN BD ---
+    // --- 1. FUNCIÓN AJAX UNIFICADA (CÉDULA Y EMAIL) ---
+    async function verificarDatosUnicosBD(tipo, cedula, email, idPersona) {
+      return new Promise((resolve) => {
+        if (cedula === "" && email === "") {
+          resolve({
+            existe_cedula: false,
+            existe_email: false
+          });
           return;
         }
-
         $.ajax({
-          url: 'get/get_verificar_cedula.php',
+          url: 'get/verificar_existencia_cedula.php',
           method: 'POST',
           dataType: 'json',
           data: {
             tipo_cedula: tipo,
-            cedula: cedula
+            cedula: cedula,
+            email: email,
+            id: idPersona
           },
           success: function(response) {
-            resolve(response.existe);
+            resolve(response);
           },
-          error: function(xhr, status, error) {
-            console.error("Error de conexión/servidor al verificar cédula.", status, error);
-            reject('Error de Conexión: No se pudo comunicar con el servidor para verificar la cédula.');
+          error: function() {
+            resolve({
+              existe_cedula: false,
+              existe_email: false
+            });
           }
         });
       });
     }
 
-    async function validarCedulaFormato() {
-      const cedula = parseInt(cedulaInput.value.trim());
-      const tipo = tipoCedulaSelect.value;
+    // --- 2. VALIDACIÓN UNIFICADA DE FORMATO Y EXISTENCIA ---
+    async function validarDatosUnicos() {
+      // Referencias dinámicas (detecta automáticamente si es paciente normal o representante)
+      const cedulaInput = document.getElementById('cedula') || document.getElementById('cedula_rep');
+      const tipoSelect = document.getElementById('tipo_cedula') || document.getElementById('tipo_cedula_rep');
+      const emailInput = document.getElementById('email') || document.getElementById('email_rep');
+
+      const cedula = cedulaInput ? cedulaInput.value.trim() : "";
+      const tipo = tipoSelect ? tipoSelect.value : "";
+      const email = emailInput ? emailInput.value.trim() : "";
+
+      // Capturar ID en caso de edición para excluirlo
+      let idActual = 0;
+      const inputId = document.querySelector('input[name="Id_representante"]') || document.querySelector('input[name="Id"]');
+      if (inputId && inputId.value) idActual = inputId.value;
+
       let esValido = true;
+      let errores = [];
 
-      // Limpiar errores primero
-      $(cedulaInput).removeClass('input-error');
-      $(tipoCedulaSelect).removeClass('input-error');
+      // Limpiar bordes rojos previos
+      if (cedulaInput) $(cedulaInput).removeClass('input-error');
+      if (tipoSelect) $(tipoSelect).removeClass('input-error');
+      if (emailInput) $(emailInput).removeClass('input-error');
 
-      if (cedulaInput.value.trim() === "") {
-        $(cedulaInput).addClass('input-error');
-        return true;
-      }
-
-      if (isNaN(cedula) || cedulaInput.value.trim() === "")
-        return true;
-
-      if (tipo === 'V' && cedula > 80000000) {
-        $(cedulaInput).addClass('input-error');
-        $(tipoCedulaSelect).addClass('input-error'); // Marcar el select
-        mostrarAviso('🛑 **Error de Cédula**: Para tipo V-, la cédula no puede ser mayor a 80.000.000');
-        esValido = false;
-      } else if (tipo === 'E' && cedula < 80000000) {
-        $(cedulaInput).addClass('input-error');
-        $(tipoCedulaSelect).addClass('input-error'); // Marcar el select
-        mostrarAviso('🛑 **Error de Cédula**: Para tipo E-, la cédula no puede ser menor a 80.000.000');
+      // --- Validaciones Locales de Formato ---
+      if (email !== "" && (email.indexOf('@') === -1 || email.indexOf('.') === -1)) {
+        if (emailInput) $(emailInput).addClass('input-error');
+        errores.push("El campo Email debe tener un formato válido (ej: usuario@correo.com).");
         esValido = false;
       }
 
-      if (!esValido) return false;
-
-      try {
-        const existe = await verificarCedulaEnBD(tipo, cedula);
-        if (existe) {
-          $(cedulaInput).addClass('input-error');
-          $(tipoCedulaSelect).addClass('input-error'); // Marcar el select
-          mostrarAviso('🛑 **Error de Cédula**: La cédula ' + tipo + '-' + cedula + ' ya se encuentra registrada en el sistema.');
+      if (cedula !== "" && !isNaN(parseInt(cedula))) {
+        const cedNum = parseInt(cedula);
+        if (tipo === 'V' && cedNum > 80000000) {
+          if (cedulaInput) $(cedulaInput).addClass('input-error');
+          if (tipoSelect) $(tipoSelect).addClass('input-error');
+          errores.push("Para tipo V-, la cédula no puede ser mayor a 80.000.000.");
+          esValido = false;
+        } else if (tipo === 'E' && cedNum < 80000000) {
+          if (cedulaInput) $(cedulaInput).addClass('input-error');
+          if (tipoSelect) $(tipoSelect).addClass('input-error');
+          errores.push("Para tipo E-, la cédula no puede ser menor a 80.000.000.");
           esValido = false;
         }
-      } catch (error) {
-        mostrarAviso(error);
-        esValido = false;
+      }
+
+      if (!esValido) {
+        mostrarAviso("🛑 <b>Errores de formato:</b><br>" + errores.join("<br>"));
+        return false; // Aborta antes de golpear la BD si el formato está mal
+      }
+
+      // --- Verificación Combinada en Base de Datos ---
+      if (cedula !== "" || email !== "") {
+        const bd = await verificarDatosUnicosBD(tipo, cedula, email, idActual);
+
+        if (bd.existe_cedula) {
+          if (cedulaInput) $(cedulaInput).addClass('input-error');
+          if (tipoSelect) $(tipoSelect).addClass('input-error');
+          errores.push(`El documento <b>${tipo}-${cedula}</b> ya se encuentra registrado en el sistema.`);
+          esValido = false;
+        }
+
+        if (bd.existe_email) {
+          if (emailInput) $(emailInput).addClass('input-error');
+          errores.push(`El correo <b>${email}</b> ya está siendo usado por otra persona.`);
+          esValido = false;
+        }
+
+        if (!esValido) {
+          mostrarAviso("🛑 <b>Datos duplicados detectados:</b><br>" + errores.join("<br>"));
+        }
       }
 
       return esValido;
     }
 
-    cedulaInput.addEventListener('blur', validarCedulaFormato);
-    tipoCedulaSelect.addEventListener('change', validarCedulaFormato);
+    // --- 3. DISPARADORES AUTOMÁTICOS ---
+    if (document.getElementById('cedula')) document.getElementById('cedula').addEventListener('blur', validarDatosUnicos);
+    if (document.getElementById('tipo_cedula')) document.getElementById('tipo_cedula').addEventListener('change', validarDatosUnicos);
+    if (document.getElementById('email')) document.getElementById('email').addEventListener('blur', validarDatosUnicos);
+    if (document.getElementById('email_rep')) document.getElementById('email_rep').addEventListener('blur', validarDatosUnicos);
 
+    // ==========================================================================
+    // --- LÓGICA DE DEPENDENCIAS DE UBICACIÓN (Nacimiento y Residencia) ---
+    // ==========================================================================
 
-    // --- LÓGICA DE DEPENDENCIAS DE UBICACIÓN ---
-
+    // 1. PAÍS NACIMIENTO -> ESTADO NACIMIENTO
     document.getElementById('pais_nacimiento').addEventListener('change', function() {
-      const paisId = this.value;
-      const estadoSelect = document.getElementById('estado_nacimiento');
+      var paisId = this.value;
+      var estadoSelect = document.getElementById('estado_nacimiento');
+      var municipioSelect = document.getElementById('municipio_nacimiento');
+
       estadoSelect.innerHTML = '<option value="">--- Seleccione Un Estado ---</option>';
-      document.getElementById('municipio_nacimiento').innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
+      municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
 
       if (paisId) {
-        fetch('get/get_estados.php?Id_Pais=' + paisId)
-          .then(res => res.json())
-          .then(data => {
-            data.forEach(estado => {
-              estadoSelect.innerHTML += `<option value='${estado.Id_Estado}'>${estado.nombre_estado}</option>`;
-            });
-          });
+        $.ajax({
+          url: 'get/get_estados.php',
+          method: 'GET',
+          data: {
+            Id_Pais: paisId
+          },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var estado = data[i];
+              estadoSelect.innerHTML += '<option value="' + estado.Id_Estado + '">' + estado.nombre_estado + '</option>';
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Error al cargar estados de nacimiento:", error);
+          }
+        });
       }
     });
 
+    // 2. ESTADO NACIMIENTO -> MUNICIPIO NACIMIENTO
     document.getElementById('estado_nacimiento').addEventListener('change', function() {
-      const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio_nacimiento');
+      var estadoId = this.value;
+      var municipioSelect = document.getElementById('municipio_nacimiento');
+
       municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
 
       if (estadoId) {
-        fetch('get/get_municipios.php?Id_Estado=' + estadoId)
-          .then(res => res.json())
-          .then(data => {
-            data.forEach(municipio => {
-              municipioSelect.innerHTML += `<option value='${municipio.Id_Municipio}'>${municipio.nombre_municipio}</option>`;
-            });
-          });
+        $.ajax({
+          url: 'get/get_municipios.php',
+          method: 'GET',
+          data: {
+            Id_Estado: estadoId
+          },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var municipio = data[i];
+              municipioSelect.innerHTML += '<option value="' + municipio.Id_Municipio + '">' + municipio.nombre_municipio + '</option>';
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Error al cargar municipios de nacimiento:", error);
+          }
+        });
       }
     });
 
+    // 3. ESTADO RESIDENCIA (NORMAL) -> MUNICIPIO RESIDENCIA
     document.getElementById('estado').addEventListener('change', function() {
-      const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio');
+      var estadoId = this.value;
+      var municipioSelect = document.getElementById('municipio');
+      var sectorSelect = document.getElementById('sector');
+
+      // Limpiamos tanto municipios como sectores para que no queden datos viejos colgados
       municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
+      if (sectorSelect) {
+        sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
+      }
 
       if (estadoId) {
-        fetch('get/get_municipios.php?Id_Estado=' + estadoId)
-          .then(res => res.json())
-          .then(data => {
-            data.forEach(municipio => {
-              municipioSelect.innerHTML += `<option value='${municipio.Id_Municipio}'>${municipio.nombre_municipio}</option>`;
-            });
-          });
+        $.ajax({
+          url: 'get/get_municipios.php',
+          method: 'GET',
+          data: {
+            Id_Estado: estadoId
+          },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var municipio = data[i];
+              municipioSelect.innerHTML += '<option value="' + municipio.Id_Municipio + '">' + municipio.nombre_municipio + '</option>';
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Error al cargar municipios de residencia:", error);
+          }
+        });
       }
     });
 
+    // 4. MUNICIPIO RESIDENCIA (NORMAL) -> SECTOR RESIDENCIA
     document.getElementById('municipio').addEventListener('change', function() {
-      const municipioId = this.value;
-      const sectorSelect = document.getElementById('sector');
+      var municipioId = this.value;
+      var sectorSelect = document.getElementById('sector');
+
       sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
 
       if (municipioId) {
-        fetch('get/get_sectores.php?Id_Municipio=' + municipioId)
-          .then(res => res.json())
-          .then(data => {
-            data.forEach(sector => {
-              sectorSelect.innerHTML += `<option value='${sector.Id_Sector}'>${sector.nombre_sector}</option>`;
-            });
-          });
+        $.ajax({
+          url: 'get/get_sectores.php',
+          method: 'GET',
+          data: {
+            Id_Municipio: municipioId
+          },
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+              var sector = data[i];
+              sectorSelect.innerHTML += '<option value="' + sector.Id_Sector + '">' + sector.nombre_sector + '</option>';
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Error al cargar sectores de residencia:", error);
+          }
+        });
       }
     });
-
-    // --- MODIFICACIÓN SOLICITADA: Lógica Analfabeta y Validación de Misiones ---
 
     // =====================================================================
     // LÓGICA PARA PATOLOGÍAS Y ALERGIAS
@@ -1116,7 +1207,7 @@
         if ($input.is(':visible') && !$input.prop('disabled') && (valor === null || valor.trim() === "" || valor.includes('--- Seleccione'))) {
           // Excluir el campo de patologías si se maneja con un div no-input
           if ($input.attr('id') !== 'patologias_ids') {
-            errores.push("El campo **" + $input.prev('p').text().replace('(*):', '').replace(':', '').trim() + "** es obligatorio.");
+            errores.push("El campo " + $input.prev('p').text().replace('(*):', '').replace(':', '').trim() + " es obligatorio.");
             $input.addClass('input-error');
             esValido = false;
           }
@@ -1126,21 +1217,21 @@
       // 2. Validaciones Específicas
 
       if (tabSelector === '#info') {
-        const cedulaEsValida = await validarCedulaFormato();
-        if (!cedulaEsValida) {
+        const datosValidos = await validarDatosUnicos();
+        if (!datosValidos) {
           esValido = false;
         }
 
         const edad = parseInt($('#edad').val());
         if (isNaN(edad) || edad < 18 || edad > 120) {
-          errores.push("El paciente debe ser mayor de **18 años** (Fecha de Nacimiento).");
+          errores.push("El paciente debe ser mayor de 18 años (Fecha de Nacimiento).");
           $('#fechaN').addClass('input-error');
           esValido = false;
         }
 
         const email = $('#email').val().trim();
         if (email !== "" && (email.indexOf('@') === -1 || email.indexOf('.') === -1)) {
-          errores.push("El campo **Email** debe tener un formato válido (ej: nombre@dominio.com).");
+          errores.push("El campo Email debe tener un formato válido (ej: nombre@dominio.com).");
           $('#email').addClass('input-error');
           esValido = false;
         }
@@ -1163,8 +1254,7 @@
     // MANEJO DE PESTAÑAS (TABS)
     // =====================================================================
 
-    // 1. MANEJO DE BOTONES SIGUIENTE
-    $('.next-tab').on('click', async function() {
+    $('.next-tab').off('click').on('click', async function() {
       const $btn = $(this);
       const tabActualSelector = $btn.data('tab-actual');
       const tabSiguienteName = $btn.data('tab-siguiente');
@@ -1172,18 +1262,25 @@
 
       $btn.prop('disabled', true).text('Validando...');
 
+      // validarPestana se encarga de bloquear el paso de la pestaña 1 si la cédula existe
       const esValido = await validarPestana(tabActualSelector);
 
       $btn.prop('disabled', false).text(tabSiguienteName === 'confirmar' ? 'Guardar' : 'Siguiente');
 
       if (esValido) {
         if (tabSiguienteName === 'confirmar') {
-          $('#modalGuardarMedico').modal('show');
+          // ULTIMA VERIFICACIÓN ANTES DE MOSTRAR EL MODAL
+          const cedulaFinalValida = await validarDatosUnicos();
+          if (!cedulaFinalValida) {
+            mostrarAviso("🛑 Cédula Duplicada. Regrese a la pestaña 'Datos Personales' y corrija la información.");
+            return;
+          }
+
+          const modalSelector = $('#modalGuardarPaciente').length ? '#modalGuardarPaciente' : '#modalGuardarMedico';
+          $(modalSelector).modal('show');
         } else {
           const $siguienteTabLi = nextTabLink.parent();
-          // Quitar active de la pestaña actual
           $(`.nav-tabs li[data-tab-name]:has(a[href="${tabActualSelector}"]`).removeClass('active');
-          // Habilitar y activar la pestaña siguiente
           $siguienteTabLi.removeClass('disabled-tab').addClass('active');
           nextTabLink.tab('show');
         }

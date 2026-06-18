@@ -170,30 +170,53 @@
           e.target.value = e.target.value.replace(/[0-9]/g, "");
         }
 
-        // 3. ENVÍO DEL FORMULARIO
-        // Se usa la validación local (sin la validación de duplicidad AJAX que solicitaste omitir)
+        // 3. ENVÍO DEL FORMULARIO Y VERIFICACIÓN PREVIA
         $('#formularioSintoma').on('submit', function(e) {
-          e.preventDefault(); 
+          e.preventDefault();
           limpiarErrores();
           let errores = [];
-          
+
           if ($('#nombre_sintoma').val().trim() === "") {
-            errores.push("Falta el Nombre del sintoma.");
+            errores.push("Falta el nombre del sintoma.");
             $('#group_nombre').addClass('has-error');
           }
 
           if (errores.length > 0) {
-            mostrarAviso('⚠️ Errores de Formulario: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+            mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
           } else {
-            // Si pasa la validación local, muestra el modal de confirmación
-            $('#modalGuardar').modal('show');
+            const nombre = $('#nombre_sintoma').val().trim();
+            const idActual = $('input[name="Id"]').length > 0 ? $('input[name="Id"]').val() : 0;
+            const btnGuardar = $('#btnGuardar');
+            const textoOriginal = btnGuardar.text();
+
+            btnGuardar.text('Verificando...').attr('disabled', true);
+
+            $.ajax({
+              url: 'get/verificar_existencia_sintoma.php',
+              method: 'POST',
+              dataType: 'json',
+              data: { nombre: nombre, id_actual: idActual },
+              success: function(response) {
+                btnGuardar.text(textoOriginal).attr('disabled', false);
+                if (response.existe_nombre) {
+                  $('#group_nombre').addClass('has-error');
+                  $('#nombre_sintoma').addClass('input-error');
+                  mostrarAviso('🛑 Error de Duplicidad:<ul><li>⚠️ Ya existe un sintoma con el nombre: ' + nombre + '</li></ul>');
+                } else {
+                  $('#modalGuardar').modal('show');
+                }
+              },
+              error: function(xhr, status, error) {
+                btnGuardar.text(textoOriginal).attr('disabled', false);
+                mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
+              }
+            });
           }
         });
-        
+
         $('#confirmarGuardar').on('click', function() {
-            $('#modalGuardar').modal('hide');
-            // Al no requerir la validación AJAX de duplicidad, se envía directamente el formulario
-            $('#formularioSintoma').off('submit').submit(); 
+          $('#modalGuardar').modal('hide');
+          $('#formularioSintoma').off('submit').submit(); 
         });
 
         // --- Aplicar validaciones a campos de solo texto ---

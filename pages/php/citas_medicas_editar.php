@@ -159,7 +159,7 @@ $datos = $res_cita->fetch_assoc();
                           <div class="col-sm-1 pull-left" style="margin-top: 30px;">
                             <select name="tipo_cedula_paciente" class="form-control" disabled>
                               <option value="V" <?php if ($datos['tipo_cedula'] == 'V') echo 'selected'; ?>>V-</option>
-                              <option value="E" <?php if ($datos['tipo_cedula'] == 'E') echo 'selected'; ?>>E-</option>
+                              <!--<option value="E" <?php if ($datos['tipo_cedula'] == 'E') echo 'selected'; ?>>E-</option>-->
                               <option value="PN" <?php if ($datos['tipo_cedula'] == 'PN') echo 'selected'; ?>>PN-</option>
                             </select>
                           </div>
