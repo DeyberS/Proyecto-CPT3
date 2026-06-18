@@ -37,7 +37,7 @@ if (isset($_GET['Id'])) {
                 $mail->Host       = 'smtp.gmail.com';
                 $mail->SMTPAuth   = true;
                 $mail->Username   = 'cpt3sistema@gmail.com';
-                $mail->Password   = 'rqgltslfvazhjqix'; // Tu clave de aplicación
+                $mail->Password   = 'Jrjjfgomexsyyxqg'; // Tu clave de aplicación
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port       = 587;
 

@@ -77,7 +77,7 @@ if ($exito_transaccion) {
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'cpt3sistema@gmail.com';
-        $mail->Password   = 'rqgltslfvazhjqix';
+        $mail->Password   = 'Jrjjfgomexsyyxqg';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 

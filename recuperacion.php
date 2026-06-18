@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $mail->Host       = 'smtp.gmail.com';
                         $mail->SMTPAuth   = true;
                         $mail->Username   = 'cpt3sistema@gmail.com'; // TU CORREO
-                        $mail->Password   = 'rqgltslfvazhjqix'; // TU CLAVE DE APLICACIÓN
+                        $mail->Password   = 'Jrjjfgomexsyyxqg'; // TU CLAVE DE APLICACIÓN
                         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                         $mail->Port       = 587;
 
@@ -105,16 +105,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             align-items: center;
         }
 
-        .login-container {
-            background: #112;
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid #112;
-            width: 100%;
-            max-width: 400px;
-        }
-
         .form-group {
             position: relative;
             margin-bottom: 25px;
@@ -170,7 +160,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .login-container {
-            animation: fadeInUp 0.8s ease-out;
+            background-color: #112;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            color: white;
+            transition: transform 0.3s ease;
+
+            /* --- CÓDIGO PARA QUITAR LO BORROSO --- */
+            backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-font-smoothing: subpixel-antialiased;
         }
 
         .form-group input:focus {

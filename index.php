@@ -140,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         $mail->Host = 'smtp.gmail.com';
                                         $mail->SMTPAuth = true;
                                         $mail->Username = 'cpt3sistema@gmail.com'; // Tu correo real
-                                        $mail->Password = 'rqgltslfvazhjqix'; // Tu clave de aplicación
+                                        $mail->Password = 'Jrjjfgomexsyyxqg'; // Tu clave de aplicación
                                         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                                         $mail->Port = 587;
 
