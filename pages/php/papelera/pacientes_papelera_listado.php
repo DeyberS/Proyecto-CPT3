@@ -89,7 +89,7 @@
       <section class="content">
         <div style="padding-bottom: 10px;">
           <a href="../pacientes_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-user-plus"></i> Regresar al Listado </a>
-          <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
+          <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
         </div>
         <br><br>
         <div id="contenedorTabla">

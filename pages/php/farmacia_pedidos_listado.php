@@ -134,7 +134,7 @@
         <a href="farmacia_pedidos_crear.php" class="btn-sm btn-success pull-right"><i class="fa fa-plus"></i> Nuevo Pedido</a>
 
         <form method="GET" action="" style="display: inline-block;">
-          <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Buscar pedido..." value="<?php echo htmlspecialchars($busqueda); ?>" style="width: 250px;" autocomplete="off">
+          <input type="text" id="buscar" name="buscar" class="form-control pull-left" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Buscar pedido..." value="<?php echo htmlspecialchars($busqueda); ?>" style="width: 250px;" autocomplete="off">
         </form>
       </div>
 

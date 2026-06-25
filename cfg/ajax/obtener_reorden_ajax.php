@@ -43,7 +43,9 @@ if ($result) {
         $respuesta[] = [
             'id_descripcion' => $row['id_descripcion'],
             'nombre_completo' => $row['nombre_medicamento'] . " [" . $row['nombre_presentacion'] . "]",
-            'cantidad_a_pedir' => $cantidad_a_pedir
+            'cantidad_a_pedir' => $cantidad_a_pedir,
+            'existencia_actual' => $existencia, // <- NUEVA LÍNEA
+            'stock_maximo' => $maximo // <- NUEVA LÍNEA
         ];
     }
     echo json_encode($respuesta);

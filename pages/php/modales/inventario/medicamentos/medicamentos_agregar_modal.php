@@ -431,7 +431,7 @@ if (isset($_GET['duplicar_id'])) {
 <div class="modal" id="med_avisoModal" role="dialog">
   <div class="modal-dialog modal-md" role="document">
     <div class="modal-content">
-      <div class="modal-header" style="background-color: crimson; color: white;">
+      <div id="med_headerAviso" class="modal-header bg-crimson">
         <h5 class="modal-title">Aviso</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white;"><span aria-hidden="true">&times;</span></button>
       </div>
@@ -447,15 +447,7 @@ if (isset($_GET['duplicar_id'])) {
   (function($) {
     $(document).ready(function() {
 
-      // =====================================================================
-      // UTILIDADES
-      // =====================================================================
       const unidadConcentracionPrevia = '<?php echo $datos_d['id_tipo_concentracion'] ?? ''; ?>';
-
-      function mostrarAviso(mensaje) {
-        $('#med_avisoTexto').html(mensaje);
-        $('#med_avisoModal').modal('show');
-      }
 
       function limpiarErrores() {
         $('#med_formularioMedicamento').find('input, select').removeClass('med-input-error');
@@ -583,7 +575,7 @@ if (isset($_GET['duplicar_id'])) {
 
         var boton = $('#med_btn_modal_pa');
         if (resumen.length > 0) {
-          boton.attr('data-original-title', resumen.join(', ')).tooltip('fixTitle');
+          boton.attr('data-original-title', resumen.join(', '));
         }
       });
 
@@ -678,9 +670,9 @@ if (isset($_GET['duplicar_id'])) {
         $('#patologias_seleccionadas').val(ids.join('|'));
 
         if (ids.length > 0) {
-          $('#med_btn_modal_pat').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
+          $('#med_btn_modal_pat').attr('data-original-title', nombres.join(', '));
         } else {
-          $('#med_btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+          $('#med_btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada');
         }
       });
 
@@ -916,7 +908,7 @@ if (isset($_GET['duplicar_id'])) {
                 });
 
                 const textoResumen = nombres.join(', ');
-                $('#med_btn_modal_pa').attr('data-original-title', textoResumen).tooltip('fixTitle');
+                $('#med_btn_modal_pa').attr('data-original-title', textoResumen);
               }
             });
         }
@@ -931,7 +923,7 @@ if (isset($_GET['duplicar_id'])) {
           });
 
           let textoTooltip = nombresPat.length > 0 ? nombresPat.join(', ') : 'Patologías seleccionadas';
-          $('#med_btn_modal_pat').attr('data-original-title', textoTooltip).tooltip('fixTitle');
+          $('#med_btn_modal_pat').attr('data-original-title', textoTooltip);
         }
 
         $('#med_modalCopiarMedicamento').modal('hide');
@@ -975,8 +967,7 @@ if (isset($_GET['duplicar_id'])) {
           errores.push("Falta el tipo de almacenamiento.");
           $('#med_group_almacenamiento').addClass('med-has-error');
         }
-        // PEGAR ESTE NUEVO BLOQUE:
-        // 1. Validar que Stock Mínimo no esté vacío y sea mayor a 0
+
         if (stockMinTexto === "") {
           errores.push('El stock mínimo del medicamento no puede estar vacío.');
           $('#med_group_stock_minimo_medicamento').addClass('med-has-error');
@@ -985,7 +976,6 @@ if (isset($_GET['duplicar_id'])) {
           $('#med_group_stock_minimo_medicamento').addClass('med-has-error');
         }
 
-        // 2. Validar que Stock Máximo no esté vacío y sea mayor a 0
         if (stockMaxTexto === "") {
           errores.push('El stock máximo del medicamento no puede estar vacío.');
           $('#med_group_stock_maximo_medicamento').addClass('med-has-error');
@@ -994,11 +984,9 @@ if (isset($_GET['duplicar_id'])) {
           $('#med_group_stock_maximo_medicamento').addClass('med-has-error');
         }
 
-        // 3. SOLO SI AMBOS TIENEN NÚMEROS VÁLIDOS, comparamos uno con el otro
         if (stockMinTexto !== "" && stockMaxTexto !== "") {
           let minVal = parseInt(stockMinTexto);
           let maxVal = parseInt(stockMaxTexto);
-
           if (minVal >= maxVal) {
             errores.push('Disculpe, el stock mínimo (' + minVal + ') no puede ser mayor o igual que el stock máximo (' + maxVal + ').');
             $('#med_group_stock_minimo_medicamento, #med_group_stock_maximo_medicamento').addClass('med-has-error');
@@ -1018,7 +1006,7 @@ if (isset($_GET['duplicar_id'])) {
         const textoOriginal = btnGuardar.html();
         btnGuardar.html('<i class="fa fa-spinner fa-spin"></i> Verificando...').prop('disabled', true);
 
-        // Verificamos existencia
+        // ======================= AJAX 1: VERIFICAR =======================
         $.ajax({
           url: 'get/verificar_existencia_medicamento.php',
           method: 'POST',
@@ -1041,67 +1029,86 @@ if (isset($_GET['duplicar_id'])) {
               }
               mostrarAviso('🛑 Error de Duplicidad:<br>' + mensaje);
             } else {
-              // Si no hay duplicado, procesamos el guardado final (Lógica del modal)
-              btnGuardar.html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
-              let dataForm = $('#med_formularioMedicamento').serialize();
+
+              // ======================= AJAX 2: GUARDAR =======================
+              let formData = $('#med_formularioMedicamento').serialize();
 
               $.ajax({
-                url: $('#med_formularioMedicamento').attr('action'),
+                url: '../../cfg/ajax/guardar_medicamento_ajax.php',
                 type: 'POST',
-                data: dataForm,
+                data: formData,
                 dataType: 'json',
-                success: function(resp) {
-                  btnGuardar.html(textoOriginal).prop('disabled', false);
-                  if (resp.success) {
-                    $('#med_modal_principal').modal('hide');
-                    $('#med_formularioMedicamento')[0].reset();
+                success: function(respuestaGuardado) {
 
-                    // 1. Hacemos una petición AJAX rápida para recargar todo el catálogo
-                    $.ajax({
-                      url: '../../cfg/ajax/filtrar_medicamentos_completo.php',
-                      type: 'POST',
-                      data: {
-                        filtro_busqueda_rapida: ''
-                      }, // Pedimos todo sin filtros
-                      dataType: 'json',
-                      success: function(response) {
-                        const $selectMed = $('#Id_descripcion_medicamento');
-                        $selectMed.empty().append('<option value="">--- Seleccione un Medicamento ---</option>');
+                  if (respuestaGuardado.success) {
+                    let nuevoId = respuestaGuardado.id_desc;
 
-                        // 2. Llenamos el select con la respuesta fresca
-                        if (response.length > 0) {
-                          response.forEach(function(item) {
-                            $selectMed.append('<option value="' + item.id_desc + '" data-nombre="' + item.nombre_completo + '">' + item.nombre_completo + '</option>');
-                          });
+                    btnGuardar.html(textoOriginal).prop('disabled', false);
+
+                    // 1. Iniciamos tu animación de salida
+                    $('#med_modal_principal').removeClass('in').addClass('out');
+
+                    // 2. Dejamos que termine tu animación y ocultamos el modal
+                    setTimeout(function() {
+                      $('#med_modal_principal').modal('hide');
+                      $('#med_modal_principal').removeClass('out');
+
+
+                      setTimeout(function() {
+                        mostrarExito("✅ El medicamento ya se creó exitosamente.");
+                      }, 150);
+
+                      // 4. Refrescamos la lista en segundo plano
+                      $.ajax({
+                        url: '../../cfg/ajax/filtrar_medicamentos_completo.php',
+                        type: 'POST',
+                        data: {
+                          filtro_busqueda_rapida: '',
+                          modo: $('#op').length ? $('#op').val() : 'entrada'
+                        },
+                        dataType: 'json',
+                        success: function(responseLista) {
+                          const $selectMed = $('#Id_descripcion_medicamento');
+
+                          if ($selectMed.length > 0) {
+                            $selectMed.empty().append('<option value="">--- Seleccione un Medicamento ---</option>');
+                            if (responseLista.length > 0) {
+                              responseLista.forEach(function(item) {
+                                $selectMed.append('<option value="' + item.id_desc + '" data-nombre="' + item.nombre_completo + '">' + item.nombre_completo + '</option>');
+                              });
+                            }
+                            if (typeof window.opcionesOriginalesMedicamentos !== 'undefined') {
+                              window.opcionesOriginalesMedicamentos = $selectMed.html();
+                            }
+                          }
+
+                          if (nuevoId && !isNaN(nuevoId) && $selectMed.length > 0) {
+                            $selectMed.val(nuevoId).trigger('change');
+                          }
                         }
+                      });
+                    }, 400);
 
-                        // 3. Actualizamos la variable global de respaldo
-                        if (typeof window.opcionesOriginalesMedicamentos !== 'undefined') {
-                          window.opcionesOriginalesMedicamentos = $selectMed.html();
-                        }
-
-                        // 4. Seleccionamos el medicamento recién creado y abrimos el modal
-                        setTimeout(function() {
-                          $('#med_avisoModal').modal('hide');
-
-                          // Forzamos la selección del nuevo medicamento
-                          $selectMed.val(String(resp.id_desc)).trigger('change');
-                          $('#modalAgregarMedicamento').modal('show');
-                        }, 500);
-                      }
-                    });
+                  } else {
+                    btnGuardar.html(textoOriginal).prop('disabled', false);
+                    mostrarAviso("🛑 Hubo un problema: " + respuestaGuardado.message);
                   }
                 },
-                error: function() {
+                error: function(jqXHR, textStatus, errorThrown) {
                   btnGuardar.html(textoOriginal).prop('disabled', false);
-                  mostrarAviso('🛑 Error de Servidor: No se pudo verificar la base de datos.');
+                  console.error("Error AJAX:", textStatus, errorThrown, jqXHR.responseText);
+                  mostrarAviso("🛑 Hubo un error crítico de conexión al intentar guardar el medicamento en el servidor.");
                 }
-              });
+              }); // Cierra AJAX 2 (Guardar)
             }
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            btnGuardar.html(textoOriginal).prop('disabled', false);
+            console.error("Error AJAX verificación:", textStatus, errorThrown);
+            mostrarAviso("🛑 Hubo un error al verificar la duplicidad.");
           }
-        });
-      });
-
+        }); // Cierra AJAX 1 (Verificar)
+      }); // Cierra evento click
       // =====================================================================
       // RECONSTRUIR AL DUPLICAR (DESDE PHP)
       // =====================================================================
@@ -1176,8 +1183,8 @@ if (isset($_GET['duplicar_id'])) {
         $('#med_contenedor_filas_patologias').empty();
 
         // 6. Restablecer los tooltips de los botones azules
-        $('#med_btn_modal_pa').attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle');
-        $('#med_btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+        $('#med_btn_modal_pa').attr('data-original-title', 'Ninguno seleccionado');
+        $('#med_btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada');
 
         // 7. Limpiar las clases rojas de error por si se cerró tras un intento fallido
         limpiarErrores();

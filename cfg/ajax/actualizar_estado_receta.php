@@ -10,6 +10,7 @@ if (isset($_POST['id']) && isset($_POST['tipo'])) {
     $id = mysqli_real_escape_string($conexion, $_POST['id']);
     $tipo = mysqli_real_escape_string($conexion, $_POST['tipo']); 
     $id_usuario = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
+    $motivo = mysqli_real_escape_string($conexion, $_POST['motivo_cancelacion']);
     
     mysqli_begin_transaction($conexion);
 
@@ -24,13 +25,13 @@ if (isset($_POST['id']) && isset($_POST['tipo'])) {
             if ($fila_sol = mysqli_fetch_assoc($res_sol)) {
                 $id_solicitud_vinculada = $fila_sol['id_solicitud'];
                 mysqli_query($conexion, "UPDATE solicitud_medicamento SET estatus_general = 'Cancelado' WHERE id_solicitud = '$id_solicitud_vinculada'");
-                mysqli_query($conexion, "UPDATE detalle_solicitud SET estatus_item = 'Cancelado' WHERE id_solicitud = '$id_solicitud_vinculada'");
+                mysqli_query($conexion, "UPDATE detalle_solicitud SET motivo = '$motivo', estatus_item = 'Cancelado' WHERE id_solicitud = '$id_solicitud_vinculada'");
             }
 
         } else if ($tipo === 'Externa') {
             // Cancelar la solicitud externa
             mysqli_query($conexion, "UPDATE solicitud_medicamento SET estatus_general = 'Cancelado' WHERE id_solicitud = '$id'");
-            mysqli_query($conexion, "UPDATE detalle_solicitud SET estatus_item = 'Cancelado' WHERE id_solicitud = '$id'");
+            mysqli_query($conexion, "UPDATE detalle_solicitud SET motivo = '$motivo', estatus_item = 'Cancelado' WHERE id_solicitud = '$id'");
         }
 
         mysqli_commit($conexion);

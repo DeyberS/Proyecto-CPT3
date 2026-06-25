@@ -92,7 +92,7 @@
         <?php if (in_array('Crear Proveedores', $_SESSION["permisos"])) : ?>
           <a href="farmacia_proveedores_agregar.php" class="btn-sm btn-success pull-right"> Añadir Un Nuevo Proveedor </a>
         <?php endif; ?>
-        <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
+        <input type="text" id="buscar" name="buscar" class="form-control" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
       </div>
       <br><br>
       <div id="contenedorTabla">

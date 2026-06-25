@@ -69,6 +69,7 @@ if ($tipo_receta === 'Interna') {
                 sm.id_solicitud AS Id, 
                 sm.fecha_solicitud AS fecha_consulta, 
                 'Receta Externa - Sin indicaciones detalladas registradas en el sistema.' AS tratamiento_indicado,
+                sm.entregado_a,
                 paciente.nombre AS nom_pac, paciente.apellido AS ape_pac, 
                 paciente.tipo_cedula AS tipo_cedula_pac, paciente.cedula AS cedula_pac,
                 paciente.fecha_nacimiento, paciente.genero,
@@ -199,8 +200,8 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
         }
 
         .content-custom {
-            padding: 50px 10px;
-            margin-left: 60px;
+            padding: 10px 10px;
+            margin-left: 40px;
         }
         .main-container { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); overflow: hidden; margin-bottom: 30px; }
         .hero-header { background: linear-gradient(135deg, #605ca8 0%, #333152 100%); color: white; padding: 30px; border-bottom: 5px solid <?php echo $status_color; ?>; position: relative; }
@@ -265,9 +266,10 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
                                     <p class="value-custom">Dr(a). <?php echo trim($data['nom_med'] . " " . $data['ape_med']); ?></p>
                                 </div>
 
-                                <h4 class="section-title" style="margin-top: 30px;"><i class="fa fa-file-text-o"></i> Dosificación e Indicaciones</h4>
+                                <h4 class="section-title" style="margin-top: 30px;"><i class="fa fa-file-text-o"></i> Más detalles</h4>
                                 <div class="well-custom">
-                                    <?php echo nl2br($data['tratamiento_indicado'] ?: 'No se registraron indicaciones adicionales.'); ?>
+                                    <p>Medicamento Entregado A: <?php echo nl2br($data['entregado_a'] ?: 'No se registro a la persona a la cual se le entrego el medicamento.'); ?> </p>
+                                    <p>Tratamiento: <?php echo nl2br($data['tratamiento_indicado'] ?: 'No se registraron indicaciones adicionales.'); ?></p>
                                 </div>
                             </div>
 

@@ -23,8 +23,8 @@ $sql = "SELECT
         INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
         WHERE dm.estatus = 1 AND m.estatus = 1 AND p.estatus = 1 AND l.estatus = 1";
 
-// SOLO aplicar el filtro estricto de stock y vencimiento si NO es una entrada
-if ($modo !== 'entrada') {
+// SOLO aplicar el filtro estricto de stock y vencimiento si NO es una entrada ni un pedido
+if ($modo !== 'entrada' && $modo !== 'pedido' && $modo !== 'ajuste') {
     $sql .= " AND EXISTS (
                 SELECT 1 FROM lotes_medicamentos lm 
                 INNER JOIN existencias_stock ex ON lm.Id = ex.Id_lote 

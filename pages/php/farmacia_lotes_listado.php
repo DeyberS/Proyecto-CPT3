@@ -97,7 +97,13 @@
         <?php if (in_array('Crear Lotes', $_SESSION["permisos"])) : ?>
           <a href="farmacia_lotes_agregar.php" class="btn-sm btn-success pull-right"><i class="fa fa-user-plus"></i> Añadir Un Nuevo Lote </a>
         <?php endif; ?>
-        <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="width: 200px;" autocomplete="off">
+        <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." style="border-radius:0; height:10%; width:250px; display:inline-block;" value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="width: 200px;" autocomplete="off">
+        <p class="pull-right" style="width:5px;"></p>
+        <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de lotes.">
+          <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzadaLotes">
+            <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+          </button>
+        </span>
       </div>
       <br><br>
       <div id="contenedorTabla">
@@ -116,41 +122,73 @@
           <tbody class="tbody" width="100%" style="font-size: 12px;">
             <tr>
               <?php
-              // --- LÓGICA DE PAGINACIÓN Y BÚSQUEDA ---
+              // --- LÓGICA DE PAGINACIÓN Y BÚSQUEDA AVANZADA ---
               $registros_por_pagina = 14;
               $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
               $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
-              // Capturar término de búsqueda
-              $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+              // Recepción de variables de filtro
+              $busqueda     = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+              $f_estado     = isset($_GET['f_estado']) ? mysqli_real_escape_string($conexion, $_GET['f_estado']) : '';
+              $f_fab_desde  = isset($_GET['f_fab_desde']) ? mysqli_real_escape_string($conexion, $_GET['f_fab_desde']) : '';
+              $f_fab_hasta  = isset($_GET['f_fab_hasta']) ? mysqli_real_escape_string($conexion, $_GET['f_fab_hasta']) : '';
+              $f_venc_desde = isset($_GET['f_venc_desde']) ? mysqli_real_escape_string($conexion, $_GET['f_venc_desde']) : '';
+              $f_venc_hasta = isset($_GET['f_venc_hasta']) ? mysqli_real_escape_string($conexion, $_GET['f_venc_hasta']) : '';
+              $f_proveedor  = isset($_GET['f_proveedor']) ? mysqli_real_escape_string($conexion, $_GET['f_proveedor']) : '';
+              $f_stock_min  = (isset($_GET['f_stock_min']) && $_GET['f_stock_min'] !== '') ? (int)$_GET['f_stock_min'] : 0;
+              $f_stock_max  = (isset($_GET['f_stock_max']) && $_GET['f_stock_max'] !== '') ? (int)$_GET['f_stock_max'] : 0;
 
               // 1. Definir el filtro dinámico
               $donde = "WHERE lm.estatus = 1";
+
               if ($busqueda != '') {
-                $donde .= " AND (lm.Lote LIKE '%$busqueda%' 
-                  OR m.nombre_medicamento LIKE '%$busqueda%' 
-                  OR lm.estado_lote LIKE '%$busqueda%')";
+                $donde .= " AND (lm.Lote LIKE '%$busqueda%' OR m.nombre_medicamento LIKE '%$busqueda%' OR lm.estado_lote LIKE '%$busqueda%')";
+              }
+              if ($f_estado != '') {
+                $donde .= " AND lm.estado_lote = '$f_estado'";
+              }
+              if ($f_fab_desde != '') {
+                $donde .= " AND lm.fecha_fabricacion >= '$f_fab_desde'";
+              }
+              if ($f_fab_hasta != '') {
+                $donde .= " AND lm.fecha_fabricacion <= '$f_fab_hasta'";
+              }
+              if ($f_venc_desde != '') {
+                $donde .= " AND lm.fecha_vencimiento >= '$f_venc_desde'";
+              }
+              if ($f_venc_hasta != '') {
+                $donde .= " AND lm.fecha_vencimiento <= '$f_venc_hasta'";
+              }
+              if ($f_proveedor != '') {
+                $donde .= " AND prov.nombre_proveedor LIKE '%$f_proveedor%'";
+              }
+              if ($f_stock_min > 0) {
+                $donde .= " AND ex.cantidad_actual >= $f_stock_min";
+              }
+              if ($f_stock_max > 0) {
+                $donde .= " AND ex.cantidad_actual <= $f_stock_max";
               }
 
-              // 2. Contar el total de registros FILTRADOS para la paginación
+              // 2. Contar el total de registros FILTRADOS
               $sql_conteo = "SELECT COUNT(*) as total 
-                 FROM lotes_medicamentos lm
-                 JOIN descripcion_medicamento dm ON lm.Id_descripcion_medicamento = dm.Id
-                 JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-                 $donde";
+               FROM lotes_medicamentos lm
+               JOIN existencias_stock ex ON lm.Id = ex.Id_lote
+               JOIN descripcion_medicamento dm ON lm.Id_descripcion_medicamento = dm.Id
+               JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+               LEFT JOIN proveedor prov ON lm.Id_proveedor = prov.Id_proveedor
+               $donde";
               $resultado_conteo = mysqli_query($conexion, $sql_conteo);
               $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
               $total_registros = $fila_conteo['total'];
               $total_paginas = ceil($total_registros / $registros_por_pagina);
 
-              // 3. Obtener los registros usando el filtro $donde
-              $sql = "SELECT 
-                lm.*, ex.cantidad_actual, m.nombre_medicamento AS medicamento
-              FROM 
-                lotes_medicamentos lm
+              // 3. Consulta principal con filtros
+              $sql = "SELECT lm.*, ex.cantidad_actual, m.nombre_medicamento AS medicamento, prov.nombre_proveedor
+              FROM lotes_medicamentos lm
               JOIN existencias_stock ex ON lm.Id = ex.Id_lote
               JOIN descripcion_medicamento dm ON lm.Id_descripcion_medicamento = dm.Id
               JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+              LEFT JOIN proveedor prov ON lm.Id_proveedor = prov.Id_proveedor
               $donde
               ORDER BY lm.fecha_fabricacion DESC
               LIMIT $inicio, $registros_por_pagina";
@@ -299,6 +337,75 @@
       </div>
     </div>
 
+    <div class="modal fade" id="modalBusquedaAvanzadaLotes" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <form id="formBusquedaAvanzada" method="GET" action="">
+            <div class="modal-header bg-primary">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Lotes</h4>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label>Estado del Lote</label>
+                  <select name="f_estado" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="Disponible">Disponible</option>
+                    <option value="Cuarentena">Cuarentena</option>
+                    <option value="Vencido">Vencido</option>
+                    <option value="Retirado">Retirado</option>
+                    <option value="Dañado">Dañado</option>
+                  </select>
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Proveedor</label>
+                  <input type="text" name="f_proveedor" class="form-control" placeholder="Nombre del proveedor...">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Búsqueda General</label>
+                  <input type="text" name="buscar" id="buscar_modal" class="form-control" placeholder="Lote o Medicamento...">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3 form-group">
+                  <label>F. Fabricación Desde</label>
+                  <input type="date" name="f_fab_desde" max="<?php echo date('Y-m-d'); ?>" class="form-control">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label>F. Fabricación Hasta</label>
+                  <input type="date" name="f_fab_hasta" min="<?php echo date('Y-m-d'); ?>" class="form-control">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label>F. Vencimiento Desde</label>
+                  <input type="date" name="f_venc_desde" max="<?php echo date('Y-m-d'); ?>" class="form-control">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label>F. Vencimiento Hasta</label>
+                  <input type="date" name="f_venc_hasta" min="<?php echo date('Y-m-d'); ?>" class="form-control">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label>Stock Actual Mínimo</label>
+                  <input type="number" name="f_stock_min" class="form-control" min="0" placeholder="Ej: 0">
+                </div>
+                <div class="col-md-6 form-group">
+                  <label>Stock Actual Máximo</label>
+                  <input type="number" name="f_stock_max" class="form-control" min="0" placeholder="Ej: 500">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <div class="modal" id="ModalReporteLote" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -370,6 +477,73 @@
           $('#desactivar').attr('href', urlDesactivar);
           $('#DesactivarLote').modal('show');
         })
+
+        // ==========================================
+        // LÓGICA AJAX PARA BÚSQUEDA Y PAGINACIÓN
+        // ==========================================
+        window.cargarDatosAjax = function(url) {
+          // Corregido: Usamos #contenedorTabla porque #tbody_lotes no existe en tu HTML
+          $('#contenedorTabla').css('opacity', '0.4');
+
+          $.get(url, function(data) {
+            var htmlParsed = $(data);
+
+            // 1. Actualizamos la tabla
+            $('#contenedorTabla').html(htmlParsed.find('#contenedorTabla').html()).css('opacity', '1');
+
+            // 2. Actualizamos la paginación (usando la etiqueta nav que contiene tu paginación)
+            $('nav[aria-label="Page navigation"]').html(htmlParsed.find('nav[aria-label="Page navigation"]').html());
+
+            window.history.pushState(null, '', url);
+          }).fail(function() {
+            alert("Error de conexión al aplicar filtros.");
+            $('#contenedorTabla').css('opacity', '1');
+          });
+        };
+
+        let timer;
+
+        // IMPORTANTE: Desvinculamos el evento del footer.php para que no interfiera ni borre los filtros
+        $('#buscar').off('keyup');
+
+        $('#buscar').on('keyup', function() {
+          clearTimeout(timer);
+          let query = $(this).val();
+
+          // Sincronizamos lo que el usuario escribe con el input oculto del modal de filtros
+          $('#buscar_modal').val(query);
+
+          timer = setTimeout(function() {
+            // En lugar de enviar solo "buscar=X", serializamos TODO el formulario avanzado.
+            // Así la búsqueda en tiempo real arrastra consigo fechas, proveedores, estados, etc.
+            var filtrosActuales = $('#formBusquedaAvanzada').serialize();
+            var url = 'farmacia_lotes_listado.php?' + filtrosActuales;
+            cargarDatosAjax(url);
+          }, 400);
+        });
+
+        $('#formBusquedaAvanzada').on('submit', function(e) {
+          e.preventDefault();
+          var url = 'farmacia_lotes_listado.php?' + $(this).serialize();
+          $('#modalBusquedaAvanzadaLotes').modal('hide');
+          cargarDatosAjax(url);
+        });
+
+        // Corregido: Delegación de eventos adaptada al contenedor real de la paginación
+        $(document).on('click', 'nav[aria-label="Page navigation"] .pagination a', function(e) {
+          e.preventDefault();
+          var url = $(this).attr('href');
+          if (url) cargarDatosAjax(url);
+        });
+
+        window.limpiarFiltrosAjax = function() {
+          $('#formBusquedaAvanzada')[0].reset();
+          $('#buscar').val('');
+          $('#buscar_modal').val('');
+          var urlLimpia = window.location.href.split('?')[0];
+          cargarDatosAjax(urlLimpia);
+          $('#modalBusquedaAvanzadaLotes').modal('hide');
+        };
 
         // Script para mostrar los modales de sesión
         <?php if ($mostrar_modal_exito) : ?>

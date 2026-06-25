@@ -125,8 +125,8 @@
                 <input type="text" class="form-control solo-numeros-ext" name="ext_telefono" id="ext_telefono" placeholder="Número" maxlength="7" required>
               </div>
               <div class="col-sm-6 form-group">
-                <label>Email:</label>
-                <input type="email" class="form-control" name="ext_email" id="ext_email" placeholder="correo@gmail.com">
+                <label>Email (*):</label>
+                <input type="email" class="form-control" name="ext_email" id="ext_email" placeholder="correo@gmail.com" required>
               </div>
             </div>
             <hr>
@@ -428,8 +428,7 @@
               $('#entregado_a').prop('readonly', true).css('background-color', '#e9ecef');
 
               $('#formAjaxPacienteExterno')[0].reset();
-              $('#headerDespachoAviso').removeClass('bg-crimson').addClass('bg-green');
-              mostrarAviso("✅ Paciente registrado con éxito y adjuntado al despacho actual.");
+              mostrarExito("✅ Paciente registrado con éxito y adjuntado al despacho actual.");
             } else {
               if (res.error.includes("ya se encuentra registrada")) {
                 $('#ext_cedula').addClass('input-error');

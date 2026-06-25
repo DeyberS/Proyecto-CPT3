@@ -98,7 +98,13 @@
         <?php if (in_array('Crear Medicamentos', $_SESSION["permisos"])) : ?>
           <a href="farmacia_medicamentos_agregar.php" class="btn-sm btn-success pull-right"><i class="fa fa-user-plus"></i> Añadir Un Nuevo Medicamento </a>
         <?php endif; ?>
-        <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
+        <input type="text" id="buscar" name="buscar" class="form-control" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
+        <p class="pull-right" style="width:5px;"></p>
+        <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de medicamentos.">
+          <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzadaMedicamentos">
+            <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+          </button>
+        </span>
       </div>
       <br><br>
       <div id="contenedorTabla">
@@ -116,8 +122,12 @@
           <tbody class="tbody" width="100%" style="font-size: 12px;">
             <tr>
               <?php
-              // Número de registros por página
               $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+              $f_presentacion = isset($_GET['f_presentacion']) ? mysqli_real_escape_string($conexion, $_GET['f_presentacion']) : '';
+              $f_via = isset($_GET['f_via']) ? mysqli_real_escape_string($conexion, $_GET['f_via']) : '';
+              $f_lab = isset($_GET['f_lab']) ? mysqli_real_escape_string($conexion, $_GET['f_lab']) : '';
+              $f_codigo = isset($_GET['f_codigo']) ? mysqli_real_escape_string($conexion, $_GET['f_codigo']) : '';
+
               $registros_por_pagina = 14;
               $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
               $inicio = ($pagina_actual - 1) * $registros_por_pagina;
@@ -125,51 +135,47 @@
               // 1. Definir el filtro base
               $donde = "WHERE m.estatus = 1";
               if ($busqueda != '') {
-                $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' 
-                              OR p.nombre_presentacion LIKE '%$busqueda%' 
-                              OR dm.via_aplicacion LIKE '%$busqueda%')";
+                $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' OR p.nombre_presentacion LIKE '%$busqueda%' OR dm.via_aplicacion LIKE '%$busqueda%')";
+              }
+              if ($f_presentacion != '') {
+                $donde .= " AND p.nombre_presentacion = '$f_presentacion'";
+              }
+              if ($f_via != '') {
+                $donde .= " AND dm.via_aplicacion = '$f_via'";
+              }
+              if ($f_lab != '') {
+                $donde .= " AND lab.nombre_laboratorio LIKE '%$f_lab%'";
+              }
+              if ($f_codigo != '') {
+                $donde .= " AND dm.codigo_barras LIKE '%$f_codigo%'";
               }
 
-              // 2. Contar el total de registros FILTRADOS para la paginación
-              $sql_conteo = "SELECT COUNT(*) as total 
-                            FROM medicamento m
-                            JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                            JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
-                            $donde";
+              // 2. Contar total filtrado
+              $sql_conteo = "SELECT COUNT(DISTINCT m.Id_medicamento) as total 
+               FROM medicamento m
+               JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
+               JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+               LEFT JOIN laboratorio lab ON dm.Id_laboratorio = lab.Id_laboratorio
+               $donde";
               $resultado_conteo = mysqli_query($conexion, $sql_conteo);
-              $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
-              $total_medicamentos = $fila_conteo['total'];
-              $total_paginas = ceil($total_medicamentos / $registros_por_pagina);
-              // Consulta principal con JOIN para obtener los datos paginados
-              $sql = "SELECT 
-                        m.Id_medicamento AS Id_medicamento,
-                        m.nombre_medicamento,
-                        dm.Id, 
-                        dm.Id_presentacion,
-                        dm.contenido_neto, 
-                        dm.via_aplicacion,
-                        p.nombre_presentacion,
-                        dm.codigo_barras,
-                        GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes,
-                        m.estatus
-                    FROM 
-                        medicamento m
-                    JOIN 
-                        descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                    INNER JOIN 
-                        presentacion p ON dm.Id_presentacion = p.Id_presentacion     
-                    INNER JOIN 
-                        detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
-                    INNER JOIN 
-                        unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-                    INNER JOIN 
-                        principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
-                    $donde  
-                    GROUP BY 
-                        m.Id_medicamento  
-                    ORDER BY 
-                        m.Id_medicamento ASC
-                    LIMIT $inicio, $registros_por_pagina";
+              $total_paginas = ceil(mysqli_fetch_assoc($resultado_conteo)['total'] / $registros_por_pagina);
+
+              // 3. Consulta principal
+              $sql = "SELECT m.Id_medicamento AS Id_medicamento, m.nombre_medicamento, dm.Id, 
+              dm.Id_presentacion, dm.contenido_neto, dm.via_aplicacion, p.nombre_presentacion, 
+              dm.codigo_barras, lab.nombre_laboratorio,
+              GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes, m.estatus
+              FROM medicamento m
+              JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
+              INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion     
+              INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
+              INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+              INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+              LEFT JOIN laboratorio lab ON dm.Id_laboratorio = lab.Id_laboratorio
+              $donde  
+              GROUP BY m.Id_medicamento  
+              ORDER BY m.Id_medicamento ASC
+              LIMIT $inicio, $registros_por_pagina";
               $resultado = $conexion->query($sql);
               ?>
             </tr>
@@ -334,6 +340,65 @@
       </div>
     </div>
 
+    <div class="modal fade" id="modalBusquedaAvanzadaMedicamentos" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <form id="formBusquedaAvanzada" method="GET" action="">
+            <div class="modal-header bg-primary">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Medicamentos</h4>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label>Presentación</label>
+                  <select name="f_presentacion" class="form-control">
+                    <option value="">Todas</option>
+                    <?php
+                    $res_pres = $conexion->query("SELECT nombre_presentacion FROM presentacion WHERE estatus = '1' ORDER BY nombre_presentacion ASC");
+                    while ($pr = $res_pres->fetch_assoc()) {
+                      echo "<option value='" . htmlspecialchars($pr['nombre_presentacion']) . "'>" . htmlspecialchars($pr['nombre_presentacion']) . "</option>";
+                    }
+                    ?>
+                  </select>
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Vía de Aplicación</label>
+                  <select name="f_via" class="form-control">
+                    <option value="">Todas</option>
+                    <option value="Oral">Oral</option>
+                    <option value="Intravenosa">Intravenosa</option>
+                    <option value="Intramuscular">Intramuscular</option>
+                    <option value="Tópica">Tópica</option>
+                    <option value="Oftálmica">Oftálmica</option>
+                  </select>
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Laboratorio</label>
+                  <input type="text" name="f_lab" class="form-control" placeholder="Nombre del laboratorio...">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label>Código de Barras</label>
+                  <input type="text" name="f_codigo" class="form-control" placeholder="Ej: 274898248...">
+                </div>
+                <div class="col-md-6 form-group">
+                  <label>Búsqueda General</label>
+                  <input type="text" name="buscar" id="buscar_modal_med" class="form-control" placeholder="Medicamento...">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     </body>
 
     <script>
@@ -367,6 +432,71 @@
           window.open('../../cfg/reportes/generar_pdf_medicamentos.php?tipo=' + tipo, '_blank');
           $('#ModalReporteMedicamento').modal('hide');
         });
+
+        // ==========================================
+        // LÓGICA AJAX BÚSQUEDA Y PAGINACIÓN (MEDICAMENTOS)
+        // ==========================================
+        window.cargarDatosAjax = function(url) {
+          // Ajuste de selector: usamos #contenedorTabla ya que es el ID que envuelve tu tabla
+          $('#contenedorTabla').css('opacity', '0.4');
+
+          $.get(url, function(data) {
+            var htmlParsed = $(data);
+
+            // Actualizamos el contenido de la tabla y la paginación
+            $('#contenedorTabla').html(htmlParsed.find('#contenedorTabla').html()).css('opacity', '1');
+
+            // Ajuste de selector: 'nav[aria-label="Page navigation"]' para capturar la paginación correctamente
+            $('nav[aria-label="Page navigation"]').html(htmlParsed.find('nav[aria-label="Page navigation"]').html());
+
+            window.history.pushState(null, '', url);
+          }).fail(function() {
+            alert("Error de conexión al aplicar filtros.");
+            $('#contenedorTabla').css('opacity', '1');
+          });
+        };
+
+        let timer;
+        // Desvinculamos el evento global del footer para evitar conflictos
+        $('#buscar').off('keyup');
+
+        $('#buscar').on('keyup', function() {
+          clearTimeout(timer);
+          let query = $(this).val();
+
+          // Sincroniza con el input dentro del modal de filtros
+          $('#buscar_modal_med').val(query);
+
+          timer = setTimeout(function() {
+            // Serializamos todo el formulario de filtros avanzados para no perder ningún parámetro
+            var filtrosActuales = $('#formBusquedaAvanzada').serialize();
+            var url = 'farmacia_medicamentos_listado.php?' + filtrosActuales;
+            cargarDatosAjax(url);
+          }, 400);
+        });
+
+        $('#formBusquedaAvanzada').on('submit', function(e) {
+          e.preventDefault();
+          var url = 'farmacia_medicamentos_listado.php?' + $(this).serialize();
+          $('#modalBusquedaAvanzadaMedicamentos').modal('hide');
+          cargarDatosAjax(url);
+        });
+
+        // Corregido: Delegación de eventos para la paginación
+        $(document).on('click', 'nav[aria-label="Page navigation"] .pagination a', function(e) {
+          e.preventDefault();
+          var url = $(this).attr('href');
+          if (url) cargarDatosAjax(url);
+        });
+
+        window.limpiarFiltrosAjax = function() {
+          $('#formBusquedaAvanzada')[0].reset();
+          $('#buscar').val('');
+          $('#buscar_modal_med').val('');
+          var urlLimpia = window.location.href.split('?')[0];
+          cargarDatosAjax(urlLimpia);
+          $('#modalBusquedaAvanzadaMedicamentos').modal('hide');
+        };
 
         $(document).on('click', '.btn-desactivar', function(e) {
           e.preventDefault();

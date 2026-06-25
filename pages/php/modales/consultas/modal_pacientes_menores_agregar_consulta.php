@@ -190,8 +190,8 @@
               </select>
             </div>
             <div class="col-sm-5 form-group">
-              <label>Email:</label>
-              <input type="email" class="form-control rep-auto" name="rep_email" id="rep_email" placeholder="correo@ejemplo.com">
+              <label>Email (*):</label>
+              <input type="email" class="form-control rep-auto" name="rep_email" id="rep_email" placeholder="correo@ejemplo.com" required>
             </div>
             <div class="col-sm-3 form-group">
               <label>Parentesco (*):</label>
@@ -653,8 +653,7 @@
             $('#entregado_a').prop('readonly', true).css('background-color', '#e9ecef');
 
             $('#formAjaxPacienteMenor')[0].reset();
-            $('#headerDespachoAviso').removeClass('bg-crimson').addClass('bg-green');
-            mostrarAviso("✅ Menor y Representante registrados con éxito.");
+            mostrarExito("✅ Menor y Representante registrados con éxito.");
           } else {
             mostrarAviso("🛑 " + res.error);
           }

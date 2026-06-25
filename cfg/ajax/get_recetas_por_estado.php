@@ -103,7 +103,7 @@ if ($estado_requerido == 'Cancelado') {
 $query = "SELECT * FROM ($sql_base) AS base_unificada $filtro ORDER BY fecha_solicitud DESC";
 $resultado = mysqli_query($conexion, $query);
 
-echo '<table class="table table-sm table-hover table-bordered" width="100%" style="font-size: 12px;">';
+echo '<table class="table table-sm table-hover" width="100%" style="font-size: 12px;">';
 echo '<thead class="table-dark" style="background-color: #222; color: white;"><tr><th>Fecha</th><th>Paciente</th><th>Médico</th><th>Medicamento</th><th class="text-center">Estado</th><th class="text-center">Acciones</th></tr></thead><tbody>';
 
 if(mysqli_num_rows($resultado) == 0){
@@ -113,6 +113,18 @@ if(mysqli_num_rows($resultado) == 0){
 while ($row = mysqli_fetch_assoc($resultado)) {
     $etiquetaTipo = ($row['tipo_receta'] === 'Interna') ? (($row['es_menor'] == 1) ? '<span class="label label-info">Interna-Rep.</span>' : '<span class="label label-primary">Interna</span>') : '<span class="label label-warning">Externa</span>';
     
+    $span_class="";
+    if ($row['estado_entrega'] == 'pendiente' || $row['estado_entrega'] == 'Pendiente') {
+        $span_class .= '<span class="badge bg-yellow">';
+      } else if ($row['estado_entrega'] == 'Parcial' || $row['estado_entrega'] == 'Parcialmente Entregado') {
+        $span_class .= '<span class="badge bg-yellow">';
+      } else if ($row['estado_entrega'] == 'no entregado' || $row['estado_entrega'] == 'No entregado') {
+        $span_class .= '<span class="badge bg-default">';
+      } else if ($row['estado_entrega'] == 'Cancelado') {
+        $span_class .= '<span class="badge bg-crimson">';
+      } else {
+        $span_class .= '<span class="badge bg-green">';
+      }
     // Preparar botonera igual que en el main
     $botones = "";
     if ($row['estado_entrega'] == 'pendiente' || $row['estado_entrega'] == 'Parcialmente Entregado' || $row['estado_entrega'] == 'Parcial' || $row['estado_entrega'] == 'Pendiente') {
@@ -126,10 +138,10 @@ while ($row = mysqli_fetch_assoc($resultado)) {
 
     echo '<tr>';
     echo '<td>' . date('d/m/Y', strtotime($row['fecha_solicitud'])) . '</td>';
-    echo '<td>' . $etiquetaTipo . '<br><strong>' . htmlspecialchars(trim($row['nom_pac']." ".$row['ape_pac'])) . '</strong><br><small>'.$row['cedula_pac'].'</small></td>';
+    echo '<td>' . $etiquetaTipo . '<br><strong>' . htmlspecialchars(trim($row['nom_pac']." ".$row['ape_pac'])) . '</strong><br><small>'.$row['tipo_cedula_pac']."-".$row['cedula_pac'].'</small></td>';
     echo '<td>Dr/a. ' . htmlspecialchars(trim($row['nom_med']." ".$row['ape_med'])) . '</td>';
     echo '<td><span class="text-blue">' . $row['nombre_medicamento'] . '</span></td>';
-    echo '<td class="text-center"><span class="badge bg-black">' . strtoupper($estado_requerido) . '</span></td>';
+    echo '<td class="text-center">' . $span_class . strtoupper($estado_requerido) . '</span></td>';
     echo '<td class="text-center">' . $botones . '</td>';
     echo '</tr>';
 }

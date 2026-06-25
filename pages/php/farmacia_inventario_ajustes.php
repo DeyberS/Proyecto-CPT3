@@ -523,7 +523,9 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
       // 2. Lógica principal: Clic en "Aplicar Filtros" dentro del Modal
       $('#btnAplicarFiltros').on('click', function() {
         // Serializar los datos del formulario del modal
-        const datosFiltro = $('#formFiltroModal').serialize();
+        // NUEVO CÓDIGO
+        const operacion = $('#op').val(); // Obtenemos 'entrada', 'salida' o 'ajuste' del input oculto
+        const datosFiltro = $('#formFiltroModal').serialize() + '&modo=' + operacion;
         const busquedaRapida = $('#filtro_busqueda_rapida').val().trim();
         const principios = $('#filtro_principios').val().trim();
         const nombre_med = $('#filtro_nombre').val().trim();
@@ -675,6 +677,65 @@ $operacion_actual = isset($_GET['op']) ? $_GET['op'] : 'entrada';
           });
         }
       });
+
+      // -------------------------------------------------------------
+      // ACTUALIZACIÓN SILENCIOSA DEL SELECT DE MEDICAMENTOS
+      // -------------------------------------------------------------
+      function actualizarSelectMedicamentosSilencio() {
+        if ($('#modalAgregarMedicamento').is(':visible')) {
+          return;
+        }
+        // 1. Verificamos si hay alguna búsqueda/filtro activo
+        const hayFiltroBusqueda = $('#filtro_busqueda_rapida').val().trim() !== '';
+        let hayFiltrosAvanzados = false;
+        $.each($('#formFiltroModal').serializeArray(), function(i, field) {
+          if (field.value.trim() !== "") hayFiltrosAvanzados = true;
+        });
+
+        // 2. Solo actualizamos si el usuario NO está usando los filtros
+        if (!hayFiltroBusqueda && !hayFiltrosAvanzados) {
+          // Guardamos el ID del medicamento que el usuario tenga seleccionado actualmente
+          const valorSeleccionado = $('#Id_descripcion_medicamento').val();
+          let modoOperacion = $('#op').val();
+
+          $.ajax({
+            url: '../../cfg/ajax/filtrar_medicamentos_completo.php', // Enviamos petición vacía para traer todos
+            type: 'POST',
+            data: {
+              recarga_silenciosa: true,
+              modo: modoOperacion
+            },
+            dataType: 'json',
+            success: function(response) {
+              const select = $('#Id_descripcion_medicamento');
+              let nuevasOpciones = '<option value="">--- Seleccione un Medicamento ---</option>';
+
+              if (response.length > 0) {
+                response.forEach(function(item) {
+                  const comp = item.componentes ? ` data-componentes="${item.componentes}"` : '';
+                  nuevasOpciones += `<option value="${item.id_desc}" data-nombre="${item.nombre_completo}"${comp}>${item.nombre_completo}</option>`;
+                });
+              } else {
+                nuevasOpciones += '<option value="" disabled>🛑 No se encontraron medicamentos.</option>';
+              }
+
+              // Actualizamos el DOM sin interrumpir al usuario
+              select.html(nuevasOpciones);
+
+              // Restauramos la selección que tenía
+              if (valorSeleccionado) {
+                select.val(valorSeleccionado);
+              }
+
+              // Actualizamos el respaldo original para cuando limpien los filtros
+              window.opcionesOriginalesMedicamentos = nuevasOpciones;
+            }
+          });
+        }
+      }
+
+      // Ejecutar la actualización silenciosa cada 2000 milisegundos (2 segundos)
+      setInterval(actualizarSelectMedicamentosSilencio, 2000);
 
       $('#formularioAjuste').on('submit', function(e) {
         e.preventDefault();

@@ -9,63 +9,67 @@
     include('includes/headerNav2.php');
     include("../../cfg/conexion.php");
 
-    // Parámetro para filtrar por nombre de medicamento usando el input
-    $med_search = isset($_GET['med_search']) ? trim($_GET['med_search']) : '';
-    $mostrar_vacio = empty($med_search);
+    // --- RECEPCIÓN DE VARIABLES DE FILTRADO ---
+    $busqueda      = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+    $f_desde       = isset($_GET['f_desde']) ? mysqli_real_escape_string($conexion, $_GET['f_desde']) : '';
+    $f_hasta       = isset($_GET['f_hasta']) ? mysqli_real_escape_string($conexion, $_GET['f_hasta']) : '';
+    $f_tipo_mov    = isset($_GET['f_tipo_mov']) ? mysqli_real_escape_string($conexion, $_GET['f_tipo_mov']) : '';
+    $f_lote        = isset($_GET['f_lote']) ? mysqli_real_escape_string($conexion, $_GET['f_lote']) : '';
+    $f_proveedor   = isset($_GET['f_proveedor']) ? mysqli_real_escape_string($conexion, $_GET['f_proveedor']) : '';
+    
+    $f_cant_min    = (isset($_GET['f_cant_min']) && $_GET['f_cant_min'] !== '') ? (int)$_GET['f_cant_min'] : 0;
+    $f_cant_max    = (isset($_GET['f_cant_max']) && $_GET['f_cant_max'] !== '') ? (int)$_GET['f_cant_max'] : 0;
+    $f_stock_min   = (isset($_GET['f_stock_min']) && $_GET['f_stock_min'] !== '') ? (int)$_GET['f_stock_min'] : 0;
+    $f_stock_max   = (isset($_GET['f_stock_max']) && $_GET['f_stock_max'] !== '') ? (int)$_GET['f_stock_max'] : 0;
+
+    // Determinar si hay filtros aplicados para mostrar la tabla o dejar el estado vacío
+    $filtros_aplicados = ($busqueda != '' || $f_desde != '' || $f_hasta != '' || $f_tipo_mov != '' || $f_lote != '' || $f_proveedor != '' || $f_cant_min > 0 || $f_cant_max > 0 || $f_stock_min > 0 || $f_stock_max > 0);
+    $mostrar_vacio = !$filtros_aplicados;
+
+    // Construcción del WHERE dinámico
+    $donde = " WHERE 1=1 ";
+
+    if ($busqueda != '') {
+        $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' OR l.Lote LIKE '%$busqueda%' OR p.nombre_proveedor LIKE '%$busqueda%')";
+    }
+    if ($f_desde != '') {
+        $donde .= " AND DATE(di.fecha) >= '$f_desde'";
+    }
+    if ($f_hasta != '') {
+        $donde .= " AND DATE(di.fecha) <= '$f_hasta'";
+    }
+    if ($f_tipo_mov != '') {
+        $donde .= " AND tm.nombre = '$f_tipo_mov'";
+    }
+    if ($f_lote != '') {
+        $donde .= " AND l.Lote LIKE '%$f_lote%'";
+    }
+    if ($f_proveedor != '') {
+        $donde .= " AND p.nombre_proveedor LIKE '%$f_proveedor%'";
+    }
+    if ($f_cant_min > 0) {
+        $donde .= " AND mdi.cantidad >= $f_cant_min";
+    }
+    if ($f_cant_max > 0) {
+        $donde .= " AND mdi.cantidad <= $f_cant_max";
+    }
+    if ($f_stock_min > 0) {
+        $donde .= " AND mdi.stock_momento >= $f_stock_min";
+    }
+    if ($f_stock_max > 0) {
+        $donde .= " AND mdi.stock_momento <= $f_stock_max";
+    }
     ?>
 </head>
 <style>
-    /* Replicando tus animaciones exactas de farmacia_inventario_listado.php */
-    @keyframes pulse-opacity {
-        0% {
-            opacity: 0;
-        }
+    @keyframes pulse-opacity { 0% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }
 
-        100% {
-            opacity: 1;
-        }
-    }
+    .modal.in .modal-dialog, #ModalAdvertencia, #modalBusquedaAvanzadaKardex { animation: fadeIn 0.4s ease-out; }
+    .modal-open .modal-backdrop { opacity: 0.7 !important; animation: pulse-opacity 0.3s forwards; }
+    .table-kardex thead { background-color: #f4f4f4; }
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-50px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes fadeOut {
-        from {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        to {
-            opacity: 0;
-            transform: translateY(-50px);
-        }
-    }
-
-    .modal.in .modal-dialog,
-    #ModalAdvertencia,
-    #ModalReporteKardex {
-        animation: fadeIn 0.4s ease-out;
-    }
-
-    .modal-open .modal-backdrop {
-        opacity: 0.7 !important;
-        animation: pulse-opacity 0.3s forwards;
-    }
-
-    .table-kardex thead {
-        background-color: #f4f4f4;
-    }
-
-    /* NUEVO: Estilos para la barra negra alargada y fija en la parte inferior */
     .kardex-footer-bar {
         background-color: #222;
         color: #fff;
@@ -75,25 +79,14 @@
         align-items: center;
         justify-content: space-between;
         position: fixed;
-        bottom: 0; /* Lo mantiene pegado abajo de forma alargada */
+        bottom: 0; 
         z-index: 100;
         box-shadow: 0 -4px 10px rgba(0,0,0,0.4);  
         width: 83%;
     }
-
-    /* Paginación adaptada al fondo negro */
-    #pagination_container .pagination {
-        margin: 0;
-    }
-    #pagination_container .pagination > li > a {
-        background-color: #333 !important;
-        border-color: #444 !important;
-        color: #fff !important;
-    }
-    #pagination_container .pagination > .active > a {
-        background-color: #222 !important;
-        border-color: #222 !important;
-    }
+    #pagination_container .pagination { margin: 0; }
+    #pagination_container .pagination > li > a { background-color: #333 !important; border-color: #444 !important; color: #fff !important; }
+    #pagination_container .pagination > .active > a { background-color: #222 !important; border-color: #222 !important; }
 </style>
 
 <body>
@@ -109,15 +102,15 @@
         $total_salidas = 0;
 
         if (!$mostrar_vacio) {
-            $med_search_esc = $conexion->real_escape_string($med_search);
-            $donde = " WHERE m.nombre_medicamento = '$med_search_esc'";
-
             // 1. Conteo para la paginación filtrado
             $sql_conteo = "SELECT COUNT(*) as total 
                    FROM medicamentos_detalle_inventario mdi
                    JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
                    JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
                    JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+                   JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
+                   JOIN proveedor p ON l.Id_proveedor = p.Id_proveedor
+                   JOIN tipo_movimiento tm ON di.Id_tipoMovimiento = tm.Id_tipo_movimiento
                    $donde";
 
             $total_registros = $conexion->query($sql_conteo)->fetch_assoc()['total'];
@@ -153,35 +146,31 @@
 
             $resultado = $conexion->query($sql_kardex);
 
-        // 3. Consulta para los totales del medicamento
-        $sql_totales = "SELECT tm.nombre as tipo, SUM(mdi.cantidad) as total_cantidad 
+            // 3. Consulta para los totales del medicamento
+            $sql_totales = "SELECT tm.nombre as tipo, SUM(mdi.cantidad) as total_cantidad 
                             FROM medicamentos_detalle_inventario mdi
                             JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
                             JOIN descripcion_medicamento dm ON mdi.Id_descripcion_medicamento = dm.Id
                             JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+                            JOIN lotes_medicamentos l ON mdi.Id_lote = l.Id
+                            JOIN proveedor p ON l.Id_proveedor = p.Id_proveedor
                             JOIN tipo_movimiento tm ON di.Id_tipoMovimiento = tm.Id_tipo_movimiento
                             $donde
                             GROUP BY tm.nombre";
 
-                $res_totales = $conexion->query($sql_totales);
+            $res_totales = $conexion->query($sql_totales);
 
-                $total_entradas = 0;
-                $total_salidas = 0;
+            while ($tot = $res_totales->fetch_assoc()) {
+                $tipo = $tot['tipo'];
+                $cantidad = $tot['total_cantidad'];
 
-                while ($tot = $res_totales->fetch_assoc()) {
-                    $tipo = $tot['tipo'];
-                    $cantidad = $tot['total_cantidad'];
-
-                    // Movimientos que suman al inventario
-                    if (in_array($tipo, ['Entrada', 'Ajuste por Cuadre (Entrada)', 'Reversión de Salida (Anulación)'])) {
-                        $total_entradas += $cantidad;
-                    }
-                    // Movimientos que restan al inventario
-                    elseif (in_array($tipo, ['Salida por Despacho', 'Salida por Vencimiento', 'Salida por Dañado', 'Salida por Pérdida o Robo', 'Ajuste por Cuadre (Salida)', 'Reversión de Entrada (Anulación)'])) {
-                        $total_salidas += $cantidad;
-                    }
+                if (in_array($tipo, ['Entrada', 'Ajuste por Cuadre (Entrada)', 'Reversión de Salida (Anulación)'])) {
+                    $total_entradas += $cantidad;
+                } elseif (in_array($tipo, ['Salida por Despacho', 'Salida por Vencimiento', 'Salida por Dañado', 'Salida por Pérdida o Robo', 'Ajuste por Cuadre (Salida)', 'Reversión de Entrada (Anulación)'])) {
+                    $total_salidas += $cantidad;
                 }
             }
+        }
         ?>
 
         <section class="content-header">
@@ -191,29 +180,25 @@
         <section class="content">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-book"></i> Ir al Inventario</a>
+                    <a href="farmacia_inventario_listado.php" style="height:31px;" class="btn-sm btn-primary pull-right"><i class="fa fa-book"></i> Ir al Inventario</a>
+                    
                     <p class="pull-right" style="width:5px;"></p>
                     <?php if (in_array('Generar reporte de kardex', $_SESSION["permisos"])) : ?>
-                    <a href="#" class="btn-sm btn-info pull-right reporte"><i class="fa fa-book"></i> Reporte Kardex</a>
+                    <button class="btn-sm btn-info pull-right" id="btnGenerarReporteDirecto"><i class="fa fa-file-pdf-o"></i>Generar Reporte</button>
                     <?php endif; ?>
                     
                     <div class="pull-left form-inline">
-                        <div class="form-group">
-                            <input type="text" list="lista_medicamentos" name="med_search" id="med_search_input" class="form-control" placeholder="Buscar medicamento por nombre..." value="<?php echo htmlspecialchars($med_search); ?>" style="width: 350px;" required autocomplete="off">
-                            <datalist id="lista_medicamentos">
-                                <?php
-                                // Cargamos solo medicamentos que tengan movimientos registrados
-                                $sql_lista = "SELECT DISTINCT m.nombre_medicamento FROM medicamento m 
-                                              JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento 
-                                              JOIN medicamentos_detalle_inventario mdi ON dm.Id = mdi.Id_descripcion_medicamento";
-                                $res_lista = $conexion->query($sql_lista);
-                                while($rm = $res_lista->fetch_assoc()){
-                                    echo "<option value='".htmlspecialchars($rm['nombre_medicamento'])."'>";
-                                }
-                                ?>
-                            </datalist>
-                        </div>
+                    <form method="GET" action="" id="formBusquedaRapida">
+                        <input type="text" name="buscar" id="buscar" class="form-control" placeholder="Buscar medicamento, lote o proveedor..." value="<?php echo htmlspecialchars($busqueda); ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+                    </form>
                     </div>
+
+                    <p class="pull-right" style="width:5px;"></p>
+                    <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de los movimientos en el inventario.">
+                        <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzadaKardex">
+                            <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+                        </button>
+                    </span> 
                 </div>
                 <br><br>
 
@@ -237,7 +222,7 @@
                                     <tr class="crud">
                                         <td colspan="8" class="text-center" style="padding: 30px; font-size: 16px; color: #666;">
                                             <i class="fa fa-search text-muted fa-2x"></i><br><br>
-                                            Empiece a escribir el nombre del medicamento para visualizar su Kardex.
+                                            Empiece a escribir o utilice los filtros para visualizar el Kardex.
                                         </td>
                                     </tr>
                                 <?php else: ?>
@@ -260,7 +245,7 @@
                                         <?php endwhile; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="8" class="text-center text-danger" style="padding: 20px;">No se encontraron movimientos para este medicamento.</td>
+                                            <td colspan="8" class="text-center text-danger" style="padding: 20px;">No se encontraron movimientos con los filtros aplicados.</td>
                                         </tr>
                                     <?php endif; ?>
                                 <?php endif; ?>
@@ -275,7 +260,10 @@
                             <nav aria-label="Page navigation" style="text-align: left;">
                                 <ul class="pagination">
                                     <?php
-                                    $query_string = "&med_search=" . urlencode($med_search);
+                                    // Preservar los parámetros GET para la paginación
+                                    $params = $_GET;
+                                    unset($params['pagina']);
+                                    $query_string = '&' . http_build_query($params);
 
                                     if ($pagina_actual > 1) : ?>
                                         <li><a href="?pagina=1<?php echo $query_string; ?>" title="Primero">&laquo;&laquo;</a></li>
@@ -308,7 +296,7 @@
                             <?php if (!$mostrar_vacio && $resultado->num_rows > 0): ?>
                                 <span style="margin-left: 15px;"><i class="fa fa-arrow-up text-success"></i> Entradas Totales: <strong style="color:#2ecc71; font-size: 16px;"><?php echo $total_entradas ?: 0; ?></strong></span>
                                 <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"><i class="fa fa-arrow-down text-danger"></i> Salidas Totales: <strong style="color:#e74c3c; font-size: 16px;"><?php echo $total_salidas ?: 0; ?></strong></span>
-                                <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"><i class="fa fa-cube text-warning"></i> Stock Total: <strong style="color:#f39c12; font-size: 16px;"><?php echo (($total_entradas ?: 0) - ($total_salidas ?: 0)); ?></strong></span>
+                                <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"><i class="fa fa-cube text-warning"></i> Variación: <strong style="color:#f39c12; font-size: 16px;"><?php echo (($total_entradas ?: 0) - ($total_salidas ?: 0)); ?></strong></span>
                                 <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"><i class="fa fa-exchange text-info"></i> Movimientos: <strong style="color:#3498db; font-size: 16px;"><?php echo $total_registros ?: 0; ?></strong></span>
                                 <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"></span>
                             <?php endif; ?>
@@ -321,15 +309,92 @@
         </section>
     </div>
 
+    <div class="modal fade" id="modalBusquedaAvanzadaKardex" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <form id="formBusquedaAvanzada" method="GET" action="">
+            <div class="modal-header bg-primary">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Kardex</h4>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label>Fecha Desde</label>
+                  <input type="date" name="f_desde" class="form-control" max="<?php echo date('Y-m-d'); ?>" value="<?php echo $f_desde; ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Fecha Hasta</label>
+                  <input type="date" name="f_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>" value="<?php echo $f_hasta; ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Tipo de Movimiento</label>
+                  <select name="f_tipo_mov" class="form-control">
+                    <option value="">Todos</option>
+                    <?php
+                    $res_tipos = $conexion->query("SELECT nombre FROM tipo_movimiento ORDER BY nombre ASC");
+                    while($tp = $res_tipos->fetch_assoc()){
+                        $sel = ($f_tipo_mov == $tp['nombre']) ? 'selected' : '';
+                        echo "<option value='".htmlspecialchars($tp['nombre'])."' $sel>".htmlspecialchars($tp['nombre'])."</option>";
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label>Medicamento</label>
+                  <input type="text" name="buscar" class="form-control" placeholder="Nombre..." oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo htmlspecialchars($busqueda); ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Lote</label>
+                  <input type="text" name="f_lote" class="form-control" placeholder="Ej: LOTE-XYZ" value="<?php echo htmlspecialchars($f_lote); ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Proveedor</label>
+                  <input type="text" name="f_proveedor" class="form-control" placeholder="Nombre de proveedor..." oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo htmlspecialchars($f_proveedor); ?>">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-3 form-group">
+                  <label>Cantidad Movimiento Mín.</label>
+                  <input type="number" name="f_cant_min" class="form-control" min="1" placeholder="Ej: 1" value="<?php echo $f_cant_min > 0 ? $f_cant_min : ''; ?>">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label>Cantidad Movimiento Máx.</label>
+                  <input type="number" name="f_cant_max" class="form-control" min="1" placeholder="Ej: 500" value="<?php echo $f_cant_max > 0 ? $f_cant_max : ''; ?>">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label>Stock Momento Mínimo</label>
+                  <input type="number" name="f_stock_min" class="form-control" min="0" placeholder="Ej: 0" value="<?php echo $f_stock_min > 0 ? $f_stock_min : ''; ?>">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label>Stock Momento Máximo</label>
+                  <input type="number" name="f_stock_max" class="form-control" min="0" placeholder="Ej: 1000" value="<?php echo $f_stock_max > 0 ? $f_stock_max : ''; ?>">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <div class="modal" id="ModalAdvertencia" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-crimson">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Atención</h4>
                 </div>
                 <div class="modal-body text-center">
-                    <p style="font-size: 16px; margin-top: 10px;">Debe seleccionar o buscar un medicamento primero para poder generar su reporte de Kardex.</p>
+                    <p style="font-size: 16px; margin-top: 10px;">Debe aplicar al menos un filtro de búsqueda para generar el reporte de Kardex.</p>
                 </div>
                 <div class="modal-footer text-center">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Entendido</button>
@@ -338,117 +403,94 @@
         </div>
     </div>
 
-    <div class="modal" id="ModalReporteKardex" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Generar Reporte Kardex</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Fecha Desde:</label>
-                        <input type="date" id="k_desde" class="form-control" value="<?php echo date('Y-m-01'); ?>" max="<?php echo date('Y-m-d'); ?>">
-                    </div>
-                    <div class="form-group">
-                        <label>Fecha Hasta:</label>
-                        <input type="date" id="k_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-primary" id="btnEjecutarKardex">Generar PDF</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <?php include('includes/footer.php'); ?>
 
     <script>
-        function closeCustomModal(modalElement) {
-            modalElement.removeClass('in').addClass('out');
-            setTimeout(() => {
-                modalElement.modal('hide').removeClass('out');
-            }, 100);
-        }
-
-        $('#ModalAdvertencia .close, #ModalAdvertencia .btn-secondary').on('click', function() {
-            closeCustomModal($('#ModalAdvertencia'));
-        });
-
-        $('#ModalReporteKardex .close, #ModalReporteKardex .btn-second').on('click', function() {
-            closeCustomModal($('#ModalReporteKardex'));
-        });
-        
-        // Abrir el modal de reporte solo si hay un medicamento seleccionado
-        $('.reporte').on('click', function(e) {
-            e.preventDefault();
-            var med = $('#med_search_input').val().trim();
-            
-            if(med === '') {
-                // Si está vacío, mostramos la advertencia
-                $('#ModalAdvertencia').modal('show');
-            } else {
-                // Si hay medicamento, mostramos las fechas
-                $('#ModalReporteKardex').modal('show');
-            }
-        });
-
-        // Generar el PDF enviando el parámetro del medicamento
-        $('#btnEjecutarKardex').on('click', function() {
-            var desde = $('#k_desde').val();
-            var hasta = $('#k_hasta').val();
-            var med = $('#med_search_input').val().trim();
-            
-            // Añadimos el parámetro &medicamento= a la URL
-            window.open('../../cfg/reportes/generar_pdf_kardex.php?desde=' + desde + '&hasta=' + hasta + '&medicamento=' + encodeURIComponent(med), '_blank');
-            
-            // Opcional: Cerrar el modal después de darle click
-            closeCustomModal($('#ModalReporteKardex'));
-        });
-
-        // -----------------------------------------------------
-        // LÓGICA AJAX PARA BÚSQUEDA Y PAGINACIÓN EN VIVO
-        // -----------------------------------------------------
         $(document).ready(function() {
+
+            // ==========================================
+            // LÓGICA AJAX PARA BÚSQUEDA Y PAGINACIÓN EN VIVO
+            // ==========================================
+            window.cargarDatosAjax = function(url) {
+                $('#tbody_kardex').css('opacity', '0.4');
+
+                $.get(url, function(data) {
+                    var htmlParsed = $(data);
+                    
+                    // Inyectamos las partes necesarias de la vista actual sin recargar
+                    $('#tbody_kardex').html(htmlParsed.find('#tbody_kardex').html()).css('opacity', '1');
+                    $('#pagination_container').html(htmlParsed.find('#pagination_container').html());
+                    $('#resumen_container').html(htmlParsed.find('#resumen_container').html());
+
+                    // Actualizar URL del navegador silenciosamente
+                    window.history.pushState(null, '', url);
+                }).fail(function() {
+                    alert("Error de conexión al aplicar filtros.");
+                    $('#tbody_kardex').css('opacity', '1');
+                });
+            };
+
+            // Búsqueda Rápida con KeyUp
             let timer;
-            
-            // Evento al escribir en el campo de búsqueda
-            $('#med_search_input').on('keyup input', function() {
+            $('#buscar').on('keyup', function() {
                 clearTimeout(timer);
                 let query = $(this).val();
-                
-                // Pequeño retraso de 350ms para no saturar el servidor con cada tecla
                 timer = setTimeout(function() {
-                    cargarDatos(query, 1);
-                }, 350); 
+                    var url = 'farmacia_inventario_kardex.php?buscar=' + encodeURIComponent(query);
+                    cargarDatosAjax(url);
+                }, 400); 
             });
 
-            // Interceptar los clics en los botones de paginación
+            // Evitar que el ENTER en búsqueda rápida recargue la página entera
+            $('#formBusquedaRapida').on('submit', function(e) {
+                e.preventDefault();
+            });
+
+            // Interceptar Búsqueda Avanzada
+            $('#formBusquedaAvanzada').on('submit', function(e) {
+                e.preventDefault();
+                var url = 'farmacia_inventario_kardex.php?' + $(this).serialize();
+                $('#modalBusquedaAvanzadaKardex').modal('hide');
+                cargarDatosAjax(url);
+            });
+
+            // Interceptar paginación
             $(document).on('click', '#pagination_container .pagination a', function(e) {
                 e.preventDefault();
-                let url = new URL(this.href, window.location.origin);
-                let page = url.searchParams.get("pagina") || 1;
-                let query = $('#med_search_input').val();
-                cargarDatos(query, page);
+                var url = $(this).attr('href');
+                if (url) {
+                    cargarDatosAjax(url);
+                }
             });
 
-            // Función encargada de hacer la llamada AJAX y reemplazar los componentes
-            function cargarDatos(query, page) {
-                $.ajax({
-                    url: 'farmacia_inventario_kardex.php',
-                    type: 'GET',
-                    data: { med_search: query, pagina: page },
-                    success: function(response) {
-                        // Extraemos las partes del HTML que nos interesan y las reemplazamos
-                        var htmlParsed = $(response);
-                        $('#tbody_kardex').html(htmlParsed.find('#tbody_kardex').html());
-                        $('#pagination_container').html(htmlParsed.find('#pagination_container').html());
-                        $('#resumen_container').html(htmlParsed.find('#resumen_container').html());
-                    }
-                });
-            }
+            // Limpiar filtros via AJAX
+            window.limpiarFiltrosAjax = function() {
+                $('#formBusquedaAvanzada')[0].reset();
+                $('#buscar').val('');
+                var urlLimpia = window.location.href.split('?')[0]; 
+                cargarDatosAjax(urlLimpia);
+                $('#modalBusquedaAvanzadaKardex').modal('hide');
+            };
+
+            // ==========================================
+            // LÓGICA DE GENERACIÓN DE REPORTE
+            // ==========================================
+            $('#btnGenerarReporteDirecto').on('click', function(e) {
+                e.preventDefault();
+                
+                // Extraer el query string actual directamente de la barra de direcciones del navegador
+                var queryString = window.location.search;
+                
+                // Si está vacío y no hay ningún parámetro aplicado, lanzamos advertencia.
+                // También verificamos que al menos 'buscar' o algún 'f_' tenga valor.
+                if(queryString === '' || queryString === '?buscar=') {
+                    $('#ModalAdvertencia').modal('show');
+                } else {
+                    // Abrimos el PDF enviándole todos los parámetros activos en este momento
+                    window.open('../../cfg/reportes/generar_pdf_kardex.php' + queryString, '_blank');
+                }
+            });
+
         });
     </script>
 </body>

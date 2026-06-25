@@ -56,9 +56,9 @@ if ($auto_tipo == 'Externa' && $auto_id_pres != '') {
     // Lógica para determinar el nombre de quien recibe el medicamento
     $ext_entregado_a = $ext_paciente;
     if ($auto_menor == '1' && !empty($row_ext['r_nom'])) {
-        $ext_entregado_a = trim($row_ext['r_nom'] . ' ' . $row_ext['r_ape']);
+      $ext_entregado_a = trim($row_ext['r_nom'] . ' ' . $row_ext['r_ape']);
     } elseif (!empty($row_ext['entregado_a'])) {
-        $ext_entregado_a = $row_ext['entregado_a'];
+      $ext_entregado_a = $row_ext['entregado_a'];
     }
 
     if (!empty($row_ext['id_medico'])) {
@@ -389,7 +389,7 @@ if ($auto_id_pres != '') {
 
               <div class="box-tools pull-left" style="margin-top: 2px;">
                 <span style="font-size: 16px; font-weight: bold; color: #555;">
-                  Operación N°: <span class="badge bg-blue" style="font-size: 15px; padding: 5px 10px; letter-spacing: 1px;">#<?php echo $numero_proyectado; ?></span>
+                  Operación N°: <span id="badge_numero_operacion" class="badge bg-blue" style="font-size: 15px; padding: 5px 10px; letter-spacing: 1px;">#<?php echo $numero_proyectado; ?></span>
                 </span>
               </div>
 
@@ -763,23 +763,25 @@ if ($auto_id_pres != '') {
               </div>
             </div>
 
-            <div class="col-sm-4 form-group mt-3">
+            <div class="col-sm-4 form-group mt-3" style="display:none;">
               <label>Lote Disponible (*):</label>
               <div class="input-group">
                 <select id="lote_seleccionado" class="form-control">
                   <option value="">Seleccione el medicamento primero</option>
                 </select>
+              </div>
+            </div>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Existencia Actual:</label>
+              <div class="input-group">
+                <input type="text" id="existencia_actual" class="form-control" value="0" readonly disabled style="background-color: #f9f9f9;">
                 <span class="input-group-btn">
                   <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;">
                     <i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i>
                   </button>
                 </span>
               </div>
-            </div>
-
-            <div class="col-sm-4 form-group mt-3">
-              <label>Existencia Actual:</label>
-              <input type="text" id="existencia_actual" class="form-control" readonly disabled style="background-color: #f9f9f9;">
             </div>
 
             <div class="col-sm-4 form-group mt-3">
@@ -974,11 +976,11 @@ if ($auto_id_pres != '') {
           <h5 class="modal-title" style="color: white;">Confirmacion de Despacho</h5>
         </div>
         <div class="modal-body">
-          <p>¿Está seguro de que desea procesar esta salida del inventario?</p>
+          <p>¿Está seguro de que desea procesar este despacho del inventario?</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Procesar Salida</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Procesar Despacho</button>
         </div>
       </div>
     </div>
@@ -1093,6 +1095,12 @@ if ($auto_id_pres != '') {
         $('#avisoModal').modal('show');
       }
 
+      window.mostrarExito = function(mensaje) {
+        $('#headerDespachoAviso').removeClass('bg-crimson').addClass('bg-green');
+        $('#avisoTexto').html(mensaje);
+        $('#avisoModal').modal('show');
+      }
+
       $('#btnAbrirModalCrear').on('click', function() {
         $('#med_formularioMedicamento')[0].reset();
 
@@ -1100,13 +1108,28 @@ if ($auto_id_pres != '') {
       });
 
       function limpiarFormularioModal() {
-        $('#Id_descripcion_medicamento').val('').trigger('change');
-        $('#lote, #fecha_fabricacion, #fecha_vencimiento, #cantidad').val('').removeClass('input-error');
-        $('#fecha_fabricacion, #fecha_vencimiento').prop('readonly', false);
-        $('#fecha_vencimiento').prop('disabled', true);
-        $('#lote').css('border-color', '#ced4da');
-        $('#existencia_actual, #stock_minimo, #stock_maximo').val('');
+        // El medicamento siempre inicia habilitado y limpio
+        $('#Id_descripcion_medicamento').prop('disabled', false).val('').trigger('change');
+        if (typeof $.fn.select2 !== 'undefined') {
+          $('#Id_descripcion_medicamento').trigger('change.select2');
+        }
+
+        $('#btnBusquedaAvanzada').prop('disabled', false);
+
+        // El lote vuelve a su estado inicial desbloqueado (pero vacío hasta elegir medicamento)
+        $('#lote_seleccionado').html('<option value="">Seleccione el medicamento primero</option>');
+        $('#lote_seleccionado').prop('disabled', false);
+        if (typeof $.fn.select2 !== 'undefined') {
+          $('#lote_seleccionado').trigger('change.select2');
+        }
+
+        $('#cantidad, #cantidad_recetada, #dosis_aplicacion, #existencia_actual').val('').removeClass('input-error');
+        $('#lote_seleccionado').removeClass('input-error');
       }
+
+      $('#modalAgregarMedicamento').on('hidden.bs.modal', function() {
+        limpiarFormularioModal();
+      });
 
       $('#abrirModalRegresar').on('click', function() {
         $('#modalRegresarInventario').modal('show');
@@ -1697,10 +1720,18 @@ if ($auto_id_pres != '') {
         $('#modalAgregarMedicamento').modal('show');
       });
 
-      // AL SELECCIONAR MEDICAMENTO, BUSCAR LOS LOTES DISPONIBLES EN STOCK
-      $('#Id_descripcion_medicamento').on('change', function() {
+      // AL SELECCIONAR MEDICAMENTO, BUSCAR LOS LOTES Y AUTO-SELECCIONAR EL MÁS PRÓXIMO A VENCER
+      $('#Id_descripcion_medicamento').on('change', function(e, fromEdit) {
         var medicamentoId = $(this).val();
-        $('#lote_seleccionado').empty();
+
+        // SOLUCIÓN 1: Limpiamos cantidades SOLO si el usuario cambia el select manualmente. 
+        // Si viene del botón "Editar", no los tocamos.
+        if (!fromEdit) {
+          $('#cantidad').val('').removeClass('input-error');
+          $('#cantidad_recetada').val('').removeClass('input-error');
+        }
+
+        $('#lote_seleccionado').empty().append('<option value=""> Seleccione el medicamento </option>');
         $('#existencia_actual').val('');
 
         if (medicamentoId) {
@@ -1714,24 +1745,37 @@ if ($auto_id_pres != '') {
             dataType: 'json',
             success: function(data) {
               if (!data.error) {
-                $('#lote_seleccionado').append('<option value="">-- Seleccione Lote --</option>');
+                $('#lote_seleccionado').empty().append('<option value="">-- Seleccione Lote --</option>');
+
+                // 1. CREAMOS UNA VARIABLE PARA SUMAR EL TOTAL DE TODOS LOS LOTES
+                var existenciaTotalCalculada = 0;
+
                 if (data.lotes && data.lotes.length > 0) {
+                  var primerLoteValido = null;
+
                   $.each(data.lotes, function(index, item) {
                     var diasFaltantes = "";
+                    var diffDays = 0;
+
+                    // 2. SUMAMOS LA CANTIDAD DE ESTE LOTE AL TOTAL GLOBAL
+                    existenciaTotalCalculada += parseInt(item.cantidad_actual) || 0;
+
                     if (item.fecha_vencimiento) {
                       var fVenc = new Date(item.fecha_vencimiento);
                       var hoy = new Date();
                       var diffTime = fVenc - hoy;
-                      var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
                       if (diffDays > 0) {
                         diasFaltantes = " (Faltan " + diffDays + " días)";
+                        if (!primerLoteValido) primerLoteValido = item.lote;
                       } else if (diffDays === 0) {
                         diasFaltantes = " (Vence Hoy)";
                       } else {
                         diasFaltantes = " (Vencido hace " + Math.abs(diffDays) + " días)";
                       }
                     }
+
                     $('#lote_seleccionado').append('<option value="' + item.lote + '" ' +
                       'data-stock="' + item.cantidad_actual + '" ' +
                       'data-vencido="' + (diffDays <= 0 ? 'si' : 'no') + '" ' +
@@ -1741,7 +1785,21 @@ if ($auto_id_pres != '') {
                       'Lote: ' + item.lote + ' - Stock: ' + item.cantidad_actual + diasFaltantes +
                       '</option>');
                   });
+
+                  // 3. ASIGNAMOS LA SUMA TOTAL A LA CAJA DE TEXTO (No se volverá a tocar)
+                  $('#existencia_actual').val(existenciaTotalCalculada);
+
+                  if (!fromEdit) {
+                    if (primerLoteValido) {
+                      $('#lote_seleccionado').val(primerLoteValido).trigger('change');
+                    } else {
+                      $('#lote_seleccionado').prop('selectedIndex', 1).trigger('change');
+                    }
+                  }
+
                 } else {
+                  // Si no hay lotes, la existencia es 0
+                  $('#existencia_actual').val('0');
                   $('#lote_seleccionado').append('<option value="">Sin stock disponible</option>');
                 }
               }
@@ -1752,8 +1810,8 @@ if ($auto_id_pres != '') {
 
       $('#lote_seleccionado').on('change', function() {
         var option = $(this).find(':selected');
-        var stock = option.data('stock');
-        $('#existencia_actual').val(stock ? stock : '0');
+        var stockLote = option.data('stock'); // Extraemos cuánto hay solo en este lote
+        var nombreLote = option.val(); // Extraemos el nombre/número del lote
 
         // --- NUEVA LÓGICA DEL TOOLTIP ---
         if ($(this).val() !== "") {
@@ -1761,12 +1819,13 @@ if ($auto_id_pres != '') {
           var venc = option.data('venc');
           var prov = option.data('prov');
 
-          // Construimos el HTML del tooltip
-          var infoHtml = "<div style='text-align:left; font-size: 12px;'>" +
+          // Construimos el HTML del tooltip incluyendo el Lote y su Stock específico
+          var infoHtml = "<div style='text-align:left; font-size: 13px;'>" +
+            "<b style='color:#00ffff;'>Lote N°: " + nombreLote + "</b><br>" +
             "<b>Proveedor:</b> " + prov + "<br>" +
             "<b>F. Fabricación:</b> " + fab + "<br>" +
             "<b>F. Vencimiento:</b> " + venc + "<br>" +
-            "<b>Stock Físico:</b> " + stock +
+            "<b>Stock Físico (Este lote):</b> <span style='color:#00ff00; font-weight:bold;'>" + stockLote + " Unds</span>" +
             "</div>";
 
           // Actualizamos el tooltip de Bootstrap dinámicamente
@@ -1937,11 +1996,18 @@ if ($auto_id_pres != '') {
           }
         }
 
-        // Validación para externo: si no pone cantidad récipe, asumimos que es igual a la entrega
-        if (esExterno && isNaN(cant_rec)) {
+        // 1. Si la cantidad recetada está vacía o es inválida, por precaución la igualamos a la cantidad
+        // (Esto evita errores matemáticos si el campo quedó en blanco)
+        if (isNaN(cant_rec) || cant_rec <= 0) {
           cant_rec = cant;
-        } else if (!esExterno) {
-          cant_rec = cant; // Interno no maneja diferencia
+        }
+
+        // 2. NUEVA VALIDACIÓN: Bloquear sobredespacho
+        if (cant > cant_rec) {
+          $('#cantidad').addClass('input-error');
+          $('#cantidad_recetada').addClass('input-error');
+          mostrarAviso('Error: La cantidad a despachar (<b>' + cant + '</b>) no puede ser mayor a la cantidad indicada en el récipe (<b>' + cant_rec + '</b>).');
+          return; // Detiene el proceso y no lo añade a la tabla
         }
 
         var existeIndex = -1;
@@ -2005,9 +2071,16 @@ if ($auto_id_pres != '') {
             // Solo creamos la celda de "Recetada" si es externo
             var celdaRecetada = esExterno ? '<td><span class="badge bg-blue" style="font-size:14px;">' + item.cantidad_recetada + '</span></td>' : '';
 
+            // --- NUEVA LÓGICA: Formatear los principios activos ---
+            var infoComponentes = "";
+            if (item.componentes && item.componentes !== 'Sin principios activos') {
+              // Se añade un pequeño salto de línea y color tenue para no recargar visualmente el nombre principal
+              infoComponentes = '<br><small class="text-muted"><i>(' + item.componentes + ')</i></small>';
+            }
+
             tbody.append(
               '<tr>' +
-              '<td><strong>' + item.nombre_medicamento + '</strong></td>' +
+              '<td><span style="font-size:15px;"><strong>' + item.nombre_medicamento + '</strong></span>' + infoComponentes + '</td>' +
               '<td>' + item.lote + '</td>' +
               celdaRecetada + // Aparece solo en externo
               '<td><span class="badge bg-green" style="font-size:14px;">' + item.cantidad + '</span></td>' +
@@ -2024,35 +2097,67 @@ if ($auto_id_pres != '') {
         $('#detalle_medicamentos').val(JSON.stringify(listaDetalles));
       }
 
-      // ACCIÓN DE EDITAR
-      $('#cuerpoTablaMedicamentos').on('click', '.btn-editar-fila', function() {
+      // Validar que se seleccione el medicamento antes de llenar los demás campos
+      $('#cantidad, #cantidad_recetada, #lote_seleccionado').on('focus click', function(e) {
+        var idMedicamento = $('#Id_descripcion_medicamento').val();
+
+        if (!idMedicamento || idMedicamento === "") {
+          $(this).blur(); // Le quita el cursor del input al usuario
+          $(this).removeClass('input-error'); // Evita que se quede rojo por error
+
+          mostrarAviso('Por favor, seleccione primero un <b>Medicamento del Catálogo</b> antes de llenar los demás datos.');
+        }
+      });
+
+      $('#cuerpoTablaMedicamentos').off('click', '.btn-editar-fila').on('click', '.btn-editar-fila', function() {
         var index = $(this).data('index');
         var item = listaDetalles[index];
         editandoIndex = index;
 
-        limpiarFormularioModal();
+        // 1. Limpiamos clases de error e inputs anteriores
+        $('#Id_descripcion_medicamento').removeClass('input-error');
+        $('#lote_seleccionado').removeClass('input-error').empty();
+        $('#cantidad, #cantidad_recetada, #dosis_aplicacion, #existencia_actual').val('').removeClass('input-error');
 
-        // Disparar lógica de visibilidad
+        // 2. ASEGURAMOS QUE EL MEDICAMENTO ESTÉ HABILITADO
+        $('#Id_descripcion_medicamento').prop('disabled', false);
+        if (typeof $.fn.select2 !== 'undefined') {
+          $('#Id_descripcion_medicamento').trigger('change.select2');
+        }
+
+        // 3. Cargamos los valores numéricos de la fila
+        $('#cantidad').val(item.cantidad);
+        $('#cantidad_recetada').val(item.cantidad_recetada);
+        $('#dosis_aplicacion').val(item.dosis);
+
         if ($('#tipo_despacho').val() === 'externo') {
           $('#grupo_recetada').show();
         } else {
           $('#grupo_recetada').hide();
         }
 
-        $('#Id_descripcion_medicamento').val(item.id_medicamento).trigger('change');
+        // 4. Cargamos el medicamento seleccionado en el dropdown
+        $('#Id_descripcion_medicamento').val(item.id_medicamento).trigger('change', [true]);
 
-        // Si fue cargado vía GET bloqueamos el cambio del medicamento
-        if ("<?php echo $auto_id_pres; ?>" !== "") {
-          $('#Id_descripcion_medicamento').prop('disabled', true);
-          $('#btnBusquedaAvanzada').prop('disabled', true);
-        }
+        // 5. Esperamos a que los lotes se carguen por AJAX y bloqueamos únicamente el lote
+        var intentos = 0;
+        var checkLotes = setInterval(function() {
+          // Si el lote ya aparece como una opción disponible en el HTML
+          if ($('#lote_seleccionado option[value="' + item.lote + '"]').length > 0) {
+            // Seleccionamos el lote correspondiente
+            $('#lote_seleccionado').val(item.lote).trigger('change');
 
-        setTimeout(function() {
-          $('#lote_seleccionado').val(item.lote).trigger('change');
-          $('#cantidad').val(item.cantidad);
-          $('#cantidad_recetada').val(item.cantidad_recetada); // Cargar valor guardado
-          $('#dosis_aplicacion').val(item.dosis);
-        }, 500);
+            // ¡SOLUCIÓN AQUÍ! Bloqueamos el lote y obligamos a Select2 a redibujarse como deshabilitado
+            $('#lote_seleccionado').prop('disabled', true);
+            if (typeof $.fn.select2 !== 'undefined') {
+              $('#lote_seleccionado').trigger('change.select2');
+            }
+
+            clearInterval(checkLotes);
+          }
+          intentos++;
+          if (intentos > 30) clearInterval(checkLotes); // Detener tras 6 segundos máximo
+        }, 200);
 
         $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-save"></i> Guardar Cambios');
         $('#modalAgregarMedicamento').modal('show');
@@ -2154,13 +2259,21 @@ if ($auto_id_pres != '') {
 
       if (auto_id_pres !== "") {
 
-        // Bloqueo de campos (solo lectura y sin clics) porque el formulario viene precargado
-        $('#tipo_despacho, #metodo_busqueda, #tipo_cedula, #id_prescripcion, select[name="tipo_cedula_externo"]').css({
+        // 1. Bloqueo de selectores (solo lectura y sin clics) añadiendo el tipo de cédula del médico
+        $('#tipo_despacho, #metodo_busqueda, #tipo_cedula, #id_prescripcion, select[name="tipo_cedula_externo"], #tipo_cedula_medico').css({
           'pointer-events': 'none',
           'background-color': '#eeeeee',
           'tabindex': '-1'
         });
-        $('#busqueda_cedula, #busqueda_nombre, input[name="cedula_externo"], #paciente_externo, #medico_externo').prop('readonly', true);
+
+        // 2. Bloqueo de inputs de texto añadiendo la cédula del médico (el nombre ya estaba)
+        $('#busqueda_cedula, #busqueda_nombre, input[name="cedula_externo"], #paciente_externo, #medico_externo, #busqueda_cedula_medico').prop('readonly', true).css('background-color', '#eeeeee');
+
+        // 3. NUEVO: Bloquear los botones de buscar y agregar para que el usuario no pueda abrir los modales y sobreescribir los datos
+        $('#btnAbrirSelectorPaciente, #btnBuscarMedico, [data-target="#modalAgregarMedicoExterno"]').prop('disabled', true).css({
+          'pointer-events': 'none',
+          'opacity': '0.6'
+        });
 
         if (auto_tipo === 'Interna') {
           if (auto_menor === '1') {
@@ -2238,6 +2351,9 @@ if ($auto_id_pres != '') {
     // ACTUALIZACIÓN SILENCIOSA DEL SELECT DE MEDICAMENTOS
     // -------------------------------------------------------------
     function actualizarSelectMedicamentosSilencio() {
+      if ($('#modalAgregarMedicamento').is(':visible')) {
+        return;
+      }
       // 1. Verificamos si hay alguna búsqueda/filtro activo
       const hayFiltroBusqueda = $('#filtro_busqueda_rapida').val().trim() !== '';
       let hayFiltrosAvanzados = false;
@@ -2287,6 +2403,30 @@ if ($auto_id_pres != '') {
 
     // Ejecutar la actualización silenciosa cada 2000 milisegundos (2 segundos)
     setInterval(actualizarSelectMedicamentosSilencio, 2000);
+
+    // -------------------------------------------------------------
+    // ACTUALIZAR NÚMERO DE OPERACIÓN EN TIEMPO REAL
+    // -------------------------------------------------------------
+    function actualizarNumeroOperacionSilencio() {
+      $.ajax({
+        url: '../../cfg/ajax/obtener_proximo_id_operacion.php',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+          if (response && response.numero_proyectado) {
+            // Actualiza visualmente el texto del badge
+            $('#badge_numero_operacion').text('#' + response.numero_proyectado);
+          }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          // Omitimos mostrar alertas para no molestar al usuario si hay un microcorte de red
+          console.log("No se pudo actualizar el nro de operación en 2do plano.");
+        }
+      });
+    }
+
+    // Ejecutar la revisión del ID cada 5000 milisegundos (5 segundos)
+    setInterval(actualizarNumeroOperacionSilencio, 5000);
   </script>
 </body>
 

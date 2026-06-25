@@ -91,7 +91,7 @@ include('../includes/headerPapelera.php');
   <section class="content">
     <div style="padding-bottom: 10px;">
       <a href="../cfg_usuario_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-user-plus"></i> Regresar al Listado </a>
-      <input type="text" placeholder="Buscar.." class="form-control pull-left" id="buscar" onkeyup="filtro()">
+      <input type="text" placeholder="Buscar.." class="form-control pull-left" id="buscar" onkeyup="filtro()" style="border-radius:0; height:10%; width:250px; display:inline-block;">
     </div>
     <br><br>
     <div id="contenedorTabla">

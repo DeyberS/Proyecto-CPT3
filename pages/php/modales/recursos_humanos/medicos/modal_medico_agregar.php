@@ -65,7 +65,7 @@
             </div>
             <div class="col-sm-3">
               <p>Email (*):</p>
-              <input type="email" class="form-control" name="correo_med" id="correo_med" placeholder="ejemplo@dominio.com">
+              <input type="email" class="form-control" name="correo_med" id="correo_med" placeholder="ejemplo@dominio.com" required>
             </div>
           </div>
           <br>
@@ -138,10 +138,10 @@
     });
   });
 
-  // 2. Cálculo y Restricción de Edad (Mínimo 18 años)
+  // 2. Cálculo y Restricción de Edad (Mínimo 20 años)
   function getMaxDateNacimientoMed() {
     const today = new Date();
-    const maxNacimiento = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const maxNacimiento = new Date(today.getFullYear() - 20, today.getMonth(), today.getDate());
     const year = maxNacimiento.getFullYear();
     const month = String(maxNacimiento.getMonth() + 1).padStart(2, '0');
     const day = String(maxNacimiento.getDate()).padStart(2, '0');
@@ -265,9 +265,9 @@
 
     // NUEVO: Validar estrictamente que tenga al menos 18 años antes de enviar
     let edad_calculada = parseInt($('#edad_med').val());
-    if (isNaN(edad_calculada) || edad_calculada < 18) {
+    if (isNaN(edad_calculada) || edad_calculada < 20) {
       $('#fechaN_med').addClass('input-error');
-      mostrarAviso('🛑 Error: El médico no puede ser menor de 18 años.');
+      mostrarAviso('🛑 Error: El médico no puede ser menor de 20 años.');
       return;
     }
 
@@ -327,8 +327,7 @@
 
                 // 4. Limpiar y cerrar modal
                 $('#formMedicoExterno')[0].reset();        
-                $('#headerDespachoAviso').removeClass('bg-crimson').addClass('bg-green');
-                mostrarAviso('✅ Médico registrado exitosamente.');
+                mostrarExito('✅ Médico registrado exitosamente.');
               } else {
                 mostrarAviso('❌ Error: ' + res.message);
               }

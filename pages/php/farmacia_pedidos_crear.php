@@ -265,14 +265,14 @@
               <div class="box box-success">
                 <div class="box-header with-border">
                   <h3 class="box-title"><i class="fa fa-medkit"></i> Medicamentos a Solicitar:</h3>
-                  <div class="box-tools pull-right" style="margin-left:5px;">         
+                  <div class="box-tools pull-right" style="margin-left:5px;">
                     <button type="button" class="btn btn-primary btn-sm" id="btnAbrirModalAgregar" style="width:200px;">
                       <i class="fa fa-plus"></i> Añadir Medicamento
                     </button>
                     <p></p>
                     <button type="button" class="btn btn-danger btn-sm" id="btnCargarReorden" style="width:200px;">
                       <i class="fa fa-refresh"></i> Cargar por Punto de Reorden
-                    </button>                
+                    </button>
                   </div>
                 </div>
 
@@ -340,14 +340,6 @@
                     LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
                     LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
                     WHERE m.estatus = 1 AND dm.estatus = 1 
-                    AND EXISTS (
-                        SELECT 1 FROM lotes_medicamentos lm 
-                        INNER JOIN existencias_stock ex ON lm.Id = ex.Id_lote 
-                        WHERE lm.Id_descripcion_medicamento = dm.Id 
-                        AND lm.estado_lote = 'Disponible' 
-                        AND ex.cantidad_actual > 0 
-                        AND lm.fecha_vencimiento > CURDATE()
-                    )
                     GROUP BY dm.Id ORDER BY m.nombre_medicamento ASC";
                     $res_meds = $conexion->query($sql_meds);
                     while ($row_med = $res_meds->fetch_assoc()) {
@@ -364,7 +356,15 @@
                 </div>
               </div>
 
-              <div class="col-sm-6 form-group mt-3">
+              <div class="col-sm-4 form-group mt-3">
+                <label>Existencia Actual:</label>
+                <input type="text" id="existencia_actual" class="form-control" readonly disabled style="background-color: #f9f9f9;">
+              </div>
+              <div class="col-sm-4 form-group mt-3">
+                <label>Stock Máximo:</label>
+                <input type="text" id="stock_maximo" class="form-control" readonly disabled style="background-color: #f9f9f9;">
+              </div>
+              <div class="col-sm-4 form-group mt-3">
                 <label>Cantidad a Solicitar (*):</label>
                 <input type="text" id="cantidad_agregar" class="form-control" placeholder="Solo números" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
               </div>
@@ -565,8 +565,19 @@
 
   <script>
     let listaItemsPedido = [];
+    let indexEdicion = -1;
 
-    function mostrarAviso(mensaje) {
+    function mostrarAviso(mensaje, tipo = 'error') {
+      // Si indicamos que es un éxito, pintamos el modal de verde. 
+      // Para cualquier otro caso, nos aseguramos de devolverle su color rojo (bg-crimson).
+      if (tipo === 'exito') {
+        $('#headerAvisoPedido').removeClass('bg-crimson').addClass('bg-green');
+        $('#confirmAviso').removeClass('btn-danger').addClass('btn-success');
+      } else {
+        $('#headerAvisoPedido').removeClass('bg-green').addClass('bg-crimson');
+        $('#confirmAviso').removeClass('btn-success').addClass('btn-danger');
+      }
+
       $('#cuerpoAviso').html(mensaje);
       $('#avisoModal').removeClass('out').addClass('in').modal('show');
     }
@@ -644,21 +655,18 @@
                 listaItemsPedido.push({
                   id_descripcion: item.id_descripcion,
                   nombre: item.nombre_completo,
-                  cantidad: parseInt(item.cantidad_a_pedir)
+                  cantidad: parseInt(item.cantidad_a_pedir),
+                  existencia_actual: parseInt(item.existencia_actual), // <- NUEVO
+                  stock_maximo: parseInt(item.stock_maximo) // <- NUEVO
                 });
                 itemsAgregados++;
               }
             });
 
             if (itemsAgregados > 0) {
-              // Ejecuta tu función nativa para repintar la tabla del pedido
               actualizarTablaVisual();
-              $('#headerAvisoPedido').removeClass('bg-crimson').addClass('bg-green');
-              $('#confirmAviso').removeClass('btn-danger').addClass('btn-success');
-              mostrarAviso("Se cargaron automáticamente <strong>" + itemsAgregados + "</strong> medicamentos en estado crítico.");
+              mostrarAviso("Se cargaron automáticamente <strong>" + itemsAgregados + "</strong> medicamentos en estado crítico.", "exito");
             } else {
-              $('#headerAvisoPedido').removeClass('bg-green').addClass('bg-crimson');
-              $('#confirmAviso').removeClass('btn-success').addClass('btn-danger');
               mostrarAviso("Los medicamentos que requieren reorden ya se encuentran enlistados en la tabla.");
             }
           },
@@ -666,10 +674,46 @@
             mostrarAviso("No se pudo conectar con el servidor para procesar el Punto de Reorden.");
           },
           complete: function() {
-            // Restauramos el botón a su estado original pase lo que pase
             $btn.prop('disabled', false).html('<i class="fa fa-refresh"></i> Cargar por Punto de Reorden');
           }
         });
+      });
+
+      // Consultar stock al seleccionar un medicamento en el modal
+      $('#select_medicamento').on('change', function() {
+        let idMed = $(this).val();
+        $('#existencia_actual, #stock_maximo').val(''); // Limpiamos campos
+
+        if (idMed) {
+          $.ajax({
+            url: '../../cfg/ajax/obtener_descripcion_medicamento.php',
+            type: 'POST',
+            data: {
+              id: idMed,
+              modo: 'pedido'
+            },
+            dataType: 'json',
+            success: function(data) {
+              if (!data.error) {
+                let ext = data.existencia_actual !== null ? parseInt(data.existencia_actual) : 0;
+                let sMax = data.stock_maximo !== null ? parseInt(data.stock_maximo) : 0;
+
+                $('#existencia_actual').val(ext);
+                $('#stock_maximo').val(sMax);
+
+                // Si ya el stock está lleno, bloqueamos el input de cantidad
+                if (sMax > 0 && ext >= sMax) {
+                  $('#cantidad_agregar').prop('disabled', true).val('');
+                  mostrarAviso(`🚫 <b>Atención:</b> La existencia actual (${ext}) ya cubre o supera el Stock Máximo permitido (${sMax}). No es necesario pedir más de este medicamento.`);
+                } else {
+                  $('#cantidad_agregar').prop('disabled', false);
+                }
+              }
+            }
+          });
+        } else {
+          $('#cantidad_agregar').prop('disabled', false);
+        }
       });
 
       // -------------------------------------------------------------
@@ -814,6 +858,9 @@
 
       // ACTUALIZACIÓN SILENCIOSA DEL SELECT DE MEDICAMENTOS
       function actualizarSelectMedicamentosSilencio() {
+        if ($('#modalAgregarMedicamento').is(':visible')) {
+          return;
+        }
         const hayFiltroBusqueda = $('#filtro_busqueda_rapida').val().trim() !== '';
         let hayFiltrosAvanzados = false;
         $.each($('#formFiltroModal').serializeArray(), function(i, field) {
@@ -860,16 +907,26 @@
 
       // Abrir modal de Agregar Medicamento
       $('#btnAbrirModalAgregar').on('click', function() {
-        $('#select_medicamento').val('').removeClass('input-error');
+        indexEdicion = -1; // Aseguramos el modo "Agregar"
+
+        // Restaurar el aspecto del modal
+        $('#modalAgregarMedicamento .modal-title').html('<i class="fa fa-plus-circle"></i> Agregar al pedido');
+        $('#btnConfirmarAgregarLista').html('<i class="fa fa-check"></i> Añadir a la Lista');
+
+        // Limpiar y habilitar campos
+        $('#select_medicamento').val('').prop('disabled', false).removeClass('input-error');
         $('#cantidad_agregar').val('').removeClass('input-error');
+
         $('#modalAgregarMedicamento').modal('show');
       });
 
-      // Agregar medicamento a la tabla
+      // Agregar o Editar medicamento en la tabla
       $('#btnConfirmarAgregarLista').on('click', function() {
         let idMed = $('#select_medicamento').val();
         let nombreMed = $('#select_medicamento option:selected').data('nombre');
         let cantidad = parseInt($('#cantidad_agregar').val());
+        let existencia = parseInt($('#existencia_actual').val()) || 0; // Capturamos existencia
+        let sMax = parseInt($('#stock_maximo').val()) || 0; // Capturamos el tope
 
         $('#select_medicamento, #cantidad_agregar').removeClass('input-error');
 
@@ -884,21 +941,35 @@
           return;
         }
 
-        // Buscar si ya está en la lista para sumarlo
-        let existe = listaItemsPedido.find(item => item.id_descripcion == idMed);
-        if (existe) {
-          existe.cantidad += cantidad;
+        // VALIDACIÓN ESTRICTA DEL LÍMITE DE STOCK
+        if (sMax > 0 && (existencia + cantidad) > sMax) {
+          $('#cantidad_agregar').addClass('input-error');
+          let permitido = sMax - existencia; // Calculamos cuánto falta para llegar al tope
+          mostrarAviso(`⚠️ <b>Límite excedido:</b> Actualmente hay ${existencia} unidades y el Stock Máximo es ${sMax}.<br><br>Solo puedes pedir un máximo de <b>${permitido}</b> unidades extra para no sobrepasar el límite de tu almacén.`);
+          return;
+        }
+
+        // Verificamos en qué modo estamos
+        if (indexEdicion === -1) {
+          let existe = listaItemsPedido.find(item => item.id_descripcion == idMed);
+          if (existe) {
+            existe.cantidad += cantidad;
+          } else {
+            listaItemsPedido.push({
+              id_descripcion: idMed,
+              nombre: nombreMed,
+              cantidad: cantidad,
+              existencia_actual: existencia, // Guardamos datos en el array
+              stock_maximo: sMax // Guardamos datos en el array
+            });
+          }
         } else {
-          listaItemsPedido.push({
-            id_descripcion: idMed,
-            nombre: nombreMed,
-            cantidad: cantidad
-          });
+          listaItemsPedido[indexEdicion].cantidad = cantidad;
+          indexEdicion = -1; 
         }
 
         actualizarTablaVisual();
 
-        // Cierre animado
         $('#modalAgregarMedicamento').removeClass('in').addClass('out');
         setTimeout(function() {
           $('#modalAgregarMedicamento').modal('hide');
@@ -921,8 +992,11 @@
             <td style="text-align: left;"><strong>${item.nombre}</strong></td>
             <td><span class="badge bg-green" style="font-size:14px;">${item.cantidad}</span></td>
             <td>
+              <button type="button" class="btn btn-warning btn-xs btn-editar-fila" data-index="${index}" title="Editar medicamento">
+                <i"><img src="../../recursos/imagenes/iconos/editar.png" style="width:10px; height:10px;"></i>
+              </button>
               <button type="button" class="btn btn-danger btn-xs" onclick="eliminarItem(${index})" title="Quitar de la lista">
-                <i class="fa fa-trash"></i> Quitar
+                <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:10px; height:10px;"></i>
               </button>
             </td>
           </tr>`;
@@ -934,6 +1008,27 @@
         listaItemsPedido.splice(index, 1);
         actualizarTablaVisual();
       };
+
+      // Abrir modal en modo Editar Medicamento (Delegación de eventos por si la tabla se repinta)
+      $(document).on('click', '.btn-editar-fila', function() {
+        let index = $(this).data('index');
+        let item = listaItemsPedido[index];
+
+        indexEdicion = index; // Pasamos a modo "Editar" y guardamos la posición
+
+        $('#existencia_actual').val(item.existencia_actual);
+        $('#stock_maximo').val(item.stock_maximo);
+
+        // Cambiar la estética del modal para indicar edición
+        $('#modalAgregarMedicamento .modal-title').html('<i class="fa fa-pencil"></i> Editar cantidad solicitada');
+        $('#btnConfirmarAgregarLista').html('<i class="fa fa-save"></i> Guardar Cambios');
+
+        // Cargar los datos actuales y bloquear el selector de medicamento
+        $('#select_medicamento').val(item.id_descripcion).prop('disabled', true).removeClass('input-error');
+        $('#cantidad_agregar').val(item.cantidad).removeClass('input-error');
+
+        $('#modalAgregarMedicamento').modal('show');
+      });
 
       // Modal Regresar
       $('#abrirModalRegresar').on('click', function() {

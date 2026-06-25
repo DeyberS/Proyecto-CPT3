@@ -82,8 +82,12 @@
     $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
-    // Capturar término de búsqueda para filtrar la consulta
-    $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+    // --- RECEPCIÓN DE VARIABLES DE FILTRADO ---
+    $busqueda      = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+    $f_desde       = isset($_GET['f_desde']) ? mysqli_real_escape_string($conexion, $_GET['f_desde']) : '';
+    $f_hasta       = isset($_GET['f_hasta']) ? mysqli_real_escape_string($conexion, $_GET['f_hasta']) : '';
+    $f_tipo_mov    = isset($_GET['f_tipo_mov']) ? mysqli_real_escape_string($conexion, $_GET['f_tipo_mov']) : '';
+    $f_responsable = isset($_GET['f_responsable']) ? mysqli_real_escape_string($conexion, $_GET['f_responsable']) : '';
 
     // Definir el filtro dinámico
     $donde = "WHERE 1=1";
@@ -95,11 +99,26 @@
       $donde .= " AND di.Id_persona = '$id_persona_activa'";
     }
 
+    // Búsqueda general
     if ($busqueda != '') {
       $donde .= " AND (m.nombre_medicamento LIKE '%$busqueda%' 
                   OR p.nombre LIKE '%$busqueda%' 
                   OR l.Lote LIKE '%$busqueda%' 
                   OR tm.nombre LIKE '%$busqueda%')";
+    }
+
+    // Filtros Avanzados
+    if ($f_desde != '') {
+      $donde .= " AND DATE(di.fecha) >= '$f_desde'";
+    }
+    if ($f_hasta != '') {
+      $donde .= " AND DATE(di.fecha) <= '$f_hasta'";
+    }
+    if ($f_tipo_mov != '') {
+      $donde .= " AND tm.nombre = '$f_tipo_mov'";
+    }
+    if ($f_responsable != '') {
+      $donde .= " AND p.nombre LIKE '%$f_responsable%'";
     }
 
     // Contar el total de registros filtrados para que la paginación sea exacta
@@ -155,7 +174,17 @@
         <?php if (in_array('Generar Pedidos', $_SESSION["permisos"])) : ?>
           <a href="farmacia_pedidos_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-cog"></i> Pedidos </a>
         <?php endif; ?>
-        <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="width: 200px;" autocomplete="off">
+        <div class="pull-left form-inline">
+          <form method="GET" action="" id="formBusquedaRapida">
+            <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo htmlspecialchars($busqueda); ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+          </form>
+        </div>
+        <p class="pull-right" style="width:5px;"></p>
+        <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de movimientos.">
+          <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
+            <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+          </button>
+        </span>
       </div>
       <br><br>
 
@@ -197,7 +226,7 @@
 
             $resultado = $conexion->query($sql);
             $primer_activo_encontrado = false;
-            
+
             if ($resultado && $resultado->num_rows > 0) {
               while ($row = $resultado->fetch_assoc()) {
 
@@ -206,8 +235,8 @@
                 // 2. NUEVA VALIDACIÓN: Ignorar si es "Anulado" O si es una reversión (8 y 9)
                 $es_primer_activo = false;
                 if ($row['estado_movimiento'] !== 'Anulado' && !in_array($row['Id_tipoMovimiento'], $tipos_prohibidos) && !$primer_activo_encontrado) {
-                    $es_primer_activo = true;
-                    $primer_activo_encontrado = true;
+                  $es_primer_activo = true;
+                  $primer_activo_encontrado = true;
                 }
 
                 $clase_badge = (strcasecmp($row['tipo_nom'], 'Entrada') == 0 or strcasecmp($row['tipo_nom'], 'Ajuste por Cuadre (Entrada)') == 0) ? 'bg-green' : 'bg-crimson';
@@ -342,9 +371,6 @@
         <div class="modal-content">
           <div class="modal-header bg-danger text-white" style="background-color: #dc3545; color: white;">
             <h5 class="modal-title" style="color:white !important;">Confirmar Anulación</h5>
-            <button type="button" class="close" onclick="closeCustomModal($('#modalAnulacion'))" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
           </div>
           <form action="../../cfg/movimientos_inventario.php" method="POST">
             <div class="modal-body">
@@ -353,6 +379,12 @@
 
               <input type="hidden" name="op" value="revertir_movimiento">
               <input type="hidden" name="id_detalle_inventario" id="id_anular_input">
+
+              <div id="divMotivoCancelacion" style="margin-top: 15px;">
+                <label for="motivo_cancelacion">Motivo de la anulación <span class="text-danger">*</span></label>
+                <textarea id="motivo_cancelacion" name="motivo_cancelacion" class="form-control" rows="3" placeholder="Especifique el motivo por el cual se anula este movimiento..." required></textarea>
+                <small id="errorMotivo" class="text-danger" style="display:none; font-weight:bold;">Debe especificar un motivo obligatorio.</small>
+              </div>
 
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeCustomModal($('#modalAnulacion'))">Cancelar</button>
@@ -375,22 +407,22 @@
             <div class="form-group">
               <label>Tipo de Reporte:</label>
               <select class="form-control" id="tipo_reporte_inv">
-              <?php $rol_actual = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0; ?>
+                <?php $rol_actual = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0; ?>
                 <optgroup label="Estado Actual">
                   <option value="existencia">Existencia Actual (Stock)</option>
-                  <?php if ($rol_actual != 9): /* Oculto para Despachador */ ?>
-                  <option value="vencimientos">Próximos a Vencer (Control de Lotes)</option>
+                  <?php if ($rol_actual != 9) : /* Oculto para Despachador */ ?>
+                    <option value="vencimientos">Próximos a Vencer (Control de Lotes)</option>
                   <?php endif; ?>
                 </optgroup>
 
                 <optgroup label="Movimientos y Trazabilidad">
                   <?php if ($rol_actual != 9) : /* Oculto para Despachador */ ?>
-                  <option value="entradas">Entradas (Ingresos de Suministros)</option>
+                    <option value="entradas">Entradas (Ingresos de Suministros)</option>
                   <?php endif; ?>
                   <option value="despacho">Salidas por Dispensación (Récipes)</option>
                   <?php if ($rol_actual != 9) : /* Oculto para Despachador */ ?>
-                  <option value="bajas">Bajas y Mermas (Vencidos/Dañados)</option>
-                  <option value="ajustes">Ajustes de Inventario (Auditoría)</option>
+                    <option value="bajas">Bajas y Mermas (Vencidos/Dañados)</option>
+                    <option value="ajustes">Ajustes de Inventario (Auditoría)</option>
                   <?php endif; ?>
                 </optgroup>
 
@@ -439,6 +471,60 @@
             <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
             <a href="#" id="btnAceptarEliminar" class="btn btn-danger">Aceptar</a>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalBusquedaAvanzada" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <form id="formBusquedaAvanzada" method="GET" action="">
+            <div class="modal-header bg-primary">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Movimientos</h4>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label>Fecha Desde</label>
+                  <input type="date" name="f_desde" class="form-control" max="<?php echo date('Y-m-d'); ?>" value="<?php echo $f_desde; ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Fecha Hasta</label>
+                  <input type="date" name="f_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>" value="<?php echo $f_hasta; ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Tipo de Movimiento</label>
+                  <select name="f_tipo_mov" class="form-control">
+                    <option value="">Todos</option>
+                    <?php
+                    $res_tipos = $conexion->query("SELECT nombre FROM tipo_movimiento ORDER BY nombre ASC");
+                    while ($tp = $res_tipos->fetch_assoc()) {
+                      $sel = ($f_tipo_mov == $tp['nombre']) ? 'selected' : '';
+                      echo "<option value='" . htmlspecialchars($tp['nombre']) . "' $sel>" . htmlspecialchars($tp['nombre']) . "</option>";
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <label>Responsable</label>
+                  <input type="text" name="f_responsable" class="form-control" placeholder="Nombre del responsable..." oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo htmlspecialchars($f_responsable); ?>">
+                </div>
+                <div class="col-md-6 form-group">
+                  <label>Contiene Producto / Medicamento</label>
+                  <input type="text" name="buscar" class="form-control" placeholder="Nombre de medicamento..." oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo htmlspecialchars($busqueda); ?>">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -504,6 +590,71 @@
       $('#ModalConfirmarEliminar .close, #ModalConfirmarEliminar .btn-second').on('click', function() {
         closeCustomModal($('#ModalConfirmarEliminar'));
       });
+
+      // ==========================================
+      // LÓGICA AJAX PARA BÚSQUEDA Y PAGINACIÓN EN VIVO
+      // ==========================================
+      window.cargarDatosAjax = function(url) {
+        $('.tbody').css('opacity', '0.4'); // Efecto de carga
+
+        $.get(url, function(data) {
+          var htmlParsed = $(data);
+
+          // Inyectamos las partes necesarias de la vista actual sin recargar
+          $('.tbody').html(htmlParsed.find('.tbody').html()).css('opacity', '1');
+
+          // Actualizamos la paginación (buscamos el nav de paginación y lo reemplazamos)
+          $('nav[aria-label="Page navigation"]').html(htmlParsed.find('nav[aria-label="Page navigation"]').html());
+
+          // Actualizar URL del navegador silenciosamente
+          window.history.pushState(null, '', url);
+        }).fail(function() {
+          alert("Error de conexión al aplicar filtros.");
+          $('.tbody').css('opacity', '1');
+        });
+      };
+
+      // Búsqueda Rápida con KeyUp
+      let timer;
+      $('#buscar').on('keyup', function() {
+        clearTimeout(timer);
+        let query = $(this).val();
+        timer = setTimeout(function() {
+          var url = 'farmacia_inventario_listado.php?buscar=' + encodeURIComponent(query);
+          cargarDatosAjax(url);
+        }, 400);
+      });
+
+      // Evitar que el ENTER en búsqueda rápida recargue la página entera
+      $('#formBusquedaRapida').on('submit', function(e) {
+        e.preventDefault();
+      });
+
+      // Interceptar Búsqueda Avanzada
+      $('#formBusquedaAvanzada').on('submit', function(e) {
+        e.preventDefault();
+        var url = 'farmacia_inventario_listado.php?' + $(this).serialize();
+        $('#modalBusquedaAvanzada').modal('hide');
+        cargarDatosAjax(url);
+      });
+
+      // Interceptar paginación
+      $(document).on('click', 'nav[aria-label="Page navigation"] .pagination a', function(e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        if (url) {
+          cargarDatosAjax(url);
+        }
+      });
+
+      // Limpiar filtros via AJAX
+      window.limpiarFiltrosAjax = function() {
+        $('#formBusquedaAvanzada')[0].reset();
+        $('#buscar').val('');
+        var urlLimpia = window.location.href.split('?')[0];
+        cargarDatosAjax(urlLimpia);
+        $('#modalBusquedaAvanzada').modal('hide');
+      };
 
       <?php if ($mostrar_modal_exito) : ?>
         $('#modalExito').modal('show');

@@ -166,7 +166,7 @@
         <p class="pull-right" style="width:5px;"></p>
         <a href="#" class="btn-sm btn-primary pull-right" id="btnVistaCalendario">Calendario</a>
         <p class="pull-right" style="width:5px;"></p>
-        <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
+        <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
       </div>
       <br><br>
       <div id="contenedorCalendario" style="display: none; background: white; padding: 20px; border-radius: 5px;">

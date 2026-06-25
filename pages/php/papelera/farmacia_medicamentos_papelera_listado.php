@@ -88,7 +88,7 @@
     <section class="content">
       <div style="padding-bottom: 10px;">
         <a href="../farmacia_medicamentos_listado.php" class="btn-sm btn-primary pull-right"> Regresar al Listado </a>
-        <input type="text" placeholder="Buscar.." class="form-control pull-left" id="buscar" onkeyup="filtro()">
+        <input type="text" placeholder="Buscar.." class="form-control pull-left" style="border-radius:0; height:10%; width:250px; display:inline-block;" id="buscar" onkeyup="filtro()">
       </div>
       <br><br>
       <div id="contenedorTabla">

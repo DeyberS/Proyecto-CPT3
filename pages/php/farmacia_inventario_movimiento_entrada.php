@@ -26,6 +26,12 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
     /* ---------------------------------------------------------------------- */
     /* ANIMACIONES Y ESTILOS DE MODALES (Igualados a Ajustes)                 */
     /* ---------------------------------------------------------------------- */
+
+    #avisoModal {
+      z-index: 1000000 !important;
+      /* Fuerza a estar por encima del 99999 de los demás modales */
+    }
+
     @keyframes pulse-opacity {
       0% {
         opacity: 0;
@@ -228,7 +234,7 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
 
               <div class="box-tools pull-left" style="margin-top: 2px;">
                 <span style="font-size: 16px; font-weight: bold; color: #555;">
-                  Operación N°: <span class="badge bg-blue" style="font-size: 15px; padding: 5px 10px; letter-spacing: 1px;">#<?php echo $numero_proyectado; ?></span>
+                  Operación N°: <span id="badge_numero_operacion" class="badge bg-blue" style="font-size: 15px; padding: 5px 10px; letter-spacing: 1px;">#<?php echo $numero_proyectado; ?></span>
                 </span>
               </div>
 
@@ -360,7 +366,7 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
                 </div>
                 <div class="box-footer text-right" style="background-color: transparent; border-top: 1px solid #f4f4f4; padding-top: 15px;">
                   <button type="button" class="btn btn-secondary" id="abrirModalRegresar">Regresar</button>
-                  <button type="submit" class="btn btn-success" id="btnPrepararGuardado"><i class="fa fa-save"></i>Guardar</button>
+                  <button type="submit" class="btn btn-success" id="btnPrepararGuardado"><i class="fa fa-save"></i>Procesar</button>
                 </div>
               </div>
             </div>
@@ -485,7 +491,7 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
     </div>
   </div>
 
-  <div class="modal" id="modalConfirmarLote" role="dialog" aria-hidden="true" data-backdrop="static">
+  <div class="modal" id="modalConfirmarLote" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header bg-crimson">
@@ -634,7 +640,7 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
   <div class="modal" id="modalCargarPedido" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header bg-yellow" style="background-color: #f39c12; color: white;">
+        <div class="modal-header bg-crimson">
           <button type="button" class="close text-white" data-dismiss="modal" style="color:white; opacity: 1;">&times;</button>
           <h4 class="modal-title"><i class="fa fa-list"></i> Seleccionar Pedido Pendiente</h4>
         </div>
@@ -718,11 +724,8 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
   <div class="modal" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header bg-crimson">
+        <div id="headerAviso" class="modal-header bg-crimson">
           <h5 class="modal-title" id="avisoModalLabel" style="color: white;">Aviso de Validación</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
         </div>
         <div class="modal-body">
           <p id="avisoTexto"></p>
@@ -830,13 +833,19 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
       // -------------------------------------------------------------
       // FUNCIONES BASE
       // -------------------------------------------------------------
-      function mostrarAviso(mensaje) {
+      window.mostrarAviso = function(mensaje) {
+        $('#headerAviso').removeClass('bg-green').addClass('bg-crimson');
+        $('#avisoTexto').html(mensaje);
+        $('#avisoModal').modal('show');
+      }
+
+      window.mostrarExito = function(mensaje) {
+        $('#headerAviso').removeClass('bg-crimson').addClass('bg-green');
         $('#avisoTexto').html(mensaje);
         $('#avisoModal').modal('show');
       }
 
       $('#btnAbrirModalCrear').on('click', function() {
-        // Si necesitas limpiar el modal antes de abrirlo, puedes hacerlo aquí
         $('#med_formularioMedicamento')[0].reset();
 
         $('#med_modal_principal').modal('show');
@@ -950,10 +959,41 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
         }
       });
 
+      // --- NUEVA VALIDACIÓN: Bloquear campos si no hay medicamento seleccionado ---
+      $('#lote, #cantidad, #fecha_fabricacion, #fecha_vencimiento').on('mousedown keydown', function(e) {
+        // Permitimos usar la tecla "Tab" para no trabar la navegación por teclado
+        if (e.type === 'keydown' && e.key === 'Tab') return;
+
+        let medSeleccionado = $('#Id_descripcion_medicamento').val();
+
+        // Si el valor está vacío, bloqueamos la escritura y el clic
+        if (!medSeleccionado || medSeleccionado === "") {
+          e.preventDefault();
+          $(this).blur(); // Quitamos el foco del campo
+
+          // Lanzamos el aviso solo si el modal no está ya abierto (evita bucles)
+          if ($('#avisoModal').is(':hidden')) {
+            mostrarAviso('⚠️ <b>Atención:</b> Debe seleccionar un <b>Medicamento del Catálogo</b> antes de llenar estos campos.');
+          }
+          return false;
+        }
+      });
+      // ----------------------------------------------------------------------------
+
       $('#Id_descripcion_medicamento').on('change', function() {
         const medicamentoId = $(this).val();
         $('#lista_lotes').empty();
         lotesCargados = [];
+
+        // --- SOLUCIÓN 1: Limpiar campos al cambiar de medicamento ---
+        $('#lote').val('').css('border-color', '#ced4da').data('lote-confirmado', '');
+        $('#fecha_fabricacion').val('').prop('readonly', false);
+        $('#fecha_vencimiento').val('').prop('disabled', true).prop('readonly', false);
+        $('#cantidad').val('');
+
+        // CORRECCIÓN: Se retira .tooltip('fixTitle') para evitar el bloqueo del modal
+        $('#infoLote').attr('data-original-title', 'Llene los datos del lote').attr('title', 'Llene los datos del lote');
+        // -----------------------------------------------------------
 
         if (medicamentoId) {
           $.ajax({
@@ -976,7 +1016,18 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
                     $('#lista_lotes').append('<option value="' + item.lote + '">');
                   });
                 }
-                // --- NUEVO: Validar inmediatamente si ya se alcanzó el tope ---
+
+                let loteActual = $('#lote').val().trim().toUpperCase();
+                if (loteActual !== '') {
+                  // Buscamos si el lote que estamos editando ya está en la base de datos
+                  const loteEncontrado = lotesCargados.find(l => l.lote.toUpperCase() === loteActual);
+                  if (loteEncontrado) {
+                    // Si existe, usamos tu función que bloquea los campos (readonly)
+                    aplicarLoteExistente(loteEncontrado);
+                    $('#lote').data('lote-confirmado', loteActual);
+                  }
+                }
+
                 let extActual = parseInt(data.existencia_actual) || 0;
                 let sMaximo = parseInt(data.stock_maximo) || 0;
 
@@ -1018,24 +1069,30 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
           $('#modalConfirmarLote').modal('show');
 
           // Lógica al dar click en Aceptar explícitamente
+          // Lógica al dar click en Aceptar explícitamente
           $('#btnAceptarLote').off('click').on('click', function() {
-            loteAceptado = true; // Marcamos como aceptado
-            $('#modalConfirmarLote').modal('hide');
+            loteAceptado = true;
+            // No usamos .modal('hide') aquí porque el botón ya tiene data-dismiss="modal"
+            // lo cual activa tu propia animación de cierre automáticamente.
+
             $('#lote').data('lote-confirmado', loteEscrito);
             aplicarLoteExistente(loteEncontrado);
           });
 
-          // Lógica al dar click en Cancelar (Solo cierra, el evento hidden hace la limpieza)
+          // Lógica al dar click en Cancelar
           $('#btnCancelarLote').off('click').on('click', function() {
-            $('#modalConfirmarLote').modal('hide');
+            // Dejamos que el data-dismiss="modal" haga el trabajo de cerrar animado
           });
 
-          // FUNDAMENTAL: Si el modal se cierra por cualquier motivo (Botón cancelar, clic afuera o en la X)
-          $('#modalConfirmarLote').off('hidden.bs.modal').on('hidden.bs.modals', function() {
+          // FUNDAMENTAL: Evento corregido (antes decía 'hidden.bs.modals')
+          $('#modalConfirmarLote').off('hidden.bs.modal').on('hidden.bs.modal', function() {
 
-            $('.modal-backdrop').last().remove();
+            // Eliminamos SOLO el backdrop extra (el último) para no afectar el modal de abajo
+            if ($('.modal-backdrop').length > 1) {
+              $('.modal-backdrop').last().remove();
+            }
 
-            // Y nos aseguramos de que el modal de abajo siga funcionando correctamente
+            // Mantenemos el body con scroll para el modal que quedó abierto
             if ($('#modalAgregarMedicamento').is(':visible')) {
               $('body').addClass('modal-open');
             }
@@ -1477,10 +1534,11 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
       inicializarTags('#filtro_busqueda_rapida');
       inicializarTags('#filtro_principios');
 
-      // -------------------------------------------------------------
-      // ACTUALIZACIÓN SILENCIOSA DEL SELECT DE MEDICAMENTOS
-      // -------------------------------------------------------------
       function actualizarSelectMedicamentosSilencio() {
+        if ($('#modalAgregarMedicamento').is(':visible')) {
+          return;
+        }
+
         // 1. Verificamos si hay alguna búsqueda/filtro activo
         const hayFiltroBusqueda = $('#filtro_busqueda_rapida').val().trim() !== '';
         let hayFiltrosAvanzados = false;
@@ -1499,19 +1557,41 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
             type: 'POST',
             data: {
               recarga_silenciosa: true,
-              modo: modoOperacion // Envía el modo en la recarga silenciosa
+              modo: modoOperacion
             },
             dataType: 'json',
             success: function(response) {
               const select = $('#Id_descripcion_medicamento');
+
+              // VERIFICAR SI EL SELECCIONADO EXISTE EN LA RESPUESTA
+              let existeEnRespuesta = false;
+              if (response.length > 0) {
+                existeEnRespuesta = response.some(item => item.id_desc == valorSeleccionado);
+              }
+
+              let opcionInyectada = "";
+              if (valorSeleccionado && !existeEnRespuesta) {
+                // Si es un medicamento recién creado y no viene en el AJAX aún, clonamos su HTML para no perderlo
+                let selectedOption = $('#Id_descripcion_medicamento option:selected');
+                if (selectedOption.length > 0) {
+                  opcionInyectada = selectedOption[0].outerHTML;
+                }
+              }
+
               let nuevasOpciones = '<option value="">--- Seleccione un Medicamento ---</option>';
+              if (opcionInyectada !== "") {
+                nuevasOpciones += opcionInyectada;
+              }
 
               if (response.length > 0) {
                 response.forEach(function(item) {
-                  const comp = item.componentes ? ` data-componentes="${item.componentes}"` : '';
-                  nuevasOpciones += `<option value="${item.id_desc}" data-nombre="${item.nombre_completo}"${comp}>${item.nombre_completo}</option>`;
+                  // Agregamos las opciones (evitando duplicar si ya lo inyectamos)
+                  if (item.id_desc != valorSeleccionado || existeEnRespuesta) {
+                    const comp = item.componentes ? ` data-componentes="${item.componentes}"` : '';
+                    nuevasOpciones += `<option value="${item.id_desc}" data-nombre="${item.nombre_completo}"${comp}>${item.nombre_completo}</option>`;
+                  }
                 });
-              } else {
+              } else if (opcionInyectada === "") {
                 nuevasOpciones += '<option value="" disabled>🛑 No se encontraron medicamentos.</option>';
               }
 
@@ -1532,6 +1612,30 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
 
       // Ejecutar la actualización silenciosa cada 2000 milisegundos (2 segundos)
       setInterval(actualizarSelectMedicamentosSilencio, 2000);
+
+      // -------------------------------------------------------------
+      // ACTUALIZAR NÚMERO DE OPERACIÓN EN TIEMPO REAL
+      // -------------------------------------------------------------
+      function actualizarNumeroOperacionSilencio() {
+        $.ajax({
+          url: '../../cfg/ajax/obtener_proximo_id_operacion.php',
+          type: 'GET',
+          dataType: 'json',
+          success: function(response) {
+            if (response && response.numero_proyectado) {
+              // Actualiza visualmente el texto del badge
+              $('#badge_numero_operacion').text('#' + response.numero_proyectado);
+            }
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            // Omitimos mostrar alertas para no molestar al usuario si hay un microcorte de red
+            console.log("No se pudo actualizar el nro de operación en 2do plano.");
+          }
+        });
+      }
+
+      // Ejecutar la revisión del ID cada 5000 milisegundos (5 segundos)
+      setInterval(actualizarNumeroOperacionSilencio, 5000);
 
       // -------------------------------------------------------------
       // SUBMIT Y GUARDADO FINAL

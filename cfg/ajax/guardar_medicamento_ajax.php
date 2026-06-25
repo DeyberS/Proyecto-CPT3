@@ -13,6 +13,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $contenido_neto         = $_POST['contenido_neto'] ?? '';
     $almacenamiento         = $_POST['almacenamiento'] ?? '';
     $excipientes            = $_POST['excipientes'] ?? '';
+    $stock_minimo         = $_POST['stock_minimo_medicamento'] ?? '';
+    $stock_maximo            = $_POST['stock_maximo_medicamento'] ?? '';
     $id_laboratorio         = !empty($_POST['laboratorio']) ? (int)$_POST['laboratorio'] : null;
     $cantidad_concentracion = !empty($_POST['cantidad_concentracion']) ? $_POST['cantidad_concentracion'] : null;
     $id_tipo_concentracion  = !empty($_POST['tipo_concentracion']) ? $_POST['tipo_concentracion'] : null;
@@ -34,8 +36,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // PASO 2: Insertar Descripción
         $stmt2 = $conexion->prepare("INSERT INTO descripcion_medicamento 
             (via_aplicacion, almacenamiento, excipientes, stock_minimo, stock_maximo, codigo_barras, contenido_neto, cantidad_concentracion, Id_tipo_concentracion, Id_laboratorio, Id_presentacion, Id_medicamento, estatus) 
-            VALUES (?, ?, ?, '0', '0', ?, ?, ?, ?, ?, ?, ?, '1')");
-        $stmt2->bind_param("ssssssiiii", $via_aplicacion, $almacenamiento, $excipientes, $codigo_barras, $contenido_neto, $cantidad_concentracion, $id_tipo_concentracion, $id_laboratorio, $id_presentacion, $id_medicamento_generado);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '1')");
+        $stmt2->bind_param("sssiisssiiii", $via_aplicacion, $almacenamiento, $excipientes, $stock_minimo, $stock_maximo, $codigo_barras, $contenido_neto, $cantidad_concentracion, $id_tipo_concentracion, $id_laboratorio, $id_presentacion, $id_medicamento_generado);
         if (!$stmt2->execute()) throw new Exception("Error al guardar la descripción: " . $stmt2->error);
         $id_descripcion_generada = $stmt2->insert_id;
         $stmt2->close();

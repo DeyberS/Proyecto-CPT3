@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 18-06-2026 a las 22:47:22
+-- Tiempo de generación: 25-06-2026 a las 23:22:33
 -- Versión del servidor: 10.1.35-MariaDB
 -- Versión de PHP: 7.2.9
 
@@ -216,11 +216,33 @@ CREATE TABLE `descripcion_medicamento` (
 INSERT INTO `descripcion_medicamento` (`Id`, `via_aplicacion`, `almacenamiento`, `excipientes`, `stock_minimo`, `stock_maximo`, `codigo_barras`, `contenido_neto`, `cantidad_concentracion`, `Id_tipo_concentracion`, `Id_laboratorio`, `Id_presentacion`, `Id_medicamento`, `estatus`) VALUES
 (81, 'Oral', '8_a_15', '', 1, 200, '27489824824742', '10 Tabletas', '10', 2, 2, 1, 94, '1'),
 (82, 'Oral', '8_a_15', 'Fresa, Sal, Mantequilla', 1, 100, '234234235233', '10 Tabletas', '10', 2, 2, 1, 95, '1'),
-(85, 'Oral', '8_a_15', '', 1, 100, '2748982482474', '10 Tabletas', '10', 2, 2, 1, 98, '1'),
+(85, 'Oral', '8_a_15', '', 1, 200, '2748982482474', '10 Tabletas', '10', 2, 2, 1, 98, '1'),
 (86, 'Oral', '8_a_15', '', 1, 100, '274898248247', '10 Tabletas', '10', 2, 2, 1, 99, '1'),
 (87, 'Oral', '8_a_15', '', 0, 0, '2748982482475', '10 Tabletas', '10', 2, 2, 1, 100, '1'),
 (88, 'Oral', '8_a_15', '', 1, 100, '23423423525', '10 Tabletas', '10', 2, 2, 1, 101, '1'),
-(89, 'Oral', '8_a_15', '', 0, 0, '274898248245', '10 Tabletas', '10', 2, 2, 1, 102, '1');
+(89, 'Oral', '8_a_15', '', 1, 20, '274898248245', '10 Tabletas', '10', 2, 2, 1, 102, '1'),
+(90, 'Oral', '8_a_15', '', 15, 75, '274898248255', '10 Tabletas', '10', 2, 2, 1, 103, '1'),
+(91, 'Oral', '8_a_15', '', 12, 204, '274898248200', '10 Tabletas', '10', 2, 2, 1, 104, '1'),
+(92, 'Oral', '8_a_15', '', 10, 400, '274898248240', '10 Tabletas', '10', 2, 2, 1, 105, '1'),
+(93, 'Oral', '8_a_15', '', 1, 100, '27489824827664', '10 Tabletas', '10', 2, 2, 1, 106, '1'),
+(94, 'Oral', '8_a_15', '', 20, 30, '5325235236', '10 Tabletas', '10', 2, 2, 1, 107, '1'),
+(95, 'Oral', '8_a_15', '', 1, 100, '274898263464', '10 Tabletas', '10', 2, 2, 1, 108, '1'),
+(96, 'Oral', '8_a_15', '', 1, 200, '27489824', '10 Tabletas', '10', 2, 2, 1, 109, '1'),
+(97, 'Oral', '8_a_15', '', 1, 34, '892389278', '10 Tabletas', '10', 2, 2, 1, 110, '1'),
+(98, 'Oral', '8_a_15', '', 1, 340, '27489824825353', '10 Tabletas', '10', 2, 2, 1, 111, '1'),
+(99, 'Oral', '8_a_15', '', 20, 200, '274898248634341', '10 Tabletas', '10', 2, 2, 1, 112, '1'),
+(100, 'Oral', '8_a_15', '', 200, 300, '892389278433', '10 Tabletas', '10', 2, 2, 1, 113, '1'),
+(101, 'Oral', '8_a_15', '', 1, 50, '89238927844', '10 Tabletas', '10', 2, 2, 1, 114, '1'),
+(102, 'Oral', '8_a_15', '', 1, 100, '23423423053035', '10 Tabletas', '10', 2, 2, 1, 115, '1'),
+(103, 'Oral', '8_a_15', '', 21, 422, '274898248243553', '10 Tabletas', '10', 2, 2, 1, 116, '1'),
+(104, 'Oral', '8_a_15', '', 1, 20, '892389278437575', '10 Tabletas', '10', 2, 2, 1, 117, '1'),
+(105, 'Oral', '8_a_15', '', 1, 500, '8923892777', '10 Tabletas', '10', 2, 2, 1, 118, '1'),
+(106, 'Oral', '8_a_15', '', 2, 199, '27489824826464', '10 Tabletas', '10', 2, 2, 1, 119, '1'),
+(107, 'Oral', '8_a_15', '', 2, 100, '2748982486464', '10 Tabletas', '10', 2, 2, 1, 120, '1'),
+(108, 'Oral', '8_a_15', '', 1, 500, '666666666', '10 Tabletas', '10', 2, 2, 1, 121, '1'),
+(109, 'Oral', '8_a_15', '', 2, 30, '274898248225252', '10 Tabletas', '10', 2, 2, 1, 122, '1'),
+(110, 'Oral', '8_a_15', '', 2, 50, '2748982485335', '10 Tabletas', '10', 2, 2, 1, 123, '1'),
+(111, 'Oral', '8_a_15', '', 1, 20, '8923892785353', '10 Tabletas', '10', 2, 2, 1, 124, '1');
 
 -- --------------------------------------------------------
 
@@ -237,21 +259,25 @@ CREATE TABLE `detalle_inventario` (
   `comprobante` text,
   `fecha` datetime NOT NULL,
   `observaciones` varchar(255) NOT NULL,
-  `estado_movimiento` enum('Activo','Anulado') NOT NULL DEFAULT 'Activo'
+  `estado_movimiento` enum('Activo','Anulado') NOT NULL DEFAULT 'Activo',
+  `fecha_registro` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Volcado de datos para la tabla `detalle_inventario`
 --
 
-INSERT INTO `detalle_inventario` (`Id_detalle_inventario`, `Id_TipoMovimiento`, `Id_Persona`, `Id_receptor`, `Id_prescripcion`, `comprobante`, `fecha`, `observaciones`, `estado_movimiento`) VALUES
-(2, 1, 189, 189, NULL, NULL, '2026-06-17 17:33:00', 'Algo', 'Activo'),
-(3, 2, 189, NULL, NULL, NULL, '2026-06-17 17:43:51', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo'),
-(4, 2, 189, NULL, NULL, NULL, '2026-06-17 20:27:05', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo'),
-(5, 2, 189, NULL, NULL, NULL, '2026-06-17 20:28:22', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo'),
-(6, 2, 189, NULL, NULL, NULL, '2026-06-17 20:50:57', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo'),
-(7, 2, 189, NULL, NULL, NULL, '2026-06-17 20:51:24', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo'),
-(8, 7, 189, 189, NULL, NULL, '2026-06-18 03:49:00', 'Algo', 'Activo');
+INSERT INTO `detalle_inventario` (`Id_detalle_inventario`, `Id_TipoMovimiento`, `Id_Persona`, `Id_receptor`, `Id_prescripcion`, `comprobante`, `fecha`, `observaciones`, `estado_movimiento`, `fecha_registro`) VALUES
+(2, 1, 189, 189, NULL, NULL, '2026-06-17 17:33:00', 'Algo', 'Activo', '0000-00-00 00:00:00'),
+(3, 2, 189, NULL, NULL, NULL, '2026-06-17 17:43:51', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
+(4, 2, 189, NULL, NULL, NULL, '2026-06-17 20:27:05', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
+(5, 2, 189, NULL, NULL, NULL, '2026-06-17 20:28:22', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
+(6, 2, 189, NULL, NULL, NULL, '2026-06-17 20:50:57', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
+(7, 2, 189, NULL, NULL, NULL, '2026-06-17 20:51:24', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
+(8, 7, 189, 189, NULL, NULL, '2026-06-18 03:49:00', 'Algo', 'Activo', '0000-00-00 00:00:00'),
+(9, 2, 281, NULL, NULL, NULL, '2026-06-23 17:08:37', 'Despacho a paciente externo: Ezequiel Veroez', 'Activo', '0000-00-00 00:00:00'),
+(10, 2, 189, NULL, NULL, NULL, '2026-06-25 11:56:23', 'Despacho a paciente externo: Ezequiel Veroez', 'Anulado', '0000-00-00 00:00:00'),
+(11, 9, 189, NULL, NULL, NULL, '2026-06-25 17:19:51', 'ANULACIÓN DE MOV. #10 | Motivo: Error de registro detectado por administrador', 'Activo', '0000-00-00 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -280,7 +306,9 @@ INSERT INTO `detalle_medico` (`Id_detalle_medico`, `cod_colegiatura`, `fecha_ing
 (25, 0, '2026-06-13', 'Externo', 355),
 (26, 0, '2026-06-13', 'Externo', 356),
 (27, 1374280, '2026-06-14', 'Interno', 359),
-(28, 0, '2026-06-15', 'Externo', 362);
+(28, 0, '2026-06-15', 'Externo', 362),
+(29, 0, '2026-06-23', 'Externo', 364),
+(30, 0, '2026-06-23', 'Externo', 366);
 
 -- --------------------------------------------------------
 
@@ -314,7 +342,8 @@ INSERT INTO `detalle_paciente` (`Id_detalle_paciente`, `situacion_conyugal`, `et
 (69, '', 'No', '', 'No', '', '', '', 'sin_instruccion', '', 0, 'No', '', 'Interno', 328),
 (70, '', 'No', '', 'No', '', '', '', '', '', 0, 'No', '', 'Interno', 332),
 (71, '', 'No', '', 'No', '', '', '', 'sin_instruccion', NULL, NULL, 'No', '', 'Externo', 354),
-(72, '', 'No', '', 'Si', '', '', '', 'sin_instruccion', NULL, NULL, 'No', '', 'Externo', 360);
+(72, '', 'No', '', 'Si', '', '', '', 'sin_instruccion', NULL, NULL, 'No', '', 'Externo', 360),
+(73, 'Soltero', 'No', '', 'No', '', '', '', 'sin_instruccion', NULL, NULL, 'No', '', 'Externo', 365);
 
 -- --------------------------------------------------------
 
@@ -411,7 +440,8 @@ INSERT INTO `detalle_pedidos` (`id_detalle`, `id_pedido`, `id_descripcion_medica
 (2, 1, 82, 100),
 (3, 1, 85, 100),
 (4, 1, 86, 100),
-(5, 1, 88, 100);
+(5, 1, 88, 100),
+(6, 2, 82, 400);
 
 -- --------------------------------------------------------
 
@@ -459,7 +489,10 @@ INSERT INTO `detalle_persona_rol` (`Id_detalle_persona_rol`, `Id_persona`, `Id_r
 (169, 360, 3, '1'),
 (170, 361, 3, '1'),
 (171, 362, 7, '2'),
-(172, 363, 2, '2');
+(172, 363, 2, '2'),
+(173, 364, 7, '2'),
+(174, 365, 3, '1'),
+(175, 366, 7, '2');
 
 -- --------------------------------------------------------
 
@@ -505,7 +538,50 @@ INSERT INTO `detalle_principio_medicamento` (`Id_principio_medicamento`, `id_med
 (56, 87, 2, 2, 250),
 (57, 88, 1, 1, 800),
 (58, 89, 1, 1, 800),
-(59, 89, 2, 2, 250);
+(59, 89, 2, 2, 250),
+(60, 90, 1, 1, 800),
+(61, 90, 2, 2, 250),
+(62, 91, 1, 1, 800),
+(63, 91, 2, 2, 250),
+(64, 92, 1, 1, 800),
+(65, 92, 2, 2, 250),
+(66, 93, 1, 1, 800),
+(67, 93, 2, 2, 250),
+(68, 94, 1, 1, 800),
+(69, 94, 2, 2, 250),
+(70, 95, 1, 1, 800),
+(71, 95, 2, 2, 250),
+(72, 96, 1, 1, 800),
+(73, 96, 2, 2, 250),
+(74, 97, 1, 1, 800),
+(75, 97, 2, 2, 250),
+(76, 98, 1, 1, 800),
+(77, 98, 2, 2, 250),
+(78, 99, 1, 1, 800),
+(79, 99, 2, 2, 250),
+(80, 100, 1, 1, 800),
+(81, 100, 2, 2, 250),
+(82, 101, 1, 1, 800),
+(83, 101, 2, 2, 250),
+(84, 102, 1, 1, 800),
+(85, 103, 1, 1, 800),
+(86, 103, 2, 2, 250),
+(87, 104, 1, 1, 800),
+(88, 104, 2, 2, 250),
+(89, 105, 1, 1, 800),
+(90, 105, 2, 2, 250),
+(91, 106, 1, 1, 800),
+(92, 106, 2, 2, 250),
+(93, 107, 1, 1, 800),
+(94, 107, 2, 2, 250),
+(95, 108, 1, 1, 800),
+(96, 108, 2, 2, 250),
+(97, 109, 1, 1, 800),
+(98, 109, 2, 2, 250),
+(99, 110, 1, 1, 800),
+(100, 110, 2, 2, 250),
+(101, 111, 1, 1, 800),
+(102, 111, 2, 2, 250);
 
 -- --------------------------------------------------------
 
@@ -520,17 +596,19 @@ CREATE TABLE `detalle_solicitud` (
   `cantidad_recetada` int(11) NOT NULL,
   `cantidad_entregada` int(11) NOT NULL DEFAULT '0',
   `estatus_item` enum('Pendiente','Entregado','Parcialmente Entregado','Cancelado') DEFAULT 'Pendiente',
-  `paciente_notificado` tinyint(1) NOT NULL DEFAULT '0'
+  `paciente_notificado` tinyint(1) NOT NULL DEFAULT '0',
+  `motivo` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Volcado de datos para la tabla `detalle_solicitud`
 --
 
-INSERT INTO `detalle_solicitud` (`id_detalle`, `id_solicitud`, `id_medicamento`, `cantidad_recetada`, `cantidad_entregada`, `estatus_item`, `paciente_notificado`) VALUES
-(1, 1, 81, 2, 2, 'Entregado', 1),
-(2, 2, 85, 3, 3, 'Entregado', 1),
-(3, 3, 81, 2, 1, 'Parcialmente Entregado', 1);
+INSERT INTO `detalle_solicitud` (`id_detalle`, `id_solicitud`, `id_medicamento`, `cantidad_recetada`, `cantidad_entregada`, `estatus_item`, `paciente_notificado`, `motivo`) VALUES
+(1, 1, 81, 2, 2, 'Entregado', 1, ''),
+(2, 2, 85, 3, 3, 'Entregado', 1, ''),
+(3, 3, 81, 2, 2, 'Entregado', 1, ''),
+(4, 4, 81, 2, 0, 'Pendiente', 1, '');
 
 -- --------------------------------------------------------
 
@@ -561,7 +639,8 @@ INSERT INTO `direccion` (`Id_Direccion`, `tiempo_residencia`, `tiempo`, `avenida
 (300, '', 'dia/s', '', '', 349, NULL, '1'),
 (301, '', 'dia/s', '', '', 344, 4, '1'),
 (302, '', 'dia/s', '', 'Registrado Vía Rápida (Despacho)', 354, NULL, '1'),
-(303, '', 'dia/s', '', 'Registrado Vía Rápida (Despacho)', 360, NULL, '1');
+(303, '', 'dia/s', '', 'Registrado Vía Rápida (Despacho)', 360, NULL, '1'),
+(304, '', 'dia/s', '', 'Registrado Vía Rápida (Despacho)', 365, NULL, '1');
 
 -- --------------------------------------------------------
 
@@ -690,7 +769,7 @@ CREATE TABLE `existencias_stock` (
 --
 
 INSERT INTO `existencias_stock` (`Id_existencia`, `Id_descripcion_medicamento`, `Id_lote`, `cantidad_actual`, `ultima_actualizacion`) VALUES
-(1, 81, 2, 197, '2026-06-18 00:51:24'),
+(1, 81, 2, 196, '2026-06-25 21:19:51'),
 (2, 82, 3, 0, '2026-06-18 07:50:10'),
 (3, 85, 4, 97, '2026-06-18 00:50:57'),
 (4, 85, 5, 100, '2026-06-17 21:38:46'),
@@ -810,7 +889,8 @@ INSERT INTO `historial_medico` (`id_historial`, `grupo_sanguineo`, `fecha`, `Id_
 (92, 'A+', '2026-06-13 21:36:29', 354, 1),
 (93, 'A+', '2026-06-13 21:54:34', 358, 1),
 (94, 'A+', '2026-06-15 02:22:27', 360, 1),
-(95, 'A+', '2026-06-15 02:24:45', 361, 1);
+(95, 'A+', '2026-06-15 02:24:45', 361, 1),
+(96, 'A+', '2026-06-23 19:52:27', 365, 1);
 
 -- --------------------------------------------------------
 
@@ -880,7 +960,7 @@ CREATE TABLE `lotes_medicamentos` (
 INSERT INTO `lotes_medicamentos` (`Id`, `Id_descripcion_medicamento`, `Id_proveedor`, `Lote`, `fecha_fabricacion`, `fecha_vencimiento`, `estado_lote`, `estatus`) VALUES
 (2, 81, 1, 'A', '2026-06-17', '2026-07-22', 'Disponible', 1),
 (3, 82, 1, 'XKSL', '2026-06-17', '2027-02-17', 'Disponible', 1),
-(4, 85, 1, 'DKS', '2026-06-17', '2026-06-24', 'Disponible', 1),
+(4, 85, 1, 'DKS', '2026-06-17', '2026-06-24', 'Vencido', 1),
 (5, 85, 1, 'LOTE1', '2026-06-17', '2027-02-17', 'Disponible', 1),
 (6, 88, 1, 'ACD', '2026-06-17', '2026-07-08', 'Disponible', 1);
 
@@ -931,7 +1011,29 @@ INSERT INTO `medicamento` (`Id_medicamento`, `nombre_medicamento`, `estatus`) VA
 (99, 'CCC', 1),
 (100, 'SSS', 1),
 (101, 'XL', 1),
-(102, 'ZZZ', 1);
+(102, 'ZZZ', 1),
+(103, 'CELOVEN', 1),
+(104, 'PEGATANQUE', 1),
+(105, 'ZTE', 1),
+(106, 'PHP', 1),
+(107, 'LIRYC', 1),
+(108, 'AADOS', 1),
+(109, 'ACINCO', 1),
+(110, 'AATRES', 1),
+(111, 'UN MEDICAMENTO CHAFA', 1),
+(112, 'XLR', 1),
+(113, 'AACUATRO', 1),
+(114, 'ASIETE', 1),
+(115, 'MECHICO', 1),
+(116, 'XXX', 1),
+(117, 'URUSAURIO', 1),
+(118, 'MEDICAMENTO', 1),
+(119, 'XC', 1),
+(120, 'XLe', 1),
+(121, 'TXT', 1),
+(122, 'CHILE', 1),
+(123, 'MMM', 1),
+(124, 'AACUATROd', 1);
 
 -- --------------------------------------------------------
 
@@ -965,7 +1067,10 @@ INSERT INTO `medicamentos_detalle_inventario` (`Id`, `Id_detalle_inventario`, `I
 (8, 5, 85, 4, 1, '', 99, NULL),
 (9, 6, 85, 4, 2, '', 97, NULL),
 (10, 7, 81, 2, 1, '', 197, NULL),
-(11, 8, 82, 3, 100, '', 0, 'Algo');
+(11, 8, 82, 3, 100, '', 0, 'Algo'),
+(12, 9, 81, 2, 1, '', 196, NULL),
+(13, 10, 81, 2, 1, '', 195, NULL),
+(14, 11, 81, 2, 1, '', 196, NULL);
 
 -- --------------------------------------------------------
 
@@ -1383,14 +1488,23 @@ INSERT INTO `notificaciones_usuarios` (`id`, `id_usuario`, `tipo`, `referencia_i
 (548, 281, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:51:26'),
 (549, 339, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 0, '2026-06-17 20:51:26'),
 (592, 189, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-06-18 03:50:12'),
-(593, 281, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 0, '2026-06-18 03:50:12'),
+(593, 281, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-06-18 03:50:12'),
 (594, 339, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 0, '2026-06-18 03:50:12'),
 (676, 189, 'cita_medica', 'cita_2_hoy', 'Cita programada para hoy', 'Paciente: Steve  Rogers a las 10:30 AM', 'pages/php/citas_medicas_listado.php', 1, '2026-06-19 09:33:36'),
 (677, 359, 'cita_medica', 'cita_2_hoy', 'Cita programada para hoy', 'Paciente: Steve  Rogers a las 10:30 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-19 09:33:36'),
 (855, 189, 'cita_medica', 'cita_4_hoy', 'Cita programada para hoy', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 1, '2026-06-18 09:30:40'),
 (856, 359, 'cita_medica', 'cita_4_hoy', 'Cita programada para hoy', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-18 09:30:40'),
 (943, 189, 'cita_medica', 'cita_4_vencida', 'Cita Vencida', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 1, '2026-06-18 16:13:02'),
-(944, 359, 'cita_medica', 'cita_4_vencida', 'Cita Vencida', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-18 16:13:02');
+(944, 359, 'cita_medica', 'cita_4_vencida', 'Cita Vencida', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-18 16:13:02'),
+(1014, 189, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-22 16:15:21'),
+(1015, 281, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-22 16:15:21'),
+(1016, 339, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-22 16:15:21'),
+(1020, 189, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-25 11:25:24'),
+(1021, 281, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-25 11:25:25'),
+(1022, 339, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-25 11:25:25'),
+(1437, 189, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 1, '2026-06-25 11:56:28'),
+(1438, 281, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 0, '2026-06-25 11:56:28'),
+(1439, 339, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 0, '2026-06-25 11:56:28');
 
 -- --------------------------------------------------------
 
@@ -1469,7 +1583,8 @@ CREATE TABLE `pedidos` (
 --
 
 INSERT INTO `pedidos` (`id_pedido`, `fecha_creacion`, `id_proveedor`, `id_usuario`, `estado`, `estatus`) VALUES
-(1, '2026-06-17 17:14:00', 1, 189, 'Recibido', 1);
+(1, '2026-06-17 17:14:00', 1, 189, 'Recibido', 1),
+(2, '2026-06-22 17:55:00', 1, 189, 'Cancelado', 1);
 
 -- --------------------------------------------------------
 
@@ -1691,7 +1806,8 @@ INSERT INTO `permiso` (`Id_permiso`, `nombre_permiso`, `descripcion`, `estatus`)
 (205, 'Generar reportes de pedidos', 'Permite crear reportes generales de los pedidos', 1),
 (206, 'Cancelar Pedidos', 'Permite cancelar un pedido', 1),
 (207, 'Generar Pedidos', 'Permite generar pedidos o ir al crud', 1),
-(208, 'Ver panel de despachador', 'Permite ver el panel del encargado de despachar medicamentos', 1);
+(208, 'Ver panel de despachador', 'Permite ver el panel del encargado de despachar medicamentos', 1),
+(209, 'Generar Reporte de Recetas', 'Permite generar reportes de recetas', 1);
 
 -- --------------------------------------------------------
 
@@ -1721,8 +1837,8 @@ CREATE TABLE `persona` (
 --
 
 INSERT INTO `persona` (`id`, `nombre`, `apellido`, `tipo_cedula`, `cedula`, `fecha_nacimiento`, `genero`, `email`, `password`, `login_attempts`, `last_login_attempt`, `reset_token`, `token_expiry`, `estatus`) VALUES
-(189, 'Administrador', '', '', NULL, '0000-00-00', '', 'Admin@gmail.com', '$2y$10$EGos8b6SaoaFZchVovQeE.XKEiiIMFnMVlBNSr4yqYFSnC5Q5AlsK', 0, '2026-04-18 15:07:25', '786882', '2026-03-13 00:03:15', 2),
-(281, 'Farmaceutico', '', '', NULL, '0000-00-00', '', 'farmacia1@gmail.com', '$2y$10$Z4ra3/9G2YevG8DqH9nOreaVP8zCN0mjxrIf5RnkJ0OeU1OplYNU6', 0, NULL, NULL, NULL, 2),
+(189, 'Administrador', '', '', NULL, '0000-00-00', '', 'Admin@gmail.com', '$2y$10$EGos8b6SaoaFZchVovQeE.XKEiiIMFnMVlBNSr4yqYFSnC5Q5AlsK', 0, '2026-04-18 15:07:25', '786882', '2026-03-13 00:03:15', 1),
+(281, 'Farmaceutico', '', '', NULL, '0000-00-00', '', 'farmacia1@gmail.com', '$2y$10$Z4ra3/9G2YevG8DqH9nOreaVP8zCN0mjxrIf5RnkJ0OeU1OplYNU6', 0, NULL, NULL, NULL, 1),
 (283, 'Supervisor', '', '', NULL, '0000-00-00', '', 'supervisor@gmail.com', '$2y$10$LpUujaFYGLR8dh8TLbVeSOPfgEPOoSUhUBRPwDegm4vmCAjesma6K', 0, NULL, NULL, NULL, 2),
 (284, 'Recursos Humanos', '', '', NULL, '0000-00-00', '', 'RH2026@gmail.com', '$2y$10$OZv49JoBe5QAdfDZSthS0.vAX2Z5P/vmcjo5YdNMYEL8K2vP5NMz.', 0, NULL, NULL, NULL, 2),
 (328, 'Ezequiel', 'Veroez', 'V', '22333333', '2004-12-07', 'Masculino', 'Deybersilva12@gmail.com', '', 0, NULL, NULL, NULL, 1),
@@ -1751,7 +1867,10 @@ INSERT INTO `persona` (`id`, `nombre`, `apellido`, `tipo_cedula`, `cedula`, `fec
 (360, 'Manzana', '', 'V', '33244323', '2008-06-15', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
 (361, 'Cebollin', '', 'PN', '52353532523523523532', '2026-06-14', 'Masculino', NULL, '', 0, NULL, NULL, NULL, 1),
 (362, 'XL', '', 'V', '32423423', '2008-06-14', 'Masculino', '', '', 0, NULL, NULL, NULL, 2),
-(363, 'Deyber 2', NULL, '', NULL, '0000-00-00', '', 'silvadeyber0712@gmail.com', '$2y$10$iMYeTJzbbKUvahTyRTuQwOozi66FIXOQ67FSx56qBwzFyvuu3fYBq', 0, NULL, NULL, NULL, 2);
+(363, 'Deybersito', NULL, '', NULL, '0000-00-00', '', 'silvadeyber0712@gmail.com', '$2y$10$fKO98WZgjZSKLc.FvqCNfOsZ5eJ1B.LGAfCNp6fnYV2ZwpBjQiOLe', 0, '2026-06-18 17:34:56', NULL, '2026-06-18 23:55:31', 2),
+(364, 'Musuculoso', '', 'V', '22222222', '2006-06-23', 'Masculino', 'XL@gmail.com', '', 0, NULL, NULL, NULL, 2),
+(365, 'Alex', '', 'V', '55555555', '2008-06-23', 'Masculino', 'AWW@gmaI.com', '', 0, NULL, NULL, NULL, 1),
+(366, 'ZLATAN', '', 'V', '53535333', '2006-06-23', 'Masculino', 'XLW3@gmai.com', '', 0, NULL, NULL, NULL, 2);
 
 -- --------------------------------------------------------
 
@@ -1994,285 +2113,288 @@ INSERT INTO `rol_permiso` (`Id_rol_permiso`, `Id_rol`, `Id_permiso`) VALUES
 (1922, 7, 63),
 (1923, 7, 51),
 (1924, 7, 69),
-(1925, 1, 93),
-(1926, 1, 98),
-(1927, 1, 206),
-(1928, 1, 200),
-(1929, 1, 73),
-(1930, 1, 55),
-(1931, 1, 7),
-(1932, 1, 85),
-(1933, 1, 79),
-(1934, 1, 13),
-(1935, 1, 182),
-(1936, 1, 105),
-(1937, 1, 99),
-(1938, 1, 1),
-(1939, 1, 37),
-(1940, 1, 43),
-(1941, 1, 61),
-(1942, 1, 202),
-(1943, 1, 31),
-(1944, 1, 178),
-(1945, 1, 49),
-(1946, 1, 25),
-(1947, 1, 67),
-(1948, 1, 19),
-(1949, 1, 76),
-(1950, 1, 10),
-(1951, 1, 88),
-(1952, 1, 82),
-(1953, 1, 16),
-(1954, 1, 58),
-(1955, 1, 189),
-(1956, 1, 108),
-(1957, 1, 102),
-(1958, 1, 4),
-(1959, 1, 40),
-(1960, 1, 46),
-(1961, 1, 64),
-(1962, 1, 34),
-(1963, 1, 188),
-(1964, 1, 52),
-(1965, 1, 28),
-(1966, 1, 70),
-(1967, 1, 22),
-(1968, 1, 74),
-(1969, 1, 56),
-(1970, 1, 8),
-(1971, 1, 86),
-(1972, 1, 80),
-(1973, 1, 14),
-(1974, 1, 183),
-(1975, 1, 106),
-(1976, 1, 100),
-(1977, 1, 2),
-(1978, 1, 38),
-(1979, 1, 44),
-(1980, 1, 62),
-(1981, 1, 32),
-(1982, 1, 179),
-(1983, 1, 50),
-(1984, 1, 26),
-(1985, 1, 68),
-(1986, 1, 20),
-(1987, 1, 78),
-(1988, 1, 12),
-(1989, 1, 90),
-(1990, 1, 84),
-(1991, 1, 18),
-(1992, 1, 60),
-(1993, 1, 184),
-(1994, 1, 110),
-(1995, 1, 104),
-(1996, 1, 6),
-(1997, 1, 42),
-(1998, 1, 48),
-(1999, 1, 66),
-(2000, 1, 36),
-(2001, 1, 180),
-(2002, 1, 54),
-(2003, 1, 30),
-(2004, 1, 72),
-(2005, 1, 24),
-(2006, 1, 123),
-(2007, 1, 186),
-(2008, 1, 91),
-(2009, 1, 207),
-(2010, 1, 122),
-(2011, 1, 201),
-(2012, 1, 127),
-(2013, 1, 130),
-(2014, 1, 121),
-(2015, 1, 124),
-(2016, 1, 131),
-(2017, 1, 132),
-(2018, 1, 134),
-(2019, 1, 133),
-(2020, 1, 129),
-(2021, 1, 118),
-(2022, 1, 119),
-(2023, 1, 126),
-(2024, 1, 205),
-(2025, 1, 125),
-(2026, 1, 128),
-(2027, 1, 92),
-(2028, 1, 167),
-(2029, 1, 173),
-(2030, 1, 164),
-(2031, 1, 165),
-(2032, 1, 174),
-(2033, 1, 169),
-(2034, 1, 193),
-(2035, 1, 171),
-(2036, 1, 170),
-(2037, 1, 172),
-(2038, 1, 161),
-(2039, 1, 162),
-(2040, 1, 166),
-(2041, 1, 203),
-(2042, 1, 177),
-(2043, 1, 192),
-(2044, 1, 194),
-(2045, 1, 163),
-(2046, 1, 176),
-(2047, 1, 168),
-(2048, 1, 175),
-(2049, 1, 112),
-(2050, 1, 117),
-(2051, 1, 111),
-(2052, 1, 116),
-(2053, 1, 113),
-(2054, 1, 115),
-(2055, 1, 114),
-(2056, 1, 77),
-(2057, 1, 11),
-(2058, 1, 89),
-(2059, 1, 83),
-(2060, 1, 17),
-(2061, 1, 59),
-(2062, 1, 191),
-(2063, 1, 109),
-(2064, 1, 103),
-(2065, 1, 5),
-(2066, 1, 41),
-(2067, 1, 47),
-(2068, 1, 65),
-(2069, 1, 35),
-(2070, 1, 190),
-(2071, 1, 53),
-(2072, 1, 29),
-(2073, 1, 71),
-(2074, 1, 23),
-(2075, 1, 75),
-(2076, 1, 9),
-(2077, 1, 87),
-(2078, 1, 81),
-(2079, 1, 15),
-(2080, 1, 57),
-(2081, 1, 198),
-(2082, 1, 95),
-(2083, 1, 187),
-(2084, 1, 185),
-(2085, 1, 107),
-(2086, 1, 101),
-(2087, 1, 3),
-(2088, 1, 195),
-(2089, 1, 141),
-(2090, 1, 142),
-(2091, 1, 143),
-(2092, 1, 39),
-(2093, 1, 45),
-(2094, 1, 135),
-(2095, 1, 150),
-(2096, 1, 156),
-(2097, 1, 147),
-(2098, 1, 148),
-(2099, 1, 157),
-(2100, 1, 196),
-(2101, 1, 154),
-(2102, 1, 153),
-(2103, 1, 155),
-(2104, 1, 144),
-(2105, 1, 145),
-(2106, 1, 149),
-(2107, 1, 160),
-(2108, 1, 197),
-(2109, 1, 146),
-(2110, 1, 159),
-(2111, 1, 151),
-(2112, 1, 158),
-(2113, 1, 63),
-(2114, 1, 204),
-(2115, 1, 33),
-(2116, 1, 181),
-(2117, 1, 199),
-(2118, 1, 51),
-(2119, 1, 27),
-(2120, 1, 69),
-(2121, 1, 21),
-(2122, 6, 93),
-(2123, 6, 98),
-(2124, 6, 206),
-(2125, 6, 200),
-(2126, 6, 182),
-(2127, 6, 105),
-(2128, 6, 99),
-(2129, 6, 202),
-(2130, 6, 178),
-(2131, 6, 189),
-(2132, 6, 108),
-(2133, 6, 102),
-(2134, 6, 188),
-(2135, 6, 183),
-(2136, 6, 106),
-(2137, 6, 100),
-(2138, 6, 179),
-(2139, 6, 184),
-(2140, 6, 110),
-(2141, 6, 104),
-(2142, 6, 180),
-(2143, 6, 186),
-(2144, 6, 91),
-(2145, 6, 207),
-(2146, 6, 201),
-(2147, 6, 132),
-(2148, 6, 134),
-(2149, 6, 133),
-(2150, 6, 205),
-(2151, 6, 92),
-(2152, 6, 169),
-(2153, 6, 193),
-(2154, 6, 171),
-(2155, 6, 170),
-(2156, 6, 203),
-(2157, 6, 192),
-(2158, 6, 194),
-(2159, 6, 116),
-(2160, 6, 191),
-(2161, 6, 109),
-(2162, 6, 103),
-(2163, 6, 190),
-(2164, 6, 198),
-(2165, 6, 95),
-(2166, 6, 187),
-(2167, 6, 185),
-(2168, 6, 107),
-(2169, 6, 101),
-(2170, 6, 195),
-(2171, 6, 142),
-(2172, 6, 143),
-(2173, 6, 137),
-(2174, 6, 196),
-(2175, 6, 154),
-(2176, 6, 153),
-(2177, 6, 197),
-(2178, 6, 204),
-(2179, 6, 181),
-(2180, 6, 199),
-(2205, 9, 200),
-(2206, 9, 105),
-(2207, 9, 108),
-(2208, 9, 106),
-(2209, 9, 186),
-(2210, 9, 132),
-(2211, 9, 134),
-(2212, 9, 169),
-(2213, 9, 171),
-(2214, 9, 194),
-(2215, 9, 116),
-(2216, 9, 198),
-(2217, 9, 95),
-(2218, 9, 187),
-(2219, 9, 185),
-(2220, 9, 107),
-(2221, 9, 101),
-(2222, 9, 195),
-(2223, 9, 142),
-(2224, 9, 143),
-(2225, 9, 208),
-(2226, 9, 181),
-(2227, 9, 199);
+(2228, 6, 93),
+(2229, 6, 98),
+(2230, 6, 206),
+(2231, 6, 200),
+(2232, 6, 182),
+(2233, 6, 105),
+(2234, 6, 99),
+(2235, 6, 202),
+(2236, 6, 178),
+(2237, 6, 189),
+(2238, 6, 108),
+(2239, 6, 102),
+(2240, 6, 188),
+(2241, 6, 183),
+(2242, 6, 106),
+(2243, 6, 100),
+(2244, 6, 179),
+(2245, 6, 184),
+(2246, 6, 110),
+(2247, 6, 104),
+(2248, 6, 180),
+(2249, 6, 186),
+(2250, 6, 91),
+(2251, 6, 207),
+(2252, 6, 201),
+(2253, 6, 209),
+(2254, 6, 132),
+(2255, 6, 134),
+(2256, 6, 133),
+(2257, 6, 205),
+(2258, 6, 92),
+(2259, 6, 169),
+(2260, 6, 193),
+(2261, 6, 171),
+(2262, 6, 170),
+(2263, 6, 203),
+(2264, 6, 192),
+(2265, 6, 194),
+(2266, 6, 116),
+(2267, 6, 191),
+(2268, 6, 109),
+(2269, 6, 103),
+(2270, 6, 190),
+(2271, 6, 198),
+(2272, 6, 95),
+(2273, 6, 187),
+(2274, 6, 185),
+(2275, 6, 107),
+(2276, 6, 101),
+(2277, 6, 195),
+(2278, 6, 142),
+(2279, 6, 143),
+(2280, 6, 137),
+(2281, 6, 196),
+(2282, 6, 154),
+(2283, 6, 153),
+(2284, 6, 197),
+(2285, 6, 204),
+(2286, 6, 181),
+(2287, 6, 199),
+(2288, 9, 200),
+(2289, 9, 105),
+(2290, 9, 108),
+(2291, 9, 106),
+(2292, 9, 186),
+(2293, 9, 209),
+(2294, 9, 132),
+(2295, 9, 134),
+(2296, 9, 169),
+(2297, 9, 171),
+(2298, 9, 194),
+(2299, 9, 116),
+(2300, 9, 198),
+(2301, 9, 95),
+(2302, 9, 187),
+(2303, 9, 185),
+(2304, 9, 107),
+(2305, 9, 101),
+(2306, 9, 195),
+(2307, 9, 142),
+(2308, 9, 143),
+(2309, 9, 208),
+(2310, 9, 181),
+(2311, 9, 199),
+(2312, 1, 93),
+(2313, 1, 98),
+(2314, 1, 206),
+(2315, 1, 200),
+(2316, 1, 73),
+(2317, 1, 55),
+(2318, 1, 7),
+(2319, 1, 85),
+(2320, 1, 79),
+(2321, 1, 13),
+(2322, 1, 182),
+(2323, 1, 105),
+(2324, 1, 99),
+(2325, 1, 1),
+(2326, 1, 37),
+(2327, 1, 43),
+(2328, 1, 61),
+(2329, 1, 202),
+(2330, 1, 31),
+(2331, 1, 178),
+(2332, 1, 49),
+(2333, 1, 25),
+(2334, 1, 67),
+(2335, 1, 19),
+(2336, 1, 76),
+(2337, 1, 10),
+(2338, 1, 88),
+(2339, 1, 82),
+(2340, 1, 16),
+(2341, 1, 58),
+(2342, 1, 189),
+(2343, 1, 108),
+(2344, 1, 102),
+(2345, 1, 4),
+(2346, 1, 40),
+(2347, 1, 46),
+(2348, 1, 64),
+(2349, 1, 34),
+(2350, 1, 188),
+(2351, 1, 52),
+(2352, 1, 28),
+(2353, 1, 70),
+(2354, 1, 22),
+(2355, 1, 74),
+(2356, 1, 56),
+(2357, 1, 8),
+(2358, 1, 86),
+(2359, 1, 80),
+(2360, 1, 14),
+(2361, 1, 183),
+(2362, 1, 106),
+(2363, 1, 100),
+(2364, 1, 2),
+(2365, 1, 38),
+(2366, 1, 44),
+(2367, 1, 62),
+(2368, 1, 32),
+(2369, 1, 179),
+(2370, 1, 50),
+(2371, 1, 26),
+(2372, 1, 68),
+(2373, 1, 20),
+(2374, 1, 78),
+(2375, 1, 12),
+(2376, 1, 90),
+(2377, 1, 84),
+(2378, 1, 18),
+(2379, 1, 60),
+(2380, 1, 184),
+(2381, 1, 110),
+(2382, 1, 104),
+(2383, 1, 6),
+(2384, 1, 42),
+(2385, 1, 48),
+(2386, 1, 66),
+(2387, 1, 36),
+(2388, 1, 180),
+(2389, 1, 54),
+(2390, 1, 30),
+(2391, 1, 72),
+(2392, 1, 24),
+(2393, 1, 123),
+(2394, 1, 186),
+(2395, 1, 91),
+(2396, 1, 207),
+(2397, 1, 122),
+(2398, 1, 201),
+(2399, 1, 209),
+(2400, 1, 127),
+(2401, 1, 130),
+(2402, 1, 121),
+(2403, 1, 124),
+(2404, 1, 131),
+(2405, 1, 132),
+(2406, 1, 134),
+(2407, 1, 133),
+(2408, 1, 129),
+(2409, 1, 118),
+(2410, 1, 119),
+(2411, 1, 126),
+(2412, 1, 205),
+(2413, 1, 125),
+(2414, 1, 128),
+(2415, 1, 92),
+(2416, 1, 167),
+(2417, 1, 173),
+(2418, 1, 164),
+(2419, 1, 165),
+(2420, 1, 174),
+(2421, 1, 169),
+(2422, 1, 193),
+(2423, 1, 171),
+(2424, 1, 170),
+(2425, 1, 172),
+(2426, 1, 161),
+(2427, 1, 162),
+(2428, 1, 166),
+(2429, 1, 203),
+(2430, 1, 177),
+(2431, 1, 192),
+(2432, 1, 194),
+(2433, 1, 163),
+(2434, 1, 176),
+(2435, 1, 168),
+(2436, 1, 175),
+(2437, 1, 112),
+(2438, 1, 117),
+(2439, 1, 111),
+(2440, 1, 116),
+(2441, 1, 113),
+(2442, 1, 115),
+(2443, 1, 114),
+(2444, 1, 77),
+(2445, 1, 11),
+(2446, 1, 89),
+(2447, 1, 83),
+(2448, 1, 17),
+(2449, 1, 59),
+(2450, 1, 191),
+(2451, 1, 109),
+(2452, 1, 103),
+(2453, 1, 5),
+(2454, 1, 41),
+(2455, 1, 47),
+(2456, 1, 65),
+(2457, 1, 35),
+(2458, 1, 190),
+(2459, 1, 53),
+(2460, 1, 29),
+(2461, 1, 71),
+(2462, 1, 23),
+(2463, 1, 75),
+(2464, 1, 9),
+(2465, 1, 87),
+(2466, 1, 81),
+(2467, 1, 15),
+(2468, 1, 57),
+(2469, 1, 198),
+(2470, 1, 95),
+(2471, 1, 187),
+(2472, 1, 185),
+(2473, 1, 107),
+(2474, 1, 101),
+(2475, 1, 3),
+(2476, 1, 195),
+(2477, 1, 141),
+(2478, 1, 142),
+(2479, 1, 143),
+(2480, 1, 39),
+(2481, 1, 45),
+(2482, 1, 135),
+(2483, 1, 150),
+(2484, 1, 156),
+(2485, 1, 147),
+(2486, 1, 148),
+(2487, 1, 157),
+(2488, 1, 196),
+(2489, 1, 154),
+(2490, 1, 153),
+(2491, 1, 155),
+(2492, 1, 144),
+(2493, 1, 145),
+(2494, 1, 149),
+(2495, 1, 160),
+(2496, 1, 197),
+(2497, 1, 146),
+(2498, 1, 159),
+(2499, 1, 151),
+(2500, 1, 158),
+(2501, 1, 63),
+(2502, 1, 204),
+(2503, 1, 33),
+(2504, 1, 181),
+(2505, 1, 199),
+(2506, 1, 51),
+(2507, 1, 27),
+(2508, 1, 69),
+(2509, 1, 21);
 
 -- --------------------------------------------------------
 
@@ -3289,9 +3411,10 @@ CREATE TABLE `solicitud_medicamento` (
 --
 
 INSERT INTO `solicitud_medicamento` (`id_solicitud`, `origen`, `id_consulta`, `id_paciente`, `id_medico`, `entregado_a`, `estatus_general`, `fecha_solicitud`) VALUES
-(1, 'Externo', NULL, 328, 21, '', 'Completado', '2026-06-17 17:43:51'),
-(2, 'Externo', NULL, 328, 21, '', 'Completado', '2026-06-17 20:28:22'),
-(3, 'Externo', NULL, 328, 21, '', 'Parcial', '2026-06-17 20:51:24');
+(1, 'Externo', NULL, 328, 21, 'Ezequiel Veroez', 'Completado', '2026-06-17 17:43:51'),
+(2, 'Externo', NULL, 328, 21, 'Alguien', 'Completado', '2026-06-17 20:28:22'),
+(3, 'Externo', NULL, 328, 21, 'Michigan', 'Completado', '2026-06-17 20:51:24'),
+(4, 'Externo', NULL, 328, 21, 'Manuel', 'Pendiente', '2026-06-25 11:56:22');
 
 -- --------------------------------------------------------
 
@@ -3330,7 +3453,10 @@ INSERT INTO `telefonos_personas` (`Id`, `Id_prefijo`, `telefono`, `Id_persona`, 
 (343, 1, '2824848', 359, '2'),
 (344, 1, '2342242', 360, '1'),
 (345, 2, '6464646', 348, '1'),
-(346, 1, '2424442', 362, '2');
+(346, 1, '2424442', 362, '2'),
+(347, 1, '3255322', 364, '2'),
+(348, 1, '3555353', 365, '1'),
+(349, 1, '5252525', 366, '2');
 
 -- --------------------------------------------------------
 
@@ -3879,7 +4005,7 @@ ALTER TABLE `antecedentes_sexuales_reproductivos`
 -- AUTO_INCREMENT de la tabla `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `consulta`
@@ -3897,25 +4023,25 @@ ALTER TABLE `departamento`
 -- AUTO_INCREMENT de la tabla `descripcion_medicamento`
 --
 ALTER TABLE `descripcion_medicamento`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_inventario`
 --
 ALTER TABLE `detalle_inventario`
-  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_medico`
 --
 ALTER TABLE `detalle_medico`
-  MODIFY `Id_detalle_medico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `Id_detalle_medico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_paciente`
 --
 ALTER TABLE `detalle_paciente`
-  MODIFY `Id_detalle_paciente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
+  MODIFY `Id_detalle_paciente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_paciente_menor`
@@ -3939,13 +4065,13 @@ ALTER TABLE `detalle_patologia_sintomas`
 -- AUTO_INCREMENT de la tabla `detalle_pedidos`
 --
 ALTER TABLE `detalle_pedidos`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_persona_rol`
 --
 ALTER TABLE `detalle_persona_rol`
-  MODIFY `Id_detalle_persona_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=173;
+  MODIFY `Id_detalle_persona_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=176;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_presentacion_medicamentos`
@@ -3957,19 +4083,19 @@ ALTER TABLE `detalle_presentacion_medicamentos`
 -- AUTO_INCREMENT de la tabla `detalle_principio_medicamento`
 --
 ALTER TABLE `detalle_principio_medicamento`
-  MODIFY `Id_principio_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `Id_principio_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_solicitud`
 --
 ALTER TABLE `detalle_solicitud`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  MODIFY `Id_Direccion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=304;
+  MODIFY `Id_Direccion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=305;
 
 --
 -- AUTO_INCREMENT de la tabla `especialidad`
@@ -4029,7 +4155,7 @@ ALTER TABLE `historial_antecedentes_sexuales_reproductivos`
 -- AUTO_INCREMENT de la tabla `historial_medico`
 --
 ALTER TABLE `historial_medico`
-  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_patologias`
@@ -4059,13 +4185,13 @@ ALTER TABLE `lugar_nacimiento`
 -- AUTO_INCREMENT de la tabla `medicamento`
 --
 ALTER TABLE `medicamento`
-  MODIFY `Id_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `Id_medicamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
 
 --
 -- AUTO_INCREMENT de la tabla `medicamentos_detalle_inventario`
 --
 ALTER TABLE `medicamentos_detalle_inventario`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `medicos_departamentos`
@@ -4083,7 +4209,7 @@ ALTER TABLE `municipio`
 -- AUTO_INCREMENT de la tabla `notificaciones_usuarios`
 --
 ALTER TABLE `notificaciones_usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1105;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4860;
 
 --
 -- AUTO_INCREMENT de la tabla `observaciones_historial_medico`
@@ -4107,19 +4233,19 @@ ALTER TABLE `patologias`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `permiso`
 --
 ALTER TABLE `permiso`
-  MODIFY `Id_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=209;
+  MODIFY `Id_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=210;
 
 --
 -- AUTO_INCREMENT de la tabla `persona`
 --
 ALTER TABLE `persona`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=364;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=367;
 
 --
 -- AUTO_INCREMENT de la tabla `prefijos_telefonos`
@@ -4161,7 +4287,7 @@ ALTER TABLE `rol`
 -- AUTO_INCREMENT de la tabla `rol_permiso`
 --
 ALTER TABLE `rol_permiso`
-  MODIFY `Id_rol_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2228;
+  MODIFY `Id_rol_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2510;
 
 --
 -- AUTO_INCREMENT de la tabla `sector`
@@ -4179,13 +4305,13 @@ ALTER TABLE `sintomas`
 -- AUTO_INCREMENT de la tabla `solicitud_medicamento`
 --
 ALTER TABLE `solicitud_medicamento`
-  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `telefonos_personas`
 --
 ALTER TABLE `telefonos_personas`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=347;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=350;
 
 --
 -- AUTO_INCREMENT de la tabla `tipos_estilos_de_vida`

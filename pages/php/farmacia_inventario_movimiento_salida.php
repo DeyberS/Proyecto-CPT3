@@ -118,6 +118,7 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
 
     .modal.in .modal-dialog,
     #avisoModal,
+    #modalConfirmarVencidos,
     #modalSalidaGuardar,
     #modalBúsquedaAvanzadaMedicamento,
     #modalRegresarInventario,
@@ -229,7 +230,7 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
 
               <div class="box-tools pull-left" style="margin-top: 2px;">
                 <span style="font-size: 16px; font-weight: bold; color: #555;">
-                  Operación N°: <span class="badge bg-blue" style="font-size: 15px; padding: 5px 10px; letter-spacing: 1px;">#<?php echo $numero_proyectado; ?></span>
+                  Operación N°: <span id="badge_numero_operacion" class="badge bg-blue" style="font-size: 15px; padding: 5px 10px; letter-spacing: 1px;">#<?php echo $numero_proyectado; ?></span>
                 </span>
               </div>
 
@@ -653,10 +654,29 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
     </div>
   </div>
 
-  <div class="modal" id="avisoModal" tabindex="-1" role="dialog">
+  <div class="modal" id="modalConfirmarVencidos" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header bg-crimson">
+          <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+          <h5 class="modal-title" style="color: white;"><i class="fa fa-exclamation-triangle"></i> Confirmar Acción</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de querer añadir <strong>TODOS</strong> los medicamentos vencidos (con stock mayor a 0) a la lista?</p>
+          <p class="text-danger"><small><i class="fa fa-info-circle"></i> Nota: Esta acción sobrescribirá cualquier medicamento que ya haya añadido a la lista actual.</small></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarVencidosAction"><i class="fa fa-check"></i> Sí, añadir vencidos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="avisoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div id="headerAviso" class="modal-header bg-crimson">
           <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
           <h5 class="modal-title" style="color: white;">Aviso de Validación</h5>
         </div>
@@ -711,7 +731,14 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
     let streamModal = null;
     const hoy = new Date().toISOString().split('T')[0];
 
-    function mostrarAviso(mensaje) {
+    window.mostrarAviso = function(mensaje) {
+      $('#headerAviso').removeClass('bg-green').addClass('bg-crimson');
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
+
+    window.mostrarExito = function(mensaje) {
+      $('#headerAviso').removeClass('bg-crimson').addClass('bg-green');
       $('#avisoTexto').html(mensaje);
       $('#avisoModal').modal('show');
     }
@@ -872,28 +899,34 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
         }
       });
 
-      // Acción del botón Añadir Vencidos
+      // Abrir el modal estilizado en lugar del confirm nativo
       $('#btnAñadirVencidos').on('click', function() {
-        if (confirm("¿Está seguro de querer añadir TODOS los medicamentos vencidos (con stock mayor a 0) a la lista? Se sobrescribirá la lista actual.")) {
+        $('#modalConfirmarVencidos').modal('show');
+      });
 
-          $.ajax({
-            url: '../../cfg/ajax/obtener_lotes_vencidos.php', // Archivo PHP que crearemos
-            type: 'GET',
-            dataType: 'json',
-            success: function(response) {
-              if (response.length > 0) {
-                listaDetalles = response;
-                actualizarTablaDetalles();
-                mostrarAviso("Éxito: Se añadieron " + response.length + " lotes vencidos a la lista.");
-              } else {
-                mostrarAviso("No hay medicamentos vencidos registrados en el stock actualmente.");
-              }
-            },
-            error: function() {
-              mostrarAviso("Error al comunicarse con el servidor para obtener los vencidos.");
+      // Acción real al confirmar dentro del modal
+      $('#btnConfirmarVencidosAction').on('click', function() {
+        // Cerramos el modal inmediatamente
+        $('#modalConfirmarVencidos').modal('hide');
+
+        // Ejecutamos la petición
+        $.ajax({
+          url: '../../cfg/ajax/obtener_lotes_vencidos.php',
+          type: 'GET',
+          dataType: 'json',
+          success: function(response) {
+            if (response.length > 0) {
+              listaDetalles = response;
+              actualizarTablaDetalles();
+              mostrarExito("Éxito: Se añadieron " + response.length + " lotes vencidos a la lista.");
+            } else {
+              mostrarAviso("No hay medicamentos vencidos registrados en el stock actualmente.");
             }
-          });
-        }
+          },
+          error: function() {
+            mostrarAviso("Error al comunicarse con el servidor para obtener los vencidos.");
+          }
+        });
       });
 
       // -------------------------------------------------------------
@@ -1356,6 +1389,109 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
         $('#btnConfirmarAgregarMedicamento').html('<i class="fa fa-save"></i> Guardar Cambios');
         $('#modalAgregarMedicamento').modal('show');
       });
+
+      function actualizarSelectMedicamentosSilencio() {
+        if ($('#modalAgregarMedicamento').is(':visible')) {
+          return;
+        }
+
+        // 1. Verificamos si hay alguna búsqueda/filtro activo
+        const hayFiltroBusqueda = $('#filtro_busqueda_rapida').val().trim() !== '';
+        let hayFiltrosAvanzados = false;
+        $.each($('#formFiltroModal').serializeArray(), function(i, field) {
+          if (field.value.trim() !== "") hayFiltrosAvanzados = true;
+        });
+
+        // 2. Solo actualizamos si el usuario NO está usando los filtros
+        if (!hayFiltroBusqueda && !hayFiltrosAvanzados) {
+          // Guardamos el ID del medicamento que el usuario tenga seleccionado actualmente
+          const valorSeleccionado = $('#Id_descripcion_medicamento').val();
+          let modoOperacion = $('#op').val();
+
+          $.ajax({
+            url: '../../cfg/ajax/filtrar_medicamentos_completo.php',
+            type: 'POST',
+            data: {
+              recarga_silenciosa: true,
+              modo: modoOperacion
+            },
+            dataType: 'json',
+            success: function(response) {
+              const select = $('#Id_descripcion_medicamento');
+
+              // VERIFICAR SI EL SELECCIONADO EXISTE EN LA RESPUESTA
+              let existeEnRespuesta = false;
+              if (response.length > 0) {
+                existeEnRespuesta = response.some(item => item.id_desc == valorSeleccionado);
+              }
+
+              let opcionInyectada = "";
+              if (valorSeleccionado && !existeEnRespuesta) {
+                // Si es un medicamento recién creado y no viene en el AJAX aún, clonamos su HTML para no perderlo
+                let selectedOption = $('#Id_descripcion_medicamento option:selected');
+                if (selectedOption.length > 0) {
+                  opcionInyectada = selectedOption[0].outerHTML;
+                }
+              }
+
+              let nuevasOpciones = '<option value="">--- Seleccione un Medicamento ---</option>';
+              if (opcionInyectada !== "") {
+                nuevasOpciones += opcionInyectada;
+              }
+
+              if (response.length > 0) {
+                response.forEach(function(item) {
+                  // Agregamos las opciones (evitando duplicar si ya lo inyectamos)
+                  if (item.id_desc != valorSeleccionado || existeEnRespuesta) {
+                    const comp = item.componentes ? ` data-componentes="${item.componentes}"` : '';
+                    nuevasOpciones += `<option value="${item.id_desc}" data-nombre="${item.nombre_completo}"${comp}>${item.nombre_completo}</option>`;
+                  }
+                });
+              } else if (opcionInyectada === "") {
+                nuevasOpciones += '<option value="" disabled>🛑 No se encontraron medicamentos.</option>';
+              }
+
+              // Actualizamos el DOM sin interrumpir al usuario
+              select.html(nuevasOpciones);
+
+              // Restauramos la selección que tenía
+              if (valorSeleccionado) {
+                select.val(valorSeleccionado);
+              }
+
+              // Actualizamos el respaldo original para cuando limpien los filtros
+              window.opcionesOriginalesMedicamentos = nuevasOpciones;
+            }
+          });
+        }
+      }
+
+      // Ejecutar la actualización silenciosa cada 2000 milisegundos (2 segundos)
+      setInterval(actualizarSelectMedicamentosSilencio, 2000);
+
+      // -------------------------------------------------------------
+      // ACTUALIZAR NÚMERO DE OPERACIÓN EN TIEMPO REAL
+      // -------------------------------------------------------------
+      function actualizarNumeroOperacionSilencio() {
+        $.ajax({
+          url: '../../cfg/ajax/obtener_proximo_id_operacion.php',
+          type: 'GET',
+          dataType: 'json',
+          success: function(response) {
+            if (response && response.numero_proyectado) {
+              // Actualiza visualmente el texto del badge
+              $('#badge_numero_operacion').text('#' + response.numero_proyectado);
+            }
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            // Omitimos mostrar alertas para no molestar al usuario si hay un microcorte de red
+            console.log("No se pudo actualizar el nro de operación en 2do plano.");
+          }
+        });
+      }
+
+      // Ejecutar la revisión del ID cada 5000 milisegundos (5 segundos)
+      setInterval(actualizarNumeroOperacionSilencio, 5000);
 
       // -------------------------------------------------------------
       // SUBMIT DEL FORMULARIO PRINCIPAL
