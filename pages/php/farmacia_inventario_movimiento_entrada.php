@@ -296,18 +296,25 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
 
                     <div class="col-sm-3 form-group">
                       <label>Proveedor / Donante (*):</label>
-                      <select id="proveedor" name="proveedor" class="form-control" required>
-                        <option value="">--- Seleccione un proveedor ---</option>
-                        <?php
-                        $sql_proveedor = "SELECT Id_proveedor, nombre_proveedor FROM proveedor WHERE estatus = 1 ORDER BY nombre_proveedor ASC";
-                        $resultado_proveedor = $conexion->query($sql_proveedor);
-                        if ($resultado_proveedor && $resultado_proveedor->num_rows > 0) {
-                          while ($row_pro = $resultado_proveedor->fetch_assoc()) {
-                            echo '<option value="' . $row_pro['Id_proveedor'] . '">' . htmlspecialchars($row_pro['nombre_proveedor']) . '</option>';
+                      <div class="input-group">
+                        <select id="proveedor" name="proveedor" class="form-control" required>
+                          <option value="">--- Seleccione un proveedor ---</option>
+                          <?php
+                          $sql_proveedor = "SELECT Id_proveedor, nombre_proveedor FROM proveedor WHERE estatus = 1 ORDER BY nombre_proveedor ASC";
+                          $resultado_proveedor = $conexion->query($sql_proveedor);
+                          if ($resultado_proveedor && $resultado_proveedor->num_rows > 0) {
+                            while ($row_pro = $resultado_proveedor->fetch_assoc()) {
+                              echo '<option value="' . $row_pro['Id_proveedor'] . '">' . htmlspecialchars($row_pro['nombre_proveedor']) . '</option>';
+                            }
                           }
-                        }
-                        ?>
-                      </select>
+                          ?>
+                        </select>
+                        <span class="input-group-btn">
+                          <button class="btn btn-info" type="button" id="btnAggProveedor" data-toggle="modal" data-target="#modalNuevoProveedor" title="Agregar Proveedor" style="height: 34px;">
+                            <i><img src="../../recursos/imagenes/iconos/agregar.png" style="width:10px; height:10px;"></i>
+                          </button>
+                        </span>
+                      </div>
                     </div>
 
                     <label class="control-label"></label>
@@ -721,6 +728,31 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
     </div>
   </div>
 
+  <div class="modal" id="modalNuevoProveedor" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" style="color: white;"><i class="fa fa-plus-circle"></i> Nuevo Proveedor</h4>
+        </div>
+        <div class="modal-body">
+          <form id="formNuevoProveedor" onsubmit="return false;">
+            <div class="form-group">
+              <label for="nuevo_nombre_proveedor">Nombre del Proveedor (*):</label>
+              <input type="text" class="form-control" id="nuevo_nombre_proveedor" name="nombre_proveedor" placeholder="Ej: SUAF Portuguesa" required autocomplete="off">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarProveedor"><i class="fa fa-save"></i> Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -929,6 +961,58 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
             console.error("Error en AJAX de filtrado avanzado: ", textStatus, errorThrown);
           }
         });
+      });
+
+      // -------------------------------------------------------------
+      // AGREGAR PROVEEDOR VÍA AJAX
+      // -------------------------------------------------------------
+      $('#btnGuardarProveedor').on('click', function() {
+        const nombreProveedor = $('#nuevo_nombre_proveedor').val().trim();
+
+        if (nombreProveedor === '') {
+          $('#nuevo_nombre_proveedor').addClass('input-error');
+          mostrarAviso('Por favor, ingrese el nombre del proveedor.');
+          return;
+        }
+
+        $('#nuevo_nombre_proveedor').removeClass('input-error');
+
+        // Asegúrate de que la ruta coincida con la ubicación real de tu backend
+        $.ajax({
+          url: '../../cfg/ajax/agregar_proveedor_ajax.php',
+          type: 'POST',
+          data: {
+            nombre_proveedor: nombreProveedor
+          },
+          dataType: 'json',
+          success: function(response) {
+            if (response.exito) {
+              // Añadir la nueva opción al select y seleccionarla automáticamente
+              const nuevaOpcion = new Option(response.nombre, response.id, false, true);
+              $('#proveedor').append(nuevaOpcion).trigger('change');
+
+              // Cerrar modal usando tu sistema de animaciones
+              $('#modalNuevoProveedor').removeClass('in').addClass('out');
+              setTimeout(function() {
+                $('#modalNuevoProveedor').modal('hide');
+                $('#modalNuevoProveedor').removeClass('out');
+                $('#nuevo_nombre_proveedor').val(''); // Limpiar input
+                mostrarExito('Proveedor Añadido Exitosamente.');
+              }, 400);
+
+            } else {
+              mostrarAviso(response.mensaje || 'Error al guardar el proveedor.');
+            }
+          },
+          error: function() {
+            mostrarAviso('Error de comunicación con el servidor al intentar guardar el proveedor.');
+          }
+        });
+      });
+
+      // Limpiar el input si el usuario cierra el modal con el botón de "Cerrar" o la "X"
+      $('#modalNuevoProveedor').on('hidden.bs.modal', function() {
+        $('#nuevo_nombre_proveedor').val('').removeClass('input-error');
       });
 
       // -------------------------------------------------------------

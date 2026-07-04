@@ -70,7 +70,7 @@
 
     // Es necesario tener acceso a las variables de sesión para el filtro
     if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+      session_start();
     }
 
     // Obtenemos los datos del usuario logueado (asegúrate de que estas variables existan en tu header/login)
@@ -85,7 +85,7 @@
 
     // Si el usuario es un Médico (Rol 7 o 4), aplicamos el filtro por su ID de persona
     if ($id_rol_usuario_activo == 7 || $id_rol_usuario_activo == 4) {
-        $sqlConsultas .= " AND dm.Id_persona = '$id_persona_activa'";
+      $sqlConsultas .= " AND dm.Id_persona = '$id_persona_activa'";
     }
 
     $queryData = mysqli_query($conexion, $sqlConsultas);
@@ -115,7 +115,17 @@
         <?php if (in_array('Crear Consultas', $_SESSION["permisos"])) : ?>
           <a href="consulta_agregar.php" class="btn-sm btn-success pull-right"> Nueva Consulta </a>
         <?php endif; ?>
-        <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+        <div class="pull-left form-inline">
+          <form method="GET" action="" id="formBusquedaRapida">
+            <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+          </form>
+        </div>
+        <p class="pull-right" style="width:5px;"></p>
+        <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de consultas.">
+          <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
+            <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar consulta"></i>
+          </button>
+        </span>
       </div>
       <br><br>
       <div id="contenedorTabla">
@@ -131,36 +141,50 @@
           <tbody class="tbody" width="100%" style="font-size: 12px;">
             <?php
             // Número de registros por página
-            $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+            $busqueda  = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+            $f_desde   = isset($_GET['f_desde']) ? mysqli_real_escape_string($conexion, $_GET['f_desde']) : '';
+            $f_hasta   = isset($_GET['f_hasta']) ? mysqli_real_escape_string($conexion, $_GET['f_hasta']) : '';
+            $f_medico  = isset($_GET['f_medico']) ? mysqli_real_escape_string($conexion, $_GET['f_medico']) : '';
+
             $registros_por_pagina = 14;
             $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
             $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
-            // 2. Definir el filtro base (Importante para que el buscador funcione)
+            // 2. Definir el filtro base
             $donde = "WHERE c.estatus = 1";
 
-            $id_rol_usuario_activo = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0; 
-            $id_persona_activa = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
+            $id_rol_usuario_activo = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0;
+            $id_persona_activa = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
 
-            if ($id_rol_usuario_activo == 7) {
+            if ($id_rol_usuario_activo == 7 || $id_rol_usuario_activo == 4) {
               $donde .= " AND dm.Id_persona = '$id_persona_activa'";
-          }
+            }
 
-          if ($busqueda != '') {
-            $donde .= " AND (p_paciente.nombre LIKE '%$busqueda%' 
-                          OR p_paciente.apellido LIKE '%$busqueda%' 
-                          OR p_medico.nombre LIKE '%$busqueda%' 
-                          )";
-          }
+            // Búsqueda rápida general
+            if ($busqueda != '') {
+              $donde .= " AND (p_paciente.nombre LIKE '%$busqueda%' 
+                      OR p_paciente.apellido LIKE '%$busqueda%' 
+                      OR p_medico.nombre LIKE '%$busqueda%')";
+            }
 
-          // 3. Contar el total de registros FILTRADOS para la paginación
-          // CORRECCIÓN: Se agregaron los mismos JOIN de detalle_medico que usas en tu consulta principal
-          $sql_conteo = "SELECT COUNT(*) as total 
-                        FROM consulta c
-                        JOIN persona p_paciente ON c.Id_paciente = p_paciente.id
-                        JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
-                        JOIN persona p_medico ON dm.Id_persona = p_medico.id 
-                        $donde";
+            // Filtros Avanzados
+            if ($f_desde != '') {
+              $donde .= " AND DATE(c.fecha_consulta) >= '$f_desde'";
+            }
+            if ($f_hasta != '') {
+              $donde .= " AND DATE(c.fecha_consulta) <= '$f_hasta'";
+            }
+            if ($f_medico != '') {
+              $donde .= " AND (p_medico.nombre LIKE '%$f_medico%' OR p_medico.apellido LIKE '%$f_medico%')";
+            }
+
+            // 3. Contar el total de registros FILTRADOS para la paginación
+            $sql_conteo = "SELECT COUNT(*) as total 
+                  FROM consulta c
+                  JOIN persona p_paciente ON c.Id_paciente = p_paciente.id
+                  JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+                  JOIN persona p_medico ON dm.Id_persona = p_medico.id 
+                  $donde";
             $resultado_conteo = mysqli_query($conexion, $sql_conteo);
             $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
             $total_consultas_filtradas = $fila_conteo['total'];
@@ -225,7 +249,7 @@
           <?php
           // Crear la cadena de texto para la URL si hay una búsqueda activa
           $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
-          
+
           $rango = 1;
           $inicio_ventana = max(1, $pagina_actual - $rango);
           $fin_ventana = min($total_paginas, $pagina_actual + $rango);
@@ -269,6 +293,40 @@
       unset($_SESSION['mensaje_user_error']); // Limpiar la sesión
     }
     ?>
+
+    <div class="modal fade" id="modalBusquedaAvanzada" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <form id="formBusquedaAvanzada" method="GET" action="">
+            <div class="modal-header bg-primary">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Consultas</h4>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label>Fecha Desde</label>
+                  <input type="date" name="f_desde" class="form-control" max="<?php echo date('Y-m-d'); ?>" value="<?php echo isset($f_desde) ? $f_desde : ''; ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Fecha Hasta</label>
+                  <input type="date" name="f_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>" value="<?php echo isset($f_hasta) ? $f_hasta : ''; ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Nombre del Médico</label>
+                  <input type="text" name="f_medico" class="form-control" placeholder="Ej. Juan Pérez" oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo isset($f_medico) ? htmlspecialchars($f_medico) : ''; ?>">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <div class="modal fade" id="modalExito" tabindex="-1" role="dialog" aria-labelledby="modalExitoLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">

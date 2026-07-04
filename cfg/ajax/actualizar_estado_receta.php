@@ -10,7 +10,7 @@ if (isset($_POST['id']) && isset($_POST['tipo'])) {
     $id = mysqli_real_escape_string($conexion, $_POST['id']);
     $tipo = mysqli_real_escape_string($conexion, $_POST['tipo']); 
     $id_usuario = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
-    $motivo = mysqli_real_escape_string($conexion, $_POST['motivo_cancelacion']);
+    $motivo = mysqli_real_escape_string($conexion, $_POST['motivo']);
     
     mysqli_begin_transaction($conexion);
 

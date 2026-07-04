@@ -380,9 +380,9 @@
               <input type="hidden" name="op" value="revertir_movimiento">
               <input type="hidden" name="id_detalle_inventario" id="id_anular_input">
 
-              <div id="divMotivoCancelacion" style="margin-top: 15px;">
-                <label for="motivo_cancelacion">Motivo de la anulación <span class="text-danger">*</span></label>
-                <textarea id="motivo_cancelacion" name="motivo_cancelacion" class="form-control" rows="3" placeholder="Especifique el motivo por el cual se anula este movimiento..." required></textarea>
+              <div id="divMotivoAnulacion" style="margin-top: 15px;">
+                <label for="motivo_anulacion">Motivo de la anulación <span class="text-danger">*</span></label>
+                <textarea id="motivo_anulacion" name="motivo_anulacion" class="form-control" rows="3" placeholder="Especifique el motivo por el cual se anula este movimiento..." required></textarea>
                 <small id="errorMotivo" class="text-danger" style="display:none; font-weight:bold;">Debe especificar un motivo obligatorio.</small>
               </div>
 

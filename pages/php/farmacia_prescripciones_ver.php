@@ -46,7 +46,7 @@ if ($tipo_receta === 'Interna') {
     $sql_est = "SELECT estado_prescripcion as est FROM prescripcion_medicamentos WHERE Id_consulta = '$id_pres'";
     $res_est = $conexion->query($sql_est);
     $estados = [];
-    while($r = $res_est->fetch_assoc()) {
+    while ($r = $res_est->fetch_assoc()) {
         $estados[] = strtolower($r['est']);
     }
     if (in_array('pendiente', $estados)) {
@@ -62,7 +62,6 @@ if ($tipo_receta === 'Interna') {
     } else {
         $estado_general = 'no entregado';
     }
-
 } else {
     // NUEVA CONSULTA GENERAL ADAPTADA PARA RECETAS EXTERNAS (CORREGIDA)
     $query_general = "SELECT 
@@ -89,6 +88,7 @@ if ($tipo_receta === 'Interna') {
     $query_meds = "SELECT 
                 ds.id_detalle AS id_item, 
                 ds.estatus_item AS estado_prescripcion, 
+                ds.motivo,
                 ds.id_medicamento AS Id_descripcion_medicamento,
                 m.nombre_medicamento,
                 p.nombre_presentacion,
@@ -127,7 +127,7 @@ $res_meds = $conexion->query($query_meds);
 $medicamentos = [];
 
 if ($res_meds) {
-    while($m = $res_meds->fetch_assoc()){
+    while ($m = $res_meds->fetch_assoc()) {
         // Buscar PRINCIPIOS ACTIVOS del iterador actual de medicamento
         $principios = [];
         $sql_pa = "SELECT pa.nombre, dpm.cantidad_unidad_medida, um.unidad 
@@ -135,7 +135,7 @@ if ($res_meds) {
                    JOIN principio_activo pa ON dpm.id_principio_activo = pa.id_principio_activo
                    JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
                    WHERE dpm.id_medicamento = " . $m['id_desc_med'];
-        
+
         $res_pa = $conexion->query($sql_pa);
         if ($res_pa) {
             while ($p = $res_pa->fetch_assoc()) {
@@ -146,6 +146,8 @@ if ($res_meds) {
         $medicamentos[] = $m;
     }
 }
+
+$med_principal = count($medicamentos) > 0 ? $medicamentos[0] : null;
 
 // 4. Configuración visual del estado_prescripcion Global
 $estado_limpio = $estado_general;
@@ -165,7 +167,7 @@ switch ($estado_limpio) {
         $status_icon = "fa-check-circle";
         break;
     case 'parcial':
-        $status_color = "#00c0ef"; // Azul claro
+        $status_color = "#f39c12"; // Azul claro
         $status_icon = "fa-pie-chart";
         break;
     default:
@@ -188,36 +190,141 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
 
     <style>
         .wrapper {
-            display: block !important; 
-            min-height: 100% !important; 
-            overflow-x: hidden !important; 
-            background-color: #f4f7f9 !important; 
+            display: block !important;
+            min-height: 100% !important;
+            overflow-x: hidden !important;
+            background-color: #f4f7f9 !important;
         }
 
         .content-wrapper {
             background-color: #f4f7f9 !important;
-            min-height: 125vh !important; /* Aseguramos que el contenido baje por completo */
+            min-height: 125vh !important;
+            /* Aseguramos que el contenido baje por completo */
         }
 
         .content-custom {
             padding: 10px 10px;
             margin-left: 40px;
         }
-        .main-container { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); overflow: hidden; margin-bottom: 30px; }
-        .hero-header { background: linear-gradient(135deg, #605ca8 0%, #333152 100%); color: white; padding: 30px; border-bottom: 5px solid <?php echo $status_color; ?>; position: relative; }
-        .hero-status-badge { position: absolute; top: 20px; right: 30px; background: <?php echo $status_color; ?>; color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .info-padding { padding: 30px; }
-        .section-title { color: #3c8dbc; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
-        .table-info-med th { background: #f9f9f9; width: 35%; color: #777; font-size: 12px; text-transform: uppercase; }
-        .table-info-med td { font-size: 14px; font-weight: 600; color: #333; }
-        .info-box-custom { background: #fdfdfd; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
-        .info-box-custom .label-custom { color: #95a5a6; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; margin-bottom: 2px; }
-        .info-box-custom .value-custom { font-size: 15px; color: #2c3e50; font-weight: 600; margin-bottom: 10px; }
-        .pa-item { background: #fff; border: 1px solid #eee; border-left: 4px solid #00a65a; padding: 10px 15px; margin-bottom: 8px; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .well-custom { background: #fcfcfc; border: 1px solid #e3e3e3; border-left: 5px solid #f39c12; padding: 20px; font-size: 1.1em; line-height: 1.6; color: #555; border-radius: 4px; }
-        .btn-lg-custom { padding: 10px 25px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .modal-header-danger { background-color: #dc3545; color: white; }
-        .modal-header-primary { background-color: #3c8dbc; color: white; }
+
+        .main-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .hero-header {
+            background: linear-gradient(135deg, #605ca8 0%, #333152 100%);
+            color: white;
+            padding: 30px;
+            border-bottom: 5px solid <?php echo $status_color; ?>;
+            position: relative;
+        }
+
+        .hero-status-badge {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: <?php echo $status_color; ?>;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-padding {
+            padding: 30px;
+        }
+
+        .section-title {
+            color: #3c8dbc;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .table-info-med th {
+            background: #f9f9f9;
+            width: 35%;
+            color: #777;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .table-info-med td {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .info-box-custom {
+            background: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box-custom .label-custom {
+            color: #95a5a6;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .info-box-custom .value-custom {
+            font-size: 15px;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .pa-item {
+            background: #fff;
+            border: 1px solid #eee;
+            border-left: 4px solid #00a65a;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .well-custom {
+            background: #fcfcfc;
+            border: 1px solid #e3e3e3;
+            border-left: 5px solid #f39c12;
+            padding: 20px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+            border-radius: 4px;
+        }
+
+        .btn-lg-custom {
+            padding: 10px 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-header-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .modal-header-primary {
+            background-color: #3c8dbc;
+            color: white;
+        }
     </style>
 </head>
 
@@ -225,7 +332,7 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
     <div class="wrapper">
         <div class="content-wrapper">
             <section class="content content-custom">
-                
+
                 <div class="main-container">
                     <div class="hero-header">
                         <div class="hero-status-badge">
@@ -241,7 +348,7 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
                         <div class="row">
                             <div class="col-md-5">
                                 <h4 class="section-title"><i class="fa fa-user-circle"></i> Involucrados</h4>
-                                
+
                                 <div class="info-box-custom">
                                     <h5 class="text-blue" style="margin-top: 0; font-weight: bold;"><i class="fa fa-user"></i> Datos del Paciente</h5>
                                     <div class="row">
@@ -268,22 +375,27 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
 
                                 <h4 class="section-title" style="margin-top: 30px;"><i class="fa fa-file-text-o"></i> Más detalles</h4>
                                 <div class="well-custom">
-                                    <p>Medicamento Entregado A: <?php echo nl2br($data['entregado_a'] ?: 'No se registro a la persona a la cual se le entrego el medicamento.'); ?> </p>
+                                    <?php if (!empty($med_principal) && !empty($med_principal['motivo'])) : ?>
+                                        <p>
+                                            <strong>Motivo:</strong> <?php echo htmlspecialchars($med_principal['motivo']); ?>
+                                        </p>
+                                    <?php endif; ?>
+                                    <p>Medicamento Entregado A: <?php echo nl2br($data['entregado_a'] ?: 'No se registro a la persona...'); ?> </p>
                                     <p>Tratamiento: <?php echo nl2br($data['tratamiento_indicado'] ?: 'No se registraron indicaciones adicionales.'); ?></p>
                                 </div>
                             </div>
 
                             <div class="col-md-7">
                                 <h4 class="section-title"><i class="fa fa-list-alt"></i> Medicamentos Solicitados (<?php echo count($medicamentos); ?>)</h4>
-                                
-                                <?php if(count($medicamentos) > 0): 
+
+                                <?php if (count($medicamentos) > 0) :
                                     // MOSTRAMOS ÚNICAMENTE EL PRIMER MEDICAMENTO EN LA VISTA PRINCIPAL
-                                    $med = $medicamentos[0]; 
+                                    $med = $medicamentos[0];
                                 ?>
                                     <div>
                                         <h5 class="text-blue" style="font-weight: bold; font-size: 16px; margin-bottom: 15px;">
                                             <i class="fa fa-medkit"></i> <?php echo $med['nombre_medicamento'] ?: 'No Especificado'; ?>
-                                            <?php if(isset($med['cantidad_recetada']) && $med['cantidad_recetada'] > 0): ?>
+                                            <?php if (isset($med['cantidad_recetada']) && $med['cantidad_recetada'] > 0) : ?>
                                                 <span class="badge bg-blue pull-right" style="font-size: 13px;">Cant: <?php echo $med['cantidad_recetada']; ?></span>
                                             <?php endif; ?>
                                         </h5>
@@ -311,20 +423,20 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
                                             <p class="text-muted"><i class="fa fa-info-circle"></i> No se han registrado principios activos.</p>
                                         <?php else : ?>
                                             <div class="row">
-                                            <?php foreach ($med['principios'] as $p) : ?>
-                                                <div class="col-sm-6">
-                                                    <div class="pa-item">
-                                                        <strong><?php echo $p['nombre']; ?></strong>
-                                                        <span class="pull-right badge bg-green"><?php echo $p['cantidad_unidad_medida'] . " " . $p['unidad']; ?></span>
+                                                <?php foreach ($med['principios'] as $p) : ?>
+                                                    <div class="col-sm-6">
+                                                        <div class="pa-item">
+                                                            <strong><?php echo $p['nombre']; ?></strong>
+                                                            <span class="pull-right badge bg-green"><?php echo $p['cantidad_unidad_medida'] . " " . $p['unidad']; ?></span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            <?php endforeach; ?>
+                                                <?php endforeach; ?>
                                             </div>
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
 
-                                <?php if(count($medicamentos) > 1): ?>
+                                <?php if (count($medicamentos) > 1) : ?>
                                     <div style="margin-top: 25px; padding-top: 20px; border-top: 2px dashed #e0e0e0; text-align: center;">
                                         <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#modalOtrosMedicamentos" data-backdrop="static" data-keyboard="false">
                                             <i class="fa fa-plus-circle"></i> Ver los otros <?php echo count($medicamentos) - 1; ?> medicamentos
@@ -333,8 +445,8 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
                                 <?php endif; ?>
 
                             </div>
-                        </div> 
-                        
+                        </div>
+
                         <div style="float:right; margin-bottom: 20px; margin-top: 30px;">
                             <div class="col-xs-12">
                                 <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalConfirmarRegreso" id="abrirModalRegresar">Regresar</button>
@@ -371,79 +483,79 @@ $cedula_a_enviar = ($data['es_menor'] == 1 && !empty($data['cedula_representante
             </div>
         </div>
 
-        <?php if(count($medicamentos) > 1): ?>
-        <div class="modal fade" id="modalOtrosMedicamentos" tabindex="-1" role="dialog" aria-labelledby="modalOtrosMedLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content" style="background-color: #f4f7f9;">
-                    <div class="modal-header modal-header-primary">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="modalOtrosMedLabel"><i class="fa fa-list-ul"></i> Resto de Medicamentos Solicitados</h4>
-                    </div>
-                    <div class="modal-body">
-                        
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label for="selectMedicamentoModal" class="text-blue"><i class="fa fa-search"></i> Seleccione el medicamento a consultar:</label>
-                            <select id="selectMedicamentoModal" class="form-control input-lg" style="border: 2px solid #3c8dbc; border-radius: 5px;">
-                                <?php for($i = 1; $i < count($medicamentos); $i++): ?>
-                                    <option value="<?php echo $i; ?>"><?php echo $medicamentos[$i]['nombre_medicamento'] ?: 'No Especificado'; ?></option>
-                                <?php endfor; ?>
-                            </select>
+        <?php if (count($medicamentos) > 1) : ?>
+            <div class="modal fade" id="modalOtrosMedicamentos" tabindex="-1" role="dialog" aria-labelledby="modalOtrosMedLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content" style="background-color: #f4f7f9;">
+                        <div class="modal-header modal-header-primary">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 1;"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="modalOtrosMedLabel"><i class="fa fa-list-ul"></i> Resto de Medicamentos Solicitados</h4>
                         </div>
-                        
-                        <?php for($i = 1; $i < count($medicamentos); $i++): 
-                            $med = $medicamentos[$i];
-                        ?>
-                            <div id="detalle-med-<?php echo $i; ?>" class="detalle-medicamento-modal" style="display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e0e0e0;">
-                                <h5 class="text-blue" style="font-weight: bold; font-size: 18px; margin-bottom: 15px; margin-top: 0;">
-                                    <i class="fa fa-medkit"></i> <?php echo $med['nombre_medicamento'] ?: 'No Especificado'; ?>
-                                    <?php if(isset($med['cantidad_recetada']) && $med['cantidad_recetada'] > 0): ?>
-                                        <span class="badge bg-blue pull-right" style="font-size: 13px;">Cant: <?php echo $med['cantidad_recetada']; ?></span>
-                                    <?php endif; ?>
-                                </h5>
+                        <div class="modal-body">
 
-                                <table class="table table-bordered table-info-med">
-                                    <tr>
-                                        <th>Presentación / Cont. Neto</th>
-                                        <td>
-                                            <span><?php echo $med['nombre_presentacion'] ?: 'General'; ?> / </span>
-                                            <?php echo $med['contenido_neto']; ?>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Vía de Aplicación</th>
-                                        <td><?php echo $med['via_aplicacion']; ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Código de Barras</th>
-                                        <td><i class="fa fa-barcode"></i> <?php echo $med['codigo_barras']; ?></td>
-                                    </tr>
-                                </table>
-
-                                <h5 style="margin-top: 15px; font-weight: bold; color: #555; font-size: 14px;"><i class="fa fa-flask"></i> Principios Activos</h5>
-                                <?php if (empty($med['principios'])) : ?>
-                                    <p class="text-muted"><i class="fa fa-info-circle"></i> No se han registrado principios activos.</p>
-                                <?php else : ?>
-                                    <div class="row">
-                                    <?php foreach ($med['principios'] as $p) : ?>
-                                        <div class="col-sm-6">
-                                            <div class="pa-item">
-                                                <strong><?php echo $p['nombre']; ?></strong>
-                                                <span class="pull-right badge bg-green"><?php echo $p['cantidad_unidad_medida'] . " " . $p['unidad']; ?></span>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label for="selectMedicamentoModal" class="text-blue"><i class="fa fa-search"></i> Seleccione el medicamento a consultar:</label>
+                                <select id="selectMedicamentoModal" class="form-control input-lg" style="border: 2px solid #3c8dbc; border-radius: 5px;">
+                                    <?php for ($i = 1; $i < count($medicamentos); $i++) : ?>
+                                        <option value="<?php echo $i; ?>"><?php echo $medicamentos[$i]['nombre_medicamento'] ?: 'No Especificado'; ?></option>
+                                    <?php endfor; ?>
+                                </select>
                             </div>
-                        <?php endfor; ?>
 
-                    </div>
-                    <div class="modal-footer" style="background: white;">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar Lista</button>
+                            <?php for ($i = 1; $i < count($medicamentos); $i++) :
+                                $med = $medicamentos[$i];
+                            ?>
+                                <div id="detalle-med-<?php echo $i; ?>" class="detalle-medicamento-modal" style="display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e0e0e0;">
+                                    <h5 class="text-blue" style="font-weight: bold; font-size: 18px; margin-bottom: 15px; margin-top: 0;">
+                                        <i class="fa fa-medkit"></i> <?php echo $med['nombre_medicamento'] ?: 'No Especificado'; ?>
+                                        <?php if (isset($med['cantidad_recetada']) && $med['cantidad_recetada'] > 0) : ?>
+                                            <span class="badge bg-blue pull-right" style="font-size: 13px;">Cant: <?php echo $med['cantidad_recetada']; ?></span>
+                                        <?php endif; ?>
+                                    </h5>
+
+                                    <table class="table table-bordered table-info-med">
+                                        <tr>
+                                            <th>Presentación / Cont. Neto</th>
+                                            <td>
+                                                <span><?php echo $med['nombre_presentacion'] ?: 'General'; ?> / </span>
+                                                <?php echo $med['contenido_neto']; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Vía de Aplicación</th>
+                                            <td><?php echo $med['via_aplicacion']; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Código de Barras</th>
+                                            <td><i class="fa fa-barcode"></i> <?php echo $med['codigo_barras']; ?></td>
+                                        </tr>
+                                    </table>
+
+                                    <h5 style="margin-top: 15px; font-weight: bold; color: #555; font-size: 14px;"><i class="fa fa-flask"></i> Principios Activos</h5>
+                                    <?php if (empty($med['principios'])) : ?>
+                                        <p class="text-muted"><i class="fa fa-info-circle"></i> No se han registrado principios activos.</p>
+                                    <?php else : ?>
+                                        <div class="row">
+                                            <?php foreach ($med['principios'] as $p) : ?>
+                                                <div class="col-sm-6">
+                                                    <div class="pa-item">
+                                                        <strong><?php echo $p['nombre']; ?></strong>
+                                                        <span class="pull-right badge bg-green"><?php echo $p['cantidad_unidad_medida'] . " " . $p['unidad']; ?></span>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endfor; ?>
+
+                        </div>
+                        <div class="modal-footer" style="background: white;">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar Lista</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         <?php endif; ?>
 
         <?php include('includes/footer.php'); ?>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 25-06-2026 a las 23:22:33
+-- Tiempo de generación: 01-11-2012 a las 04:25:06
 -- Versión del servidor: 10.1.35-MariaDB
 -- Versión de PHP: 7.2.9
 
@@ -156,16 +156,6 @@ CREATE TABLE `consulta` (
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `consulta`
---
-
-INSERT INTO `consulta` (`Id_consulta`, `fecha_consulta`, `motivo_consulta`, `diagnostico`, `tratamiento_indicado`, `peso`, `talla`, `temperatura`, `tension`, `frecuencia_cardiaca`, `saturacion`, `frecuencia_respiratoria`, `estado_paciente`, `reaccion_adversa`, `detalle_reaccion`, `evolucion_resultado`, `lectura_examenes`, `examenes_solicitados`, `entregado_a`, `parentesco`, `Id_historial`, `Id_medico`, `Id_paciente`, `estatus`) VALUES
-(2, '2026-05-27', 'Algo', 'Dolor', 'Todas', '0.00', '0.00', 0, 0, 0, 0, 0, 'Primera Consulta', 'No', '', 'Paciente acude por primera vez. Se inicia protocolo.', '', '', 'Camilo Raul Montilla Perez', '', 86, 20, 328, 0),
-(3, '2026-05-28', 'ALGO XX', 'QUIENS ABE', 'VERAG', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Primera Consulta', 'No', '', 'Paciente acude por primera vez. Se inicia protocolo.', '', '', 'sss sssd', '', 90, 20, 344, 0),
-(5, '2026-06-13', 'MEXICO', 'DIOXIDO DE CARBONO', 'ALGo', '40.00', NULL, NULL, NULL, NULL, NULL, NULL, 'Primera Consulta', 'No', '', 'Paciente acude por primera vez. Se inicia protocolo.', '', '', 'Camilo Raul Montilla Perez', '', 86, 22, 328, 1),
-(6, '2026-06-13', 'USA', 'QUE', 'XLR8', '20.00', NULL, NULL, NULL, NULL, NULL, NULL, 'Primera Consulta', 'No', '', 'Paciente acude por primera vez. Se inicia protocolo.', '', '', 'Mario Gomez', '', 87, 20, 331, 1);
-
 -- --------------------------------------------------------
 
 --
@@ -216,33 +206,7 @@ CREATE TABLE `descripcion_medicamento` (
 INSERT INTO `descripcion_medicamento` (`Id`, `via_aplicacion`, `almacenamiento`, `excipientes`, `stock_minimo`, `stock_maximo`, `codigo_barras`, `contenido_neto`, `cantidad_concentracion`, `Id_tipo_concentracion`, `Id_laboratorio`, `Id_presentacion`, `Id_medicamento`, `estatus`) VALUES
 (81, 'Oral', '8_a_15', '', 1, 200, '27489824824742', '10 Tabletas', '10', 2, 2, 1, 94, '1'),
 (82, 'Oral', '8_a_15', 'Fresa, Sal, Mantequilla', 1, 100, '234234235233', '10 Tabletas', '10', 2, 2, 1, 95, '1'),
-(85, 'Oral', '8_a_15', '', 1, 200, '2748982482474', '10 Tabletas', '10', 2, 2, 1, 98, '1'),
-(86, 'Oral', '8_a_15', '', 1, 100, '274898248247', '10 Tabletas', '10', 2, 2, 1, 99, '1'),
-(87, 'Oral', '8_a_15', '', 0, 0, '2748982482475', '10 Tabletas', '10', 2, 2, 1, 100, '1'),
-(88, 'Oral', '8_a_15', '', 1, 100, '23423423525', '10 Tabletas', '10', 2, 2, 1, 101, '1'),
-(89, 'Oral', '8_a_15', '', 1, 20, '274898248245', '10 Tabletas', '10', 2, 2, 1, 102, '1'),
-(90, 'Oral', '8_a_15', '', 15, 75, '274898248255', '10 Tabletas', '10', 2, 2, 1, 103, '1'),
-(91, 'Oral', '8_a_15', '', 12, 204, '274898248200', '10 Tabletas', '10', 2, 2, 1, 104, '1'),
-(92, 'Oral', '8_a_15', '', 10, 400, '274898248240', '10 Tabletas', '10', 2, 2, 1, 105, '1'),
-(93, 'Oral', '8_a_15', '', 1, 100, '27489824827664', '10 Tabletas', '10', 2, 2, 1, 106, '1'),
-(94, 'Oral', '8_a_15', '', 20, 30, '5325235236', '10 Tabletas', '10', 2, 2, 1, 107, '1'),
-(95, 'Oral', '8_a_15', '', 1, 100, '274898263464', '10 Tabletas', '10', 2, 2, 1, 108, '1'),
-(96, 'Oral', '8_a_15', '', 1, 200, '27489824', '10 Tabletas', '10', 2, 2, 1, 109, '1'),
-(97, 'Oral', '8_a_15', '', 1, 34, '892389278', '10 Tabletas', '10', 2, 2, 1, 110, '1'),
-(98, 'Oral', '8_a_15', '', 1, 340, '27489824825353', '10 Tabletas', '10', 2, 2, 1, 111, '1'),
-(99, 'Oral', '8_a_15', '', 20, 200, '274898248634341', '10 Tabletas', '10', 2, 2, 1, 112, '1'),
-(100, 'Oral', '8_a_15', '', 200, 300, '892389278433', '10 Tabletas', '10', 2, 2, 1, 113, '1'),
-(101, 'Oral', '8_a_15', '', 1, 50, '89238927844', '10 Tabletas', '10', 2, 2, 1, 114, '1'),
-(102, 'Oral', '8_a_15', '', 1, 100, '23423423053035', '10 Tabletas', '10', 2, 2, 1, 115, '1'),
-(103, 'Oral', '8_a_15', '', 21, 422, '274898248243553', '10 Tabletas', '10', 2, 2, 1, 116, '1'),
-(104, 'Oral', '8_a_15', '', 1, 20, '892389278437575', '10 Tabletas', '10', 2, 2, 1, 117, '1'),
-(105, 'Oral', '8_a_15', '', 1, 500, '8923892777', '10 Tabletas', '10', 2, 2, 1, 118, '1'),
-(106, 'Oral', '8_a_15', '', 2, 199, '27489824826464', '10 Tabletas', '10', 2, 2, 1, 119, '1'),
-(107, 'Oral', '8_a_15', '', 2, 100, '2748982486464', '10 Tabletas', '10', 2, 2, 1, 120, '1'),
-(108, 'Oral', '8_a_15', '', 1, 500, '666666666', '10 Tabletas', '10', 2, 2, 1, 121, '1'),
-(109, 'Oral', '8_a_15', '', 2, 30, '274898248225252', '10 Tabletas', '10', 2, 2, 1, 122, '1'),
-(110, 'Oral', '8_a_15', '', 2, 50, '2748982485335', '10 Tabletas', '10', 2, 2, 1, 123, '1'),
-(111, 'Oral', '8_a_15', '', 1, 20, '8923892785353', '10 Tabletas', '10', 2, 2, 1, 124, '1');
+(85, 'Oral', '8_a_15', '', 1, 200, '2748982482474', '10 Tabletas', '10', 2, 2, 1, 98, '1');
 
 -- --------------------------------------------------------
 
@@ -262,22 +226,6 @@ CREATE TABLE `detalle_inventario` (
   `estado_movimiento` enum('Activo','Anulado') NOT NULL DEFAULT 'Activo',
   `fecha_registro` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `detalle_inventario`
---
-
-INSERT INTO `detalle_inventario` (`Id_detalle_inventario`, `Id_TipoMovimiento`, `Id_Persona`, `Id_receptor`, `Id_prescripcion`, `comprobante`, `fecha`, `observaciones`, `estado_movimiento`, `fecha_registro`) VALUES
-(2, 1, 189, 189, NULL, NULL, '2026-06-17 17:33:00', 'Algo', 'Activo', '0000-00-00 00:00:00'),
-(3, 2, 189, NULL, NULL, NULL, '2026-06-17 17:43:51', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
-(4, 2, 189, NULL, NULL, NULL, '2026-06-17 20:27:05', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
-(5, 2, 189, NULL, NULL, NULL, '2026-06-17 20:28:22', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
-(6, 2, 189, NULL, NULL, NULL, '2026-06-17 20:50:57', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
-(7, 2, 189, NULL, NULL, NULL, '2026-06-17 20:51:24', 'Despacho a paciente externo: Deyber Deinner Silva Gallardo', 'Activo', '0000-00-00 00:00:00'),
-(8, 7, 189, 189, NULL, NULL, '2026-06-18 03:49:00', 'Algo', 'Activo', '0000-00-00 00:00:00'),
-(9, 2, 281, NULL, NULL, NULL, '2026-06-23 17:08:37', 'Despacho a paciente externo: Ezequiel Veroez', 'Activo', '0000-00-00 00:00:00'),
-(10, 2, 189, NULL, NULL, NULL, '2026-06-25 11:56:23', 'Despacho a paciente externo: Ezequiel Veroez', 'Anulado', '0000-00-00 00:00:00'),
-(11, 9, 189, NULL, NULL, NULL, '2026-06-25 17:19:51', 'ANULACIÓN DE MOV. #10 | Motivo: Error de registro detectado por administrador', 'Activo', '0000-00-00 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -390,13 +338,6 @@ CREATE TABLE `detalle_patologia_medicamento` (
   `Id_medicamento` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `detalle_patologia_medicamento`
---
-
-INSERT INTO `detalle_patologia_medicamento` (`Id_detalle_patologia_medicamento`, `Id_patologia`, `Id_medicamento`) VALUES
-(1, 35, 89);
-
 -- --------------------------------------------------------
 
 --
@@ -430,18 +371,6 @@ CREATE TABLE `detalle_pedidos` (
   `id_descripcion_medicamento` int(11) NOT NULL,
   `cantidad_solicitada` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- Volcado de datos para la tabla `detalle_pedidos`
---
-
-INSERT INTO `detalle_pedidos` (`id_detalle`, `id_pedido`, `id_descripcion_medicamento`, `cantidad_solicitada`) VALUES
-(1, 1, 81, 200),
-(2, 1, 82, 100),
-(3, 1, 85, 100),
-(4, 1, 86, 100),
-(5, 1, 88, 100),
-(6, 2, 82, 400);
 
 -- --------------------------------------------------------
 
@@ -527,61 +456,9 @@ CREATE TABLE `detalle_principio_medicamento` (
 --
 
 INSERT INTO `detalle_principio_medicamento` (`Id_principio_medicamento`, `id_medicamento`, `id_principio_activo`, `id_tipo_unidad_medida`, `cantidad_unidad_medida`) VALUES
-(42, 82, 1, 1, 800),
-(45, 81, 1, 1, 800),
-(46, 81, 2, 2, 250),
-(51, 85, 1, 1, 800),
-(52, 85, 2, 2, 250),
-(53, 86, 1, 1, 800),
-(54, 86, 2, 2, 250),
-(55, 87, 1, 1, 800),
-(56, 87, 2, 2, 250),
-(57, 88, 1, 1, 800),
-(58, 89, 1, 1, 800),
-(59, 89, 2, 2, 250),
-(60, 90, 1, 1, 800),
-(61, 90, 2, 2, 250),
-(62, 91, 1, 1, 800),
-(63, 91, 2, 2, 250),
-(64, 92, 1, 1, 800),
-(65, 92, 2, 2, 250),
-(66, 93, 1, 1, 800),
-(67, 93, 2, 2, 250),
-(68, 94, 1, 1, 800),
-(69, 94, 2, 2, 250),
-(70, 95, 1, 1, 800),
-(71, 95, 2, 2, 250),
-(72, 96, 1, 1, 800),
-(73, 96, 2, 2, 250),
-(74, 97, 1, 1, 800),
-(75, 97, 2, 2, 250),
-(76, 98, 1, 1, 800),
-(77, 98, 2, 2, 250),
-(78, 99, 1, 1, 800),
-(79, 99, 2, 2, 250),
-(80, 100, 1, 1, 800),
-(81, 100, 2, 2, 250),
-(82, 101, 1, 1, 800),
-(83, 101, 2, 2, 250),
-(84, 102, 1, 1, 800),
-(85, 103, 1, 1, 800),
-(86, 103, 2, 2, 250),
-(87, 104, 1, 1, 800),
-(88, 104, 2, 2, 250),
-(89, 105, 1, 1, 800),
-(90, 105, 2, 2, 250),
-(91, 106, 1, 1, 800),
-(92, 106, 2, 2, 250),
-(93, 107, 1, 1, 800),
-(94, 107, 2, 2, 250),
-(95, 108, 1, 1, 800),
-(96, 108, 2, 2, 250),
-(97, 109, 1, 1, 800),
-(98, 109, 2, 2, 250),
-(99, 110, 1, 1, 800),
-(100, 110, 2, 2, 250),
-(101, 111, 1, 1, 800),
-(102, 111, 2, 2, 250);
+(1, 81, 2, 2, 200),
+(2, 82, 1, 2, 300),
+(3, 85, 6, 2, 200);
 
 -- --------------------------------------------------------
 
@@ -599,16 +476,6 @@ CREATE TABLE `detalle_solicitud` (
   `paciente_notificado` tinyint(1) NOT NULL DEFAULT '0',
   `motivo` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `detalle_solicitud`
---
-
-INSERT INTO `detalle_solicitud` (`id_detalle`, `id_solicitud`, `id_medicamento`, `cantidad_recetada`, `cantidad_entregada`, `estatus_item`, `paciente_notificado`, `motivo`) VALUES
-(1, 1, 81, 2, 2, 'Entregado', 1, ''),
-(2, 2, 85, 3, 3, 'Entregado', 1, ''),
-(3, 3, 81, 2, 2, 'Entregado', 1, ''),
-(4, 4, 81, 2, 0, 'Pendiente', 1, '');
 
 -- --------------------------------------------------------
 
@@ -763,17 +630,6 @@ CREATE TABLE `existencias_stock` (
   `cantidad_actual` int(11) NOT NULL DEFAULT '0',
   `ultima_actualizacion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `existencias_stock`
---
-
-INSERT INTO `existencias_stock` (`Id_existencia`, `Id_descripcion_medicamento`, `Id_lote`, `cantidad_actual`, `ultima_actualizacion`) VALUES
-(1, 81, 2, 196, '2026-06-25 21:19:51'),
-(2, 82, 3, 0, '2026-06-18 07:50:10'),
-(3, 85, 4, 97, '2026-06-18 00:50:57'),
-(4, 85, 5, 100, '2026-06-17 21:38:46'),
-(5, 88, 6, 100, '2026-06-17 21:38:46');
 
 -- --------------------------------------------------------
 
@@ -953,17 +809,6 @@ CREATE TABLE `lotes_medicamentos` (
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
---
--- Volcado de datos para la tabla `lotes_medicamentos`
---
-
-INSERT INTO `lotes_medicamentos` (`Id`, `Id_descripcion_medicamento`, `Id_proveedor`, `Lote`, `fecha_fabricacion`, `fecha_vencimiento`, `estado_lote`, `estatus`) VALUES
-(2, 81, 1, 'A', '2026-06-17', '2026-07-22', 'Disponible', 1),
-(3, 82, 1, 'XKSL', '2026-06-17', '2027-02-17', 'Disponible', 1),
-(4, 85, 1, 'DKS', '2026-06-17', '2026-06-24', 'Vencido', 1),
-(5, 85, 1, 'LOTE1', '2026-06-17', '2027-02-17', 'Disponible', 1),
-(6, 88, 1, 'ACD', '2026-06-17', '2026-07-08', 'Disponible', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -1007,33 +852,7 @@ CREATE TABLE `medicamento` (
 INSERT INTO `medicamento` (`Id_medicamento`, `nombre_medicamento`, `estatus`) VALUES
 (94, 'DARFF', 1),
 (95, 'GERMEW', 1),
-(98, 'AAA', 1),
-(99, 'CCC', 1),
-(100, 'SSS', 1),
-(101, 'XL', 1),
-(102, 'ZZZ', 1),
-(103, 'CELOVEN', 1),
-(104, 'PEGATANQUE', 1),
-(105, 'ZTE', 1),
-(106, 'PHP', 1),
-(107, 'LIRYC', 1),
-(108, 'AADOS', 1),
-(109, 'ACINCO', 1),
-(110, 'AATRES', 1),
-(111, 'UN MEDICAMENTO CHAFA', 1),
-(112, 'XLR', 1),
-(113, 'AACUATRO', 1),
-(114, 'ASIETE', 1),
-(115, 'MECHICO', 1),
-(116, 'XXX', 1),
-(117, 'URUSAURIO', 1),
-(118, 'MEDICAMENTO', 1),
-(119, 'XC', 1),
-(120, 'XLe', 1),
-(121, 'TXT', 1),
-(122, 'CHILE', 1),
-(123, 'MMM', 1),
-(124, 'AACUATROd', 1);
+(98, 'AAA', 0);
 
 -- --------------------------------------------------------
 
@@ -1051,26 +870,6 @@ CREATE TABLE `medicamentos_detalle_inventario` (
   `stock_momento` int(11) NOT NULL,
   `observacion` varchar(255) COLLATE utf8_spanish_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Volcado de datos para la tabla `medicamentos_detalle_inventario`
---
-
-INSERT INTO `medicamentos_detalle_inventario` (`Id`, `Id_detalle_inventario`, `Id_descripcion_medicamento`, `Id_lote`, `cantidad`, `cantida_unidad`, `stock_momento`, `observacion`) VALUES
-(1, 2, 81, 2, 200, '', 200, NULL),
-(2, 2, 82, 3, 100, '', 100, NULL),
-(3, 2, 85, 4, 100, '', 100, NULL),
-(4, 2, 85, 5, 100, '', 200, NULL),
-(5, 2, 88, 6, 100, '', 100, NULL),
-(6, 3, 81, 2, 1, '', 199, NULL),
-(7, 4, 81, 2, 1, '', 198, NULL),
-(8, 5, 85, 4, 1, '', 99, NULL),
-(9, 6, 85, 4, 2, '', 97, NULL),
-(10, 7, 81, 2, 1, '', 197, NULL),
-(11, 8, 82, 3, 100, '', 0, 'Algo'),
-(12, 9, 81, 2, 1, '', 196, NULL),
-(13, 10, 81, 2, 1, '', 195, NULL),
-(14, 11, 81, 2, 1, '', 196, NULL);
 
 -- --------------------------------------------------------
 
@@ -1477,19 +1276,19 @@ CREATE TABLE `notificaciones_usuarios` (
 INSERT INTO `notificaciones_usuarios` (`id`, `id_usuario`, `tipo`, `referencia_id`, `titulo`, `mensaje`, `ruta`, `leida`, `fecha_creacion`) VALUES
 (376, 189, 'inventario_lote', 'lote_4_Proximo', 'Lote próximo a vencer', 'El lote DKS de AAA vence pronto (2026-06-24).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
 (377, 281, 'inventario_lote', 'lote_4_Proximo', 'Lote próximo a vencer', 'El lote DKS de AAA vence pronto (2026-06-24).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
-(378, 339, 'inventario_lote', 'lote_4_Proximo', 'Lote próximo a vencer', 'El lote DKS de AAA vence pronto (2026-06-24).', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-17 20:25:48'),
+(378, 339, 'inventario_lote', 'lote_4_Proximo', 'Lote próximo a vencer', 'El lote DKS de AAA vence pronto (2026-06-24).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
 (379, 189, 'inventario_lote', 'lote_6_Proximo', 'Lote próximo a vencer', 'El lote ACD de XL vence pronto (2026-07-08).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
 (380, 281, 'inventario_lote', 'lote_6_Proximo', 'Lote próximo a vencer', 'El lote ACD de XL vence pronto (2026-07-08).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
-(381, 339, 'inventario_lote', 'lote_6_Proximo', 'Lote próximo a vencer', 'El lote ACD de XL vence pronto (2026-07-08).', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-17 20:25:48'),
+(381, 339, 'inventario_lote', 'lote_6_Proximo', 'Lote próximo a vencer', 'El lote ACD de XL vence pronto (2026-07-08).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-17 20:25:48'),
 (436, 189, 'receta_disponible', 'disp_Externa_2', 'Medicina Disponible para Despachar', 'Ya hay stock de AAA para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:28:25'),
 (437, 281, 'receta_disponible', 'disp_Externa_2', 'Medicina Disponible para Despachar', 'Ya hay stock de AAA para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:28:25'),
-(438, 339, 'receta_disponible', 'disp_Externa_2', 'Medicina Disponible para Despachar', 'Ya hay stock de AAA para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 0, '2026-06-17 20:28:26'),
+(438, 339, 'receta_disponible', 'disp_Externa_2', 'Medicina Disponible para Despachar', 'Ya hay stock de AAA para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:28:26'),
 (547, 189, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:51:25'),
 (548, 281, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:51:26'),
-(549, 339, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 0, '2026-06-17 20:51:26'),
+(549, 339, 'receta_disponible', 'disp_Externa_3', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Deyber Deinner Silva Gallardo.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Deyber+Deinner+Silva+Gallardo', 1, '2026-06-17 20:51:26'),
 (592, 189, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-06-18 03:50:12'),
 (593, 281, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-06-18 03:50:12'),
-(594, 339, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 0, '2026-06-18 03:50:12'),
+(594, 339, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento GERMEW (Lote: XKSL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-06-18 03:50:12'),
 (676, 189, 'cita_medica', 'cita_2_hoy', 'Cita programada para hoy', 'Paciente: Steve  Rogers a las 10:30 AM', 'pages/php/citas_medicas_listado.php', 1, '2026-06-19 09:33:36'),
 (677, 359, 'cita_medica', 'cita_2_hoy', 'Cita programada para hoy', 'Paciente: Steve  Rogers a las 10:30 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-19 09:33:36'),
 (855, 189, 'cita_medica', 'cita_4_hoy', 'Cita programada para hoy', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 1, '2026-06-18 09:30:40'),
@@ -1498,13 +1297,13 @@ INSERT INTO `notificaciones_usuarios` (`id`, `id_usuario`, `tipo`, `referencia_i
 (944, 359, 'cita_medica', 'cita_4_vencida', 'Cita Vencida', 'Paciente: Deyber Deinner Silva Gallardo a las 10:00 AM', 'pages/php/citas_medicas_listado.php', 0, '2026-06-18 16:13:02'),
 (1014, 189, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-22 16:15:21'),
 (1015, 281, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-22 16:15:21'),
-(1016, 339, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-22 16:15:21'),
+(1016, 339, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote A de DARFF vence pronto (2026-07-22).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-22 16:15:21'),
 (1020, 189, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-25 11:25:24'),
 (1021, 281, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-25 11:25:25'),
-(1022, 339, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 0, '2026-06-25 11:25:25'),
+(1022, 339, 'inventario_lote', 'lote_4_Vencido', 'Lote Vencido Crítico', 'El lote DKS de AAA venció el 2026-06-24. Retirar de estantes.', 'pages/php/farmacia_lotes_listado.php', 1, '2026-06-25 11:25:25'),
 (1437, 189, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 1, '2026-06-25 11:56:28'),
 (1438, 281, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 0, '2026-06-25 11:56:28'),
-(1439, 339, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 0, '2026-06-25 11:56:28');
+(1439, 339, 'receta_disponible', 'disp_Externa_4', 'Medicina Disponible para Despachar', 'Ya hay stock de DARFF para la receta pendiente de Ezequiel Veroez.', 'pages/php/farmacia_prescripciones_listado.php?buscar=Ezequiel+Veroez', 1, '2026-06-25 11:56:28');
 
 -- --------------------------------------------------------
 
@@ -1577,14 +1376,6 @@ CREATE TABLE `pedidos` (
   `estado` enum('Pendiente','Recibido','Cancelado') COLLATE utf8_bin DEFAULT 'Pendiente',
   `estatus` int(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- Volcado de datos para la tabla `pedidos`
---
-
-INSERT INTO `pedidos` (`id_pedido`, `fecha_creacion`, `id_proveedor`, `id_usuario`, `estado`, `estatus`) VALUES
-(1, '2026-06-17 17:14:00', 1, 189, 'Recibido', 1),
-(2, '2026-06-22 17:55:00', 1, 189, 'Cancelado', 1);
 
 -- --------------------------------------------------------
 
@@ -1846,7 +1637,7 @@ INSERT INTO `persona` (`id`, `nombre`, `apellido`, `tipo_cedula`, `cedula`, `fec
 (330, 'Mario', 'Gomez', 'V', '24244252', '1994-11-01', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
 (331, 'Steve ', 'Rogers', 'V', '31306212', '2011-03-01', 'Masculino', NULL, '', 0, NULL, NULL, NULL, 1),
 (332, 'Maximiliano', 'Vasquez', 'V', '34567890', '1994-11-01', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
-(339, 'Despachador', NULL, '', NULL, '0000-00-00', '', 'DespachadorOffi@gmail.com', '$2y$10$Kkjf20ZHBHwn3f6CGKXXd.LLK9WJIFeXGFMxnVT1tRYsgq4tmAV9i', 0, '2026-04-19 22:16:37', NULL, NULL, 2),
+(339, 'Despachador', NULL, '', NULL, '0000-00-00', '', 'DespachadorOffi@gmail.com', '$2y$10$Kkjf20ZHBHwn3f6CGKXXd.LLK9WJIFeXGFMxnVT1tRYsgq4tmAV9i', 0, '2026-04-19 22:16:37', NULL, NULL, 1),
 (340, 'Mario ', 'Mario', 'V', '23445525', '1986-01-06', 'Masculino', 'mario12@gmail.com', '$2y$10$p8h4Ro6UFZaGZk2jJCMmmuwleZonrXg8EcTH13D2pZ6PUHU.Cu1fa', 0, NULL, NULL, NULL, 2),
 (341, 'Maicol', 'Jackson', 'V', '33333333', '2008-05-14', 'Masculino', 'Deyber12@gmail.com', '', 0, NULL, NULL, NULL, 2),
 (343, 'sss', 'sssd', 'V', '22433333', '2008-05-15', 'Masculino', '', '', 0, NULL, NULL, NULL, 1),
@@ -1979,7 +1770,9 @@ CREATE TABLE `proveedor` (
 --
 
 INSERT INTO `proveedor` (`Id_proveedor`, `nombre_proveedor`, `estatus`) VALUES
-(1, 'SUAF Portuguesa', 1);
+(1, 'SUAF Portuguesa', 1),
+(2, 'Michigan Airlines', 1),
+(3, 'Mexico', 1);
 
 -- --------------------------------------------------------
 
@@ -3406,16 +3199,6 @@ CREATE TABLE `solicitud_medicamento` (
   `fecha_solicitud` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `solicitud_medicamento`
---
-
-INSERT INTO `solicitud_medicamento` (`id_solicitud`, `origen`, `id_consulta`, `id_paciente`, `id_medico`, `entregado_a`, `estatus_general`, `fecha_solicitud`) VALUES
-(1, 'Externo', NULL, 328, 21, 'Ezequiel Veroez', 'Completado', '2026-06-17 17:43:51'),
-(2, 'Externo', NULL, 328, 21, 'Alguien', 'Completado', '2026-06-17 20:28:22'),
-(3, 'Externo', NULL, 328, 21, 'Michigan', 'Completado', '2026-06-17 20:51:24'),
-(4, 'Externo', NULL, 328, 21, 'Manuel', 'Pendiente', '2026-06-25 11:56:22');
-
 -- --------------------------------------------------------
 
 --
@@ -4005,7 +3788,7 @@ ALTER TABLE `antecedentes_sexuales_reproductivos`
 -- AUTO_INCREMENT de la tabla `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `consulta`
@@ -4029,7 +3812,7 @@ ALTER TABLE `descripcion_medicamento`
 -- AUTO_INCREMENT de la tabla `detalle_inventario`
 --
 ALTER TABLE `detalle_inventario`
-  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_medico`
@@ -4089,7 +3872,7 @@ ALTER TABLE `detalle_principio_medicamento`
 -- AUTO_INCREMENT de la tabla `detalle_solicitud`
 --
 ALTER TABLE `detalle_solicitud`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `direccion`
@@ -4191,7 +3974,7 @@ ALTER TABLE `medicamento`
 -- AUTO_INCREMENT de la tabla `medicamentos_detalle_inventario`
 --
 ALTER TABLE `medicamentos_detalle_inventario`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de la tabla `medicos_departamentos`
@@ -4209,7 +3992,7 @@ ALTER TABLE `municipio`
 -- AUTO_INCREMENT de la tabla `notificaciones_usuarios`
 --
 ALTER TABLE `notificaciones_usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4860;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1602;
 
 --
 -- AUTO_INCREMENT de la tabla `observaciones_historial_medico`
@@ -4275,7 +4058,7 @@ ALTER TABLE `principio_activo`
 -- AUTO_INCREMENT de la tabla `proveedor`
 --
 ALTER TABLE `proveedor`
-  MODIFY `Id_proveedor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Id_proveedor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `rol`
@@ -4305,7 +4088,7 @@ ALTER TABLE `sintomas`
 -- AUTO_INCREMENT de la tabla `solicitud_medicamento`
 --
 ALTER TABLE `solicitud_medicamento`
-  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `telefonos_personas`

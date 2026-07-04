@@ -40,6 +40,7 @@
 
   .modal.in .modal-dialog,
   #DesactivarCita,
+  #modalCambioEstado,
   #ModalReporteCitas {
     animation: fadeIn 0.4s ease-out;
   }
@@ -166,7 +167,17 @@
         <p class="pull-right" style="width:5px;"></p>
         <a href="#" class="btn-sm btn-primary pull-right" id="btnVistaCalendario">Calendario</a>
         <p class="pull-right" style="width:5px;"></p>
-        <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+        <div class="pull-left form-inline">
+          <form method="GET" action="" id="formBusquedaRapida">
+            <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+          </form>
+        </div>
+        <p class="pull-left" style="width:5px;"></p>
+        <span data-toggle="tooltip" data-placement="right" title="Filtros avanzados de búsqueda">
+          <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
+            <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar consulta"></i>
+          </button>
+        </span>
       </div>
       <br><br>
       <div id="contenedorCalendario" style="display: none; background: white; padding: 20px; border-radius: 5px;">
@@ -189,14 +200,18 @@
           <tbody class="tbody" width="100%" style="font-size: 12px;">
             <tr>
               <?php
-              // --- Lógica de Paginación y Búsqueda ---
               $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+              $f_desde  = isset($_GET['f_desde']) ? mysqli_real_escape_string($conexion, $_GET['f_desde']) : '';
+              $f_hasta  = isset($_GET['f_hasta']) ? mysqli_real_escape_string($conexion, $_GET['f_hasta']) : '';
+              $f_estado = isset($_GET['f_estado']) ? mysqli_real_escape_string($conexion, $_GET['f_estado']) : '';
+
               $registros_por_pagina = 14;
               $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
               $inicio = ($pagina_actual - 1) * $registros_por_pagina;
 
               // 1. Definir el filtro base
               $donde = "WHERE c.estatus = 1";
+              
               if ($busqueda != '') {
                 $donde .= " AND (p.nombre LIKE '%$busqueda%' 
                 OR p.apellido LIKE '%$busqueda%' 
@@ -206,13 +221,24 @@
                 OR m.apellido LIKE '%$busqueda%')";
               }
 
+              // Filtros Avanzados adaptados de Farmacia
+              if ($f_desde != '') {
+                $donde .= " AND c.fecha_cita >= '$f_desde'";
+              }
+              if ($f_hasta != '') {
+                $donde .= " AND c.fecha_cita <= '$f_hasta'";
+              }
+              if ($f_estado != '') {
+                $donde .= " AND c.estado = '$f_estado'";
+              }
+
               // 2. Contar el total de registros FILTRADOS
               $sql_conteo = "SELECT COUNT(*) as total 
                FROM citas c
                INNER JOIN persona p ON c.Id_paciente = p.id
                INNER JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
                INNER JOIN persona m ON dm.Id_persona = m.id 
-               $donde";
+              $donde";
               $resultado_conteo = mysqli_query($conexion, $sql_conteo);
               $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
               $total_citas = $fila_conteo['total'];
@@ -320,6 +346,10 @@
           <?php
           // Mantener el parámetro de búsqueda en los enlaces de paginación
           $query_string = (isset($busqueda) && $busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
+          if ($busqueda != '') $query_string .= "&buscar=" . urlencode($busqueda);
+          if ($f_desde != '')  $query_string .= "&f_desde=" . urlencode($f_desde);
+          if ($f_hasta != '')  $query_string .= "&f_hasta=" . urlencode($f_hasta);
+          if ($f_estado != '') $query_string .= "&f_estado=" . urlencode($f_estado);
 
           // Botón Primero y Anterior
           if ($pagina_actual > 1) : ?>
@@ -387,6 +417,55 @@
       </div>
     </div>
 
+    <div class="modal fade" id="modalBusquedaAvanzada" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <form id="formBusquedaAvanzada" method="GET" action="">
+            <div class="modal-header bg-primary">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Citas</h4>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-4 form-group">
+                  <label>Fecha Desde</label>
+                  <input type="date" name="f_desde" class="form-control" max="<?php echo date('Y-m-d'); ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Fecha Hasta</label>
+                  <input type="date" name="f_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Estado de la Cita</label>
+                  <select name="f_estado" class="form-control">
+                    <option value="">Todos los Estados</option>
+                    <option value="Pendiente" <?php echo ($f_estado=='Pendiente')?'selected':''; ?>>Pendiente</option>
+                    <option value="Confirmada" <?php echo ($f_estado=='Confirmada')?'selected':''; ?>>Confirmada</option>
+                    <option value="Finalizada" <?php echo ($f_estado=='Finalizada')?'selected':''; ?>>Finalizada</option>
+                    <option value="Cancelada" <?php echo ($f_estado=='Cancelada')?'selected':''; ?>>Cancelada</option>
+                    <option value="Inasistente" <?php echo ($f_estado=='Inasistente')?'selected':''; ?>>Inasistente</option>
+                    <option value="Vencida" <?php echo ($f_estado=='Vencida')?'selected':''; ?>>Vencida</option>
+                    <option value="Reprogramada" <?php echo ($f_estado=='Reprogramada')?'selected':''; ?>>Reprogramada</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12 form-group">
+                  <label>Término de Búsqueda (Paciente, Médico, Motivo...)</label>
+                  <input type="text" name="buscar" class="form-control" placeholder="Escriba aquí..." value="<?php echo htmlspecialchars($busqueda); ?>">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <div class="modal fade" id="modalError" tabindex="-1" role="dialog" aria-labelledby="modalErrorLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -419,6 +498,25 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
             <a id="desactivar" href="#" class="btn btn-danger">Aceptar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="modalCambioEstado" tabindex="-1" role="dialog" aria-labelledby="modalCambioEstadoLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-crimson">
+            <h5 class="modal-title" id="modalCambioEstadoLabel" style="color: white;">Confirmar Cambio de Estado</h5>
+          </div>
+          <div class="modal-body">
+            <p id="textoConfirmacionEstado">¿Confirmar cambio de estado?</p>
+            <input type="hidden" id="citaIdEstado">
+            <input type="hidden" id="citaNuevoEstado">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmarEstado">Aceptar</button>
           </div>
         </div>
       </div>
@@ -526,9 +624,30 @@
         }
       }
 
-      // Función AJAX para actualizar estado
+      // Función para abrir el modal de cambio de estado
       function cambiarEstado(id, nuevoEstado) {
-        if (confirm('¿Confirmar cambio a ' + nuevoEstado + '?')) {
+        // Asignar los valores a los inputs ocultos dentro del modal
+        $('#citaIdEstado').val(id);
+        $('#citaNuevoEstado').val(nuevoEstado);
+        
+        // Actualizar el texto del modal dinámicamente
+        $('#textoConfirmacionEstado').text('¿Está seguro que desea cambiar el estado de esta cita a ' + nuevoEstado + '?');
+        
+        // Mostrar el modal
+        $('#modalCambioEstado').modal('show');
+      }
+
+      // Evento al hacer clic en "Aceptar" dentro del modal
+      $(document).ready(function() {
+        $('#btnConfirmarEstado').on('click', function() {
+          // Obtener los datos almacenados en los inputs ocultos
+          var id = $('#citaIdEstado').val();
+          var nuevoEstado = $('#citaNuevoEstado').val();
+          
+          // Deshabilitar botón para evitar doble clic
+          var btn = $(this);
+          btn.prop('disabled', true).text('Procesando...');
+
           $.post('../../cfg/ajax/actualizar_estado_cita.php', {
             id: id,
             estado: nuevoEstado
@@ -536,11 +655,16 @@
             if (data.trim() == 'ok') {
               location.reload();
             } else {
-              alert('Error al actualizar');
+              $('#modalCambioEstado').modal('hide');
+              btn.prop('disabled', false).text('Aceptar');
+              
+              // Opcional: Puedes llamar a tu modal de error aquí en lugar del alert
+              $('#mensajeError').text('Error al actualizar el estado de la cita.');
+              $('#modalError').modal('show');
             }
           });
-        }
-      }
+        });
+      });
 
       $(document).ready(function() {
         $('#btnVistaCalendario').on('click', function() {
@@ -587,6 +711,70 @@
           });
           calendar.render();
         }
+
+        // ==========================================
+        // LÓGICA AJAX PARA BÚSQUEDA Y PAGINACIÓN EN VIVO (Adaptado de Farmacia)
+        // ==========================================
+        window.cargarDatosAjax = function(url) {
+          $('.tbody').css('opacity', '0.4'); // Efecto de carga visual
+
+          $.get(url, function(data) {
+            var htmlParsed = $(data);
+
+            // Inyectamos el tbody y la paginación de la respuesta
+            $('.tbody').html(htmlParsed.find('.tbody').html()).css('opacity', '1');
+            $('nav[aria-label="Page navigation"]').html(htmlParsed.find('nav[aria-label="Page navigation"]').html());
+
+            // Actualizar URL del navegador silenciosamente
+            window.history.pushState(null, '', url);
+          }).fail(function() {
+            alert("Error de conexión al aplicar filtros.");
+            $('.tbody').css('opacity', '1');
+          });
+        };
+
+        // Búsqueda Rápida con KeyUp
+        let timerBusqueda;
+        $('#buscar').on('keyup', function() {
+          clearTimeout(timerBusqueda);
+          let query = $(this).val();
+          timerBusqueda = setTimeout(function() {
+            // Cambia "citas_medicas_listado.php" por el nombre real de tu archivo de citas si difiere
+            var url = 'citas_medicas_listado.php?buscar=' + encodeURIComponent(query);
+            cargarDatosAjax(url);
+          }, 400);
+        });
+
+        // Prevenir recarga total del form de búsqueda rápida
+        $('#formBusquedaRapida').on('submit', function(e) {
+          e.preventDefault();
+        });
+
+        // Interceptar Búsqueda Avanzada (Formulario del Modal)
+        $('#formBusquedaAvanzada').on('submit', function(e) {
+          e.preventDefault();
+          var url = 'citas_medicas_listado.php?' + $(this).serialize();
+          $('#modalBusquedaAvanzada').modal('hide');
+          cargarDatosAjax(url);
+        });
+
+        // Interceptar la paginación para hacerla dinámica
+        $(document).on('click', 'nav[aria-label="Page navigation"] .pagination a', function(e) {
+          e.preventDefault();
+          var url = $(this).attr('href');
+          if (url) {
+            cargarDatosAjax(url);
+          }
+        });
+
+        // Limpiar filtros via AJAX
+        window.limpiarFiltrosAjax = function() {
+          $('#formBusquedaAvanzada')[0].reset();
+          $('#buscar').val('');
+          var urlLimpia = window.location.href.split('?')[0];
+          cargarDatosAjax(urlLimpia);
+          $('#modalBusquedaAvanzada').modal('hide');
+        };
 
         // Script para mostrar los modales de sesión
         <?php if ($mostrar_modal_exito) : ?>
