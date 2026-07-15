@@ -753,12 +753,16 @@
         $('#loader-modal-estados').show();
         $('#modalListadoEstados').modal('show');
 
+        // Recolectar datos de filtros (Búsqueda rápida + Búsqueda avanzada)
+        var busquedaRapida = $('#buscar').val();
+        var filtrosAvanzados = $('#formBusquedaAvanzada').serialize(); // Captura todo el form modal
+        
+        // Unir todos los datos para enviarlos por GET
+        var datosAjax = filtrosAvanzados + '&buscar=' + encodeURIComponent(busquedaRapida) + '&estado=' + encodeURIComponent(estado);
+
         $.ajax({
-          url: '../../cfg/ajax/get_recetas_por_estado.php',
+          url: '../../cfg/ajax/get_recetas_por_estado.php?' + datosAjax,
           type: 'GET',
-          data: {
-            estado: estado
-          },
           success: function(response) {
             $('#loader-modal-estados').hide();
             $('#contenido-modal-estados').html(response);

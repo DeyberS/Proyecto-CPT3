@@ -85,23 +85,82 @@ $sql_base = "
         GROUP BY sm.id_solicitud
 ";
 
-// Adaptamos el filtro de estado (Manejo de variaciones de texto)
-$filtro = "";
+// =======================================================
+// LÓGICA DE FILTRADOS (Heredada del CRUD principal)
+// =======================================================
+$busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+$f_desde = isset($_GET['f_desde']) ? mysqli_real_escape_string($conexion, $_GET['f_desde']) : '';
+$f_hasta = isset($_GET['f_hasta']) ? mysqli_real_escape_string($conexion, $_GET['f_hasta']) : '';
+$f_tipo_ced = isset($_GET['f_tipo_ced']) ? mysqli_real_escape_string($conexion, $_GET['f_tipo_ced']) : '';
+$f_cedula = isset($_GET['f_cedula']) ? mysqli_real_escape_string($conexion, $_GET['f_cedula']) : '';
+$f_paciente = isset($_GET['f_paciente']) ? mysqli_real_escape_string($conexion, $_GET['f_paciente']) : '';
+$f_doctor = isset($_GET['f_doctor']) ? mysqli_real_escape_string($conexion, $_GET['f_doctor']) : '';
+$f_medicamento = isset($_GET['f_medicamento']) ? mysqli_real_escape_string($conexion, $_GET['f_medicamento']) : '';
+$f_sexo_pac = isset($_GET['f_sexo_pac']) ? mysqli_real_escape_string($conexion, $_GET['f_sexo_pac']) : '';
+$f_sexo_med = isset($_GET['f_sexo_med']) ? mysqli_real_escape_string($conexion, $_GET['f_sexo_med']) : '';
+$f_cant_min = isset($_GET['f_cant_min']) ? (int)$_GET['f_cant_min'] : 0;
+$f_cant_max = isset($_GET['f_cant_max']) ? (int)$_GET['f_cant_max'] : 0;
+
+// Empezamos determinando el estado principal que requiere el Modal
 if ($estado_requerido == 'Cancelado') {
-    $filtro = "WHERE estado_entrega IN ('Cancelado', 'no entregado', 'No entregado')";
+    $donde = " WHERE estado_entrega IN ('Cancelado', 'no entregado', 'No entregado')";
 } elseif ($estado_requerido == 'Parcial') {
-    $filtro = "WHERE estado_entrega IN ('Parcial', 'Parcialmente Entregado')";
+    $donde = " WHERE estado_entrega IN ('Parcial', 'Parcialmente Entregado')";
 } elseif ($estado_requerido == 'Pendiente') {
-    $filtro = "WHERE estado_entrega IN ('Pendiente', 'pendiente')";
+    $donde = " WHERE estado_entrega IN ('Pendiente', 'pendiente')";
 } elseif ($estado_requerido == 'Entregado') {
-    // CORREGIDO: Al pedir 'Entregado', la query buscará tanto los calculados internos como los strings externos
-    $filtro = "WHERE estado_entrega IN ('Entregado', 'entregado', 'Completado', 'Completada', 'completado')";
+    $donde = " WHERE estado_entrega IN ('Entregado', 'entregado', 'Completado', 'Completada', 'completado')";
 } else {
-    $filtro = "WHERE estado_entrega = '$estado_requerido'";
+    $donde = " WHERE estado_entrega = '$estado_requerido'";
 }
 
-$query = "SELECT * FROM ($sql_base) AS base_unificada $filtro ORDER BY fecha_solicitud DESC";
+// Aplicamos los filtros extras si existen
+if ($busqueda != '') {
+    $donde .= " AND (nom_pac LIKE '%$busqueda%' 
+               OR ape_pac LIKE '%$busqueda%' 
+               OR CONCAT(nom_pac, ' ', ape_pac) LIKE '%$busqueda%'
+               OR cedula_pac LIKE '%$busqueda%' 
+               OR nombre_medicamento LIKE '%$busqueda%')";
+}
+if ($f_desde != '') {
+    $donde .= " AND fecha_solicitud >= '$f_desde'";
+}
+if ($f_hasta != '') {
+    $donde .= " AND fecha_solicitud <= '$f_hasta'";
+}
+if ($f_tipo_ced != '') {
+    $donde .= " AND tipo_cedula_pac = '$f_tipo_ced'";
+}
+if ($f_cedula != '') {
+    $donde .= " AND cedula_pac LIKE '%$f_cedula%'";
+}
+if ($f_paciente != '') {
+    $donde .= " AND CONCAT(nom_pac, ' ', ape_pac) LIKE '%$f_paciente%'";
+}
+if ($f_doctor != '') {
+    $donde .= " AND CONCAT(nom_med, ' ', ape_med) LIKE '%$f_doctor%'";
+}
+if ($f_medicamento != '') {
+    $donde .= " AND nombre_medicamento LIKE '%$f_medicamento%'";
+}
+if ($f_sexo_pac != '') {
+    $donde .= " AND genero_pac = '$f_sexo_pac'";
+}
+if ($f_sexo_med != '') {
+    $donde .= " AND genero_med = '$f_sexo_med'";
+}
+if ($f_cant_min > 0) {
+    $donde .= " AND nombre_medicamento REGEXP 'Cant: ([0-9]+)' AND CAST(REGEXP_SUBSTR(nombre_medicamento, '(?<=Cant: )[0-9]+') AS UNSIGNED) >= $f_cant_min";
+}
+if ($f_cant_max > 0) {
+    $donde .= " AND nombre_medicamento REGEXP 'Cant: ([0-9]+)' AND CAST(REGEXP_SUBSTR(nombre_medicamento, '(?<=Cant: )[0-9]+') AS UNSIGNED) <= $f_cant_max";
+}
+
+// Armamos el Query Final combinando todo
+$query = "SELECT * FROM ($sql_base) AS base_unificada $donde ORDER BY fecha_solicitud DESC";
 $resultado = mysqli_query($conexion, $query);
+
+// ... El resto del código de la tabla se mantiene igual ($resultado = mysqli_query...)
 
 echo '<table class="table table-sm table-hover" width="100%" style="font-size: 12px;">';
 echo '<thead class="table-dark" style="background-color: #222; color: white;"><tr><th>Fecha</th><th>Paciente</th><th>Médico</th><th>Medicamento</th><th class="text-center">Estado</th><th class="text-center">Acciones</th></tr></thead><tbody>';

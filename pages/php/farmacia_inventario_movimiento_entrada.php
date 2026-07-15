@@ -1328,13 +1328,10 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
         });
       };
 
-      // -------------------------------------------------------------
-      // AGREGAR O EDITAR EN LA LISTA DE DETALLES
-      // -------------------------------------------------------------
       $('#btnConfirmarAgregarMedicamento').on('click', function() {
         const id_med = $('#Id_descripcion_medicamento').val();
         const nombre_med = $('#Id_descripcion_medicamento option:selected').data('nombre');
-        const componentes = $('#Id_descripcion_medicamento option:selected').data('componentes'); // Capturamos Principios Activos
+        const componentes = $('#Id_descripcion_medicamento option:selected').data('componentes');
         const lote = $('#lote').val().trim().toUpperCase();
         const f_fab = $('#fecha_fabricacion').val();
         const f_venc = $('#fecha_vencimiento').val();
@@ -1342,7 +1339,6 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
         const existencia = parseInt($('#existencia_actual').val()) || 0;
         const sMin = parseInt($('#stock_minimo').val()) || 0;
         const sMax = parseInt($('#stock_maximo').val()) || 0;
-        const totalProyectado = existencia + cant;
 
         $('.modal-body input, .modal-body select').removeClass('input-error');
 
@@ -1366,29 +1362,47 @@ $numero_proyectado = str_pad($proximo_id, 6, "0", STR_PAD_LEFT);
           mostrarAviso('Ingrese la fecha de vencimiento.');
           return;
         }
-        // 1. Bloqueo total: Si la existencia ya supera o iguala el stock máximo
-        if (sMax > 0 && existencia >= sMax) {
-          $('#Id_descripcion_medicamento, #cantidad').addClass('input-error');
-          mostrarAviso(`🚫 <b>Acción denegada:</b> No puedes ingresar este medicamento. La existencia actual (${existencia}) ya alcanzó o superó el Stock Máximo permitido (${sMax}).`);
-          return;
-        }
-        // 2. Advertencia de límite: Si la cantidad a ingresar empuja el inventario por encima del límite
-        if (sMax > 0 && totalProyectado > sMax) {
-          $('#cantidad').addClass('input-error');
-          let permitido = sMax - existencia; // Calculamos cuánto es lo máximo que puede ingresar
-          mostrarAviso(`⚠️ <b>Límite excedido:</b> Intentas ingresar demasiadas unidades.<br><br>Actualmente hay ${existencia} unidades y el máximo es ${sMax}. <b>Solo puedes ingresar un máximo de ${permitido} unidades nuevas.</b>`);
-          return;
-        }
-        if (sMin > 0 && totalProyectado < sMin) {
-          $('#cantidad').addClass('input-error');
-          mostrarAviso(`La cantidad ingresada no cubre el Stock Mínimo requerido (${sMin}). Actualmente hay ${existencia} unidades. Debes ingresar al menos ${sMin - existencia} unidades para estabilizar el inventario.`);
-          return;
-        }
         if (isNaN(cant) || cant <= 0) {
           $('#cantidad').addClass('input-error');
           mostrarAviso('La cantidad debe ser mayor a 0.');
           return;
         }
+
+        // -----------------------------------------------------------------------------
+        // NUEVA LÓGICA: Calcular lo que ya está en la lista para este medicamento
+        // -----------------------------------------------------------------------------
+        let cantidadAcumuladaLista = 0;
+        listaDetalles.forEach((item, index) => {
+          // Sumamos solo si es el mismo medicamento y NO es la fila que estamos editando
+          if (item.id_medicamento === id_med && index !== editandoIndex) {
+            cantidadAcumuladaLista += parseInt(item.cantidad) || 0;
+          }
+        });
+
+        const inventarioActualMasLista = existencia + cantidadAcumuladaLista;
+        const totalProyectado = inventarioActualMasLista + cant;
+
+        // 1. Bloqueo total: Si la existencia + lo de la lista ya supera el máximo
+        if (sMax > 0 && inventarioActualMasLista >= sMax) {
+          $('#Id_descripcion_medicamento, #cantidad').addClass('input-error');
+          mostrarAviso(`🚫 <b>Acción denegada:</b> La existencia actual (${existencia}) más lo que ya tienes en la tabla (${cantidadAcumuladaLista}) ya alcanzó o superó el Stock Máximo permitido (${sMax}).`);
+          return;
+        }
+
+        // 2. Advertencia de límite: Si lo que intentas agregar supera el espacio restante
+        if (sMax > 0 && totalProyectado > sMax) {
+          $('#cantidad').addClass('input-error');
+          let permitido = sMax - inventarioActualMasLista;
+          mostrarAviso(`⚠️ <b>Límite excedido:</b> Actualmente hay ${existencia} unidades y ${cantidadAcumuladaLista} ya agregadas en la tabla.<br><br>El máximo es ${sMax}. <b>Solo puedes ingresar un máximo de ${permitido} unidades nuevas adicionales.</b>`);
+          return;
+        }
+
+        if (sMin > 0 && totalProyectado < sMin) {
+          $('#cantidad').addClass('input-error');
+          mostrarAviso(`La cantidad ingresada no cubre el Stock Mínimo requerido (${sMin}). Actualmente hay ${existencia} unidades. Debes ingresar al menos ${sMin - inventarioActualMasLista} unidades para estabilizar el inventario.`);
+          return;
+        }
+        
         if (f_venc <= hoy) {
           $('#fecha_vencimiento').addClass('input-error');
           mostrarAviso('El medicamento ya está vencido.');

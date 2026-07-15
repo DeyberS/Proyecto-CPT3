@@ -480,8 +480,8 @@ if (isset($_POST['ajax_nueva_alergia'])) {
                   </div>
                   <label class="control-label"></label>
                   <div class="col-sm-3">
-                    <p>Email del Rep:</p>
-                    <input type="email_rep" class="form-control" name="email_rep" id="email_rep" placeholder="nombreapellido2@gmail.com">
+                    <p>Correo del Rep:</p>
+                    <input type="email_rep" class="form-control" name="email_rep" id="email_rep" placeholder="nombreapellido2@gmail.com" required>
                   </div>
                   <br><br><br><br>
                   <label class="control-label"></label>

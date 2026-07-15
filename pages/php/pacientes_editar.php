@@ -504,8 +504,8 @@ if (isset($_POST['ajax_nuevo_sintoma'])) {
                     </div>
                     <label class="control-label"></label>
                     <div class="col-sm-4">
-                      <p>Email:</p>
-                      <input type="email" class="form-control" name="email" value="<?php echo $row['email']; ?>" id="email" placeholder="nombreapellido2@gmail.com">
+                      <p>Correo:</p>
+                      <input type="email" class="form-control" name="email" value="<?php echo $row['email']; ?>" id="email" placeholder="nombreapellido2@gmail.com" required>
                     </div>
                     <div style="float:right; margin-top:5%;">
                       <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalConfirmarRegreso">Regresar</button>

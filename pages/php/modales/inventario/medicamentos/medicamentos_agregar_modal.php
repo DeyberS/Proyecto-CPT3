@@ -696,7 +696,7 @@ if (isset($_GET['duplicar_id'])) {
               $('#med_modalNuevoLaboratorio').modal('hide');
               $('#med_nombre_lab_nuevo').val('');
               $('#laboratorio').append('<option value="' + response + '" selected>' + nombre + '</option>');
-              mostrarAviso("Laboratorio guardado correctamente");
+              mostrarExito("Laboratorio guardado correctamente");
             } else {
               mostrarAviso("Error al guardar el laboratorio");
             }
@@ -724,7 +724,7 @@ if (isset($_GET['duplicar_id'])) {
               let nuevaOpcion = `<option value="${response}" data-nombre="${nombre}">${nombre}</option>`;
               $('.med-select-pa').append(nuevaOpcion);
               $('#med_nombre_pa_nuevo, #med_desc_pa_nuevo').val('');
-              mostrarAviso("Principio Activo guardado con éxito");
+              mostrarExito("Principio Activo guardado con éxito");
             } else {
               mostrarAviso("Error al guardar en DB");
             }
@@ -754,7 +754,7 @@ if (isset($_GET['duplicar_id'])) {
               let nuevaOpcion = `<option value="${response}">${nombre}</option>`;
               $('.med-select-pat').append(nuevaOpcion);
               $('#med_nombre_pat_nuevo, #med_cie_pat_nuevo').val('');
-              mostrarAviso("Patología guardada con éxito");
+              mostrarExito("Patología guardada con éxito");
             } else {
               mostrarAviso("Error al guardar en DB (Posible código CIE duplicado)");
             }
