@@ -190,7 +190,7 @@
               </select>
             </div>
             <div class="col-sm-5 form-group">
-              <label>Email (*):</label>
+              <label>Correo (*):</label>
               <input type="email" class="form-control rep-auto" name="rep_email" id="rep_email" placeholder="correo@ejemplo.com" required>
             </div>
             <div class="col-sm-3 form-group">

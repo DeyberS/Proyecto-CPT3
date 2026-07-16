@@ -125,7 +125,7 @@
                 <input type="text" class="form-control solo-numeros-ext" name="ext_telefono" id="ext_telefono" placeholder="Número" maxlength="7" required>
               </div>
               <div class="col-sm-6 form-group">
-                <label>Email (*):</label>
+                <label>Correo (*):</label>
                 <input type="email" class="form-control" name="ext_email" id="ext_email" placeholder="correo@gmail.com" required>
               </div>
             </div>

@@ -55,6 +55,9 @@ $resultado = mysqli_query($conexion, $sql);
 // CLASE EXTENDIDA PARA MEMBRETE Y PIE DE PÁGINA
 class MYPDF extends TCPDF {
     public function Header() {
+        // 1. Forzar el inicio del membrete más abajo (a 15mm del borde superior)
+        $this->SetY(15); 
+        
         $this->SetFont('helvetica', 'B', 14);
         $this->SetTextColor(0, 121, 107); // Verde Teal
         $this->Cell(0, 10, 'CONSULTORIO POPULAR TIPO 3 - PACIENTES', 0, false, 'C', 0, '', 0, false, 'M', 'M');
@@ -64,7 +67,8 @@ class MYPDF extends TCPDF {
         $this->Cell(0, 10, 'Registro Demográfico de Pacientes', 0, false, 'C', 0, '', 0, false, 'M', 'M');
         
         $style = array('width' => 0.5, 'color' => array(0, 121, 107));
-        $this->Line(15, 22, $this->getPageWidth()-15, 22, $style);
+        // 2. Bajar la línea decorativa a la coordenada Y = 32 (antes estaba en 22)
+        $this->Line(15, 32, $this->getPageWidth()-15, 32, $style);
     }
     public function Footer() {
         $this->SetY(-15);
@@ -77,7 +81,8 @@ class MYPDF extends TCPDF {
 // CONFIGURACIÓN DEL PDF
 $pdf = new MYPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 $pdf->SetTitle($titulo); //[cite: 3]
-$pdf->SetMargins(15, 30, 15);
+$pdf->SetMargins(15, 40, 15); 
+$pdf->SetHeaderMargin(15);
 $pdf->SetAutoPageBreak(TRUE, 15);
 $pdf->AddPage(); //[cite: 3]
 
@@ -86,8 +91,8 @@ $html = '
     h2 { text-align: center; color: #333333; font-size: 14pt; margin-bottom: 2px; }
     h4 { text-align: center; color: #666666; font-size: 11pt; font-weight: normal; margin-top: 0px; margin-bottom: 15px; }
     table { border-collapse: collapse; width: 100%; }
-    th { background-color: #00796B; color: white; font-weight: bold; text-align: center; border: 1px solid #cccccc; }
-    td { border: 1px solid #cccccc; text-align: center; font-size: 10pt; color: #333333; }
+    th { background-color: #00796B; color: white; font-weight: bold; font-size: 7pt; text-align: center; border: 1px solid #cccccc; }
+    td { border: 1px solid #cccccc; text-align: center; font-size: 7pt; color: #333333; }
     .row-even { background-color: #f2f9f9; }
     .row-odd { background-color: #ffffff; }
 </style>

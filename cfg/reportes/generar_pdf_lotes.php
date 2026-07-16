@@ -58,6 +58,7 @@ $resultado = mysqli_query($conexion, $sql);
 // 2. CLASE EXTENDIDA PARA MEMBRETE (DISEÑO FARMACIA)
 class MYPDF extends TCPDF {
     public function Header() {
+        $this->SetY(15); 
         $this->SetFont('helvetica', 'B', 14);
         $this->SetTextColor(30, 132, 73); // Verde Esmeralda Clínico
         $this->Cell(0, 10, 'CONSULTORIO POPULAR TIPO 3 - SERVICIO DE FARMACIA', 0, false, 'C', 0, '', 0, false, 'M', 'M');
@@ -66,7 +67,7 @@ class MYPDF extends TCPDF {
         $this->SetTextColor(100, 100, 100);
         $this->Cell(0, 10, 'Control y Gestión de Lotes de Medicamentos', 0, false, 'C', 0, '', 0, false, 'M', 'M');
         $style = array('width' => 0.5, 'color' => array(30, 132, 73));
-        $this->Line(15, 22, $this->getPageWidth()-15, 22, $style);
+        $this->Line(15, 32, $this->getPageWidth()-15, 32, $style);
     }
     public function Footer() {
         $this->SetY(-15);
@@ -79,7 +80,8 @@ class MYPDF extends TCPDF {
 // 3. CONFIGURACIÓN DEL PDF
 $pdf = new MYPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 $pdf->SetTitle($titulo);
-$pdf->SetMargins(15, 30, 15);
+$pdf->SetMargins(15, 40, 15); 
+$pdf->SetHeaderMargin(15);
 $pdf->SetAutoPageBreak(TRUE, 15);
 $pdf->AddPage();
 
@@ -88,8 +90,8 @@ $html = '
     h2 { text-align: center; color: #1E8449; font-size: 14pt; margin-bottom: 2px; }
     h4 { text-align: center; color: #666666; font-size: 11pt; font-weight: normal; margin-top: 0px; margin-bottom: 15px; }
     table { border-collapse: collapse; width: 100%; }
-    th { background-color: #27AE60; color: white; font-weight: bold; text-align: center; border: 1px solid #cccccc; }
-    td { border: 1px solid #cccccc; text-align: center; font-size: 10pt; color: #333333; }
+    th { background-color: #27AE60; color: white; font-weight: bold; font-size: 7pt; text-align: center; border: 1px solid #cccccc; }
+    td { border: 1px solid #cccccc; text-align: center; font-size: 7pt; color: #333333; }
     .row-even { background-color: #e9f7ef; }
     .row-odd { background-color: #ffffff; }
     .alerta-roja { color: #c0392b; font-weight: bold; }
