@@ -1,0 +1,260 @@
+<?php
+include("../../cfg/conexion.php");
+include('includes/headerNav2.php');
+verificarAcceso('Ver Pedidos'); // Puedes cambiar a 'Gestionar Vacunas'
+?>
+
+<head>
+  <title>Pedidos de Vacunas | Listado</title>
+</head>
+
+<style>
+  .table-scroll-container { max-height: 250px; overflow-y: auto; border-bottom: 1px solid #eee; }
+  .table-scroll-container::-webkit-scrollbar { width: 6px; }
+  .table-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
+  .table-scroll-container::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 5px; }
+</style>
+
+<div class="content-wrapper">
+  <?php
+  $registros_por_pagina = 9;
+  $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+  $inicio = ($pagina_actual - 1) * $registros_por_pagina;
+
+  $busqueda = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+
+  // SIMULACIÓN: Cuando tengas la BD real, descomenta las consultas.
+  /*
+  $donde = "WHERE p.estatus = 1";
+  if ($busqueda != '') {
+    $donde .= " AND (prov.nombre_proveedor LIKE '%$busqueda%' 
+                  OR per.nombre LIKE '%$busqueda%' 
+                  OR p.estado LIKE '%$busqueda%'
+                  OR p.id_pedido LIKE '%$busqueda%')";
+  }
+  $sql_conteo = "SELECT COUNT(p.id_pedido) as total 
+                   FROM pedidos p
+                   INNER JOIN proveedor prov ON p.id_proveedor = prov.Id_proveedor
+                   INNER JOIN persona per ON p.id_usuario = per.id
+                   $donde";
+  $resultado_conteo = mysqli_query($conexion, $sql_conteo);
+  $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
+  $total_registros = $fila_conteo['total'];
+  */
+  
+  $total_registros = 3; // Simulado
+  $total_paginas = ceil($total_registros / $registros_por_pagina);
+  ?>
+
+  <section class="content-header">
+    <h1>
+      Pedidos de Vacunas (<?php echo $total_registros; ?> Registros)
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
+      <li><a href="#"><i class="fa fa-medkit"></i>Inmunización</a></li>
+      <li class="active"><a href="#"><i class="fa fa-list"></i>Pedidos</a></li>
+    </ol>
+  </section>
+
+  <section class="content">
+    <div style="padding-bottom: 10px;">
+      <!-- BOTÓN CREAR PEDIDO -->
+      <a href="vacunacion_pedidos_crear.php" class="btn-sm btn-success pull-right"><i class="fa fa-plus"></i> Nuevo Pedido</a>
+
+      <form method="GET" action="" style="display: inline-block;">
+        <input type="text" id="buscar" name="buscar" class="form-control pull-left" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Buscar pedido..." value="<?php echo htmlspecialchars($busqueda); ?>" style="width: 250px;" autocomplete="off">
+      </form>
+    </div>
+
+    <div id="contenedorTabla">
+      <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
+        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+          <tr>
+            <th class="text-center">N° Pedido</th>
+            <th>Fecha de Solicitud</th>
+            <th>Proveedor / Donante</th>
+            <th>Solicitado Por</th>
+            <th class="text-center">Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="tbody" style="font-size: 13px;">
+          
+          <!-- ======================================================= -->
+          <!-- SIMULACIÓN DE DATOS (BORRAR CUANDO CONECTES LA BD REAL) -->
+          <!-- ======================================================= -->
+          
+          <!-- PEDIDO 1: PENDIENTE -->
+          <tr>
+            <td class="text-center"><strong>#000001</strong></td>
+            <td>01/11/2026 10:00 AM</td>
+            <td>SUAF Portuguesa</td>
+            <td>Lic. María Rodríguez</td>
+            <td class="text-center"><small class="badge bg-yellow">Pendiente</small></td>
+            <td class="text-center">
+              <a href="javascript:void(0);" onclick="abrirModalDetalle(1, 'Pendiente', 1)" class="btn-sm btn-info" title="Ver Artículos"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
+              <?php if (in_array('Generar reportes de pedidos', $_SESSION["permisos"])) : ?>
+                <a target="_blank" href="#" class="btn-sm btn-primary" title="Imprimir PDF del Pedido"><img src="../../recursos/imagenes/iconos/documento.png" style="width:15px; height:15px;"></a>
+              <?php endif; ?>
+              <a href="javascript:void(0);" onclick="abrirModalCancelar(1)" class="btn-sm btn-danger" title="Cancelar Pedido"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
+            </td>
+          </tr>
+
+          <!-- PEDIDO 2: RECIBIDO -->
+          <tr>
+            <td class="text-center"><strong>#000002</strong></td>
+            <td>28/10/2026 09:30 AM</td>
+            <td>Ministerio de Salud</td>
+            <td>Enf. Carlos Pérez</td>
+            <td class="text-center"><small class="badge bg-green">Recibido</small></td>
+            <td class="text-center">
+              <a href="javascript:void(0);" onclick="abrirModalDetalle(2, 'Recibido', 2)" class="btn-sm btn-info" title="Ver Artículos"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
+              <?php if (in_array('Generar reportes de pedidos', $_SESSION["permisos"])) : ?>
+                <a target="_blank" href="#" class="btn-sm btn-primary" title="Imprimir PDF del Pedido"><img src="../../recursos/imagenes/iconos/documento.png" style="width:15px; height:15px;"></a>
+              <?php endif; ?>
+              <a href="#" class="btn-sm" style="background-color: gray;" title="No se puede cancelar en este estado"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px; opacity: 0.5;"></a>
+            </td>
+          </tr>
+
+          <!-- PEDIDO 3: CANCELADO -->
+          <tr>
+            <td class="text-center"><strong>#000003</strong></td>
+            <td>25/10/2026 03:15 PM</td>
+            <td>SUAF Portuguesa</td>
+            <td>Lic. María Rodríguez</td>
+            <td class="text-center"><small class="badge bg-crimson">Cancelado</small></td>
+            <td class="text-center">
+              <a href="javascript:void(0);" onclick="abrirModalDetalle(3, 'Cancelado', 1)" class="btn-sm btn-info" title="Ver Artículos"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
+              <?php if (in_array('Generar reportes de pedidos', $_SESSION["permisos"])) : ?>
+                <a target="_blank" href="#" class="btn-sm btn-primary" title="Imprimir PDF del Pedido"><img src="../../recursos/imagenes/iconos/documento.png" style="width:15px; height:15px;"></a>
+              <?php endif; ?>
+              <a href="#" class="btn-sm" style="background-color: gray;" title="No se puede cancelar en este estado"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px; opacity: 0.5;"></a>
+            </td>
+          </tr>
+          <!-- FIN DE LA SIMULACIÓN -->
+          
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINACIÓN (Mantenida) -->
+    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+      <ul class="pagination">
+        <?php
+        $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
+
+        if ($pagina_actual > 1) : ?>
+          <li><a href="?pagina=1<?php echo $query_string; ?>">&laquo;&laquo;</a></li>
+          <li><a href="?pagina=<?php echo ($pagina_actual - 1) . $query_string; ?>">&laquo;</a></li>
+        <?php endif;
+
+        $rango = 2;
+        $inicio_ventana = max(1, $pagina_actual - $rango);
+        $fin_ventana = min($total_paginas, $pagina_actual + $rango);
+
+        for ($i = $inicio_ventana; $i <= $fin_ventana; $i++) : ?>
+          <li class="<?php echo ($i == $pagina_actual) ? 'active' : ''; ?>">
+            <a href="?pagina=<?php echo $i . $query_string; ?>"><?php echo $i; ?></a>
+          </li>
+        <?php endfor;
+
+        if ($pagina_actual < $total_paginas) : ?>
+          <li><a href="?pagina=<?php echo ($pagina_actual + 1) . $query_string; ?>">&raquo;</a></li>
+          <li><a href="?pagina=<?php echo $total_paginas . $query_string; ?>">&raquo;&raquo;</a></li>
+        <?php endif; ?>
+      </ul>
+    </nav>
+  </section>
+
+  <!-- MODAL DETALLE PEDIDO -->
+  <div class="modal fade" id="modalDetallePedido" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title"><i class="fa fa-shopping-basket"></i> Detalle del Pedido <span id="num_pedido_titulo"></span></h4>
+        </div>
+        <div class="modal-body">
+          <div class="table-scroll-container">
+            <table class="table table-bordered table-striped" style="margin-bottom: 0;">
+              <thead style="background-color: #f8f9fa;">
+                <tr>
+                  <th>Vacuna / Presentación</th>
+                  <th class="text-center" style="width: 150px;">Cant. Solicitada</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo_detalle_pedido"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a href="#" id="btnProcesarPedidoModal" class="btn btn-success pull-left" style="display:none;"><i class="fa fa-arrow-circle-right"></i> Procesar Entrada de este Pedido</a>
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CANCELAR PEDIDO -->
+  <div class="modal fade" id="modalCancelarPedido" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i>Confirmación de Cancelación</h4>
+        </div>
+        <form action="../../cfg/procesar_pedidos.php" method="POST">
+          <div class="modal-body">
+            <p style="font-size: 15px;">¿Está seguro que desea cancelar el <strong>Pedido #<span id="display_id_cancelar"></span></strong>?</p>
+            <p class="text-muted small">Esta acción marcará el pedido como "Cancelado" y no podrá ser procesado en Entradas.</p>
+            <input type="hidden" name="op" value="cancelar_pedido">
+            <input type="hidden" name="id_pedido" id="id_pedido_cancelar_input">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-danger">Aceptar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<?php include('includes/footer.php'); ?>
+
+<script>
+  function abrirModalDetalle(idPedido, estado, idProveedor) {
+    let idFormateado = idPedido.toString().padStart(6, '0');
+    $('#num_pedido_titulo').text('#' + idFormateado);
+    $('#cuerpo_detalle_pedido').html('<tr><td colspan="2" class="text-center"><i class="fa fa-spinner fa-spin"></i> Cargando...</td></tr>');
+
+    if (estado === 'Pendiente') {
+      // Redirige al formulario de entrada de vacunas con los parámetros del pedido
+      $('#btnProcesarPedidoModal').show().attr('href', 'vacunacion_inventario_movimiento_entrada.php?id_pedido_auto=' + idPedido + '&id_proveedor_auto=' + idProveedor);
+    } else {
+      $('#btnProcesarPedidoModal').hide();
+    }
+
+    $('#modalDetallePedido').removeClass('out').addClass('in').modal('show');
+
+    // SIMULACIÓN DE CARGA DE DETALLE (En lugar de AJAX)
+    setTimeout(function() {
+      var html = '';
+      if (idPedido == 1) {
+        html += '<tr><td><strong>Antipoliomielítica (VPI)</strong><br><small class="text-muted">1 Dosis</small></td><td class="text-center"><span class="badge bg-primary" style="font-size: 14px;">500</span></td></tr>';
+        html += '<tr><td><strong>Antisarampión (SRP)</strong><br><small class="text-muted">10 Dosis</small></td><td class="text-center"><span class="badge bg-primary" style="font-size: 14px;">200</span></td></tr>';
+      } else if (idPedido == 2) {
+        html += '<tr><td><strong>Vacuna BCG</strong><br><small class="text-muted">20 Dosis</small></td><td class="text-center"><span class="badge bg-primary" style="font-size: 14px;">300</span></td></tr>';
+      } else {
+        html = '<tr><td colspan="2" class="text-center text-muted">No se encontraron productos.</td></tr>';
+      }
+      $('#cuerpo_detalle_pedido').html(html);
+    }, 500);
+  }
+
+  function abrirModalCancelar(idPedido) {
+    document.getElementById('id_pedido_cancelar_input').value = idPedido;
+    document.getElementById('display_id_cancelar').textContent = idPedido.toString().padStart(6, '0');
+    $('#modalCancelarPedido').removeClass('out').addClass('in').modal('show');
+  }
+</script>

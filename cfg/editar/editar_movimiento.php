@@ -1,0 +1,165 @@
+﻿<?php
+include("../conexion.php");
+session_start();
+
+$op = $_POST['op'] ?? '';
+$id_detalle = isset($_POST['Id']) ? intval($_POST['Id']) : 0;
+
+if ($id_detalle == 0 || empty($op)) {
+    die("Error: Datos insuficientes para procesar la solicitud.");
+}
+
+$conexion->begin_transaction();
+
+try {
+    if ($op == 'editar_entrada') {
+        $id_desc = $_POST['Id_descripcion_medicamento'];
+        $proveedor = $_POST['proveedor'];
+        $lote_nombre = $_POST['lote'];
+        $cantidad_nueva = intval($_POST['cantidad']);
+        $f_fab = $_POST['fecha_fabricacion'];
+        $f_ven = $_POST['fecha_vencimiento'];
+        $obs = $_POST['observaciones'];
+
+        $sql_antiguo = "SELECT Id_lote, cantidad, stock_momento FROM medicamentos_detalle_inventario WHERE Id_detalle_inventario = ?";
+        $stmt_ant = $conexion->prepare($sql_antiguo);
+        $stmt_ant->bind_param("i", $id_detalle);
+        $stmt_ant->execute();
+        $res_ant = $stmt_ant->get_result();
+        $datos_ant = $res_ant->fetch_assoc();
+
+        if (!$datos_ant) {
+            throw new Exception("⚠️ No se encontró el registro original del movimiento.");
+        }
+
+        $id_lote = $datos_ant['Id_lote'];
+        $cantidad_anterior = $datos_ant['cantidad'];
+
+        if ($cantidad_nueva <= 0) { throw new Exception("⚠️ La cantidad debe ser mayor a cero."); }
+
+        $res_stk = $conexion->query("SELECT cantidad_actual FROM existencias_stock WHERE Id_lote = $id_lote");
+        $stock_global = $res_stk->fetch_assoc()['cantidad_actual'];
+
+        $diferencia = $cantidad_nueva - $cantidad_anterior;
+
+        if (($stock_global + $diferencia) < 0) {
+            throw new Exception("⚠️ No puedes reducir tanto la entrada porque ya se ha despachado parte de ese stock. Stock actual: $stock_global");
+        }
+
+        $stmt1 = $conexion->prepare("UPDATE lotes_medicamentos SET Id_proveedor = ?, Lote = ?, fecha_fabricacion = ?, fecha_vencimiento = ? WHERE Id = ?");
+        $stmt1->bind_param("isssi", $proveedor, $lote_nombre, $f_fab, $f_ven, $id_lote);
+        $stmt1->execute();
+
+        $stmt2 = $conexion->prepare("UPDATE detalle_inventario SET observaciones = ? WHERE Id_detalle_inventario = ?");
+        $stmt2->bind_param("si", $obs, $id_detalle);
+        $stmt2->execute();
+
+        $stmt3 = $conexion->prepare("UPDATE medicamentos_detalle_inventario SET cantidad = ?, stock_momento = ? WHERE Id_detalle_inventario = ?");
+        $stmt3->bind_param("iii", $cantidad_nueva, $cantidad_nueva, $id_detalle);
+        $stmt3->execute();
+
+        $diferencia = $cantidad_nueva - $cantidad_anterior;
+        
+        $sql_stock = "UPDATE existencias_stock SET cantidad_actual = cantidad_actual + ? WHERE Id_lote = ? AND Id_descripcion_medicamento = ?";
+        $stmt_stk = $conexion->prepare($sql_stock);
+        $stmt_stk->bind_param("iii", $diferencia, $id_lote, $id_desc);
+        $stmt_stk->execute();
+
+        
+    }
+
+    if ($op == 'editar_salida') {
+        $cantidad_nueva = intval($_POST['cantidad']);
+        $razon = $_POST['observaciones'];
+
+        $sql_ant = "SELECT Id_lote, cantidad FROM medicamentos_detalle_inventario WHERE Id_detalle_inventario = ?";
+        $stmt_ant = $conexion->prepare($sql_ant);
+        $stmt_ant->bind_param("i", $id_detalle);
+        $stmt_ant->execute();
+        $datos_ant = $stmt_ant->get_result()->fetch_assoc();
+        
+        $cantidad_anterior = $datos_ant['cantidad'];
+        $id_lote = $datos_ant['Id_lote'];
+
+        if ($cantidad_nueva <= 0) { throw new Exception("⚠️ La cantidad debe ser mayor a cero."); }
+
+        $res_stk = $conexion->query("SELECT cantidad_actual FROM existencias_stock WHERE Id_lote = $id_lote");
+        $stock_global = $res_stk->fetch_assoc()['cantidad_actual'];
+
+        $diferencia_salida = $cantidad_anterior - $cantidad_nueva; 
+
+        if (($stock_global + $diferencia_salida) < 0) {
+            throw new Exception("⚠️ No hay suficiente stock para registrar esta salida. Stock disponible: $stock_global");
+        }
+
+        $stmt1 = $conexion->prepare("UPDATE detalle_inventario SET observaciones = ? WHERE Id_detalle_inventario = ?");
+        $stmt1->bind_param("si", $razon, $id_detalle);
+        $stmt1->execute();
+
+        $stmt2 = $conexion->prepare("UPDATE medicamentos_detalle_inventario SET cantidad = ?, stock_momento = ? WHERE Id_detalle_inventario = ?");
+        $stmt2->bind_param("iii", $cantidad_nueva, $cantidad_nueva, $id_detalle);
+        $stmt2->execute();
+
+        $diferencia_salida = $cantidad_anterior - $cantidad_nueva;
+        $sql_stock_salida = "UPDATE existencias_stock SET cantidad_actual = cantidad_actual + ? WHERE Id_lote = ?";
+        $stmt_stk_s = $conexion->prepare($sql_stock_salida);
+        $stmt_stk_s->bind_param("ii", $diferencia_salida, $id_lote);
+        $stmt_stk_s->execute();
+
+        $sql_stock_salida2 = "SELECT cantidad_actual FROM existencias_stock WHERE Id_lote = ?";
+        $stmt_stk_s2 = $conexion->prepare($sql_stock_salida2);
+        $stmt_stk_s2->bind_param("i", $id_lote);
+        $stmt_stk_s2->execute();
+        $datos_stock = $stmt_stk_s2->get_result()->fetch_assoc();
+
+        $stock_momento = $datos_stock['cantidad_actual'];
+        $stmt3 = $conexion->prepare("UPDATE medicamentos_detalle_inventario SET stock_momento = ? WHERE Id_detalle_inventario = ?");
+        $stmt3->bind_param("ii", $stock_momento, $id_detalle);
+        $stmt3->execute();
+    }
+
+    $sql_recalculo = "SELECT mdi.Id_detalle_inventario, mdi.cantidad, di.Id_TipoMovimiento 
+                      FROM medicamentos_detalle_inventario mdi
+                      INNER JOIN detalle_inventario di ON mdi.Id_detalle_inventario = di.Id_detalle_inventario
+                      WHERE mdi.Id_lote = ?
+                      ORDER BY di.fecha ASC, di.Id_detalle_inventario ASC";
+
+    $stmt_recal = $conexion->prepare($sql_recalculo);
+    $stmt_recal->bind_param("i", $id_lote);
+    $stmt_recal->execute();
+    $res_movimientos = $stmt_recal->get_result();
+
+    $acumulado = 0;
+    $stmt_upd_momento = $conexion->prepare("UPDATE medicamentos_detalle_inventario SET stock_momento = ? WHERE Id_detalle_inventario = ?");
+
+    while ($mov = $res_movimientos->fetch_assoc()) {
+        if ($mov['Id_TipoMovimiento'] == 1) {
+            $acumulado += $mov['cantidad'];
+        } else if ($mov['Id_TipoMovimiento'] == 2) {
+            $acumulado -= $mov['cantidad'];
+        }
+
+        if ($acumulado < 0) {
+            throw new Exception("⚠️ Error: La edición causaría un stock negativo en el historial (Stock: $acumulado).");
+        }
+
+        $stmt_upd_momento->bind_param("ii", $acumulado, $mov['Id_detalle_inventario']);
+        $stmt_upd_momento->execute();
+    }
+
+    // Sincronizar el stock final real con la tabla de existencias para evitar desajustes
+    $stmt_sync = $conexion->prepare("UPDATE existencias_stock SET cantidad_actual = ? WHERE Id_lote = ?");
+    $stmt_sync->bind_param("ii", $acumulado, $id_lote);
+    $stmt_sync->execute();
+
+    $conexion->commit();
+    $_SESSION['mensaje_user_exito'] = '✅ Éxito: El movimiento y el stock han sido actualizados correctamente.';
+    header("Location: ../../pages/php/farmacia_inventario_listado.php");
+
+} catch (Exception $e) {
+    $conexion->rollback();
+    error_log("Error al actualizar el inventario: " . $e->getMessage());
+    $_SESSION['mensaje_user_error'] = '⚠️ Error de Actualización: No se pudo actualizar el movimiento. Detalle: ' . $e->getMessage();
+    header("Location: ../../pages/php/farmacia_inventario_listado.php");
+}
+?>

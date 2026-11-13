@@ -1,0 +1,250 @@
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    html {
+        background-color: #112;
+    }
+
+    body {
+        background-color: transparent !important;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        will-change: opacity;
+        background:
+            radial-gradient(circle at 15% 20%, rgba(0, 255, 255, 0.10), transparent 50%),
+            radial-gradient(circle at 85% 80%, rgba(220, 20, 60, 0.08), transparent 50%),
+            linear-gradient(135deg, #112 0%, #172554 50%, #112 100%);
+        animation: backgroundPulse 16s ease-in-out infinite alternate;
+    }
+
+    body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image:
+            linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+            radial-gradient(rgba(255, 255, 255, 0.07) 1.2px, transparent 1.2px);
+        background-size: 48px 48px, 48px 48px, 48px 48px;
+        background-position: 0 0, 0 0, 24px 24px;
+    }
+
+    @keyframes backgroundPulse {
+        0% {
+            opacity: 0.95;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .btn-primary {
+        border: none;
+        width: 100%;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+    .marquee-container {
+        width: 100%;
+        background-color: #112;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        padding: 10px 0;
+        font-size: 14px;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .marquee-text {
+        display: inline-block;
+        padding-left: 100%;
+        animation: marquee-animation 25s linear infinite;
+    }
+
+    @keyframes marquee-animation {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-100%);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .login-container {
+        position: relative;
+        z-index: 10;
+        isolation: isolate;
+        background-color: #112;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow:
+            0 20px 50px rgba(0, 0, 0, 0.55),
+            0 0 0 1px rgba(0, 255, 255, 0.08),
+            0 0 60px rgba(30, 64, 175, 0.15);
+        width: 100%;
+        max-width: 400px;
+        color: white;
+    }
+
+    .alert,
+    .form-control,
+    label,
+    p,
+    span,
+    h1,
+    button {
+        transform: none !important;
+        filter: none !important;
+        will-change: auto !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    .form-control {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid #444;
+        border-radius: 0;
+        color: white;
+        padding: 10px 5px;
+    }
+
+    .form-control:focus {
+        background: transparent;
+        color: white;
+        border-color: crimson;
+        box-shadow: none;
+    }
+    
+    .form-group {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        position: absolute;
+        top: -10px;
+        left: 16px;
+        background: #112;
+        padding: 0 6px;
+        font-size: 14px;
+        color: white;
+    }
+
+    .form-group input:focus {
+        border-color: #00ffff;
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .form-group label {
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus+label {
+        color: #00ffff;
+    }
+
+    .alert-danger {
+        animation: pulseError 2s infinite;
+    }
+
+    @keyframes pulseError {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.02);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @keyframes fadeInOverlay {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes modalPopIn {
+        from {
+            opacity: 0;
+            transform: scale(0.85) translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .modal-overlay-animated {
+        animation: fadeInOverlay 0.5s ease-out forwards;
+    }
+
+    .modal-content-animated {
+        animation: modalPopIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .btn-danger {
+        background: crimson;
+        border: none;
+        width: 100%;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+    .btn-danger:hover {
+        background: darkred;
+    }
+
+    .btn-danger {
+        border: none;
+        width: 100%;
+        padding: 10px;
+        font-weight: bold;
+    }

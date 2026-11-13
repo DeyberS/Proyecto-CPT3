@@ -1,0 +1,1188 @@
+<?php
+include('../../cfg/conexion.php');
+
+$datos_d = null;
+$comp_string = '';
+
+if (isset($_GET['duplicar_id'])) {
+  $id_url = mysqli_real_escape_string($conexion, $_GET['duplicar_id']);
+
+  $sql_d = "SELECT m.nombre_medicamento, dm.* FROM medicamento m 
+              JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento 
+              WHERE dm.Id = '$id_url'";
+  $res_d = $conexion->query($sql_d);
+  $datos_d = $res_d->fetch_assoc();
+
+  if ($datos_d) {
+    $sql_pa = "SELECT d.id_principio_activo, d.cantidad_unidad_medida, d.id_tipo_unidad_medida, p.nombre 
+    FROM detalle_principio_medicamento d
+    JOIN principio_activo p ON d.id_principio_activo = p.id_principio_activo
+    WHERE d.id_descripcion_medicamento = '$id_url'";
+
+    $res_pa = $conexion->query($sql_pa);
+
+    $pa_parts = [];
+    $lista_pa_full = [];
+
+    while ($r_pa = $res_pa->fetch_assoc()) {
+      $pa_parts[] = $r_pa['id_principio_activo'] . "," . $r_pa['cantidad_unidad_medida'] . "," . $r_pa['id_tipo_unidad_medida'];
+      $lista_pa_full[] = $r_pa;
+    }
+
+    $comp_string = implode('|', $pa_parts);
+    $principios_json = json_encode($lista_pa_full);
+  }
+
+  $sql_pat = "SELECT d.id_patologia, p.nombre_patologia 
+  FROM detalle_patologia_medicamento d
+  JOIN patologias p ON d.id_patologia = p.Id_patologia
+  WHERE d.Id_descripcion_medicamento = '$id_url'";
+
+  $res_pat = $conexion->query($sql_pat);
+  $pat_parts = [];
+  $lista_pat_full = [];
+
+  while ($r_pat = $res_pat->fetch_assoc()) {
+    $pat_parts[] = $r_pat['id_patologia'];
+    $lista_pat_full[] = $r_pat;
+  }
+
+  $patologias_string = implode('|', $pat_parts);
+  $patologias_json = json_encode($lista_pat_full);
+}
+
+include('includes/headerNav2.php');
+verificarAcceso('Crear Medicamentos');
+?>
+
+<head>
+  <title>Medicamentos | Añadir</title>
+</head>
+
+<style>
+  .tooltip-inner {
+    max-width: 300px;
+    background-color: #3c8dbc !important;
+    color: white;
+    font-weight: bold;
+    border: 1px solid #fff;
+  }
+
+  .tooltip.right .tooltip-arrow {
+    border-right-color: #3c8dbc !important;
+  }
+</style>
+
+<body>
+  <div class="content-wrapper">
+    <section class="content-header">
+      <h1>
+        Añadir Medicamento
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
+        <li><a href="#"><i class="fa fa-archive"></i>Medicamentos</a></li>
+        <li class="active"><a href="#"><i class="fa fa-plus-circle"></i>Añadir</a></li>
+      </ol>
+    </section>
+
+    <section class="content">
+
+      <div class="row">
+        <div class="col-md-12">
+          <div style="float:right; margin-top:5px; margin-right:5px;">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalCopiarMedicamento" title="Copiar Medicamento" style="background-color: #605ca8; border-color: #605ca8;">
+              <i><img src="../../recursos/imagenes/iconos/Importar.png" style="width:20px; height:20px;"></i>
+            </button>
+          </div>
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#tab_1" data-toggle="tab">Información del medicamento</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab_1">
+                <div class="box-body">
+
+                  <form id="formularioMedicamento" style="margin-bottom:8%;" method="POST" action="../../cfg/agregar/agregar_medicamento.php" novalidate>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_nombre">
+                      <p>Nombre (*):</p>
+                      <input id="medicamento" name="medicamento" class="form-control" type="text" maxlength="100" value="<?php echo $datos_d['nombre_medicamento'] ?? ''; ?>" placeholder="Ej. Ibuprofeno" required>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_presentacion">
+                      <p>Presentación (*):</p>
+                      <select class="form-control" name="presentacion" id="presentacion" class="form-control" required>
+                        <option value="">--- Seleccione la presentación del medicamento ---</option>
+                        <?php
+                        $sql = $conexion->query("SELECT * FROM presentacion");
+                        while ($r = $sql->fetch_assoc()) {
+                          $selected = (isset($datos_d['Id_presentacion']) && $datos_d['Id_presentacion'] == $r['Id_presentacion']) ? 'selected' : '';
+                          echo "<option value='{$r['Id_presentacion']}' $selected>{$r['nombre_presentacion']}</option>";
+                        }
+                        ?>
+                      </select>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3 form-group" id="group_contenido_neto">
+                      <p>Cantidad en la presentación (*):</p>
+                      <input id="contenido_neto" name="contenido_neto" class="form-control" type="text" value="<?php echo $datos_d['contenido_neto'] ?? ''; ?>" maxlength="100" placeholder="Ej. Capsulas de 20mg">
+                    </div>
+                    <br><br><br>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4" id="group_concentracion">
+                      <p>Unidad de presentación:</p>
+                      <div class="input-group">
+                        <input type="text" class="form-control cantidad-pre" name="cantidad_concentracion" id="cantidad_concentracion" placeholder="Cant." value="<?php echo $datos_d['cantidad_concentracion'] ?? ''; ?>" inputmode="numeric">
+                        <div class="input-group-btn" style="width: 60%;">
+                          <select class="form-control uni-concentracion" name="tipo_concentracion" id="tipo_concentracion" required style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0;">
+                            <option selected value="">--- Primero seleccione una presentación --- </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_via">
+                      <p>Vía de aplicación (*):</p>
+                      <select name="via" id="via_aplicacion" class="form-control">
+                        <option value="">--- Seleccione una vía de aplicación ---</option>
+                        <?php
+                        $vias = [
+                          "Oral", "Sublingual", "Rectal", "Intravenosa", "Intramuscular",
+                          "Subcutanea", "Intradermica", "Topica", "Transdermica",
+                          "Inhalatoria", "Oftalmica", "Otica", "Nasal", "Vaginal"
+                        ];
+
+                        foreach ($vias as $via) {
+                          $selected = (isset($datos_d['via_aplicacion']) && $datos_d['via_aplicacion'] == $via) ? 'selected' : '';
+                          echo "<option value='$via' $selected>$via</option>";
+                        }
+                        ?>
+                      </select>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3 form-group" id="group_almacenamiento">
+                      <p>Condición de almacenamiento (*):</p>
+                      <select name="almacenamiento" id="almacenamiento" class="form-control" required>
+                        <option value="">--- Seleccione una condición ---</option>
+                        <?php
+                        $condiciones = [
+                          "-25_a_-10" => "Congelación (-25°C a -10°C)",
+                          "2_a_8"     => "Refrigeración (2°C a 8°C)",
+                          "8_a_15"    => "Lugar Fresco (8°C a 15°C)",
+                          "15_a_25"   => "Temperatura Ambiente (15°C a 25°C)",
+                          "max_30"    => "Temperatura Máxima (30°C)"
+                        ];
+
+                        foreach ($condiciones as $valor => $etiqueta) {
+                          $selected = (isset($datos_d['almacenamiento']) && $datos_d['almacenamiento'] == $valor) ? 'selected' : '';
+                          echo "<option value='$valor' $selected>$etiqueta</option>";
+                        }
+                        ?>
+                      </select>
+                    </div>
+                    <br><br><br><br>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4" id="group_laboratorio">
+                      <p>Laboratorio:</p>
+                      <div class="input-group">
+                        <select id="laboratorio" name="laboratorio" class="form-control">
+                          <option value="">--- Seleccione un laboratorio ---</option>
+                          <?php
+                          include('../../cfg/conexion.php');
+                          $sql = $conexion->query("SELECT * FROM laboratorio");
+                          while ($resultado = $sql->fetch_assoc()) {
+                            $selected = (isset($datos_d['Id_laboratorio']) && $datos_d['Id_laboratorio'] == $resultado['Id_laboratorio']) ? 'selected' : '';
+
+                            echo "<option value='" . $resultado['Id_laboratorio'] . "' $selected>" . $resultado['nombre_laboratorio'] . "</option>";
+                          }
+                          ?>
+                        </select>
+                        <span class="input-group-btn">
+                          <button class="btn btn-info" type="button" id="btnInfoMedicamento" data-toggle="modal" data-target="#modalNuevoLaboratorio" title="Agregar Laboratorio" style="height: 34px;">
+                            <i><img src="../../recursos/imagenes/iconos/agregar.png" style="width:10px; height:10px;"></i>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_principio_activo">
+                      <p>Composición (*):</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pa" data-toggle="modal" data-placement="top" title="Ninguno seleccionado" data-target="#modalPrincipios">
+                        <i></i> Gestionar Composición
+                      </button>
+                    </div>
+                    <input type="hidden" name="composicion_detallada" id="composicion_detallada" value="<?php echo $comp_string ?? ''; ?>" required>
+                    <label class="control-label"></label>
+                    <div class="col-sm-3 form-group" id="group_patologia">
+                      <p>Patologías asociadas:</p>
+                      <button type="button" class="btn btn-info btn-block" id="btn_modal_pat" data-toggle="modal" data-placement="top" title="Ninguna seleccionada" data-target="#modal_pat">
+                        <i></i> Gestionar Patologías Asociadas
+                      </button>
+                    </div>
+                    <input type="hidden" name="patologias_seleccionadas" id="patologias_seleccionadas" value="<?php echo $patologias_string ?? ''; ?>">
+                    <br><br><br><br>
+                    <label class="control-label"></label>
+                    <div class="col-sm-4 form-group" id="group_codigo_barras">
+                      <p>Código de barras:</p>
+                      <input type="text" id="codigo_barras" name="codigo_barras" placeholder="Ej. 234758383" class="form-control">
+                    </div>
+                    <br><br><br><br>
+                    <div style="float:right; margin-top: 4%;">
+                      <button type="button" class="btn btn-second" data-toggle="modal" data-target="#modalRegresar">Regresar</button>
+                      <button type="submit" class="btn btn-success" id="btnGuardar">Guardar</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal fade" id="modal_pat" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title">Agregar Patologías</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_patologias">
+          </div>
+          <button type="button" class="btn btn-success btn-sm" id="add_fila_pat">
+            <i class="fa fa-plus"></i> Añadir Otra Patología
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologia">
+            <i class="fa fa-plus-circle"></i> Nueva Patología
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="guardar_pat_listo" data-dismiss="modal">Listo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalPrincipios" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title">Agregar Composición del Medicamento</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_principios">
+            <div class="row fila-pa" style="margin-bottom: 10px;">
+              <div class="col-sm-6">
+                <div class="input-group">
+                  <select class="form-control select-pa" id="principio_activo">
+                    <option value="" name="id_pa">--- Seleccione un principio activo ---</option>
+                    <?php
+                    $sql_pa = $conexion->query("SELECT * FROM principio_activo");
+                    while ($r = $sql_pa->fetch_assoc()) {
+                      echo "<option value='" . $r['id_principio_activo'] . "' data-nombre='" . $r['nombre'] . "'>" . $r['nombre'] . "</option>";
+                    }
+                    ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button class="btn btn-info btn-search-pa" type="button" title="Buscar P.A.">
+                      <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                    </button>
+                  </span>
+                </div>
+              </div>
+              <div class="col-sm-2 form-group" id="group_unidad">
+                <input type="text" class="form-control cant-pa" name="cantidad_unidad_medida" id="u_medida" placeholder="Cant." inputmode="numeric" required>
+              </div>
+              <div class="col-sm-2 pull-left form-group" id="group_tipo_unidad" style="margin-left:-20px;">
+                <select class="form-control uni-pa" name="tipo_unidad_medida" id="tipo_unidad_medida" required>
+                  <option selected value="">--- Primero seleccione una presentación ---</option>
+                </select>
+              </div>
+              <div class="col-sm-2">
+                <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-12 form-group" id="group_excipientes" style="left:-10px;">
+            <p>Excipientes:</p>
+            <input type="text" id="excipientes" name="excipientes" value="<?php echo $datos_d['excipientes'] ?? ''; ?>" placeholder="Ej: Microcristalina celulosa, dióxido de titanio y gelatina." class="form-control">
+          </div>
+          <button type="button" class="btn btn-success btn-sm" id="btn_add_pa">
+            <i class="fa fa-plus"></i> Añadir Otro Principio Activo
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoPA">
+            <i class="fa fa-plus-circle"></i> Nuevo Principio Activo
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" id="guardar_pa_temp">Listo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevoLaboratorio" tabindex="-1" role="dialog" aria-labelledby="labelLaboratorio">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title" id="labelLaboratorio"><i class="fa fa-building"></i>Nuevo Laboratorio</h4>
+        </div>
+        <div class="modal-body">
+          <form id="formNuevoLaboratorio">
+            <div class="form-group">
+              <label>Nombre del Laboratorio:</label>
+              <input type="text" id="nombre_lab_nuevo" class="form-control" placeholder="Ej: Bayer" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarLab">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalCopiarMedicamento" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #3c8dbc; color: white;">
+          <h4 class="modal-title"><i class="fa fa-search"></i> Buscar Medicamento para Copiar</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="buscar_plantilla" class="form-control" placeholder="Escribe el nombre del medicamento...">
+          <hr>
+          <div id="lista_medicamentos_plantilla" style="max-height: 400px; overflow-y: auto;">
+            <p class="text-center">Cargando medicamentos...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalBuscarPA" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title">Buscar Principio Activo</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="inputBuscarPA" class="form-control" placeholder="Escriba para filtrar...">
+          <div class="list-group" id="listaResultadosPA" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalBuscarPat" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title">Buscar Patología</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="inputBuscarPat" class="form-control" placeholder="Escriba para filtrar...">
+          <div class="list-group" id="listaResultadosPat" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevoPA" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title">Añadir Nuevo Principio Activo</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre (*):</label>
+            <input type="text" id="nombre_pa_nuevo" class="form-control" placeholder="Ej. Paracetamol">
+          </div>
+          <div class="form-group">
+            <label>Descripción:</label>
+            <input type="text" id="desc_pa_nuevo" class="form-control" placeholder="Opcional">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btnGuardarNuevoPA">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalNuevaPatologia" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title">Añadir Nueva Patología</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre (*):</label>
+            <input type="text" id="nombre_pat_nuevo" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Código CIE (*):</label>
+            <input type="text" id="cie_pat_nuevo" class="form-control" placeholder="Ej. A00">
+          </div>
+          <div class="form-group">
+            <label>Contagioso (*):</label>
+            <select id="contagioso_pat_nuevo" class="form-control">
+              <option value="NO">NO</option>
+              <option value="SI">SI</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btnGuardarNuevaPat">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title">Aviso Importante</h5>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalRegresar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h4 class="modal-title">Confirmación de Regreso</h4>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="farmacia_medicamentos_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalGuardar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h4 class="modal-title">Confirmación de Guardado</h4>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea guardar la información del nuevo medicamento?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardar">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?php
+  include('includes/footer.php');
+  ?>
+
+  <script>
+    $(document).ready(function() {
+      const unidadConcentracionPrevia = '<?php echo $datos_d['id_tipo_concentracion'] ?? ''; ?>';
+
+      function mostrarAviso(mensaje) {
+        $('#avisoTexto').html(mensaje);
+        $('#avisoModal').modal('show');
+      }
+
+      function limpiarErrores() {
+        $('input, select').removeClass('input-error');
+        $('.form-group').removeClass('input-error');
+        $('#btn_modal_pa').removeClass('btn-error-sombreado');
+      }
+
+      function bloquearNumeros(e) {
+        const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
+        if (teclasPermitidas.includes(e.key)) return;
+        if (e.key >= "0" && e.key <= "9") {
+          e.preventDefault();
+        }
+      }
+
+      function limpiarNumeros(e) {
+        e.target.value = e.target.value.replace(/[0-9]/g, "");
+      }
+
+      const medicamentoInput = document.getElementById('medicamento');
+      const uMedidaInput = document.getElementById('u_medida');
+
+      medicamentoInput.addEventListener('input', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+
+        if (valor.length > 50) {
+          valor = valor.substring(0, 50);
+        }
+
+        this.value = valor;
+      });
+
+      $(document).on('input', '.cant-pa', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
+      $(document).on('input', '#codigo_barras', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
+      $(document).on('input', '.cantidad-pre', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
+      $(document).on('input', '#stock_minimo', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
+      $(document).on('input', '#stock_maximo', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9.]/g, '');
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+          valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        this.value = valor;
+      });
+
+      $('#btn_add_pa').on('click', function() {
+        var nuevaFila = $('.fila-pa:first').clone();
+        nuevaFila.find('input').val('');
+        if (window.unidadesDisponibles) {
+          nuevaFila.find('.uni-pa').html(window.unidadesDisponibles);
+        }
+        $('#contenedor_filas_principios').append(nuevaFila);
+      });
+
+      $('#contenedor_filas_principios').on('click', '.btn-remove-pa', function() {
+        if ($('.fila-pa').length > 1) {
+          $(this).closest('.fila-pa').remove();
+        } else {
+          mostrarAviso("Debe haber al menos un espacio para principio activo.");
+        }
+      });
+
+      $('#btn_modal_pa').tooltip();
+
+      $('#guardar_pa_temp').on('click', function() {
+        var resumen = [];
+        var datos_para_db = [];
+
+        $('.fila-pa').each(function() {
+          var $fila = $(this);
+          var id_pa = $fila.find('.select-pa').val();
+          var nombre = $fila.find('.select-pa option:selected').data('nombre') || $fila.find('.select-pa option:selected').text();
+          var cantidad = $fila.find('.cant-pa').val();
+          var id_unidad = $fila.find('.uni-pa').val();
+          var nombre_unidad = $fila.find('.uni-pa option:selected').text();
+
+          if (id_pa && cantidad && id_unidad) {
+            resumen.push(nombre.trim() + " " + cantidad + " " + nombre_unidad.trim());
+            datos_para_db.push(id_pa + "," + cantidad + "," + id_unidad);
+          }
+        });
+
+        $('#composicion_detallada').val(datos_para_db.join('|'));
+
+        var boton = $('#btn_modal_pa');
+        if (resumen.length > 0) {
+          boton.attr('data-original-title', resumen.join(', ')).tooltip('fixTitle');
+        }
+      });
+
+      $('#btnGuardarLab').click(function() {
+        var nombre = $('#nombre_lab_nuevo').val();
+
+        if (nombre.trim() === "") {
+          mostrarAviso("Por favor ingrese un nombre");
+          return;
+        }
+
+        $.ajax({
+          url: '../../cfg/ajax/guardar_laboratorio.php',
+          type: 'POST',
+          data: {
+            nombre: nombre
+          },
+          success: function(response) {
+            if (response != "error") {
+              $('#modalNuevoLaboratorio').modal('hide');
+              $('#nombre_lab_nuevo').val('');
+              $('#laboratorio').append('<option value="' + response + '" selected>' + nombre + '</option>');
+              mostrarAviso("Laboratorio guardado correctamente");
+            } else {
+              mostrarAviso("Error al guardar el laboratorio");
+            }
+          }
+        });
+      });
+
+      $('#modalCopiarMedicamento').on('shown.bs.modal', function() {
+        cargarPlantillas('');
+      });
+
+      $('#buscar_plantilla').on('keyup', function() {
+        cargarPlantillas($(this).val());
+      });
+
+      function cargarPlantillas(filtro) {
+        $.ajax({
+          url: '../../cfg/ajax/obtener_plantilla_medicamentos.php',
+          method: 'POST',
+          data: {
+            busqueda: filtro
+          },
+          success: function(html) {
+            $('#lista_medicamentos_plantilla').html(html);
+          }
+        });
+      }
+
+      $(document).on('click', '.btn-copiar-datos', function() {
+        const d = $(this).data();
+
+        $('#medicamento').val(d.nombre);
+        $('#contenido_neto').val(d.contenido);
+        $('#via_aplicacion').val(d.via);
+        $('#almacenamiento').val(d.almacenamiento);
+        $('#laboratorio').val(d.id_lab);
+        $('#excipientes').val(d.excipientes);
+        $('#codigo_barras').val(d.codigo);
+        $('#presentacion').val(d.id_presentacion);
+        $('#cantidad_concentracion').val(d.cantidad_c);
+
+        const unidadASeleccionar = d.tipo_c;
+
+
+        if (d.id_presentacion) {
+          fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + d.id_presentacion)
+            .then(response => response.text())
+            .then(htmlUnidades => {
+
+              $('.uni-pa, .uni-concentracion').html(htmlUnidades);
+
+
+              $('#tipo_concentracion').val(unidadASeleccionar);
+
+              if (d.composicion) {
+                $('#composicion_detallada').val(d.composicion);
+                $('#contenedor_filas_principios').empty();
+
+                const filas = d.composicion.split('|');
+                const nombres = d.nombres_pa.split('|');
+
+                filas.forEach((fila, index) => {
+                  const [id_pa, cant, id_uni] = fila.split(',');
+                  const nombrePA = nombres[index];
+
+                  let nuevaFila = `
+                        <div class="row fila-pa" style="margin-bottom: 10px;">
+                          <div class="col-sm-6">
+                            <select class="form-control select-pa">
+                                <option value="${id_pa}" selected data-nombre="${nombrePA}">${nombrePA}</option>
+                            </select>
+                          </div>
+                          <div class="col-sm-2">
+                            <input type="text" class="form-control cant-pa" value="${cant}">
+                          </div>
+                          <div class="col-lg-2">
+                            <select class="form-control uni-pa">${htmlUnidades}</select>
+                          </div>
+                          <div class="col-sm-2">
+                            <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
+                          </div>
+                        </div>`;
+
+                  $('#contenedor_filas_principios').append(nuevaFila);
+                  $('#contenedor_filas_principios .fila-pa:last .uni-pa').val(id_uni);
+                });
+
+                const textoResumen = nombres.join(', ');
+                $('#btn_modal_pa').attr('data-original-title', textoResumen).tooltip('fixTitle');
+                $('#resumen_principios').html("<strong>Incluye:</strong> " + textoResumen);
+              }
+            });
+        }
+
+        if (d.patologias) {
+          $('#contenedor_filas_patologias').empty();
+          const idsPat = String(d.patologias).split('|');
+          const nombresPat = d.nombres_pat ? String(d.nombres_pat).split('|') : [];
+
+          idsPat.forEach(id => {
+            if (id) agregarFilaPatologia(id);
+          });
+
+          let textoTooltip = nombresPat.length > 0 ? nombresPat.join(', ') : 'Patologías seleccionadas';
+          $('#btn_modal_pat').attr('data-original-title', textoTooltip).tooltip('fixTitle');
+        }
+
+
+        $('#modalCopiarMedicamento').modal('hide');
+      });
+
+      let selectDestinoTarget = null;
+
+      $(document).on('click', '.btn-search-pa', function() {
+        selectDestinoTarget = $(this).closest('.input-group').find('.select-pa');
+        $('#modalBuscarPA').modal('show');
+        $('#inputBuscarPA').val('').trigger('keyup');
+      });
+
+      $('#inputBuscarPA').on('keyup', function() {
+        let texto = $(this).val().toLowerCase();
+        let html = '';
+        let opciones = $('.select-pa:first option').not('[value=""]');
+
+        opciones.each(function() {
+          let nombre = $(this).text();
+          if (nombre.toLowerCase().includes(texto)) {
+            html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pa" data-id="${$(this).val()}">${nombre}</a>`;
+          }
+        });
+        $('#listaResultadosPA').html(html);
+      });
+
+      $(document).on('click', '.seleccionar-pa', function(e) {
+        e.preventDefault();
+        selectDestinoTarget.val($(this).data('id')).trigger('change');
+        $('#modalBuscarPA').modal('hide');
+      });
+
+      $(document).on('click', '.btn-search-pat', function() {
+        selectDestinoTarget = $(this).closest('.input-group').find('.select-pat');
+        $('#modalBuscarPat').modal('show');
+        $('#inputBuscarPat').val('').trigger('keyup');
+      });
+
+      $('#inputBuscarPat').on('keyup', function() {
+        let texto = $(this).val().toLowerCase();
+        let html = '';
+        let opciones = $('.select-pat:first option').not('[value=""]');
+
+        opciones.each(function() {
+          let nombre = $(this).text();
+          if (nombre.toLowerCase().includes(texto)) {
+            html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pat" data-id="${$(this).val()}">${nombre}</a>`;
+          }
+        });
+        $('#listaResultadosPat').html(html);
+      });
+
+      $(document).on('click', '.seleccionar-pat', function(e) {
+        e.preventDefault();
+        selectDestinoTarget.val($(this).data('id')).trigger('change');
+        $('#modalBuscarPat').modal('hide');
+      });
+
+      $('#btnGuardarNuevoPA').click(function() {
+        let nombre = $('#nombre_pa_nuevo').val();
+        let desc = $('#desc_pa_nuevo').val();
+
+        if (nombre.trim() === '') {
+          mostrarAviso("Nombre obligatorio");
+          return;
+        }
+
+        $.ajax({
+          url: '../../cfg/ajax/guardar_principio_activo.php',
+          type: 'POST',
+          data: {
+            nombre: nombre,
+            descripcion: desc
+          },
+          success: function(response) {
+            if (response !== "error") {
+              $('#modalNuevoPA').modal('hide');
+              let nuevaOpcion = `<option value="${response}" data-nombre="${nombre}">${nombre}</option>`;
+              $('.select-pa').append(nuevaOpcion);
+              $('#nombre_pa_nuevo, #desc_pa_nuevo').val('');
+              mostrarAviso("Principio Activo guardado con éxito");
+            } else {
+              mostrarAviso("Error al guardar en DB");
+            }
+          }
+        });
+      });
+
+      $('#btnGuardarNuevaPat').click(function() {
+        let nombre = $('#nombre_pat_nuevo').val();
+        let cie = $('#cie_pat_nuevo').val();
+        let contagioso = $('#contagioso_pat_nuevo').val();
+
+        if (nombre.trim() === '' || cie.trim() === '') {
+          mostrarAviso("Nombre y CIE obligatorios");
+          return;
+        }
+
+        $.ajax({
+          url: '../../cfg/ajax/guardar_patologia.php',
+          type: 'POST',
+          data: {
+            nombre: nombre,
+            cie: cie,
+            contagioso: contagioso
+          },
+          success: function(response) {
+            if (response !== "error") {
+              $('#modalNuevaPatologia').modal('hide');
+              let nuevaOpcion = `<option value="${response}">${nombre}</option>`;
+              $('.select-pat').append(nuevaOpcion);
+              $('#nombre_pat_nuevo, #cie_pat_nuevo').val('');
+              mostrarAviso("Patología guardada con éxito");
+            } else {
+              mostrarAviso("Error al guardar en DB (Posible código CIE duplicado)");
+            }
+          }
+        });
+      });
+
+      const presentacionCargada = $('#presentacion').val();
+      const unidadCargada = '<?php echo $datos_d['Id_tipo_concentracion'] ?? $datos_d['id_tipo_concentracion'] ?? $datos_d['tipo_concentracion'] ?? $datos_d['id_tipo_unidad_medida'] ?? ''; ?>';
+
+      function inicializarUnidades(idPres, unidadSel) {
+        if (idPres) {
+          $.ajax({
+            url: '../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idPres,
+            success: function(data) {
+              window.unidadesDisponibles = data;
+              $('.uni-pa, .uni-concentracion').html(data);
+
+              if (unidadSel && unidadSel !== "") {
+                $('#tipo_concentracion').val(unidadSel);
+              }
+            }
+          });
+        }
+      }
+
+      if (presentacionCargada) {
+        inicializarUnidades(presentacionCargada, unidadCargada);
+      }
+
+      $('#presentacion').on('change', function() {
+        inicializarUnidades($(this).val(), "");
+      });
+
+      function verificarMedicamentoYMostrarModal() {
+        const nombre = $('#medicamento').val().trim();
+        const id_presentacion = $('#presentacion').val();
+        const codigo_barras = $('#codigo_barras').val().trim();
+        const btnGuardar = $('#btnGuardar');
+
+        const textoOriginal = btnGuardar.text();
+        btnGuardar.text('Verificando...').attr('disabled', true);
+
+        $.ajax({
+          url: '../../cfg/ajax/verificar_existencia_medicamento.php',
+          method: 'POST',
+          dataType: 'json',
+          data: {
+            nombre: nombre,
+            id_presentacion: id_presentacion,
+            codigo_barras: codigo_barras,
+            id_actual: 0
+          },
+          success: function(response) {
+            btnGuardar.text(textoOriginal).attr('disabled', false);
+
+            if (response.existe_duplicado) {
+              let mensaje = "";
+              if (response.tipo_error === 'codigo') {
+                mensaje = `⚠️ El código de barras ya está registrado para el medicamento: <b>${response.detalle}</b>.`;
+                $('#codigo_barras').addClass('input-error');
+              } else {
+                mensaje = `⚠️ Ya existe un registro de <b>${nombre}</b> con esa misma presentación.`;
+                $('#medicamento, #presentacion').addClass('input-error');
+              }
+              mostrarAviso('⚠️ Error de Duplicidad:<br>' + mensaje);
+            } else {
+              $('#modalGuardar').modal('show');
+            }
+          },
+          error: function() {
+            btnGuardar.text(textoOriginal).attr('disabled', false);
+            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
+          }
+        });
+      }
+
+      $('#formularioMedicamento').on('submit', function(e) {
+        e.preventDefault();
+        limpiarErrores();
+        let errores = [];
+
+        if ($('#medicamento').val().trim() === "") {
+          errores.push("Falta el nombre del medicamento.");
+          $('#medicamento').addClass('input-error');
+        }
+        if ($('#presentacion').val().trim() === "") {
+          errores.push("Falta la presentacion del medicamento.");
+          $('#presentacion').addClass('input-error');
+        }
+        if ($('#composicion_detallada').val().trim() === "") {
+          errores.push("Debe gestionar al menos un principio activo en el modal.");
+          $('#btn_modal_pa').addClass('btn-error-sombreado');
+        }
+        if ($('#via_aplicacion').val().trim() === "") {
+          errores.push("Falta el tipo de aplicacion.");
+          $('#via_aplicacion').addClass('input-error');
+        }
+        if ($('#contenido_neto').val().trim() === "") {
+          errores.push("Falta el contenido neto del medicamento.");
+          $('#contenido_neto').addClass('input-error');
+        }
+        if ($('#almacenamiento').val().trim() === "") {
+          errores.push("Falta el tipo de almacenamiento.");
+          $('#almacenamiento').addClass('input-error');
+        }
+
+        if (errores.length > 0) {
+          mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+        } else {
+          verificarMedicamentoYMostrarModal();
+        }
+      });
+
+      $('#confirmarGuardar').on('click', function() {
+        $('#modalGuardar').modal('hide');
+        $('#formularioMedicamento').off('submit').submit();
+      });
+
+      const campos = [document.getElementById("medicamento")];
+      campos.forEach(campo => {
+        if (campo) {
+          campo.addEventListener("keydown", bloquearNumeros);
+          campo.addEventListener("input", limpiarNumeros);
+        }
+      });
+
+      $(document).on('change', '.select-pa', function() {
+        let selectActual = $(this);
+        let valorActual = selectActual.val();
+
+        if (valorActual === "") return;
+
+        let conteo = 0;
+        $('.select-pa').each(function() {
+          if ($(this).val() === valorActual) {
+            conteo++;
+          }
+        });
+
+        if (conteo > 1) {
+          mostrarAviso("⚠️ <b>Atención:</b> Este principio activo ya ha sido seleccionado en otra fila. Por favor, elija uno diferente o modifique la cantidad en el que ya agregó.");
+          selectActual.val("");
+        }
+      });
+
+      $(document).on('change', '.select-pat', function() {
+        let selectActual = $(this);
+        let valorActual = selectActual.val();
+
+        if (valorActual === "") return;
+
+        let conteo = 0;
+        $('.select-pat').each(function() {
+          if ($(this).val() === valorActual) {
+            conteo++;
+          }
+        });
+
+        if (conteo > 1) {
+          mostrarAviso("⚠️ <b>Atención:</b> Esta patología ya ha sido seleccionada en esta lista. Por favor, elija una diferente.");
+          selectActual.val("");
+        }
+      });
+
+      <?php if (isset($patologias_json)) : ?>
+        let patsExistentes = <?php echo $patologias_json; ?>;
+        let nombresPat = [];
+
+        patsExistentes.forEach(p => {
+          agregarFilaPatologia(p.id_patologia);
+
+          if (p.nombre_patologia) {
+            nombresPat.push(p.nombre_patologia.trim());
+          }
+        });
+
+        if (nombresPat.length > 0) {
+          $('#btn_modal_pat').attr('title', nombresPat.join(', '));
+          $('#btn_modal_pat').attr('data-original-title', nombresPat.join(', '));
+        }
+      <?php endif; ?>
+
+      function agregarFilaPatologia(idSeleccionado = "") {
+        let htmlPat = `
+        <div class="row fila-pat" style="margin-bottom: 10px;">
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <select class="form-control select-pat">
+                        <option value="">--- Seleccione una patología ---</option>
+                        <?php
+                        $q = $conexion->query("SELECT Id_patologia, nombre_patologia FROM patologias WHERE estatus = 1 ORDER BY nombre_patologia ASC");
+                        while ($p = $q->fetch_assoc()) {
+                          echo "<option value='" . $p['Id_patologia'] . "'>" . $p['nombre_patologia'] . "</option>";
+                        }
+                        ?>
+                    </select>
+                    <span class="input-group-btn">
+                        <button class="btn btn-info btn-search-pat" type="button" title="Buscar Patología">
+                          <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-danger btn-remove-pat">
+                    <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
+                </button>
+            </div>
+        </div>`;
+        $('#contenedor_filas_patologias').append(htmlPat);
+        if (idSeleccionado) {
+          $('#contenedor_filas_patologias .fila-pat:last .select-pat').val(idSeleccionado);
+        }
+      }
+
+      $('#btn_modal_pat').click(function() {
+        if ($('#contenedor_filas_patologias').children().length === 0) {
+          agregarFilaPatologia();
+        }
+      });
+
+      $('#add_fila_pat').click(() => agregarFilaPatologia());
+
+      $(document).on('click', '.btn-remove-pat', function() {
+        $(this).closest('.fila-pat').remove();
+      });
+
+      $('#btn_modal_pat').tooltip();
+
+      $('#guardar_pat_listo').click(function() {
+        let ids = [];
+        let nombres = [];
+
+        $('.select-pat').each(function() {
+          let val = $(this).val();
+          if (val && val !== "") {
+            ids.push(val);
+            let txt = $(this).find('option:selected').text();
+            if (txt) {
+              nombres.push(txt.trim());
+            }
+          }
+        });
+
+        $('#patologias_seleccionadas').val(ids.join('|'));
+
+        if (ids.length > 0) {
+          $('#btn_modal_pat').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
+        } else {
+          $('#btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+        }
+      });
+
+      $('#btn_modal_pat').click(function() {
+        if ($('#contenedor_filas_patologias').children().length === 0) {
+          agregarFilaPatologia();
+        }
+      });
+
+      <?php if (isset($_GET['duplicar_id']) && $datos_d) : ?>
+          (function() {
+            const principiosADuplicar = <?php echo $principios_json; ?>;
+            const idPresentacion = '<?php echo $datos_d['Id_presentacion']; ?>';
+            const opcionesCatalogo = $('#principio_activo').html();
+
+            if (principiosADuplicar.length > 0 && idPresentacion) {
+              fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idPresentacion)
+                .then(response => response.text())
+                .then(htmlUnidades => {
+
+                  $('#contenedor_filas_principios').empty();
+
+                  principiosADuplicar.forEach(pa => {
+                    let nuevaFila = `
+                    <div class="row fila-pa" style="margin-bottom: 10px;">
+                      <div class="col-sm-6">
+                        <div class="input-group">
+                          <select class="form-control select-pa">
+                            ${opcionesCatalogo}
+                          </select>
+                          <span class="input-group-btn">
+                            <button class="btn btn-info btn-search-pa" type="button" title="Buscar P.A."><i class="fa fa-search"></i></button>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="col-sm-2">
+                        <input type="text" class="form-control cant-pa" value="${pa.cantidad_unidad_medida}">
+                      </div>
+                      <div class="col-sm-2">
+                        <select class="form-control uni-pa">${htmlUnidades}</select>
+                      </div>
+                      <div class="col-sm-2">
+                        <button type="button" class="btn btn-danger btn-remove-pa">
+                          <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
+                        </button>
+                      </div>
+                    </div>`;
+
+                    $('#contenedor_filas_principios').append(nuevaFila);
+
+                    let $ultima = $('#contenedor_filas_principios .fila-pa:last');
+                    $ultima.find('.select-pa').val(pa.id_principio_activo);
+                    $ultima.find('.uni-pa').val(pa.id_tipo_unidad_medida);
+                  });
+
+                  $('#guardar_pa_temp').trigger('click');
+                });
+            }
+          })();
+      <?php endif; ?>
+    });
+  </script>

@@ -1,0 +1,407 @@
+<?php
+include("../../cfg/conexion.php");
+
+// 1. Validar si no se envió el ID o si está vacío
+if (!isset($_GET['Id']) || empty($_GET['Id'])) {
+  if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+  }
+
+  $_SESSION['mensaje_user_error'] = "Debe seleccionar una consulta válida para ver su información.";
+
+  header("Location: cfg_usuario_listado.php");
+  exit();
+}
+
+$id_user = mysqli_real_escape_string($conexion, $_GET['Id']);
+
+// 2. Consultar los datos del usuario
+$sql = "SELECT r.Id_rol, p.id, p.email, p.nombre, p.apellido
+        FROM persona p 
+        JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
+        JOIN rol r ON dpr.Id_rol = r.Id_rol 
+        WHERE p.id = '$id_user'";
+
+$resultado = $conexion->query($sql);
+
+if (!$resultado || $resultado->num_rows === 0) {
+  $_SESSION['mensaje_user_error'] = "Error: El usuario solicitado no existe o fue eliminado.";
+  header("Location: cfg_usuario_listado.php");
+  exit();
+}
+
+$row = $resultado->fetch_assoc();
+$id_usuario_actual = $row['id'];
+$rol_actual = $row['Id_rol'];
+
+include('includes/headerNav2.php');
+//verificarAcceso('Editar Usuarios');
+?>
+
+<head>
+  <title>Usuarios | Editar</title>
+</head>
+
+<style>
+  .input-error input[type="text"],
+  .input-error select .input-error {
+    border: 2px solid crimson !important;
+    box-shadow: 0 0 5px crimson !important;
+    background-color: #fff5f5 !important;
+  }
+
+  .password-container {
+    position: relative;
+  }
+
+  .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #555;
+    z-index: 10;
+    padding: 5px;
+  }
+
+  .password-container input {
+    padding-right: 40px;
+  }
+</style>
+
+<div class="content-wrapper">
+  <section class="content-header">
+    <h1>
+      Editar Usuario
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
+      <li><a href="#"><i class="fa fa-user"></i>Usuarios</a></li>
+      <li class="active"><a href="#"><i class="fa fa-pencil"></i>Editar</a></li>
+    </ol>
+  </section>
+
+  <section class="content">
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="nav-tabs-custom">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab_1" data-toggle="tab">Datos del Usuario</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab_1">
+              <div class="box-body">
+                <form action="../../cfg/editar/editar_usuario.php" class="form-group" id="formularioUsuario" method="POST" novalidate>
+                  <?php
+                  include("../../cfg/conexion.php");
+
+                  $sql = "SELECT r.Id_rol, p.id, p.email, p.nombre, p.apellido
+                  FROM persona p 
+                  JOIN detalle_persona_rol dpr ON p.id = dpr.Id_persona 
+                  JOIN rol r ON dpr.Id_rol = r.Id_rol WHERE id =" . $_GET['Id'];
+                  $resultado = $conexion->query($sql);
+
+                  $row = $resultado->fetch_assoc();
+
+                  $id_usuario_actual = $row['id'];
+                  $rol_actual = $row['Id_rol'];
+                  ?>
+
+                  <input type="hidden" name="Id" id="id_usuario_hidden" value="<?= $id_usuario_actual; ?>">
+
+                  <label class="control-label"></label>
+                  <div class="col-sm-4">
+                    <p>Nombre de Usuario (*):</p>
+                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($row['nombre']); ?>" name="nombre" id="nombre" placeholder="Nombre Del Usuario" minlength="2" maxlength="20" required>
+                  </div>
+                  <label class="control-label"></label>
+                  <div class="col-sm-4">
+                    <p>Email (*):</p>
+                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($row['email']); ?>" name="email" id="email" placeholder="Correo Electronico" minlength="2" maxlength="100" required>
+                  </div>
+                  <label class="control-label"></label>
+                  <div class="col-sm-3">
+                    <p>Contraseña (Opcional):</p>
+                    <div class="password-container">
+                      <input type="password" class="form-control" value="" name="password" id="password" placeholder="Dejar vacío para no cambiar" minlength="6" maxlength="16">
+                      <span class="fa fa-eye toggle-password" data-target="password"></span>
+                    </div>
+                  </div>
+                  <br><br><br><br>
+                  <label class="control-label"></label>
+                  <div class="col-sm-4">
+                    <p>Confirmar Contraseña (Opcional):</p>
+                    <div class="password-container">
+                      <input type="password" name="confirm_password" id="confirm_password" class="form-control" value="" minlength="6" maxlength="16">
+                      <span class="fa fa-eye toggle-password" data-target="confirm_password"></span>
+                    </div>
+                  </div>
+                  <label class="control-label"></label>
+                  <div class="col-sm-4">
+                    <p>Rol (*):</p>
+                    <?php
+                    $es_admin = (isset($_SESSION['rol']) && $_SESSION['rol'] == 1);
+                    $disabled_attr = $es_admin ? '' : 'disabled';
+                    ?>
+
+                    <select name="<?php echo $es_admin ? 'rol' : 'rol_deshabilitado'; ?>" id="rol" class="form-control" required <?php echo $disabled_attr; ?>>
+                      <option value="" selected="disabled">--- Seleccione Un Rol ---</option>
+                      <?php
+                      include("../../cfg/conexion.php");
+
+                      $sql_roles = $conexion->query("SELECT * FROM rol HAVING Id_rol IN (1, 2, 6, 7, 8, 9)");
+                      while ($row_rol = $sql_roles->fetch_assoc()) {
+                        $selected = ($row_rol['Id_rol'] == $rol_actual) ? 'selected' : '';
+                        echo "<option value='" . $row_rol['Id_rol'] . "' " . $selected . ">" . $row_rol['nombre_rol'] . "</option>";
+                      }
+                      ?>
+                    </select>
+
+                    <?php
+                    if (!$es_admin) :
+                    ?>
+                      <input type="hidden" name="rol" value="<?php echo $rol_actual; ?>">
+                      <small class="text-muted">No tienes permisos para modificar el rol.</small>
+                    <?php endif; ?>
+                  </div>
+                  <br><br><br><br>
+                  <div style="float:right;">
+                    <button type="button" class="btn btn-second regresar" id="abrirModalRegresar">Regresar</button>
+                    <button type="button" class="btn btn-success guardar" id="abrirModalGuardar">Actualizar</button>
+                  </div>
+                  <br>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title" id="avisoModalLabel" style="color: white;">Aviso de Validación</h5>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalGuardarUsuario" tabindex="-1" role="dialog" aria-labelledby="modalGuardarUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h5 class="modal-title" id="modalGuardarUsuarioLabel" style="color: white;">Confirmación de Guardado</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea actualizar la información del usuario?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalRegresarUsuario" tabindex="-1" role="dialog" aria-labelledby="modalRegresarUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title" id="modalRegresarUsuarioLabel" style="color: white;">Confirmación de Regreso</h5>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <?php
+          $ruta_regreso = (isset($_SESSION['rol']) && $_SESSION['rol'] == 1) ? 'cfg_usuario_listado.php' : '../../inicio.php';
+          ?>
+          <a href="<?php echo $ruta_regreso; ?>" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?php
+  include('includes/footer.php');
+  ?>
+
+  <script>
+    $(document).ready(function() {
+      function mostrarAviso(mensaje) {
+        clearTimeout($('#avisoModal').data('timer'));
+        $('#avisoTexto').html(mensaje);
+        $('#avisoModal').modal('show');
+      }
+
+      function limpiarErrores() {
+        $('input, select').removeClass('input-error');
+      }
+
+      $('.toggle-password').on('click', function() {
+        var targetId = $(this).data('target');
+        var input = $('#' + targetId);
+        var type = input.attr('type') === 'password' ? 'text' : 'password';
+        input.attr('type', type);
+        $(this).toggleClass('fa-eye fa-eye-slash');
+      });
+
+      async function validarConexionYHora() {
+        if (!navigator.onLine) {
+          mostrarAviso('⚠️ Error: Adaptador de red desconectado. Verifique su Wi-Fi o cable.');
+          return false;
+        }
+
+        try {
+          const urlSinCache = window.location.href.split('?')[0] + '?_nocache=' + new Date().getTime();
+          const response = await fetch(urlSinCache, {
+            method: 'HEAD',
+            cache: 'no-store'
+          });
+
+          const dateHeader = response.headers.get('Date');
+          if (dateHeader) {
+            const serverTime = new Date(dateHeader).getTime();
+            const localTime = new Date().getTime();
+
+            if (Math.abs(serverTime - localTime) > 300000) {
+              mostrarAviso('⚠️ Error: La hora de su sistema es incorrecta. Por favor, ajuste el reloj de su equipo para poder guardar.');
+              return false;
+            }
+          } else {
+            console.warn("⚠️ Aviso: El servidor no está enviando la cabecera de hora.");
+          }
+
+          return true;
+
+        } catch (error) {
+          mostrarAviso('⚠️ Error: Sin conexión a internet. Está conectado a una red, pero no tiene salida hacia el servidor.');
+          return false;
+        }
+      }
+
+      function abrirModalGuardar() {
+        clearTimeout($('#modalGuardarUsuario').data('timer'));
+        $('#modalGuardarUsuario').modal('show');
+      }
+
+      function verificarUsuarioYMostrarModal() {
+        var nombreUsuario = $('#nombre').val().trim();
+        var emailUsuario = $('#email').val().trim();
+        var idUsuario = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+        var btnSubmit = $('#abrirModalGuardar');
+        var textoOriginal = btnSubmit.text();
+
+        btnSubmit.text('Verificando...').attr('disabled', true);
+
+        $.ajax({
+          url: '../../cfg/ajax/verificar_existencia_usuario.php',
+          type: 'POST',
+          data: {
+            nombre: nombreUsuario,
+            email: emailUsuario,
+            id: idUsuario
+          },
+          dataType: 'json',
+          success: function(response) {
+            btnSubmit.text(textoOriginal).attr('disabled', false);
+
+            if (response.existe_nombre && response.existe_email) {
+              $('#nombre').addClass('input-error');
+              $('#email').addClass('input-error');
+              mostrarAviso('⚠️ Error: El nombre de usuario y el correo electrónico ya están en uso.');
+            } else if (response.existe_nombre) {
+              $('#nombre').addClass('input-error');
+              mostrarAviso('⚠️ Error: El nombre de usuario "' + nombreUsuario + '" ya está en uso.');
+            } else if (response.existe_email) {
+              $('#email').addClass('input-error');
+              mostrarAviso('⚠️ Error: El correo electrónico "' + emailUsuario + '" ya está en uso.');
+            } else {
+              $('#modalGuardarUsuario').modal('show');
+            }
+          },
+          error: function() {
+            btnSubmit.text(textoOriginal).attr('disabled', false);
+            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
+          }
+        });
+      }
+
+      $('#formularioUsuario').on('submit', function(e) {
+        e.preventDefault();
+      });
+
+      $('#abrirModalGuardar').off('click').on('click', async function(e) {
+        e.preventDefault();
+
+        var entornoValido = await validarConexionYHora();
+        if (!entornoValido) return;
+
+        limpiarErrores();
+        var formularioValido = true;
+
+        $('input[required], select[required]').each(function() {
+          var $input = $(this);
+          if (($input.is('select') && ($input.val() === null || $input.val() === "")) ||
+            (!$input.is('select') && $input.val().trim() === "")) {
+            $input.addClass('input-error');
+            formularioValido = false;
+          }
+        });
+
+        if (!formularioValido) {
+          mostrarAviso('⚠️ Error: Los campos obligatorios (*) deben estar llenos.');
+          return;
+        }
+
+        var password = $('#password').val() ? $('#password').val().trim() : "";
+        var confirmPassword = $('#confirm_password').val() ? $('#confirm_password').val().trim() : "";
+        var cambiandoPassword = (password !== "" || confirmPassword !== "");
+        var esNuevoUsuario = !$('input[name="Id"]').length;
+
+        if (esNuevoUsuario || cambiandoPassword) {
+          if (password === "" || confirmPassword === "") {
+            $('#password').addClass('input-error');
+            $('#confirm_password').addClass('input-error');
+            mostrarAviso('⚠️ Error: Debe llenar ambos campos de contraseña.');
+            return;
+          }
+          if (password.length < 6 || password.length > 16) {
+            $('#password').addClass('input-error');
+            mostrarAviso('⚠️ Error de Contraseña: La longitud debe ser entre 6 y 16 dígitos.');
+            return;
+          }
+          if (password !== confirmPassword) {
+            $('#password').addClass('input-error');
+            $('#confirm_password').addClass('input-error');
+            mostrarAviso('⚠️ Error: Las contraseñas no coinciden.');
+            return;
+          }
+        }
+
+        verificarUsuarioYMostrarModal();
+      });
+
+      $('#confirmarGuardadoFinal').off('click').on('click', function(e) {
+        $('#modalGuardarUsuario').modal('hide');
+        $('#formularioUsuario')[0].submit();
+      });
+
+      $('#abrirModalRegresar').on('click', function() {
+        $('#modalRegresarUsuario').modal('show');
+      });
+    });
+  </script>
+
+  </html>

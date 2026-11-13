@@ -1,0 +1,418 @@
+<?php
+include('../../cfg/conexion.php');
+
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
+$id_persona_activa = $_SESSION['id'] ?? 0;
+$id_rol_usuario_activo = $_SESSION['rol'] ?? 0;
+
+// Base de la consulta
+$sqlConsultas = "SELECT COUNT(c.Id_consulta) AS total_consultas 
+                    FROM consulta c
+                    INNER JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+                    WHERE c.estatus = 1";
+if ($id_rol_usuario_activo == 7 || $id_rol_usuario_activo == 4) {
+  $sqlConsultas .= " AND dm.Id_persona = '$id_persona_activa'";
+}
+
+$queryData = mysqli_query($conexion, $sqlConsultas);
+$total_consultas = mysqli_fetch_assoc($queryData)['total_consultas'];
+
+include('includes/headerNav2.php');
+verificarAcceso('Gestionar Consultas');
+?>
+
+<head>
+  <title>Consultas | Listado</title>
+</head>
+
+<div class="content-wrapper">
+  <section class="content-header">
+    <h1>
+      Consultas (<?php echo $total_consultas; ?>)
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="#"><i class="fa fa-home"></i>Inicio</a></li>
+      <li><a href="#"><i class="fa fa-user"></i>Consultas</a></li>
+      <li><a href="#"><i class="fa fa-book"></i>Listado</a></li>
+    </ol>
+  </section>
+
+  <section class="content">
+    <div style="padding-bottom: 10px;">
+      <?php if (in_array('Ver papelera de consultas', $_SESSION["permisos"])) : ?>
+        <a href="papelera/consulta_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color:gray;"> Papelera </a>
+      <?php endif; ?>
+      <p class="pull-right" style="width:5px;"></p>
+      <?php if (in_array('Generar Reportes de Consultas', $_SESSION["permisos"])) : ?>
+        <a href="#" class="btn-sm btn-info pull-right reporte"> Generar Reporte </a>
+      <?php endif; ?>
+      <p class="pull-right" style="width:5px;"></p>
+      <?php if (in_array('Crear Consultas', $_SESSION["permisos"])) : ?>
+        <a href="consulta_agregar.php" class="btn-sm btn-success pull-right"> Nueva Consulta </a>
+      <?php endif; ?>
+      <div class="pull-left form-inline">
+        <form method="GET" action="" id="formBusquedaRapida">
+          <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+        </form>
+      </div>
+      <p class="pull-right" style="width:5px;"></p>
+      <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de consultas.">
+        <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
+          <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar consulta"></i>
+        </button>
+      </span>
+    </div>
+    <br><br>
+    <div id="contenedorTabla">
+      <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
+        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+          <th>Paciente</th>
+          <th>Médico</th>
+          <th>Fecha de Consulta</th>
+          <?php if (in_array('Gestionar acciones de consultas', $_SESSION["permisos"])) : ?>
+            <th>Acciones</th>
+          <?php endif; ?>
+        </thead>
+        <tbody class="tbody" width="100%" style="font-size: 12px;">
+          <?php
+          $busqueda  = isset($_GET['buscar']) ? mysqli_real_escape_string($conexion, $_GET['buscar']) : '';
+          $f_desde   = isset($_GET['f_desde']) ? mysqli_real_escape_string($conexion, $_GET['f_desde']) : '';
+          $f_hasta   = isset($_GET['f_hasta']) ? mysqli_real_escape_string($conexion, $_GET['f_hasta']) : '';
+          $f_medico  = isset($_GET['f_medico']) ? mysqli_real_escape_string($conexion, $_GET['f_medico']) : '';
+
+          $registros_por_pagina = 14;
+          $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+          $inicio = ($pagina_actual - 1) * $registros_por_pagina;
+
+          $donde = "WHERE c.estatus = 1";
+
+          $id_rol_usuario_activo = isset($_SESSION['rol']) ? $_SESSION['rol'] : 0;
+          $id_persona_activa = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
+
+          if ($id_rol_usuario_activo == 7 || $id_rol_usuario_activo == 4) {
+            $donde .= " AND dm.Id_persona = '$id_persona_activa'";
+          }
+
+          if ($busqueda != '') {
+            $donde .= " AND (p_paciente.nombre LIKE '%$busqueda%' 
+                      OR p_paciente.apellido LIKE '%$busqueda%' 
+                      OR p_medico.nombre LIKE '%$busqueda%')";
+          }
+
+          if ($f_desde != '') {
+            $donde .= " AND DATE(c.fecha_consulta) >= '$f_desde'";
+          }
+          if ($f_hasta != '') {
+            $donde .= " AND DATE(c.fecha_consulta) <= '$f_hasta'";
+          }
+          if ($f_medico != '') {
+            $donde .= " AND (p_medico.nombre LIKE '%$f_medico%' OR p_medico.apellido LIKE '%$f_medico%')";
+          }
+
+          $sql_conteo = "SELECT COUNT(*) as total 
+                  FROM consulta c
+                  JOIN persona p_paciente ON c.Id_paciente = p_paciente.id
+                  JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+                  JOIN persona p_medico ON dm.Id_persona = p_medico.id 
+                  $donde";
+          $resultado_conteo = mysqli_query($conexion, $sql_conteo);
+          $fila_conteo = mysqli_fetch_assoc($resultado_conteo);
+          $total_consultas_filtradas = $fila_conteo['total'];
+          $total_paginas = ceil($total_consultas_filtradas / $registros_por_pagina);
+
+          $sql = "SELECT 
+                    c.id_consulta,
+                    p_paciente.nombre AS nombre_paciente, 
+                    p_paciente.apellido AS apellido_paciente,
+                    p_medico.nombre AS nombre_medico, 
+                    p_medico.apellido AS apellido_medico,
+                    c.motivo_consulta,
+                    c.fecha_consulta,
+                    c.estatus
+                  FROM consulta c
+                  JOIN persona p_paciente ON c.Id_paciente = p_paciente.id
+                  JOIN detalle_medico dm ON c.Id_medico = dm.Id_detalle_medico
+                  JOIN persona p_medico ON dm.Id_persona = p_medico.id
+                  $donde
+                  ORDER BY c.fecha_consulta DESC
+                  LIMIT $inicio, $registros_por_pagina";
+
+          $resultado = $conexion->query($sql);
+
+          if ($resultado->num_rows > 0) {
+            while ($row = $resultado->fetch_assoc()) {
+          ?>
+              <tr>
+                <td class=""><span class="text-row text-white"><?= ($row['nombre_paciente']) . " " . ($row['apellido_paciente']); ?></span></td>
+                <td class=""><span class="text-row text-white"><?= ($row['nombre_medico']) . " " . ($row['apellido_medico']); ?></span></td>
+                <td class=""><span class="text-row text-white"><?= date('d/m/Y', strtotime($row['fecha_consulta'])); ?></span></td>
+                <?php if (in_array('Gestionar acciones de consultas', $_SESSION["permisos"])) : ?>
+                  <td>
+                    <?php if (in_array('Ver Consultas', $_SESSION["permisos"])) : ?>
+                      <a href="consulta_info.php?Id=<?php echo $row['id_consulta'] ?>" class="btn-sm btn-info" title="Ver consulta"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
+                    <?php endif; ?>
+                    <?php if (in_array('Generar Recipe Medico', $_SESSION["permisos"])) : ?>
+                      <a href="../../cfg/pdf/consulta_receta_pdf.php?id_consulta=<?php echo $row['id_consulta'] ?>" class="btn-sm btn-primary" title="Generar Recipe"><img src="../../recursos/imagenes/iconos/documento.png" style="width:15px; height:15px;"></a>
+                    <?php endif; ?>
+                    <?php if (in_array('Editar Consultas', $_SESSION["permisos"])) : ?>
+                      <a href="consulta_editar.php?Id=<?php echo $row['id_consulta'] ?>" class="btn-sm btn-warning" title="Editar Consulta"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
+                    <?php endif; ?>
+                    <?php if (in_array('Desactivar Consultas', $_SESSION["permisos"])) : ?>
+                      <a href="#" data-id="<?php echo $row['id_consulta'] ?>" class="btn-sm btn-danger btn-desactivar" title="Desactivar consulta"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
+                    <?php endif; ?>
+                  </td>
+                <?php endif; ?>
+              </tr>
+          <?php
+            }
+          } else {
+            echo "<tr><td colspan='6'>No se encontraron consultas registradas.</td></tr>";
+          }
+          ?>
+        </tbody>
+      </table>
+    </div>
+
+    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+      <ul class="pagination">
+        <?php
+        $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
+        $rango = 1;
+        $inicio_ventana = max(1, $pagina_actual - $rango);
+        $fin_ventana = min($total_paginas, $pagina_actual + $rango);
+
+        if ($pagina_actual > 1) : ?>
+          <li><a href="?pagina=1<?php echo $query_string; ?>" title="Primero">&laquo;&laquo;</a></li>
+          <li><a href="?pagina=<?php echo ($pagina_actual - 1) . $query_string; ?>">&laquo;</a></li>
+        <?php endif;
+
+        for ($i = $inicio_ventana; $i <= $fin_ventana; $i++) : ?>
+          <li class="<?php echo ($i == $pagina_actual) ? 'active' : ''; ?>">
+            <a href="?pagina=<?php echo $i . $query_string; ?>"><?php echo $i; ?></a>
+          </li>
+        <?php endfor;
+
+        if ($pagina_actual < $total_paginas) : ?>
+          <li><a href="?pagina=<?php echo ($pagina_actual + 1) . $query_string; ?>">&raquo;</a></li>
+          <li><a href="?pagina=<?php echo $total_paginas . $query_string; ?>" title="Último">&raquo;&raquo;</a></li>
+        <?php endif; ?>
+      </ul>
+    </nav>
+  </section>
+
+  <?php
+  $mostrar_modal_exito = false;
+  $mostrar_modal_error = false;
+  $mensaje_modal = '';
+
+  if (isset($_SESSION['mensaje_user_exito'])) {
+    $mostrar_modal_exito = true;
+    $mensaje_modal = $_SESSION['mensaje_user_exito'];
+    unset($_SESSION['mensaje_user_exito']);
+  } elseif (isset($_SESSION['mensaje_user_error'])) {
+    $mostrar_modal_error = true;
+    $mensaje_modal = $_SESSION['mensaje_user_error'];
+    unset($_SESSION['mensaje_user_error']);
+  }
+  ?>
+
+  <div class="modal fade" id="modalBusquedaAvanzada" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <form id="formBusquedaAvanzada" method="GET" action="">
+          <div class="modal-header bg-primary">
+            <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Consultas</h4>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-4 form-group">
+                <label>Fecha Desde</label>
+                <input type="date" name="f_desde" class="form-control" max="<?php echo date('Y-m-d'); ?>" value="<?php echo isset($f_desde) ? $f_desde : ''; ?>">
+              </div>
+              <div class="col-md-4 form-group">
+                <label>Fecha Hasta</label>
+                <input type="date" name="f_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>" value="<?php echo isset($f_hasta) ? $f_hasta : ''; ?>">
+              </div>
+              <div class="col-md-4 form-group">
+                <label>Nombre del Médico</label>
+                <input type="text" name="f_medico" class="form-control" placeholder="Ej. Juan Pérez" oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo isset($f_medico) ? htmlspecialchars($f_medico) : ''; ?>">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-second pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+            <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalExito" tabindex="-1" role="dialog" aria-labelledby="modalExitoLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h5 class="modal-title" id="modalExitoLabel" style="color: white;">Operación Exitosa</h5>
+        </div>
+        <div class="modal-body">
+          <p id="mensajeExito"><?php echo $mensaje_modal; ?></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" data-dismiss="modal">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalError" tabindex="-1" role="dialog" aria-labelledby="modalErrorLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title" id="modalErrorLabel" style="color: white;">Error en la Operación</h5>
+        </div>
+        <div class="modal-body">
+          <p id="mensajeError"><?php echo $mensaje_modal; ?></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="DesactivarConsulta" tabindex="-1" role="dialog" aria-labelledby="DesactivarConsultaLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h4 class="modal-title" id="DesactivarConsultaLabel">Confirmación de Desactivación</h4>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea desactivar esta consulta? Esta acción solo se puede revertir en la papelera.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a id="desactivar" href="#" class="btn btn-danger">Aceptar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ModalReporteConsulta" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title"><i class="fa fa-file-pdf-o"></i>Generar Reporte de Consultas</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Seleccione el tipo de reporte:</label>
+            <select id="tipo_reporte" class="form-control">
+              <optgroup label="General">
+                <option value="todas">Todas las consultas (Histórico)</option>
+                <option value="hoy">Consultas del día de hoy</option>
+              </optgroup>
+              <optgroup label="Análisis Médico">
+                <option value="patologias">Frecuencia de Patologías (Morbilidad)</option>
+                <option value="riesgo">Pacientes con Signos en Riesgo (Tensión/Saturación)</option>
+                <option value="diagnosticos">Diagnosticos Mas Frecuentes en Consultas</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnEjecutarReporte" class="btn btn-primary">Generar Reporte</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?php
+  include('includes/footer.php');
+  ?>
+
+  <script>
+    $(document).ready(function() {
+      $(document).on('click', '.btn-desactivar', function(e) {
+        e.preventDefault();
+        var IdCita = $(this).data('id');
+        var urlDesactivar = "../../cfg/desactivar/desactivar_consulta.php?Id=" + IdCita;
+        $('#desactivar').attr('href', urlDesactivar);
+        $('#DesactivarConsulta').modal('show');
+      })
+
+      $('.reporte').on('click', function(e) {
+        e.preventDefault();
+        $('#ModalReporteConsulta').modal('show');
+      });
+
+      $('#btnEjecutarReporte').on('click', function() {
+        var tipo = $('#tipo_reporte').val();
+        window.open('../../cfg/reportes/generar_pdf_consultas.php?tipo=' + tipo, '_blank');
+        $('#ModalReporteConsulta').modal('hide');
+      })
+
+      window.cargarDatosAjax = function(url) {
+        $('.tbody').css('opacity', '0.4');
+
+        $.get(url, function(data) {
+          var htmlParsed = $(data);
+
+          $('.tbody').html(htmlParsed.find('.tbody').html()).css('opacity', '1');
+          $('#contenedorPaginacion').html(htmlParsed.find('#contenedorPaginacion').html());
+
+          window.history.pushState(null, '', url);
+        }).fail(function() {
+          alert("Error de conexión al aplicar filtros.");
+          $('.tbody').css('opacity', '1');
+        });
+      };
+
+      let timer;
+      $('#buscar').on('keyup', function() {
+        clearTimeout(timer);
+        let query = $(this).val();
+        timer = setTimeout(function() {
+          var url = 'consulta_listado.php?buscar=' + encodeURIComponent(query);
+          cargarDatosAjax(url);
+        }, 400);
+      });
+
+      $('#formBusquedaRapida').on('submit', function(e) {
+        e.preventDefault();
+      });
+
+      $('#formBusquedaAvanzada').on('submit', function(e) {
+        e.preventDefault();
+        var url = 'consulta_listado.php?' + $(this).serialize();
+        $('#modalBusquedaAvanzada').modal('hide');
+        cargarDatosAjax(url);
+      });
+
+      $(document).on('click', '#contenedorPaginacion .pagination a', function(e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        if (url) {
+          cargarDatosAjax(url);
+        }
+      });
+
+      window.limpiarFiltrosAjax = function() {
+        $('#formBusquedaAvanzada')[0].reset();
+        $('#buscar').val('');
+        var urlLimpia = window.location.href.split('?')[0];
+        cargarDatosAjax(urlLimpia);
+        $('#modalBusquedaAvanzada').modal('hide');
+      };
+
+      <?php if ($mostrar_modal_exito) : ?>
+        $('#modalExito').modal('show');
+      <?php elseif ($mostrar_modal_error) : ?>
+        $('#modalError').modal('show');
+      <?php endif; ?>
+    });
+  </script>
