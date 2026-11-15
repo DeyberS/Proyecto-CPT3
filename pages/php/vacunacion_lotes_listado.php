@@ -33,7 +33,7 @@ verificarAcceso('Ver Lotes'); // O 'Gestionar Vacunas'
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <p class="pull-right" style="width:5px;"></p>
       <?php if (in_array('Ver papelera de lotes', $_SESSION["permisos"])) : ?>
         <a href="papelera/vacunacion_lotes_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color: gray;"> Papelera </a>
@@ -60,7 +60,7 @@ verificarAcceso('Ver Lotes'); // O 'Gestionar Vacunas'
     
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <tr>
             <th>Nombre del Lote</th>
             <th>F. Fabricación</th>
@@ -161,7 +161,7 @@ verificarAcceso('Ver Lotes'); // O 'Gestionar Vacunas'
     </div>
 
     <!-- PAGINACIÓN (Mantenida) -->
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <li class="disabled"><a href="#">&laquo;&laquo;</a></li>
         <li class="active"><a href="#">1</a></li>

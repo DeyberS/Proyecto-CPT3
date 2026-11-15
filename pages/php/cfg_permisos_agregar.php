@@ -7,15 +7,6 @@ verificarAcceso('Crear Permisos');
   <title>Permisos | Añadir</title>
 </head>
 
-<style>
-  .input-error input[type="text"],
-  .input-error select .input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-</style>
-
 <div class="content-wrapper">
   <section class="content-header">
     <h1>Añadir Permiso</h1>
@@ -157,7 +148,6 @@ verificarAcceso('Crear Permisos');
             btnGuardar.text(textoOriginal).attr('disabled', false);
 
             if (response.existe_nombre) {
-              $('#group_nombre').addClass('input-error');
               $('#nombre_permiso').addClass('input-error');
               mostrarAviso('⚠️ Error: Ya existe un permiso con el nombre: ' + nombre);
             } else {
@@ -178,11 +168,11 @@ verificarAcceso('Crear Permisos');
 
         if ($('#nombre_permiso').val().trim() === "") {
           errores.push("Falta el nombre del permiso.");
-          $('#group_nombre').addClass('input-error');
+          $('#nombre_permiso').addClass('input-error');
         }
         if ($('#descripcion').val().trim() === "") {
           errores.push("Falta la descripcion del permiso.");
-          $('#group_descripcion').addClass('input-error');
+          $('#descripcion').addClass('input-error');
         }
 
         if (errores.length > 0) {

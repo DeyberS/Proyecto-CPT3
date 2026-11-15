@@ -27,7 +27,7 @@ verificarAcceso('Ver papelera de consultas');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <a href="../consulta_listado.php" class="btn-sm btn-primary pull-right"> Regresar al Listado</a>
       <div class="pull-left form-inline">
         <form method="GET" action="" id="formBusquedaRapida">
@@ -44,7 +44,7 @@ verificarAcceso('Ver papelera de consultas');
     <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Paciente</th>
           <th>Médico</th>
           <th>Fecha de Consulta</th>
@@ -103,8 +103,6 @@ verificarAcceso('Ver papelera de consultas');
                     p_paciente.apellido AS apellido_paciente,
                     p_medico.nombre AS nombre_medico, 
                     p_medico.apellido AS apellido_medico,
-                    c.motivo_consulta,
-                    c.diagnostico,
                     c.fecha_consulta,
                     c.estatus
                   FROM consulta c
@@ -145,7 +143,7 @@ verificarAcceso('Ver papelera de consultas');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

@@ -211,7 +211,7 @@ verificarAcceso('Ver Recetas');
   <section class="content">
     <div class="row">
       <div class="col-xs-12">
-        <div class="box box-primary">
+        <div class="toolbar-container">
           <div class="box-header with-border">
             <p class="pull-right" style="width:5px;"></p>
             <a href="farmacia_inventario_listado.php" style="height:31px;" class="btn-sm btn-primary pull-right">Ir al Inventario</a>
@@ -246,7 +246,7 @@ verificarAcceso('Ver Recetas');
         <div class="box-body">
           <div id="contenedorTabla">
             <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-              <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+              <thead class="table-dark">
                 <tr>
                   <th>Fecha Consulta</th>
                   <th>Paciente / Tipo</th>
@@ -357,7 +357,7 @@ verificarAcceso('Ver Recetas');
           </div>
         </div>
 
-        <nav aria-label="Page navigation" style="position: fixed; bottom:0;">
+        <nav aria-label="Page navigation">
           <ul class="pagination">
             <?php
             $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

@@ -37,6 +37,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="author" content="Deyber Silva">
   <link rel="stylesheet" href="../../recursos/bootstrap/css/bootstrap.css">
   <link rel="stylesheet" href="../../recursos/css/style.css?v=<?php echo filemtime('../../recursos/css/style.css'); ?>">
@@ -349,8 +350,8 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
   <div class="wrapper">
     <header class="main-header">
       <a href="#" class="logo">
-        <span class="logo-mini"><b>CPT3</b></span>
-        <span class="logo-lg"><b>CPT3</b></span>
+        <span class="logo-mini"><b>CPT</b></span>
+        <span class="logo-lg"><b>CPT</b></span>
       </a>
       <nav class="navbar navbar-static-top">
         <img src="../../recursos/imagenes/iconos/menu.png" data-toggle="offcanvas" role="button" style="width: 45px; height: 45px;">
@@ -378,7 +379,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
             <li class="dropdown user user-menu">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 <img src="../../recursos/imagenes/iconos/usuario.png" class="user-image" alt="User Image">
-                <span class="hidden-xs"><?php if (isset($_SESSION['nombre'])) {
+                <span class="user-name-text"><?php if (isset($_SESSION['nombre'])) {
                                           echo '' . $_SESSION['nombre'] . '';
                                         } ?></span>
               </a>
@@ -386,7 +387,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                 <li class="user-header">
                   <img src="../../recursos/imagenes/iconos/usuario.png" class="img-circle" alt="User Image">
                   <p>
-                    <span class="hidden-xs"><?php if (isset($_SESSION['nombre'])) {
+                    <span class="user-name-text"><?php if (isset($_SESSION['nombre'])) {
                                               echo '' . $_SESSION['nombre'] . '';
                                             } ?></span>
                     <small>-- En Linea --</small>
@@ -413,7 +414,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
             <img src="../../recursos/imagenes/iconos/usuario.png" class="img-circle" alt="User Image">
           </div>
           <div class="pull-left info">
-            <p><span class="hidden-xs"><?php if (isset($_SESSION['nombre'])) {
+            <p><span class="user-name-text"><?php if (isset($_SESSION['nombre'])) {
                                           echo '' . $_SESSION['nombre'] . '';
                                         } ?></span></p>
             <a href="#"><span class="status-dot"></span>En Linea</a>
@@ -424,8 +425,8 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
 
           <li class="treeview">
             <a href="../../inicio.php">
-              <img src="../../recursos/imagenes/iconos/inicio.png" style="height:18px; width:18px; margin-top:-4px; margin-right:10px;">
-              <span>Inicio</span>
+              <img src="../../recursos/imagenes/iconos/filled/places/home_alt@2x.png" style="height:25px; width:25px; margin-top:-4px; margin-right:10px; filter:invert(1);">
+              <span style="margin-left:-6px;">Inicio</span>
             </a>
           </li>
 
@@ -771,9 +772,11 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
 
         <div class="sidebar-footer ocultar-al-colapsar" style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; color: #b8c7ce; border-top: 1px solid #374850; background-color: inherit; z-index: 10;">
           <div style="font-size: 12px; white-space: nowrap; overflow: hidden;">
+            <i class="fa fa-calendar" style="margin-right: 5px;"><img src="../../recursos/imagenes/iconos/calendar-lines-svgrepo-com.svg" style="width: 25px; height: 25px; filter:invert(1);"></i>
             <span id="fecha-actual"></span>
           </div>
           <div style="font-size: 16px; font-weight: bold; margin-top: 5px; white-space: nowrap; overflow: hidden;">
+            <i class="fa fa-clock-o" style="margin-right: 5px;"><img src="../../recursos/imagenes/iconos/clock-two-svgrepo-com.svg" style="width: 25px; height: 25px; filter:invert(1);"></i>
             <span id="reloj-actual"></span>
           </div>
         </div>

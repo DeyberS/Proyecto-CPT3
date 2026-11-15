@@ -42,13 +42,6 @@ verificarAcceso('Editar Roles');
 </head>
 
 <style>
-  .input-error input[type="text"],
-  .input-error select .input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-
   .permisos-wrapper {
     border: 1px solid #d2d6de;
     background: #f9f9f9;
@@ -309,7 +302,6 @@ include('includes/footer.php');
           btnGuardar.text(textoOriginal).attr('disabled', false);
 
           if (response.existe_nombre) {
-            $('#group_nombre').addClass('input-error');
             $('#nombre_rol').addClass('input-error');
             mostrarAviso('⚠️ Error: Ya existe un rol con el nombre: ' + nombre);
           } else {
@@ -330,7 +322,7 @@ include('includes/footer.php');
 
       if ($('#nombre_rol').val().trim() === "") {
         errores.push("Falta el nombre del rol.");
-        $('#group_nombre').addClass('input-error');
+        $('#nombre_rol').addClass('input-error');
       }
 
       if (errores.length > 0) {

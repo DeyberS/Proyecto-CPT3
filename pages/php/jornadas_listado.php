@@ -37,7 +37,7 @@ verificarAcceso('Gestionar Jornadas');
 
   <?php if (isset($_SESSION["permisos"])) : ?>
     <section class="content">
-      <div style="padding-bottom: 10px;">
+      <div class="toolbar-container">
         
         <!-- BOTÓN DE REPORTES (ABRE MODAL) -->
         <?php if (in_array('Generar Reportes de Jornadas', $_SESSION["permisos"]) || in_array('Gestionar Jornadas', $_SESSION["permisos"])) : ?>
@@ -55,7 +55,7 @@ verificarAcceso('Gestionar Jornadas');
 
       <div id="contenedorTabla" class="table-responsive">
         <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-          <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+          <thead class="table-dark">
             <th>Nombre de la Jornada</th>
             <th>Tipo</th>
             <th>Fecha</th>
@@ -172,7 +172,7 @@ verificarAcceso('Gestionar Jornadas');
         </table>
       </div>
 
-      <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+      <nav id="contenedorPaginacion" aria-label="Page navigation">
         <ul class="pagination">
           <li class="disabled"><a href="#">&laquo;</a></li>
           <li class="active"><a href="#">1</a></li>

@@ -107,7 +107,7 @@ verificarAcceso('Gestionar Citas');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <?php if (in_array('Ver papelera de citas', $_SESSION["permisos"])) : ?>
         <a href="papelera/citas_medicas_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color:gray;"> Papelera </a>
       <?php endif; ?>
@@ -146,7 +146,7 @@ verificarAcceso('Gestionar Citas');
     </div>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Paciente</th>
           <th>Médico</th>
           <th>Fecha y Hora</th>
@@ -248,61 +248,47 @@ verificarAcceso('Gestionar Citas');
             <td class=""><span class="text-row text-white"><?= $row['nombre_paciente']; ?> <?= $row['apellido_paciente']; ?></span></td>
             <td class=""><span class="text-row text-white"><?= $row['nombre_medico']; ?> <?= $row['apellido_medico']; ?></span></td>
             <td class=""><span class="text-row text-white"><?= date('d/m/Y', strtotime($row['fecha_cita'])); ?> - <?= date('h:i A', strtotime($row['hora_cita'])); ?></span></td>
-            <td class=""><span class="label <?= $clase_badge; ?>" style="font-size: 11px;"><?= strtoupper($estatus); ?></span></td>
+            <!-- Estado -->
+            <td class="">
+              <span class="label <?= $clase_badge; ?>" style="font-size: 11px;"><?= strtoupper($estatus); ?></span>
+            </td>
+
+            <!-- Cambios (solo si tiene permiso) -->
             <?php if (in_array('Gestionar acciones de citas', $_SESSION["permisos"])) : ?>
-              <td>
-                <?php if (in_array('Gestionar acciones de citas', $_SESSION["permisos"])) : ?>
-                  <?php if ($estatus == 'Pendiente') : ?>
-                    <a href="#" onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Confirmada'); return false;" class="btn-sm btn-info" title="Confirmar"><img src="../../recursos/imagenes/iconos/Arrow-w.png" style="width:15px; height:15px;"></a>
-                    <a href="#" onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></a>
-                  <?php else : ?>
-                  <?php endif; ?>
+              <td class="td-cambios">
+                <?php if ($estatus == 'Pendiente') : ?>
+                  <a href="#" onclick="cambiarEstado(<?= $row['Id_cita'] ?>, 'Confirmada'); return false;" class="btn-sm btn-info" title="Confirmar"><img src="../../recursos/imagenes/iconos/Arrow-w.png" style="width:15px;height:15px;"></a>
+                  <a href="#" onclick="cambiarEstado(<?= $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px;height:15px;"></a>
+                <?php endif; ?>
 
-                  <?php if ($estatus == 'Vencida') : ?>
-                    <a href="#" onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></a>
-                  <?php else : ?>
-                  <?php endif; ?>
+                <?php if ($estatus == 'Vencida') : ?>
+                  <a href="#" onclick="cambiarEstado(<?= $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px;height:15px;"></a>
+                <?php endif; ?>
 
-                  <?php if ($row['estado'] == 'Inasistente') : ?>
-                    <a href="#" onclick="gestionarReprogramacion(<?php echo $row['Id_cita'] ?>, '<?php echo $row['estado'] ?>'); return false;" class="btn-sm btn-success" title="Reprogramar">
-                      <img src="../../recursos/imagenes/iconos/reprogramar.png" style="width:15px; height:15px;">
-                    </a>
+                <?php if ($estatus == 'Inasistente') : ?>
+                  <a href="#" onclick="gestionarReprogramacion(<?= $row['Id_cita'] ?>, '<?= $row['estado'] ?>'); return false;" class="btn-sm btn-success" title="Reprogramar"><img src="../../recursos/imagenes/iconos/reprogramar.png" style="width:15px;height:15px;"></a>
+                  <a href="#" onclick="cambiarEstado(<?= $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px;height:15px;"></a>
+                <?php endif; ?>
 
-                    <a href="#" onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar">
-                      <img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;">
-                    </a>
-                  <?php endif; ?>
-
-                  <?php if ($estatus == 'Confirmada') : ?>
-                    <a href="consulta_agregar.php?tipo_cedula=<?php echo $row['tipo_cedula_paciente']; ?>&cedula=<?php echo $row['cedula_paciente']; ?>&Id=<?php echo $row['Id_cita']; ?>&medico=<?php echo $row['Id_medico']; ?>&motivo=<?php echo $row['motivo']; ?>&fecha=<?php echo $row['fecha_cita']; ?>" class="btn-sm btn-info " title="Atender Paciente">
-                      <img src="../../recursos/imagenes/iconos/atender.png" style="width:15px; height:15px;"></a>
-
-                    <a href="#" onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Finalizada'); return false;" class="btn-sm btn-success" title="Finalizar"><img src="../../recursos/imagenes/iconos/finalizada.png" style="width:15px; height:15px;"></a>
-                    <a href="#" onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></a>
-                  <?php else : ?>
-                  <?php endif; ?>
-
-                  <?php if ($estatus == 'Reprogramada') : ?>
-                    <a href="consulta_agregar.php?tipo_cedula=<?php echo $row['tipo_cedula_paciente']; ?>&cedula=<?php echo $row['cedula_paciente']; ?>&Id=<?php echo $row['Id_cita']; ?>&medico=<?php echo $row['Id_medico']; ?>&motivo=<?php echo $row['motivo']; ?>&fecha=<?php echo $row['fecha_cita']; ?>" class="btn-sm btn-info " title="Atender Paciente">
-                      <img src="../../recursos/imagenes/iconos/atender.png" style="width:15px; height:15px;"></a>
-
-                    <a href="#" onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Finalizada'); return false;" class="btn-sm btn-success" title="Finalizar"><img src="../../recursos/imagenes/iconos/finalizada.png" style="width:15px; height:15px;"></a>
-                    <a href="#" onclick="cambiarEstado(<?php echo $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px; height:15px;"></a>
-                  <?php else : ?>
-                  <?php endif; ?>
+                <?php if ($estatus == 'Confirmada' || $estatus == 'Reprogramada') : ?>
+                  <a href="consulta_agregar.php?tipo_cedula=<?= $row['tipo_cedula_paciente'] ?>&cedula=<?= $row['cedula_paciente'] ?>&Id=<?= $row['Id_cita'] ?>&medico=<?= $row['Id_medico'] ?>&motivo=<?= $row['motivo'] ?>&fecha=<?= $row['fecha_cita'] ?>" class="btn-sm btn-info" title="Atender Paciente"><img src="../../recursos/imagenes/iconos/atender.png" style="width:15px;height:15px;"></a>
+                  <a href="#" onclick="cambiarEstado(<?= $row['Id_cita'] ?>, 'Finalizada'); return false;" class="btn-sm btn-success" title="Finalizar"><img src="../../recursos/imagenes/iconos/finalizada.png" style="width:15px;height:15px;"></a>
+                  <a href="#" onclick="cambiarEstado(<?= $row['Id_cita'] ?>, 'Cancelada'); return false;" class="btn-sm btn-danger" title="Cancelar"><img src="../../recursos/imagenes/iconos/cancelar.png" style="width:15px;height:15px;"></a>
+                <?php endif; ?>
               </td>
             <?php endif; ?>
-            <td>
-            <?php endif; ?>
-            <?php if (in_array('Generar Comprobante de Cita', $_SESSION["permisos"])) : ?>
-              <a href="../../cfg/pdf/pdf_cita.php?Id=<?php echo $row['Id_cita'] ?>" class="btn-sm btn-primary" title="Generar Comprobante"><img src="../../recursos/imagenes/iconos/documento.png" style="width:15px; height:15px;"></a>
-            <?php endif; ?>
-            <?php if (in_array('Editar Citas', $_SESSION["permisos"])) : ?>
-              <a href="citas_medicas_editar.php?Id=<?php echo $row['Id_cita'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px; height:15px;"></a>
-            <?php endif; ?>
-            <?php if (in_array('Desactivar Citas', $_SESSION["permisos"])) : ?>
-              <a href="#" data-id="<?php echo $row['Id_cita'] ?>" class="btn-sm btn-danger btn-desactivar" title="Desactivar"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></a>
-            <?php endif; ?>
+
+            <!-- Acciones (siempre) -->
+            <td class="td-acciones">
+              <?php if (in_array('Generar Comprobante de Cita', $_SESSION["permisos"])) : ?>
+                <a href="../../cfg/pdf/pdf_cita.php?Id=<?= $row['Id_cita'] ?>" class="btn-sm btn-primary" title="Generar Comprobante"><img src="../../recursos/imagenes/iconos/documento.png" style="width:15px;height:15px;"></a>
+              <?php endif; ?>
+              <?php if (in_array('Editar Citas', $_SESSION["permisos"])) : ?>
+                <a href="citas_medicas_editar.php?Id=<?= $row['Id_cita'] ?>" class="btn-sm btn-warning" title="Editar"><img src="../../recursos/imagenes/iconos/editar.png" style="width:15px;height:15px;"></a>
+              <?php endif; ?>
+              <?php if (in_array('Desactivar Citas', $_SESSION["permisos"])) : ?>
+                <a href="#" data-id="<?= $row['Id_cita'] ?>" class="btn-sm btn-danger btn-desactivar" title="Desactivar"><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px;height:15px;"></a>
+              <?php endif; ?>
             </td>
           </tr>
       <?php }
@@ -312,7 +298,7 @@ verificarAcceso('Gestionar Citas');
         </tbody>
       </table>
     </div>
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = (isset($busqueda) && $busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
@@ -448,7 +434,7 @@ verificarAcceso('Gestionar Citas');
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header bg-crimson">
-          <h4 class="modal-title" id="DesactivarCitaLabel">Confirmar Desactivacion</h4>
+          <h4 class="modal-title" id="DesactivarCitaLabel">Confirmación de Desactivacion</h4>
         </div>
         <div class="modal-body">
           <p>¿Está seguro de que desea desactivar esta cita? Esta acción solo se puede revertir en la papelera.</p>

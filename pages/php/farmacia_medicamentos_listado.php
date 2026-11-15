@@ -30,7 +30,7 @@ verificarAcceso('Gestionar Farmacia');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <?php if (in_array('Ver papelera de medicamentos', $_SESSION["permisos"])) : ?>
         <a href="papelera/farmacia_medicamentos_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color:gray;"> Papelera </a>
       <?php endif; ?>
@@ -53,7 +53,7 @@ verificarAcceso('Gestionar Farmacia');
     <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Medicamento</th>
           <th>Presentación</th>
           <th>Contenido N.</th>
@@ -133,9 +133,9 @@ verificarAcceso('Gestionar Farmacia');
             <td class=""><span class="text-row text-white"><?= $row['via_aplicacion']; ?></span></td>
             <td class=""><span class="text-row text-white"><?= $row['codigo_barras']; ?></span></td>
             <?php if (in_array('Gestionar acciones de medicamentos', $_SESSION["permisos"])) : ?>
-              <td>
+              <td class="td-acciones">
                 <?php if (in_array('Crear Medicamentos', $_SESSION["permisos"])) : ?>
-                  <a href="farmacia_medicamentos_agregar.php?duplicar_id=<?php echo $row['Id'] ?>" class="btn-sm btn-primary" title="Importar datos del medicamento" style="background-color: #605ca8; border-color: #605ca8;"><img src="../../recursos/imagenes/iconos/Importar.png" style="width:15px; height:15px;"></a>
+                  <a href="farmacia_medicamentos_agregar.php?duplicar_id=<?php echo $row['Id'] ?>" class="btn-sm btn-importar" title="Importar datos del medicamento"><img src="../../recursos/imagenes/iconos/Importar.png" style="width:15px; height:15px;"></a>
                 <?php endif; ?>
                 <?php if (in_array('Ver Medicamentos', $_SESSION["permisos"])) : ?>
                   <a href="farmacia_medicamentos_info.php?Id=<?php echo $row['Id'] ?>" class="btn-sm btn-info" title="Ver"><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></a>
@@ -157,7 +157,7 @@ verificarAcceso('Gestionar Farmacia');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

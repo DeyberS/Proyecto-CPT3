@@ -115,18 +115,20 @@ verificarAcceso('Gestionar Equipos');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <!-- BOTÓN DE NUEVO EQUIPO -->
       <a href="equipos_agregar.php" class="btn-sm btn-success pull-right"><i class="fa fa-plus"></i> Nuevo Equipo</a>
 
-      <form method="GET" action="" style="display: inline-block;">
-        <input type="text" id="buscar" name="buscar" class="form-control pull-left" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Buscar equipo..." value="<?php echo $busqueda; ?>" autocomplete="off">
-      </form>
+      <div class="pull-left form-inline">
+        <form method="GET" action="" id="formBusquedaRapida">
+          <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo htmlspecialchars($busqueda); ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+        </form>
+      </div>
     </div>
-
+    <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <tr>
             <th class="text-center">N° Bien</th>
             <th>Descripción</th>
@@ -173,7 +175,7 @@ verificarAcceso('Gestionar Equipos');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

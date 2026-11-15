@@ -43,13 +43,6 @@ include('includes/headerNav2.php');
 </head>
 
 <style>
-  .input-error input[type="text"],
-  .input-error select .input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-
   .password-container {
     position: relative;
   }

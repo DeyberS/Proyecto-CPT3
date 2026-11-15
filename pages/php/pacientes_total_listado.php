@@ -29,13 +29,13 @@
     </section>
     <?php if (isset($_SESSION["permisos"])) : ?>
       <section class="content">
-        <div style="padding-bottom: 10px;">
+        <div class="toolbar-container">
           <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
         </div>
         <br><br>
         <div id="contenedorTabla">
           <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-            <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+            <thead class="table-dark">
               <th>Cedula/Documento</th>
               <th>Nombres Y Apellidos</th>
               <th>Genero</th>
@@ -119,7 +119,7 @@
         </div>
       <?php endif; ?>
 
-      <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+      <nav id="contenedorPaginacion" aria-label="Page navigation">
         <ul class="pagination">
           <?php
           $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
@@ -205,7 +205,7 @@
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header bg-crimson">
-              <h4 class="modal-title" id="DesactivarPacienteLabel">Confirmacion de Desactivación</h4>
+              <h4 class="modal-title" id="DesactivarPacienteLabel">Confirmación de Desactivación</h4>
             </div>
             <div class="modal-body">
               <p>¿Está seguro de que desea desactivar este paciente? Esta acción solo se puede revertir en la papelera.</p>

@@ -74,14 +74,14 @@ verificarAcceso('Gestionar Vacunas');
       Inventario de Biológicos (<?php echo $total_registros; ?> Movimientos)
     </h1>
     <ol class="breadcrumb">
-      <li><a href="#"><i class="fa fa-home"></i> Inicio</a></li>
-      <li><a href="#"><i class="fa fa-medkit"></i> Inmunización</a></li>
-      <li class="active"><a href="#"><i class="fa fa-list"></i> Inventario de Vacunas</a></li>
+      <li><a href="#"><i></i> Inicio</a></li>
+      <li><a href="#"><i></i> Inmunización</a></li>
+      <li class="active"><a href="#"><i></i> Inventario de Vacunas</a></li>
     </ol>
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <a href="#" class="btn-sm btn-info pull-right reporte" style="margin-left:5px;"><i class="fa fa-book"></i> Reportes PDF</a>
       <a href="vacunacion_pedidos_listado.php?op=pedido" class="btn-sm btn-primary pull-right" style="margin-left:5px;"><i class="fa fa-thermometer-empty"></i>Pedidos</a>
       <a href="vacunacion_ajuste_stock.php?op=ajuste_stock" class="btn-sm btn-primary pull-right" style="margin-left:5px;"><i class="fa fa-thermometer-empty"></i>Ajuste de Stock</a>
@@ -105,7 +105,7 @@ verificarAcceso('Gestionar Vacunas');
 
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <tr>
             <th>Responsable</th>
             <th>Vacuna / Biológico</th>
@@ -181,7 +181,7 @@ verificarAcceso('Gestionar Vacunas');
     </div>
 
     <!-- PAGINACIÓN (Mantenida) -->
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <li class="disabled"><a href="#">&laquo;</a></li>
         <li class="active"><a href="#">1</a></li>

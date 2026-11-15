@@ -30,7 +30,7 @@ verificarAcceso('Ver papelera de medicamentos');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <a href="../farmacia_medicamentos_listado.php" class="btn-sm btn-primary pull-right"> Regresar al Listado </a>
       <input type="text" id="buscar" name="buscar" class="form-control" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
       <p class="pull-right" style="width:5px;"></p>
@@ -43,7 +43,7 @@ verificarAcceso('Ver papelera de medicamentos');
     <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Medicamento</th>
           <th>Presentación</th>
           <th>Contenido. N</th>
@@ -84,29 +84,29 @@ verificarAcceso('Ver papelera de medicamentos');
             }
 
             $sql_conteo = "SELECT COUNT(DISTINCT m.Id_medicamento) as total 
-                FROM medicamento m
-                JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
-                LEFT JOIN laboratorio lab ON dm.Id_laboratorio = lab.Id_laboratorio
-                $donde";
+               FROM medicamento m
+               JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
+               JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+               LEFT JOIN laboratorio lab ON dm.Id_laboratorio = lab.Id_laboratorio
+               $donde";
             $resultado_conteo = mysqli_query($conexion, $sql_conteo);
             $total_paginas = ceil(mysqli_fetch_assoc($resultado_conteo)['total'] / $registros_por_pagina);
 
             $sql = "SELECT m.Id_medicamento AS Id_medicamento, m.nombre_medicamento, dm.Id, 
-                dm.Id_presentacion, dm.contenido_neto, dm.via_aplicacion, p.nombre_presentacion, 
-                dm.codigo_barras, lab.nombre_laboratorio,
-                GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes, m.estatus
-                FROM medicamento m
-                JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
-                INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion     
-                INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_medicamento
-                INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-                INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
-                LEFT JOIN laboratorio lab ON dm.Id_laboratorio = lab.Id_laboratorio
-                $donde  
-                GROUP BY m.Id_medicamento  
-                ORDER BY m.Id_medicamento ASC
-                LIMIT $inicio, $registros_por_pagina";
+            dm.Id_presentacion, dm.contenido_neto, dm.via_aplicacion, p.nombre_presentacion, 
+            dm.codigo_barras, lab.nombre_laboratorio,
+            GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes, m.estatus
+            FROM medicamento m
+            JOIN descripcion_medicamento dm ON m.Id_medicamento = dm.Id_medicamento
+            INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion     
+            INNER JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_descripcion_medicamento
+            INNER JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+            INNER JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+            LEFT JOIN laboratorio lab ON dm.Id_laboratorio = lab.Id_laboratorio
+            $donde  
+            GROUP BY m.Id_medicamento  
+            ORDER BY m.Id_medicamento ASC
+            LIMIT $inicio, $registros_por_pagina";
             $resultado = $conexion->query($sql);
             ?>
           </tr>
@@ -141,7 +141,7 @@ verificarAcceso('Ver papelera de medicamentos');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

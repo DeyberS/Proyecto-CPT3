@@ -7,15 +7,6 @@ verificarAcceso('Crear Usuarios');
   <title>Usuarios | Añadir</title>
 </head>
 
-<style>
-  .input-error input[type="text"],
-  .input-error select .input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-</style>
-
 <div class="content-wrapper">
   <section class="content-header">
     <h1>

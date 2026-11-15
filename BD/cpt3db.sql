@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 13-11-2026 a las 20:31:05
+-- Tiempo de generación: 15-11-2026 a las 22:51:24
 -- Versión del servidor: 10.1.35-MariaDB
 -- Versión de PHP: 7.2.9
 
@@ -269,7 +269,9 @@ INSERT INTO `detalle_inventario` (`Id_detalle_inventario`, `Id_TipoMovimiento`, 
 (1, 1, 1, 1, NULL, NULL, '2026-11-04 08:38:00', 'Algo', 'Anulado', '2026-11-04 08:38:00'),
 (2, 1, 1, 1, NULL, NULL, '2026-11-04 09:40:00', 'Entrada de algo', 'Anulado', '2026-11-04 09:40:00'),
 (3, 8, 1, NULL, NULL, NULL, '2026-11-04 10:08:10', 'ANULACIÓN DE MOV. #2 | Motivo: XQSI', 'Activo', '2026-11-04 10:08:10'),
-(4, 8, 1, NULL, NULL, NULL, '2026-11-04 10:08:20', 'ANULACIÓN DE MOV. #1 | Motivo: XQNO', 'Activo', '2026-11-04 10:08:20');
+(4, 8, 1, NULL, NULL, NULL, '2026-11-04 10:08:20', 'ANULACIÓN DE MOV. #1 | Motivo: XQNO', 'Activo', '2026-11-04 10:08:20'),
+(5, 1, 1, 1, NULL, NULL, '2026-11-13 16:37:00', 'Cajas', 'Anulado', '2026-11-13 17:38:00'),
+(6, 8, 1, NULL, NULL, NULL, '2026-11-13 17:42:44', 'ANULACIÓN DE MOV. #5 | Motivo: Error de cantidad - se registró más de lo realmente despachado', 'Activo', '2026-11-13 17:42:44');
 
 -- --------------------------------------------------------
 
@@ -813,7 +815,8 @@ CREATE TABLE `existencias_stock` (
 INSERT INTO `existencias_stock` (`Id_existencia`, `Id_descripcion_medicamento`, `Id_lote`, `cantidad_actual`, `ultima_actualizacion`) VALUES
 (1, 1, 1, 0, '2026-11-04 12:37:20'),
 (2, 2, 2, 0, '2026-11-04 14:08:20'),
-(3, 4, 3, 0, '2026-11-04 14:08:10');
+(3, 4, 3, 0, '2026-11-04 14:08:10'),
+(4, 2, 4, 0, '2026-11-13 20:42:44');
 
 -- --------------------------------------------------------
 
@@ -1031,7 +1034,8 @@ CREATE TABLE `lotes_medicamentos` (
 INSERT INTO `lotes_medicamentos` (`Id`, `Id_descripcion_medicamento`, `Id_proveedor`, `Lote`, `fecha_fabricacion`, `fecha_vencimiento`, `estado_lote`, `estatus`) VALUES
 (1, 1, 1, 'ALGO', '2026-11-04', '2026-11-30', 'Disponible', 1),
 (2, 2, 1, 'D-FGHR', '2026-11-04', '2026-12-09', 'Retirado', 1),
-(3, 4, 1, 'X-123', '2026-11-04', '2029-06-05', 'Retirado', 1);
+(3, 4, 1, 'X-123', '2026-11-04', '2029-06-05', 'Retirado', 1),
+(4, 2, 1, '2026XL', '2026-11-13', '2030-10-14', 'Retirado', 1);
 
 -- --------------------------------------------------------
 
@@ -1103,7 +1107,9 @@ INSERT INTO `medicamentos_detalle_inventario` (`Id`, `Id_detalle_inventario`, `I
 (1, 1, 2, 2, 1, '', 1, NULL),
 (2, 2, 4, 3, 20, '', 20, NULL),
 (3, 3, 4, 3, 20, '', 0, NULL),
-(4, 4, 2, 2, 1, '', 0, NULL);
+(4, 4, 2, 2, 1, '', 0, NULL),
+(5, 5, 2, 4, 20, '', 20, NULL),
+(6, 6, 2, 4, 20, '', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -1514,7 +1520,8 @@ INSERT INTO `notificaciones_usuarios` (`id`, `id_usuario`, `tipo`, `referencia_i
 (6, 1, 'inventario_stock', 'stock_1_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento Ibuprofeno (Lote: ALGO) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-11-04 08:37:21'),
 (213, 1, 'inventario_stock', 'stock_3_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento XLO (Lote: X-123) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-11-04 10:08:11'),
 (216, 1, 'inventario_stock', 'stock_2_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento Acetaminofen (Lote: D-FGHR) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-11-04 10:08:21'),
-(218, 1, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote D-FGHR de Acetaminofen vence pronto (2026-12-09).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-11-09 07:22:00');
+(218, 1, 'inventario_lote', 'lote_2_Proximo', 'Lote próximo a vencer', 'El lote D-FGHR de Acetaminofen vence pronto (2026-12-09).', 'pages/php/farmacia_lotes_listado.php', 1, '2026-11-09 07:22:00'),
+(684, 1, 'inventario_stock', 'stock_4_Agotado', 'Stock Agotado', '¡URGENTE! El medicamento Acetaminofen (Lote: 2026XL) se ha agotado.', 'pages/php/farmacia_inventario_listado.php', 1, '2026-11-13 17:42:45');
 
 -- --------------------------------------------------------
 
@@ -4214,7 +4221,7 @@ ALTER TABLE `descripcion_medicamento`
 -- AUTO_INCREMENT de la tabla `detalle_inventario`
 --
 ALTER TABLE `detalle_inventario`
-  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `Id_detalle_inventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_medico`
@@ -4334,7 +4341,7 @@ ALTER TABLE `examen_catalogo`
 -- AUTO_INCREMENT de la tabla `existencias_stock`
 --
 ALTER TABLE `existencias_stock`
-  MODIFY `Id_existencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `Id_existencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `feriados_excepciones`
@@ -4400,7 +4407,7 @@ ALTER TABLE `laboratorio`
 -- AUTO_INCREMENT de la tabla `lotes_medicamentos`
 --
 ALTER TABLE `lotes_medicamentos`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `lugar_nacimiento`
@@ -4418,7 +4425,7 @@ ALTER TABLE `medicamento`
 -- AUTO_INCREMENT de la tabla `medicamentos_detalle_inventario`
 --
 ALTER TABLE `medicamentos_detalle_inventario`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `medicos_departamentos`
@@ -4436,7 +4443,7 @@ ALTER TABLE `municipio`
 -- AUTO_INCREMENT de la tabla `notificaciones_usuarios`
 --
 ALTER TABLE `notificaciones_usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=219;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3672;
 
 --
 -- AUTO_INCREMENT de la tabla `observaciones_historial_medico`

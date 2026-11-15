@@ -58,18 +58,15 @@ verificarAcceso('Ver Pedidos'); // Puedes cambiar a 'Gestionar Vacunas'
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <!-- BOTÓN CREAR PEDIDO -->
       <a href="vacunacion_pedidos_crear.php" class="btn-sm btn-success pull-right"><i class="fa fa-plus"></i> Nuevo Pedido</a>
-
-      <form method="GET" action="" style="display: inline-block;">
-        <input type="text" id="buscar" name="buscar" class="form-control pull-left" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Buscar pedido..." value="<?php echo htmlspecialchars($busqueda); ?>" style="width: 250px;" autocomplete="off">
-      </form>
+        <input type="text" id="buscar" name="buscar" class="form-control pull-left" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Buscar pedido..." value="<?php echo htmlspecialchars($busqueda); ?>" style="width: 250px;" autocomplete="off"
     </div>
 
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <tr>
             <th class="text-center">N° Pedido</th>
             <th>Fecha de Solicitud</th>
@@ -139,7 +136,7 @@ verificarAcceso('Ver Pedidos'); // Puedes cambiar a 'Gestionar Vacunas'
     </div>
 
     <!-- PAGINACIÓN (Mantenida) -->
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

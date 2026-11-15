@@ -83,7 +83,7 @@ verificarAcceso('Gestionar Farmacia');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <?php if (in_array('Generar Reportes de Inventario', $_SESSION["permisos"])) : ?>
         <a href="#" class="btn-sm btn-info pull-right reporte"><i class="fa fa-book"></i> Generar Reporte </a>
       <?php endif; ?>
@@ -125,7 +125,7 @@ verificarAcceso('Gestionar Farmacia');
 
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <tr>
             <th>Responsable</th>
             <th>Resumen de Productos</th>
@@ -218,7 +218,7 @@ verificarAcceso('Gestionar Farmacia');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

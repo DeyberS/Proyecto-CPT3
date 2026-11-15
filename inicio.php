@@ -29,7 +29,7 @@ include('pages/php/includes/headerNav.php');
     </div>
 
     <?php if (isset($_SESSION["permisos"])) : ?>
-      <div class="row" id="t_user">
+      <div class="row" id="dashboard-cards">
 
         <?php if (in_array('Ver panel de medicos', $_SESSION["permisos"])) : ?>
 
@@ -1044,11 +1044,6 @@ include('pages/php/includes/headerNav.php');
 </script>
 
 <?php endif; ?>
-
-<script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
-<script src="recursos/js/app.min.js"></script>
-<script src="recursos/bootstrap/js/bootstrap.min.js"></script>
-<script src="recursos/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 <?php
 include('pages/php/includes/footer.php');

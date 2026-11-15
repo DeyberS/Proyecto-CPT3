@@ -43,7 +43,7 @@ verificarAcceso('Gestionar Configuraciones');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <?php if (in_array('Ver papelera de usuarios', $_SESSION["permisos"])) : ?>
         <a href="papelera/cfg_usuario_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color:gray;">Papelera</a>
       <?php endif; ?>
@@ -56,7 +56,7 @@ verificarAcceso('Gestionar Configuraciones');
     <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Nombre De Usuario</th>
           <th>Correo</th>
           <th>Estado</th>
@@ -170,7 +170,7 @@ verificarAcceso('Gestionar Configuraciones');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
@@ -287,7 +287,7 @@ verificarAcceso('Gestionar Configuraciones');
       <div class="modal-content">
         <div class="modal-header bg-crimson">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title"><i class="fa fa-unlock"></i>Confirmar Desbloqueo</h4>
+          <h4 class="modal-title"><i class="fa fa-unlock"></i>Confirmación de Desbloqueo</h4>
         </div>
         <div class="modal-body">
           <p>¿Está seguro de que desea <b>desbloquear</b> la cuenta de este usuario?.</p>
@@ -304,7 +304,7 @@ verificarAcceso('Gestionar Configuraciones');
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header bg-crimson">
-          <h4 class="modal-title" id="DesactivarUsuarioLabel">Confirmar Desactivación</h4>
+          <h4 class="modal-title" id="DesactivarUsuarioLabel">Confirmación de Desactivación</h4>
         </div>
         <div class="modal-body">
           <p>¿Está seguro de que desea desactivar este usuario? Esta acción solo se puede revertir en la papelera.</p>

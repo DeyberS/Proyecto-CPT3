@@ -71,17 +71,19 @@ verificarAcceso('Ver Pedidos');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <a href="farmacia_pedidos_crear.php" class="btn-sm btn-success pull-right"><i class="fa fa-plus"></i> Nuevo Pedido</a>
 
-      <form method="GET" action="" style="display: inline-block;">
-        <input type="text" id="buscar" name="buscar" class="form-control pull-left" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Buscar pedido..." value="<?php echo htmlspecialchars($busqueda); ?>" style="width: 250px;" autocomplete="off">
-      </form>
+      <div class="pull-left form-inline">
+        <form method="GET" action="" id="formBusquedaRapida">
+          <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="<?php echo htmlspecialchars($busqueda); ?>" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
+        </form>
+      </div>
     </div>
-
+    <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <tr>
             <th class="text-center">N° Pedido</th>
             <th>Fecha de Solicitud</th>
@@ -139,7 +141,7 @@ verificarAcceso('Ver Pedidos');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
@@ -189,7 +191,7 @@ verificarAcceso('Ver Pedidos');
         </div>
         <div class="modal-footer">
           <a href="#" id="btnProcesarPedidoModal" class="btn btn-success pull-left" style="display:none;"><i class="fa fa-arrow-circle-right"></i> Procesar Entrada de este Pedido</a>
-          <button type="button" class="btn btn-second" onclick="closeCustomModal($('#modalDetallePedido'))">Cerrar</button>
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
         </div>
       </div>
     </div>
@@ -210,7 +212,7 @@ verificarAcceso('Ver Pedidos');
             <input type="hidden" name="id_pedido" id="id_pedido_cancelar_input">
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-second" onclick="closeCustomModal($('#modalCancelarPedido'))">Cerrar</button>
+            <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
             <button type="submit" class="btn btn-danger">Aceptar</button>
           </div>
         </form>

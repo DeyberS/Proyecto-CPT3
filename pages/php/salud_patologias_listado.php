@@ -27,7 +27,7 @@ verificarAcceso('Gestionar Salud');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <?php if (in_array('Ver papelera de patologias', $_SESSION["permisos"])) : ?>
         <a href="papelera/salud_patologias_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color: gray;"> Papelera </a>
       <?php endif; ?>
@@ -44,7 +44,7 @@ verificarAcceso('Gestionar Salud');
     <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Nombre de la Patología</th>
           <th>Código CIE-10</th>
           <th>Pacientes</th>
@@ -123,7 +123,7 @@ verificarAcceso('Gestionar Salud');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

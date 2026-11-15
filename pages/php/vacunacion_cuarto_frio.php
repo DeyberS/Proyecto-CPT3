@@ -90,7 +90,7 @@ verificarAcceso('Gestionar Vacunas');
   </section>
 
   <section class="content">
-    <div class="box box-primary">
+    <div class="toolbar-container">
       <div class="box-header with-border">
         <!-- Botones superiores -->
         <button type="button" class="btn-sm btn-success pull-right" data-toggle="modal" data-target="#modalRegistrarTemp">
@@ -122,7 +122,7 @@ verificarAcceso('Gestionar Vacunas');
       <div class="box-body">
         <div id="contenedorTabla">
           <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-            <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+            <thead class="table-dark">
               <tr>
                 <th>Fecha</th>
                 <th>Hora</th>

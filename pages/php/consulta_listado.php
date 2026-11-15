@@ -41,25 +41,32 @@ verificarAcceso('Gestionar Consultas');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <?php if (in_array('Ver papelera de consultas', $_SESSION["permisos"])) : ?>
         <a href="papelera/consulta_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color:gray;"> Papelera </a>
       <?php endif; ?>
+
       <p class="pull-right" style="width:5px;"></p>
+
       <?php if (in_array('Generar Reportes de Consultas', $_SESSION["permisos"])) : ?>
         <a href="#" class="btn-sm btn-info pull-right reporte"> Generar Reporte </a>
       <?php endif; ?>
+
       <p class="pull-right" style="width:5px;"></p>
+
       <?php if (in_array('Crear Consultas', $_SESSION["permisos"])) : ?>
         <a href="consulta_agregar.php" class="btn-sm btn-success pull-right"> Nueva Consulta </a>
       <?php endif; ?>
+
+      <p class="pull-right" style="width:5px;"></p>
+
       <div class="pull-left form-inline">
         <form method="GET" action="" id="formBusquedaRapida">
           <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
         </form>
       </div>
-      <p class="pull-right" style="width:5px;"></p>
-      <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de consultas.">
+
+      <span data-toggle="tooltip" data-placement="right" title="Filtrar búsqueda">
         <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
           <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar consulta"></i>
         </button>
@@ -68,7 +75,7 @@ verificarAcceso('Gestionar Consultas');
     <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Paciente</th>
           <th>Médico</th>
           <th>Fecha de Consulta</th>
@@ -176,7 +183,7 @@ verificarAcceso('Gestionar Consultas');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

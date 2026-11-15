@@ -38,7 +38,8 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>CPT3 | Inicio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CPT | Inicio</title>
   <meta name="author" content="Deyber Silva">
   <link rel="stylesheet" href="recursos/bootstrap/css/bootstrap.css">
   <link rel="stylesheet" href="recursos/css/style.css?v=<?php echo filemtime('recursos/css/style.css'); ?>">
@@ -91,64 +92,69 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
     margin-right: 5px;
     vertical-align: middle;
   }
+  /* ============================================= */
+  /* REGLAS EXCLUSIVAS PARA ESCRITORIO (PC)        */
+  /* ============================================= */
+  @media (min-width: 768px) {
+    .main-sidebar {
+      position: fixed !important;
+      top: 0px !important;
+      bottom: 0px !important;
+      left: 0 !important;
+      height: auto !important;
+      max-height: calc(100vh - 60px) !important;
+      z-index: 810;
+    }
 
-  .main-sidebar {
-    position: fixed !important;
-    top: 0px !important;
-    bottom: 0px !important;
-    left: 0 !important;
-    height: auto !important;
-    max-height: calc(100vh - 60px) !important;
-    z-index: 810;
+    .sidebar {
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+      max-height: 100% !important;
+      overflow: hidden !important;
+      position: relative !important;
+      padding: 0 !important;
+    }
+
+    .sidebar-menu {
+      flex: 1 1 auto !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      margin-bottom: 0 !important;
+      padding-bottom: 10px !important;
+    }
+
+    .sidebar-footer {
+      position: relative !important;
+      flex-shrink: 0 !important;
+      width: 100% !important;
+      padding: 10px 15px !important;
+      z-index: 1000;
+      background-color: inherit;
+      border-top: 1px solid #374850;
+    }
+
+    .wrapper {
+      display: block !important;
+      background-color: #f4f7f9 !important;
+    }
   }
-
-  .sidebar {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
-    position: relative !important;
-    padding: 0 !important;
+  
+  /* Estas se quedan globales */
+  .sidebar-collapse .ocultar-al-colapsar {
+    display: none !important;
   }
 
   .sidebar-menu::-webkit-scrollbar {
     width: 0px;
     background: transparent;
   }
-
   .sidebar-menu {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-
   .user-panel {
     flex-shrink: 0 !important;
-  }
-
-  .sidebar-menu {
-    flex: 1 1 auto !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 10px !important;
-  }
-
-  .sidebar-footer {
-    position: relative !important;
-    flex-shrink: 0 !important;
-    width: 100% !important;
-    padding: 10px 15px !important;
-    z-index: 1000;
-    background-color: inherit;
-    border-top: 1px solid #374850;
-  }
-
-  .wrapper {
-    display: block !important;
-    min-height: 100% !important;
-    overflow-x: hidden !important;
-    background-color: #f4f7f9 !important;
   }
 
   .content-wrapper {
@@ -160,18 +166,14 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
     margin-left: 60px;
   }
 
-  /* INICIO.PHP */
-
+  /* Ocultar barras de scroll en general */
   html::-webkit-scrollbar,
   body::-webkit-scrollbar,
   .content-wrapper::-webkit-scrollbar {
     width: 0px;
     background: transparent;
   }
-
-  html,
-  body,
-  .content-wrapper {
+  html, body, .content-wrapper {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -349,11 +351,11 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
     </div>
     <header class="main-header">
       <a href="#" class="logo">
-        <span class="logo-mini"><b>CPT3</b></span>
-        <span class="logo-lg"><b>CPT3</b></span>
+        <span class="logo-mini"><b>CPT</b></span>
+        <span class="logo-lg"><b>CPT</b></span>
       </a>
       <nav class="navbar navbar-static-top">
-        <img src="recursos/imagenes/iconos/menu.png" data-toggle="offcanvas" role="button" style="width: 45px; height: 45px;">
+      <img src="recursos/imagenes/iconos/menu.png" data-toggle="offcanvas" role="button" style="width: 45px; height: 45px; cursor: pointer; margin-top: 2px; float: left;">
         <div class="navbar-custom-menu">
           <ul class="nav navbar-nav">
             <li class="dropdown tasks-menu">
@@ -377,7 +379,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
             <li class="dropdown user user-menu">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 <img src="recursos/imagenes/iconos/usuario.png" class="user-image" alt="User Image">
-                <span class="hidden-xs"><?php if (isset($_SESSION['nombre'])) {
+                <span class="user-name-text"><?php if (isset($_SESSION['nombre'])) {
                                           echo '' . $_SESSION['nombre'] . '';
                                         } ?></span>
               </a>
@@ -385,7 +387,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
                 <li class="user-header">
                   <img src="recursos/imagenes/iconos/usuario.png" class="img-circle" alt="User Image">
                   <p>
-                    <span class="hidden-xs"><?php if (isset($_SESSION['nombre'])) {
+                    <span class="user-name-text"><?php if (isset($_SESSION['nombre'])) {
                                               echo '' . $_SESSION['nombre'] . '';
                                             } ?></span>
                     <small>-- En Linea --</small>
@@ -412,7 +414,7 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
             <img src="recursos/imagenes/iconos/usuario.png" class="img-circle" alt="User Image">
           </div>
           <div class="pull-left info">
-            <p><span class="hidden-xs"><?php if (isset($_SESSION['nombre'])) {
+            <p><span class="user-name-text"><?php if (isset($_SESSION['nombre'])) {
                                           echo '' . $_SESSION['nombre'] . '';
                                         } ?></span></p>
             <a href="#"><span class="status-dot"></span>En Linea</a>
@@ -423,11 +425,10 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
 
           <li class="treeview">
             <a href="inicio.php">
-              <img src="recursos/imagenes/iconos/inicio.png" style="height:18px; width:18px; margin-top:-4px; margin-right:10px;">
-              <span>Inicio</span>
+              <img src="recursos/imagenes/iconos/filled/places/home_alt@2x.png" style="height:25px; width:25px; margin-top:-4px; margin-right:10px; filter:invert(1);">
+              <span style="margin-left:-6px;">Inicio</span>
               <?php if ($usar_vista_anidada) : ?>
                 <span class="pull-right-container">
-                  <i class="fa fa-angle-right pull-left"></i>
                 </span>
               <?php endif; ?>
             </a>
@@ -775,11 +776,11 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
 
         <div class="sidebar-footer ocultar-al-colapsar" style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; color: #b8c7ce; border-top: 1px solid #374850; background-color: inherit; z-index: 10;">
           <div style="font-size: 12px; white-space: nowrap; overflow: hidden;">
-            <i class="fa fa-calendar" style="margin-right: 5px;"></i>
+            <i class="fa fa-calendar" style="margin-right: 5px;"><img src="recursos/imagenes/iconos/calendar-lines-svgrepo-com.svg" style="width: 25px; height: 25px; filter:invert(1);"></i>
             <span id="fecha-actual"></span>
           </div>
           <div style="font-size: 16px; font-weight: bold; margin-top: 5px; white-space: nowrap; overflow: hidden;">
-            <i class="fa fa-clock-o" style="margin-right: 5px;"></i>
+            <i class="fa fa-clock-o" style="margin-right: 5px;"><img src="recursos/imagenes/iconos/clock-two-svgrepo-com.svg" style="width: 25px; height: 25px; filter:invert(1);"></i>
             <span id="reloj-actual"></span>
           </div>
         </div>
@@ -803,8 +804,10 @@ $usar_vista_anidada = ($es_admin || $es_visitante);
         </div>
       </div>
     </div>
-
+ 
     <script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="recursos/js/app.min.js"></script>
+    <script src="recursos/bootstrap/js/bootstrap.min.js"></script>
 
     <script>
       $(document).ready(function() {

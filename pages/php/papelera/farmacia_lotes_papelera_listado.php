@@ -27,7 +27,7 @@ verificarAcceso('Ver papelera de lotes');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <a href="../farmacia_lotes_listado.php" class="btn-sm btn-primary pull-right"> Regresar al Listado </a>
       <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." style="border-radius:0; height:10%; width:250px; display:inline-block;" value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="width: 200px;" autocomplete="off">
       <p class="pull-right" style="width:5px;"></p>
@@ -40,7 +40,7 @@ verificarAcceso('Ver papelera de lotes');
     <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Nombre del Lote</th>
           <th>Fecha de Fabricación</th>
           <th>Fecha de Vencimiento</th>
@@ -162,7 +162,7 @@ verificarAcceso('Ver papelera de lotes');
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

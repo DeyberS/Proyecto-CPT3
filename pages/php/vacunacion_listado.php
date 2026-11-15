@@ -30,14 +30,14 @@ verificarAcceso('Gestionar Vacunas');
     </h1>
     <ol class="breadcrumb">
       <li><a href="#"><i class="fa fa-home"></i> Inicio</a></li>
-      <li><a href="#"><img src="../../recursos/imagenes/iconos/filled/devices/syringe@2x.png" style="height:14px; filter:invert(1);"> Inmunización</a></li>
+      <li><a href="#"> Inmunización</a></li>
       <li><a href="#"><i class="fa fa-book"></i> Tarjetas de Vacunación</a></li>
     </ol>
   </section>
 
   <?php if (isset($_SESSION["permisos"])) : ?>
     <section class="content">
-      <div style="padding-bottom: 10px;">
+      <div class="toolbar-container">
         
         <!-- BOTÓN DE REPORTES (ABRE MODAL) -->
         <?php if (in_array('Generar Reportes de Pacientes', $_SESSION["permisos"])) : ?>
@@ -53,7 +53,7 @@ verificarAcceso('Gestionar Vacunas');
 
       <div id="contenedorTabla" class="table-responsive">
         <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-          <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+          <thead class="table-dark">
             <th>Cédula</th>
             <th>Nombres Y Apellidos</th>
             <th>Fecha Nac.</th>
@@ -113,7 +113,7 @@ verificarAcceso('Gestionar Vacunas');
         </table>
       </div>
 
-      <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+      <nav id="contenedorPaginacion" aria-label="Page navigation">
         <ul class="pagination">
           <li class="disabled"><a href="#">&laquo;</a></li>
           <li class="active"><a href="#">1</a></li>

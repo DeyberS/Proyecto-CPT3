@@ -1,4 +1,3 @@
-
 html,
 body {
   margin: 0;
@@ -7,18 +6,399 @@ body {
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto; 
-  background-color: #f4f6f9; 
 }
 
+/* ============================================= */
+/*  Layout Restaurado (Ocupa toda la pantalla)   */
+/* ============================================= */
+
 .wrapper {
-  zoom: 85%;
-  min-height: calc(100vh / 0.8); 
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh; 
+  display: block; 
+  overflow-x: hidden;
+  zoom:80%;
+}
+
+@media (min-width: 1024px) {
+  .wrapper {
+    min-height: 100vh;
+  }
+}
+
+.content-wrapper {
+  min-height: calc(100vh - 50px) !important; 
+  display: block !important;
+}
+
+.content {
+  display: block !important;
+  width: 100%;
 }
 
 .wrapper > .content-wrapper {
   flex: 1;
+}
+
+/* ============================================= */
+/*  RESPONSIVIDAD PARA TABLAS Y FORMULARIOS      */
+/* ============================================= */
+
+#contenedorTabla {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content-wrapper {
+  min-height: calc(100vh - 50px) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+}
+
+/* ============================================= */
+/*  PAGINACIÓN FIJA ABAJO-IZQUIERDA              */
+/*  (con transición al colapsar la sidebar)      */
+/* ============================================= */
+
+#contenedorPaginacion {
+  position: fixed !important;
+  bottom: 40px !important;
+  left: 245px !important;
+  right: auto !important;
+  width: auto !important;
+  padding: 8px 15px !important;
+  margin: 0 !important;
+  border-radius: 6px;
+  display: flex !important;
+  justify-content: flex-start !important;
+  z-index: 1030 !important;
+  box-sizing: border-box;
+
+  /* ✨ transición suave al mover la sidebar (desktop) */
+  transition: left 0.3s ease-in-out;
+}
+
+#contenedorPaginacion .pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start !important;
+  margin: 0;
+  padding: 0;
+  float: none !important;
+}
+
+/* Desktop: colapso de sidebar */
+@media (min-width: 768px) {
+  body.sidebar-collapse #contenedorPaginacion {
+    left: 65px !important;
+  }
+}
+
+/* ============================================= */
+/*  HEADER EN MÓVIL: ocultar logo CPT +          */
+/*  alinear notificaciones y usuario             */
+/* ============================================= */
+@media (max-width: 767px) {
+
+  /* ---------- 1. Ocultar la barra CPT ---------- */
+  .main-header > .logo {
+    display: none !important;
+  }
+
+  .main-header .navbar {
+    margin-left: 0 !important;
+  }
+
+  /* El sidebar ya no necesita los 100px de padding-top
+     (antes eran logo 50px + navbar 50px). Ahora solo 50px. */
+  .main-sidebar,
+  .left-side {
+    padding-top: 50px !important;
+  }
+
+  /* ---------- 2. Alinear campana + usuario ---------- */
+
+  /* Flex en el contenedor para centrar verticalmente */
+  .navbar-custom-menu .navbar-nav {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+  }
+
+  .navbar-custom-menu .navbar-nav > li {
+    display: flex !important;
+    align-items: center !important;
+    float: none !important;
+  }
+
+  /* Ocultar <li> vacíos (por el tasks-menu mal formado) */
+  .navbar-custom-menu .navbar-nav > li:empty {
+    display: none !important;
+  }
+
+  /* Todos los <a> del header: misma altura y padding */
+  .navbar-custom-menu .navbar-nav > li > a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 50px !important;
+    padding: 0 10px !important;
+    line-height: 1 !important;
+  }
+
+  /* Normalizar TODOS los íconos a 24×24 centrados */
+  .navbar-custom-menu .navbar-nav > li > a > img {
+    float: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 24px !important;
+    height: 24px !important;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  /* Ícono de usuario: redondo + margen al nombre */
+  .navbar-custom-menu .navbar-nav > .user-menu .user-image {
+    margin-right: 6px !important;
+    border-radius: 50% !important;
+  }
+
+  /* Nombre centrado verticalmente con el ícono */
+  .navbar-custom-menu .user-name-text {
+    line-height: 1 !important;
+    vertical-align: middle !important;
+  }
+}
+
+/* ============================================= */
+/*  FIX ANDROID / MÓVIL                          */
+/* ============================================= */
+
+@media (max-width: 767px) {
+
+  /* 1. Desactivar el zoom en móvil: rompe position:fixed en Chrome Android */
+  .wrapper {
+    zoom: 1 !important;
+  }
+
+  /* 2. Altura dinámica: evita el "salto" cuando aparece/desaparece la barra del navegador */
+  .content-wrapper {
+    min-height: calc(100dvh - 50px) !important;
+  }
+
+  /* 3. Botones de paginación compactos */
+  #contenedorPaginacion .pagination > li > a,
+  #contenedorPaginacion .pagination > li > span {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* 4. Paginación móvil: SIEMPRE estática en la esquina inferior izquierda */
+  #contenedorPaginacion {
+    position: fixed !important;
+    left: 15px !important;
+    right: 15px !important;
+    width: auto !important;
+    bottom: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 6px 10px !important;
+    margin: 0 !important;
+    justify-content: flex-start !important;
+    box-sizing: border-box;
+
+    /* Debajo de la sidebar (810) para no aparecer encima del menú */
+    z-index: 700 !important;
+
+    /* Sin transformaciones: no se mueve al abrir la sidebar */
+    transform: none !important;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  /* 5. 🔥 Cuando la sidebar está abierta, se OCULTA en vez de moverse */
+  body.sidebar-open #contenedorPaginacion {
+    opacity: 0;
+    pointer-events: none;
+    transform: none !important;   /* asegura que no se desplace */
+  }
+
+  /* 6. Tabla: mantener el min-width dentro del contenedor con scroll */
+  #contenedorTabla #t_user {
+    min-width: 750px;
+  }
+}
+
+/* Evita que la paginación fija tape las últimas filas de la tabla */
+.content:has(#contenedorPaginacion) {
+  padding-bottom: 120px !important;
+}
+/* ============================================= */
+/*  Efecto hover: menú, campana y usuario        */
+/*  (idéntico al hover del logo CPT)             */
+/* ============================================= */
+
+.skin-black .main-header .navbar > img[data-toggle="offcanvas"],
+.skin-black .main-header .navbar .nav > .notifications-menu > a,
+.skin-black .main-header .navbar .nav > .user-menu > a {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.skin-black .main-header .navbar > img[data-toggle="offcanvas"]:hover,
+.skin-black .main-header .navbar .nav > .notifications-menu > a:hover,
+.skin-black .main-header .navbar .nav > .user-menu > a:hover {
+  opacity: 0.8;
+  background-color: royalblue;
+}
+
+/* ============================================= */
+/*  BOTONES EN CELDAS DE TABLA (MÓVIL)           */
+/*  Evita que "Cambios" empuje a "Acciones"      */
+/* ============================================= */
+@media (max-width: 767px) {
+
+  #t_user td.td-cambios,
+  #t_user td.td-acciones {
+    vertical-align: middle;
+    padding: 4px 6px !important;
+    white-space: nowrap;          /* los botones no se parten */
+    min-width: 100px;             /* ancho mínimo para 3 íconos */
+    box-sizing: border-box;
+  }
+
+  #t_user td.td-cambios  .btn-sm,
+  #t_user td.td-acciones .btn-sm {
+    display: inline-block;
+    float: none !important;
+    margin: 1px !important;
+    padding: 4px 5px !important;
+    line-height: 1 !important;
+    vertical-align: middle;
+    box-sizing: border-box;
+  }
+
+  #t_user td.td-cambios  img,
+  #t_user td.td-acciones img {
+    display: block;
+    margin: 0 auto;
+    width: 14px !important;
+    height: 14px !important;
+    object-fit: contain;
+  }
+}
+
+/* ============================================= */
+/*  Botones en celdas de tabla (MÓVIL)           */
+/*  Normaliza TODOS los .btn-sm dentro de tds    */
+/* ============================================= */
+@media (max-width: 767px) {
+
+  #t_user td.td-acciones {
+    vertical-align: middle;
+    padding: 4px 6px !important;
+    white-space: nowrap;          /* 4 botones no se parten */
+    min-width: 140px;             /* espacio para 4 íconos */
+    box-sizing: border-box;
+  }
+
+  #t_user td.td-acciones .btn-sm {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    float: none !important;
+    margin: 1px !important;
+    padding: 3px 4px !important;
+    line-height: 1 !important;
+    vertical-align: middle;
+    min-width: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    border-radius: 3px;
+  }
+
+  #t_user td.td-acciones .btn-sm img {
+    display: block;
+    margin: 0;
+    width: 14px !important;
+    height: 14px !important;
+    object-fit: contain;
+  }
+}
+
+/* Arreglo para que el nombre no desaparezca y se adapte */
+.user-name-text {
+  display: inline-block;
+  max-width: 140px; /* Ancho máximo en celular */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Si es muy largo, pone "..." */
+  vertical-align: middle;
+}
+
+@media (min-width: 768px) {
+  .user-name-text {
+    max-width: 250px; /* En PC tiene más espacio */
+  }
+}
+
+/* ============================================= */
+/*  Barra de herramientas (Responsive)           */
+/* ============================================= */
+
+.toolbar-container {
+  width: 100%;
+  margin-bottom: -30px;
+}
+
+/* Limpiar los flotados (clearfix) */
+.toolbar-container::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Estilos para Móviles (Android) */
+@media (max-width: 767px) {
+  /* Anulamos los pull-left y pull-right en celulares */
+  .toolbar-container .pull-left,
+  .toolbar-container .pull-right {
+    float: none !important;
+    width: 100% !important;
+    margin: 0 0 8px 0 !important;
+    display: block;
+    text-align: center;
+  }
+
+  /* El buscador ocupa todo el ancho */
+  .toolbar-container .form-inline {
+    display: block;
+    width: 100%;
+  }
+  .toolbar-container #buscar {
+    float: none !important;
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  /* Los botones dentro de span también ocupan todo el ancho */
+  .toolbar-container span[data-toggle="tooltip"] {
+    display: block;
+    width: 100%;
+  }
+  .toolbar-container span[data-toggle="tooltip"] button {
+    width: 100%;
+    display: block;
+    padding: 8px;
+  }
+
+  /* Ocultar los separadores de 5px */
+  .toolbar-container p.pull-right {
+    display: none !important;
+  }
 }
 
 .bd-placeholder-img {
@@ -1830,14 +2210,6 @@ a:focus {
 .nav-tabs-custom.tab-default > .nav-tabs > li.active {
   border-top-color: #d2d6de;
 }
-/* PAGINATION */
-.pagination > li > a {
-  background: #fafafa;
-  color: #666;
-}
-.pagination.pagination-flat > li > a {
-  border-radius: 0 !important;
-}
 #mas_b{
 	font-size: 12px;
 	border-radius: 2px;
@@ -1867,13 +2239,6 @@ footer{
   position:fixed; 
   bottom:0; 
   width:100%;
-}
-.pagination { 
-    font-size:1rem;
-    float:right;
-    display: flex;
-    padding-left: 0;
-    list-style: none;
 }
 .page-link{
   background-color: red;
@@ -2173,13 +2538,15 @@ footer{
   border-color: #c2c2c2;
 }
 
-/*.btn-error-sombreado2 {
-  background-color: #f8d7da !important;
-  color: #721c24 !important;
-  border: 1px solid #f5c6cb !important;
-  box-shadow: 0 0 10px rgba(220, 53, 69, 0.6) !important;
-  transition: all 0.3s ease;
-}*/
+.btn-importar {
+  background-color: #605ca8 !important;
+  border-color:     #605ca8 !important;
+  color: #fff !important;
+}
+.btn-importar:hover {
+  background-color: #4e4a8f !important;
+  border-color:     #4e4a8f !important;
+}
 
 .btn-error-sombreado {
   background-color: #f8d7da;
@@ -2191,6 +2558,12 @@ footer{
   border: 2px solid crimson !important;
   box-shadow: 0 0 5px crimson !important;
   background-color: #fff5f5 !important;
+}
+
+.table-dark {
+  background-color: #112; 
+  color: white; 
+  font-size: 12px;
 }
 
 @media (max-width: 767px) {

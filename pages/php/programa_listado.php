@@ -13,9 +13,20 @@ verificarAcceso('Gestionar Programa');
     overflow-y: auto;
     border-bottom: 1px solid #eee;
   }
-  .table-scroll-container::-webkit-scrollbar { width: 6px; }
-  .table-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
-  .table-scroll-container::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 5px; }
+
+  .table-scroll-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .table-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+  }
+
+  .table-scroll-container::-webkit-scrollbar-thumb {
+    background: #bdc3c7;
+    border-radius: 5px;
+  }
 
   /* Separación de botones de acción en la tabla */
   .acciones-cell {
@@ -183,26 +194,25 @@ verificarAcceso('Gestionar Programa');
   </section>
 
   <section class="content">
-    <div class="acciones-superiores">
+    <div class="toolbar-container">
       <!-- BOTÓN DE HISTORIAL DE ENTREGAS (abre modal) -->
       <a href="#" class="btn-sm btn-info pull-right" data-toggle="modal" data-target="#modalHistorialEntregas" style="height:31px;">
         <i class="fa fa-history"></i> Ver Entregas
-      </button>
+        </button>
 
-      <!-- BOTÓN DE NUEVA PETICIÓN -->
-      <a href="programa_peticion_agregar.php" class="btn-sm btn-success pull-right" style="height:31px;">
-        <i class="fa fa-plus"></i> Nueva Petición
-      </a>
+        <!-- BOTÓN DE NUEVA PETICIÓN -->
+        <a href="programa_peticion_agregar.php" class="btn-sm btn-success pull-right" style="height:31px;">
+          <i class="fa fa-plus"></i> Nueva Petición
+        </a>
 
-      <!-- BUSCADOR -->
-      <form method="GET" action="" style="display: inline-block; margin: 0;">
-        <input type="text" id="buscar" name="buscar" class="form-control" style="border-radius:0; height:31px; width:250px;" placeholder="Buscar petición..." value="<?php echo htmlspecialchars($busqueda); ?>" autocomplete="off">
-      </form>
+        <!-- BUSCADOR -->
+        <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
     </div>
+    <br><br>
 
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <tr>
             <th class="text-center">N° Petición</th>
             <th>Mes</th>
@@ -215,7 +225,7 @@ verificarAcceso('Gestionar Programa');
         </thead>
         <tbody class="tbody" style="font-size: 13px;">
           <?php if (count($peticiones_simuladas) > 0) : ?>
-            <?php foreach ($peticiones_simuladas as $row) : 
+            <?php foreach ($peticiones_simuladas as $row) :
               $clase_badge = 'bg-yellow';
               if ($row['estado'] == 'Recibida Total') $clase_badge = 'bg-green';
               if ($row['estado'] == 'Cancelada') $clase_badge = 'bg-crimson';
@@ -259,13 +269,15 @@ verificarAcceso('Gestionar Programa');
               </tr>
             <?php endforeach; ?>
           <?php else : ?>
-            <tr><td colspan="7" class="text-center">No hay peticiones registradas o que coincidan con la búsqueda.</td></tr>
+            <tr>
+              <td colspan="7" class="text-center">No hay peticiones registradas o que coincidan con la búsqueda.</td>
+            </tr>
           <?php endif; ?>
         </tbody>
       </table>
     </div>
 
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";

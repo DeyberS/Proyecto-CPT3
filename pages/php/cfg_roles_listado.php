@@ -27,7 +27,7 @@ verificarAcceso('Gestionar Configuraciones');
   </section>
 
   <section class="content">
-    <div style="padding-bottom: 10px;">
+    <div class="toolbar-container">
       <p class="pull-right" style="width:5px;"></p>
       <?php if (in_array('Ver papelera de roles', $_SESSION["permisos"])) : ?>
         <a href="papelera/cfg_roles_papelera_listado.php" class="btn-sm btn-primary pull-right" style="background-color: gray;"> Papelera </a>
@@ -41,7 +41,7 @@ verificarAcceso('Gestionar Configuraciones');
     <br><br>
     <div id="contenedorTabla">
       <table class="table table-sm table-hover mt-4" width="100%" height="20" id="t_user">
-        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+        <thead class="table-dark">
           <th>Nombre del rol</th>
           <th>Total de Permisos</th>
           <?php if (in_array('Gestionar acciones de roles', $_SESSION["permisos"])) : ?>
@@ -105,7 +105,7 @@ verificarAcceso('Gestionar Configuraciones');
         </tbody>
       </table>
     </div>
-    <nav id="contenedorPaginacion" aria-label="Page navigation" style="position: fixed; bottom:0;">
+    <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
         $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
@@ -188,7 +188,7 @@ verificarAcceso('Gestionar Configuraciones');
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header bg-crimson">
-          <h4 class="modal-title" id="DesactivarRolLabel">Confirmar Desactivación</h4>
+          <h4 class="modal-title" id="DesactivarRolLabel">Confirmación de Desactivación</h4>
         </div>
         <div class="modal-body">
           <p>¿Está seguro de que desea desactivar este rol? Esta acción solo se puede revertir en la papelera.</p>
