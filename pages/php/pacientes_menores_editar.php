@@ -92,22 +92,22 @@ verificarAcceso('Editar Pacientes Menores de Edad');
   <title>Pacientes Menores | Editar</title>
 </head>
 
-<style>
-  #avisoModal {
-    z-index: 999999 !important;
-  }
-
-  .nav-tabs>li>a {
-    pointer-events: none;
-    cursor: default;
-  }
-
-  .nav-tabs li.disabled-tab a {
-    color: #b2b2b2 !important;
-  }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    #avisoModal {
+      z-index: 999999 !important;
+    }
+
+    .nav-tabs>li>a {
+      pointer-events: none;
+      cursor: default;
+    }
+
+    .nav-tabs li.disabled-tab a {
+      color: #b2b2b2 !important;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Editar Paciente Menor de Edad</h1>
     <ol class="breadcrumb">
@@ -829,726 +829,731 @@ verificarAcceso('Editar Pacientes Menores de Edad');
             </div>
 
             <?php
-            include('includes/footer.php');
             include('modales/personas/representantes_gestionar_modal.php');
             include('modales/personas/representantes_agregar_modal.php');
             ?>
 
-            <script>
-              window.PARENTESCOS_DISPONIBLES = [{
-                  val: 'Madre',
-                  txt: 'Madre'
-                },
-                {
-                  val: 'Padre',
-                  txt: 'Padre'
-                },
-                {
-                  val: 'Abuelo/a',
-                  txt: 'Abuelo/a'
-                },
-                {
-                  val: 'Tío/a',
-                  txt: 'Tío/a'
-                },
-                {
-                  val: 'Hermano/a',
-                  txt: 'Hermano/a'
-                },
-                {
-                  val: 'Tutor Legal',
-                  txt: 'Tutor Legal'
-                },
-                {
-                  val: 'Otro',
-                  txt: 'Otro'
-                },
-                {
-                  val: 'No aplica',
-                  txt: 'No aplica'
-                }
-              ];
-            </script>
+        </div>
 
-            <script>
-              const idPaciente = "<?php echo $id_paciente; ?>";
-              const saved_id_pais_nac = "<?php echo $id_pais_nac; ?>";
-              const saved_id_estado_nac = "<?php echo $id_estado_nac; ?>";
-              const saved_id_municipio_nac = "<?php echo $id_municipio_nac; ?>";
-              const saved_id_estado_dir = "<?php echo $id_estado_dir; ?>";
-              const saved_id_municipio_dir = "<?php echo $id_municipio_dir; ?>";
-              const saved_id_sector_dir = "<?php echo $id_sector_dir; ?>";
-              const patologiasData = "<?php echo $patologias_data; ?>";
-              const alergiasData = "<?php echo $alergias_data; ?>";
-              const cedulaRepOriginal = "<?php echo htmlspecialchars($row['cedula_representante'] ?? ''); ?>";
-              const tipoCedulaRepOriginal = "<?php echo htmlspecialchars($row['tipo_cedula_representante'] ?? 'V'); ?>";
-              const discapacidadesData = <?php echo $discapacidades_json ?? '[]'; ?>;
-              const idRepresentanteActual = "<?php echo $id_representante_actual; ?>";
-              <?php
-              $representantes_json_menor = '[]';
-              $sql_rep_menor = "SELECT hr.Id_representante, p.nombre, p.apellido, hr.tipo_representante, hr.parentesco
+        <?php
+        include('includes/footer.php');
+        ?>
+
+        <script>
+          window.PARENTESCOS_DISPONIBLES = [{
+              val: 'Madre',
+              txt: 'Madre'
+            },
+            {
+              val: 'Padre',
+              txt: 'Padre'
+            },
+            {
+              val: 'Abuelo/a',
+              txt: 'Abuelo/a'
+            },
+            {
+              val: 'Tío/a',
+              txt: 'Tío/a'
+            },
+            {
+              val: 'Hermano/a',
+              txt: 'Hermano/a'
+            },
+            {
+              val: 'Tutor Legal',
+              txt: 'Tutor Legal'
+            },
+            {
+              val: 'Otro',
+              txt: 'Otro'
+            },
+            {
+              val: 'No aplica',
+              txt: 'No aplica'
+            }
+          ];
+        </script>
+
+        <script>
+          const idPaciente = "<?php echo $id_paciente; ?>";
+          const saved_id_pais_nac = "<?php echo $id_pais_nac; ?>";
+          const saved_id_estado_nac = "<?php echo $id_estado_nac; ?>";
+          const saved_id_municipio_nac = "<?php echo $id_municipio_nac; ?>";
+          const saved_id_estado_dir = "<?php echo $id_estado_dir; ?>";
+          const saved_id_municipio_dir = "<?php echo $id_municipio_dir; ?>";
+          const saved_id_sector_dir = "<?php echo $id_sector_dir; ?>";
+          const patologiasData = "<?php echo $patologias_data; ?>";
+          const alergiasData = "<?php echo $alergias_data; ?>";
+          const cedulaRepOriginal = "<?php echo htmlspecialchars($row['cedula_representante'] ?? ''); ?>";
+          const tipoCedulaRepOriginal = "<?php echo htmlspecialchars($row['tipo_cedula_representante'] ?? 'V'); ?>";
+          const discapacidadesData = <?php echo $discapacidades_json ?? '[]'; ?>;
+          const idRepresentanteActual = "<?php echo $id_representante_actual; ?>";
+          <?php
+          $representantes_json_menor = '[]';
+          $sql_rep_menor = "SELECT hr.Id_representante, p.nombre, p.apellido, hr.tipo_representante, hr.parentesco
               FROM historial_representantes hr
               INNER JOIN persona p ON hr.Id_representante = p.id
               WHERE hr.Id_paciente = $id_paciente AND hr.estatus = '1'";
-              $res_rep_menor = $conexion->query($sql_rep_menor);
-              if ($res_rep_menor && $res_rep_menor->num_rows > 0) {
-                $arr_rep_menor = [];
-                while ($r_m = $res_rep_menor->fetch_assoc()) {
-                  $arr_rep_menor[] = [
-                    'id' => intval($r_m['Id_representante']),
-                    'nombre' => trim($r_m['nombre'] . ' ' . $r_m['apellido']),
-                    'tipo' => $r_m['tipo_representante'],
-                    'parentesco' => $r_m['parentesco'] ?? ''
-                  ];
-                }
-                $representantes_json_menor = json_encode($arr_rep_menor);
-              }
-              ?>
-              const representantesData = <?php echo $representantes_json_menor; ?>;
+          $res_rep_menor = $conexion->query($sql_rep_menor);
+          if ($res_rep_menor && $res_rep_menor->num_rows > 0) {
+            $arr_rep_menor = [];
+            while ($r_m = $res_rep_menor->fetch_assoc()) {
+              $arr_rep_menor[] = [
+                'id' => intval($r_m['Id_representante']),
+                'nombre' => trim($r_m['nombre'] . ' ' . $r_m['apellido']),
+                'tipo' => $r_m['tipo_representante'],
+                'parentesco' => $r_m['parentesco'] ?? ''
+              ];
+            }
+            $representantes_json_menor = json_encode($arr_rep_menor);
+          }
+          ?>
+          const representantesData = <?php echo $representantes_json_menor; ?>;
 
-              window.mostrarAviso = function(mensaje) {
-                $('#avisoModalHeader').removeClass('bg-green').addClass('bg-crimson');
-                $('#avisoModalLabel').html('<i class="fa fa-warning"></i> Aviso Importante');
-                $('#avisoTexto').html(mensaje);
-                $('#avisoModal').modal('show');
-              };
+          window.mostrarAviso = function(mensaje) {
+            $('#avisoModalHeader').removeClass('bg-green').addClass('bg-crimson');
+            $('#avisoModalLabel').html('<i class="fa fa-warning"></i> Aviso Importante');
+            $('#avisoTexto').html(mensaje);
+            $('#avisoModal').modal('show');
+          };
 
-              window.mostrarAvisoExito = function(mensaje) {
-                $('#avisoModalHeader').removeClass('bg-crimson').addClass('bg-green');
-                $('#avisoModalLabel').html('<i class="fa fa-check"></i> Operación Exitosa');
-                $('#avisoTexto').html(mensaje);
-                $('#avisoModal').modal('show');
-              };
+          window.mostrarAvisoExito = function(mensaje) {
+            $('#avisoModalHeader').removeClass('bg-crimson').addClass('bg-green');
+            $('#avisoModalLabel').html('<i class="fa fa-check"></i> Operación Exitosa');
+            $('#avisoTexto').html(mensaje);
+            $('#avisoModal').modal('show');
+          };
 
-              $('#avisoModal').on('hidden.bs.modal', function() {
-                $('#avisoModalHeader').removeClass('bg-green').addClass('bg-crimson');
-                $('#avisoModalLabel').html('<i class="fa fa-warning"></i> Aviso Importante');
-              });
+          $('#avisoModal').on('hidden.bs.modal', function() {
+            $('#avisoModalHeader').removeClass('bg-green').addClass('bg-crimson');
+            $('#avisoModalLabel').html('<i class="fa fa-warning"></i> Aviso Importante');
+          });
 
-              $('.modal').on('hidden.bs.modal', function() {
-                $(this).removeClass('out');
-                if (!$('.modal.in').length) {
-                  $('body').removeClass('modal-open');
-                  $('.modal-backdrop').remove();
-                } else {
-                  $('body').addClass('modal-open');
-                }
-              });
+          $('.modal').on('hidden.bs.modal', function() {
+            $(this).removeClass('out');
+            if (!$('.modal.in').length) {
+              $('body').removeClass('modal-open');
+              $('.modal-backdrop').remove();
+            } else {
+              $('body').addClass('modal-open');
+            }
+          });
 
-              function limpiarErroresPestana(tabSelector) {
-                $(tabSelector).find('.input-error').removeClass('input-error');
-              }
+          function limpiarErroresPestana(tabSelector) {
+            $(tabSelector).find('.input-error').removeClass('input-error');
+          }
 
-              function setFechaLimitesMenor() {
-                const hoy = new Date();
-                const minFecha = new Date(hoy.getFullYear() - 18, hoy.getMonth(), hoy.getDate());
-                minFecha.setDate(minFecha.getDate() + 1);
-                const yMin = minFecha.getFullYear();
-                const mMin = String(minFecha.getMonth() + 1).padStart(2, '0');
-                const dMin = String(minFecha.getDate()).padStart(2, '0');
-                document.getElementById('fechaN').setAttribute('min', `${yMin}-${mMin}-${dMin}`);
-                const yMax = hoy.getFullYear();
-                const mMax = String(hoy.getMonth() + 1).padStart(2, '0');
-                const dMax = String(hoy.getDate()).padStart(2, '0');
-                document.getElementById('fechaN').setAttribute('max', `${yMax}-${mMax}-${dMax}`);
-              }
-              setFechaLimitesMenor();
+          function setFechaLimitesMenor() {
+            const hoy = new Date();
+            const minFecha = new Date(hoy.getFullYear() - 18, hoy.getMonth(), hoy.getDate());
+            minFecha.setDate(minFecha.getDate() + 1);
+            const yMin = minFecha.getFullYear();
+            const mMin = String(minFecha.getMonth() + 1).padStart(2, '0');
+            const dMin = String(minFecha.getDate()).padStart(2, '0');
+            document.getElementById('fechaN').setAttribute('min', `${yMin}-${mMin}-${dMin}`);
+            const yMax = hoy.getFullYear();
+            const mMax = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dMax = String(hoy.getDate()).padStart(2, '0');
+            document.getElementById('fechaN').setAttribute('max', `${yMax}-${mMax}-${dMax}`);
+          }
+          setFechaLimitesMenor();
 
-              function calcularDiferenciaExacta(fechaNacimiento, fechaReferencia) {
-                let años = fechaReferencia.getFullYear() - fechaNacimiento.getFullYear();
-                let meses = fechaReferencia.getMonth() - fechaNacimiento.getMonth();
-                let días = fechaReferencia.getDate() - fechaNacimiento.getDate();
+          function calcularDiferenciaExacta(fechaNacimiento, fechaReferencia) {
+            let años = fechaReferencia.getFullYear() - fechaNacimiento.getFullYear();
+            let meses = fechaReferencia.getMonth() - fechaNacimiento.getMonth();
+            let días = fechaReferencia.getDate() - fechaNacimiento.getDate();
 
-                if (días < 0) {
-                  meses--;
-                  const mesAnterior = new Date(fechaReferencia.getFullYear(), fechaReferencia.getMonth(), 0);
-                  días += mesAnterior.getDate();
-                }
+            if (días < 0) {
+              meses--;
+              const mesAnterior = new Date(fechaReferencia.getFullYear(), fechaReferencia.getMonth(), 0);
+              días += mesAnterior.getDate();
+            }
 
-                if (meses < 0) {
-                  años--;
-                  meses += 12;
-                }
+            if (meses < 0) {
+              años--;
+              meses += 12;
+            }
 
-                const totalDias = Math.floor(
-                  (fechaReferencia.getTime() - fechaNacimiento.getTime()) / (1000 * 60 * 60 * 24)
-                );
+            const totalDias = Math.floor(
+              (fechaReferencia.getTime() - fechaNacimiento.getTime()) / (1000 * 60 * 60 * 24)
+            );
 
-                let textoEdad;
-                if (años > 0) {
-                  textoEdad = años + (años === 1 ? ' año' : ' años');
-                } else if (meses > 0) {
-                  textoEdad = meses + (meses === 1 ? ' mes' : ' meses');
-                } else if (días > 0) {
-                  textoEdad = días + (días === 1 ? ' día' : ' días');
-                } else {
-                  textoEdad = '0 días';
-                }
+            let textoEdad;
+            if (años > 0) {
+              textoEdad = años + (años === 1 ? ' año' : ' años');
+            } else if (meses > 0) {
+              textoEdad = meses + (meses === 1 ? ' mes' : ' meses');
+            } else if (días > 0) {
+              textoEdad = días + (días === 1 ? ' día' : ' días');
+            } else {
+              textoEdad = '0 días';
+            }
 
-                return {
-                  años,
-                  meses,
-                  días,
-                  totalDias,
-                  textoEdad
-                };
-              }
+            return {
+              años,
+              meses,
+              días,
+              totalDias,
+              textoEdad
+            };
+          }
 
-              function calcularEdad() {
-                var fechaNacimiento = $('#fechaN').val();
-                var campoEdad = $('#edad');
-                var $fechaInput = $('#fechaN');
+          function calcularEdad() {
+            var fechaNacimiento = $('#fechaN').val();
+            var campoEdad = $('#edad');
+            var $fechaInput = $('#fechaN');
 
-                campoEdad.val('').removeAttr('data-edad-anios').removeAttr('title');
-                $fechaInput.removeClass('input-error');
+            campoEdad.val('').removeAttr('data-edad-anios').removeAttr('title');
+            $fechaInput.removeClass('input-error');
 
-                if (!fechaNacimiento) return;
+            if (!fechaNacimiento) return;
 
-                var fechaNac = new Date(fechaNacimiento + 'T00:00:00');
-                var hoy = new Date();
-                hoy.setHours(0, 0, 0, 0);
+            var fechaNac = new Date(fechaNacimiento + 'T00:00:00');
+            var hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
 
-                if (fechaNac > hoy) {
-                  mostrarAviso("⚠️ La fecha de nacimiento no puede ser posterior a la fecha actual.");
-                  $fechaInput.val("").addClass('input-error');
-                  return;
-                }
-                if (fechaNac.getFullYear() < 1900) {
-                  mostrarAviso("⚠️ La fecha de nacimiento no puede ser anterior a 1900.");
-                  $fechaInput.val("").addClass('input-error');
-                  return;
-                }
+            if (fechaNac > hoy) {
+              mostrarAviso("⚠️ La fecha de nacimiento no puede ser posterior a la fecha actual.");
+              $fechaInput.val("").addClass('input-error');
+              return;
+            }
+            if (fechaNac.getFullYear() < 1900) {
+              mostrarAviso("⚠️ La fecha de nacimiento no puede ser anterior a 1900.");
+              $fechaInput.val("").addClass('input-error');
+              return;
+            }
 
-                const calc = calcularDiferenciaExacta(fechaNac, hoy);
+            const calc = calcularDiferenciaExacta(fechaNac, hoy);
 
-                if (calc.años >= 18) {
-                  mostrarAviso(
-                    "⚠️ Este formulario es solo para menores de 18 años.<br>" +
-                    "La edad calculada es: <b>" + calc.textoEdad + "</b>."
-                  );
-                  campoEdad
-                    .val('Mayor de edad (' + calc.años + ' años)')
-                    .attr('data-edad-anios', calc.años)
-                    .css('color', 'crimson');
-                  return;
-                }
+            if (calc.años >= 18) {
+              mostrarAviso(
+                "⚠️ Este formulario es solo para menores de 18 años.<br>" +
+                "La edad calculada es: <b>" + calc.textoEdad + "</b>."
+              );
+              campoEdad
+                .val('Mayor de edad (' + calc.años + ' años)')
+                .attr('data-edad-anios', calc.años)
+                .css('color', 'crimson');
+              return;
+            }
 
-                campoEdad
-                  .val(calc.textoEdad)
-                  .attr('data-edad-anios', calc.años)
-                  .css('color', '#333');
-              }
-              $('#fechaN').on('change', calcularEdad);
-              calcularEdad();
+            campoEdad
+              .val(calc.textoEdad)
+              .attr('data-edad-anios', calc.años)
+              .css('color', '#333');
+          }
+          $('#fechaN').on('change', calcularEdad);
+          calcularEdad();
 
-              async function verificarDatosUnicosBD(tipo, cedula, email, idPersona) {
-                return new Promise((resolve) => {
-                  $.ajax({
-                    url: '../../cfg/ajax/verificar_existencia_cedula.php',
-                    method: 'POST',
-                    dataType: 'json',
-                    data: {
-                      tipo_cedula: tipo,
-                      cedula: cedula,
-                      email: email,
-                      id: idPersona
-                    },
-                    success: function(response) {
-                      resolve(response);
-                    },
-                    error: function() {
-                      resolve({
-                        existe_cedula: false,
-                        existe_email: false
-                      });
-                    }
-                  });
-                });
-              }
-
-              async function validarDatosUnicos() {
-                const cedulaInput = document.getElementById('cedula');
-                const tipoSelect = document.getElementById('tipo_cedula');
-                const emailInput = document.getElementById('email');
-                const cedula = cedulaInput ? cedulaInput.value.trim() : "";
-                const tipo = tipoSelect ? tipoSelect.value : "";
-                const email = emailInput ? emailInput.value.trim() : "";
-                let idActual = 0;
-                const inputId = document.querySelector('input[name="Id"]');
-                if (inputId && inputId.value) idActual = inputId.value;
-
-                let esValido = true;
-                let errores = [];
-                if (cedulaInput) $(cedulaInput).removeClass('input-error');
-                if (tipoSelect) $(tipoSelect).removeClass('input-error');
-
-                if (cedula === '') {
-                  if (cedulaInput) $(cedulaInput).addClass('input-error');
-                  errores.push("El campo de Cédula es obligatorio.");
-                  mostrarAviso(errores.join("<br>"));
-                  return false;
-                }
-
-                if (cedula !== "" && !isNaN(parseInt(cedula))) {
-                  const cedNum = parseInt(cedula);
-                  if (tipo === 'V' && cedNum > 80000000) {
-                    if (cedulaInput) $(cedulaInput).addClass('input-error');
-                    errores.push("Para tipo V-, la cédula no puede ser mayor a 80.000.000.");
-                    esValido = false;
-                  }
-                }
-
-                if (tipo === 'RP') {
-                  const regexRP = /^[0-9]{8}-[0-9]{1}$/;
-                  if (!regexRP.test(cedula)) {
-                    if (cedulaInput) $(cedulaInput).addClass('input-error');
-                    mostrarAviso("⚠️ Formato incorrecto para REP. Debe ser: <b>12345678-1</b>");
-                    return false;
-                  }
-                }
-
-                if (!esValido) {
-                  mostrarAviso("⚠️ " + errores.join("<br>"));
-                  return false;
-                }
-
-                if (cedula !== "") {
-                  const bd = await verificarDatosUnicosBD(tipo, cedula, email || "", idActual);
-                  if (bd.existe_cedula) {
-                    if (cedulaInput) $(cedulaInput).addClass('input-error');
-                    if (tipoSelect) $(tipoSelect).addClass('input-error');
-                    mostrarAviso(`El documento <b>${tipo}-${cedula}</b> ya se encuentra registrado en el sistema.`);
-                    return false;
-                  }
-                }
-                return true;
-              }
-
-              function alternarCamposRepresentante(bloquear) {
-                $('#nombre_rep, #fechaN_rep, #apellido_rep, #telefono_rep, #email_rep').prop('readonly', bloquear);
-                $('#genero_rep, #prefijo_rep, #parentesco').prop('disabled', bloquear);
-                if (bloquear) {
-                  $('#nombre_rep, #apellido_rep, #fechaN_rep, #telefono_rep, #email_rep').css('background-color', '#eee');
-                  $('#prefijo_rep, #genero_rep, #parentesco').css('background-color', '#eee');
-                } else {
-                  $('#nombre_rep, #apellido_rep, #fechaN_rep, #telefono_rep, #email_rep').css('background-color', '#fff');
-                  $('#prefijo_rep, #genero_rep, #parentesco').css('background-color', '#fff');
-                }
-              }
-
-              async function verificarCedulaRepEnBD(tipo, cedula) {
-                return new Promise((resolve) => {
-                  $.ajax({
-                    url: '../../cfg/ajax/obtener_representante.php',
-                    method: 'POST',
-                    dataType: 'json',
-                    data: {
-                      tipo_cedula: tipo,
-                      cedula: cedula
-                    },
-                    success: function(data) {
-                      resolve(data);
-                    },
-                    error: function() {
-                      resolve({
-                        existe: false
-                      });
-                    }
-                  });
-                });
-              }
-
-              async function validarCedulaRepFormato() {
-                const cedulaRepInput = document.getElementById('cedula_rep');
-                const tipoCedulaRepSelect = document.getElementById('tipo_cedula_rep');
-                if (!cedulaRepInput) return true;
-                const cedula = cedulaRepInput.value.trim();
-                const tipo = tipoCedulaRepSelect.value;
-                let esValido = true;
-
-                $(cedulaRepInput).removeClass('input-error');
-                $(tipoCedulaRepSelect).removeClass('input-error');
-
-                if (cedula === "") {
-                  return true;
-                }
-
-                if (cedula === cedulaRepOriginal && tipo === tipoCedulaRepOriginal) {
-                  return true;
-                }
-
-                const cedulaMenor = $('#cedula').val() ? $('#cedula').val().trim() : '';
-                const tipoMenor = $('#tipo_cedula').val() ? $('#tipo_cedula').val() : '';
-                if (cedula === cedulaMenor && tipo === tipoMenor) {
-                  $(cedulaRepInput).addClass('input-error');
-                  mostrarAviso('⚠️ La cédula del representante no puede ser igual a la del menor.');
-                  return false;
-                }
-
-                if (tipo === 'V') {
-                  const num = parseInt(cedula);
-                  if (!isNaN(num) && num > 80000000) {
-                    $(cedulaRepInput).addClass('input-error');
-                    mostrarAviso('⚠️ Cédula V- del representante no puede ser mayor a 80.000.000.');
-                    return false;
-                  }
-                }
-
-                $('#nombre_rep').attr('placeholder', 'Buscando datos...');
-                const data = await verificarCedulaRepEnBD(tipo, cedula);
-
-                if (data && data.existe) {
-                  if (data.es_representante === true || data.es_representante === 1) {
-                    $('#nombre_rep').val(data.nombre || '');
-                    $('#apellido_rep').val(data.apellido || '');
-                    if (data.fecha_nacimiento) {
-                      $('#fechaN_rep').val(data.fecha_nacimiento);
-                      calcularEdadRep();
-                    }
-                    if (data.telefono_numero) $('#telefono_rep').val(data.telefono_numero);
-                    if (data.prefijo_id) $('#prefijo_rep').val(data.prefijo_id);
-                    if (data.genero) $('#genero_rep').val(data.genero);
-                    if (data.email) $('#email_rep').val(data.email);
-                    alternarCamposRepresentante(true);
-                    $('#nombre_rep').attr('placeholder', 'Nombre Del Representante');
-                  } else {
-                    $('#nombre_rep').val('');
-                    $('#apellido_rep').val('');
-                    $('#fechaN_rep').val('');
-                    $('#edad_rep').val('');
-                    $('#telefono_rep').val('');
-                    $('#prefijo_rep').val('');
-                    $('#genero_rep').val('');
-                    $('#email_rep').val('');
-                    $(cedulaRepInput).addClass('input-error');
-                    alternarCamposRepresentante(true);
-                    mostrarAviso('⚠️ Esta cédula ya está registrada pero no pertenece a un representante. Ingrese otra cédula.');
-                    esValido = false;
-                  }
-                } else {
-                  if ($('#nombre_rep').prop('readonly')) {
-                    $('#nombre_rep').val('');
-                    $('#apellido_rep').val('');
-                    $('#fechaN_rep').val('');
-                    $('#edad_rep').val('');
-                    $('#telefono_rep').val('');
-                    $('#prefijo_rep').val('');
-                    $('#genero_rep').val('');
-                    $('#email_rep').val('');
-                  }
-                  alternarCamposRepresentante(false);
-                  $('#nombre_rep').attr('placeholder', 'Nombre Del Representante');
-                }
-                return esValido;
-              }
-
-              if (document.getElementById('cedula_rep')) {
-                document.getElementById('cedula_rep').addEventListener('blur', validarCedulaRepFormato);
-                document.getElementById('tipo_cedula_rep').addEventListener('change', validarCedulaRepFormato);
-              }
-
-              $(document).ready(function() {
-                if (cedulaRepOriginal && cedulaRepOriginal.trim() !== '') {
-                  alternarCamposRepresentante(true);
-                }
-              });
-
-              document.getElementById('pais_nacimiento').addEventListener('change', function() {
-                var paisId = this.value;
-                var estadoSelect = document.getElementById('estado_nacimiento');
-                var municipioSelect = document.getElementById('municipio_nacimiento');
-                estadoSelect.innerHTML = '<option value="">--- Seleccione Un Estado ---</option>';
-                municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
-                if (paisId) {
-                  $.ajax({
-                    url: '../../cfg/ajax/obtener_estados.php',
-                    method: 'GET',
-                    data: {
-                      Id_Pais: paisId
-                    },
-                    dataType: 'json',
-                    cache: false,
-                    success: function(data) {
-                      for (var i = 0; i < data.length; i++) {
-                        estadoSelect.innerHTML += '<option value="' + data[i].Id_Estado + '">' + data[i].nombre_estado + '</option>';
-                      }
-                    }
+          async function verificarDatosUnicosBD(tipo, cedula, email, idPersona) {
+            return new Promise((resolve) => {
+              $.ajax({
+                url: '../../cfg/ajax/verificar_existencia_cedula.php',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                  tipo_cedula: tipo,
+                  cedula: cedula,
+                  email: email,
+                  id: idPersona
+                },
+                success: function(response) {
+                  resolve(response);
+                },
+                error: function() {
+                  resolve({
+                    existe_cedula: false,
+                    existe_email: false
                   });
                 }
               });
+            });
+          }
 
-              document.getElementById('estado_nacimiento').addEventListener('change', function() {
-                var estadoId = this.value;
-                var municipioSelect = document.getElementById('municipio_nacimiento');
-                municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
-                if (estadoId) {
-                  $.ajax({
-                    url: '../../cfg/ajax/obtener_municipios.php',
-                    method: 'GET',
-                    data: {
-                      Id_Estado: estadoId
-                    },
-                    dataType: 'json',
-                    cache: false,
-                    success: function(data) {
-                      for (var i = 0; i < data.length; i++) {
-                        municipioSelect.innerHTML += '<option value="' + data[i].Id_Municipio + '">' + data[i].nombre_municipio + '</option>';
-                      }
-                    }
+          async function validarDatosUnicos() {
+            const cedulaInput = document.getElementById('cedula');
+            const tipoSelect = document.getElementById('tipo_cedula');
+            const emailInput = document.getElementById('email');
+            const cedula = cedulaInput ? cedulaInput.value.trim() : "";
+            const tipo = tipoSelect ? tipoSelect.value : "";
+            const email = emailInput ? emailInput.value.trim() : "";
+            let idActual = 0;
+            const inputId = document.querySelector('input[name="Id"]');
+            if (inputId && inputId.value) idActual = inputId.value;
+
+            let esValido = true;
+            let errores = [];
+            if (cedulaInput) $(cedulaInput).removeClass('input-error');
+            if (tipoSelect) $(tipoSelect).removeClass('input-error');
+
+            if (cedula === '') {
+              if (cedulaInput) $(cedulaInput).addClass('input-error');
+              errores.push("El campo de Cédula es obligatorio.");
+              mostrarAviso(errores.join("<br>"));
+              return false;
+            }
+
+            if (cedula !== "" && !isNaN(parseInt(cedula))) {
+              const cedNum = parseInt(cedula);
+              if (tipo === 'V' && cedNum > 80000000) {
+                if (cedulaInput) $(cedulaInput).addClass('input-error');
+                errores.push("Para tipo V-, la cédula no puede ser mayor a 80.000.000.");
+                esValido = false;
+              }
+            }
+
+            if (tipo === 'RP') {
+              const regexRP = /^[0-9]{8}-[0-9]{1}$/;
+              if (!regexRP.test(cedula)) {
+                if (cedulaInput) $(cedulaInput).addClass('input-error');
+                mostrarAviso("⚠️ Formato incorrecto para REP. Debe ser: <b>12345678-1</b>");
+                return false;
+              }
+            }
+
+            if (!esValido) {
+              mostrarAviso("⚠️ " + errores.join("<br>"));
+              return false;
+            }
+
+            if (cedula !== "") {
+              const bd = await verificarDatosUnicosBD(tipo, cedula, email || "", idActual);
+              if (bd.existe_cedula) {
+                if (cedulaInput) $(cedulaInput).addClass('input-error');
+                if (tipoSelect) $(tipoSelect).addClass('input-error');
+                mostrarAviso(`El documento <b>${tipo}-${cedula}</b> ya se encuentra registrado en el sistema.`);
+                return false;
+              }
+            }
+            return true;
+          }
+
+          function alternarCamposRepresentante(bloquear) {
+            $('#nombre_rep, #fechaN_rep, #apellido_rep, #telefono_rep, #email_rep').prop('readonly', bloquear);
+            $('#genero_rep, #prefijo_rep, #parentesco').prop('disabled', bloquear);
+            if (bloquear) {
+              $('#nombre_rep, #apellido_rep, #fechaN_rep, #telefono_rep, #email_rep').css('background-color', '#eee');
+              $('#prefijo_rep, #genero_rep, #parentesco').css('background-color', '#eee');
+            } else {
+              $('#nombre_rep, #apellido_rep, #fechaN_rep, #telefono_rep, #email_rep').css('background-color', '#fff');
+              $('#prefijo_rep, #genero_rep, #parentesco').css('background-color', '#fff');
+            }
+          }
+
+          async function verificarCedulaRepEnBD(tipo, cedula) {
+            return new Promise((resolve) => {
+              $.ajax({
+                url: '../../cfg/ajax/obtener_representante.php',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                  tipo_cedula: tipo,
+                  cedula: cedula
+                },
+                success: function(data) {
+                  resolve(data);
+                },
+                error: function() {
+                  resolve({
+                    existe: false
                   });
                 }
               });
+            });
+          }
 
-              document.getElementById('estado').addEventListener('change', function() {
-                var estadoId = this.value;
-                var municipioSelect = document.getElementById('municipio');
-                var sectorSelect = document.getElementById('sector');
-                municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
-                if (sectorSelect) sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
-                if (estadoId) {
-                  $.ajax({
-                    url: '../../cfg/ajax/obtener_municipios.php',
-                    method: 'GET',
-                    data: {
-                      Id_Estado: estadoId
-                    },
-                    dataType: 'json',
-                    cache: false,
-                    success: function(data) {
-                      for (var i = 0; i < data.length; i++) {
-                        municipioSelect.innerHTML += '<option value="' + data[i].Id_Municipio + '">' + data[i].nombre_municipio + '</option>';
-                      }
-                    }
-                  });
+          async function validarCedulaRepFormato() {
+            const cedulaRepInput = document.getElementById('cedula_rep');
+            const tipoCedulaRepSelect = document.getElementById('tipo_cedula_rep');
+            if (!cedulaRepInput) return true;
+            const cedula = cedulaRepInput.value.trim();
+            const tipo = tipoCedulaRepSelect.value;
+            let esValido = true;
+
+            $(cedulaRepInput).removeClass('input-error');
+            $(tipoCedulaRepSelect).removeClass('input-error');
+
+            if (cedula === "") {
+              return true;
+            }
+
+            if (cedula === cedulaRepOriginal && tipo === tipoCedulaRepOriginal) {
+              return true;
+            }
+
+            const cedulaMenor = $('#cedula').val() ? $('#cedula').val().trim() : '';
+            const tipoMenor = $('#tipo_cedula').val() ? $('#tipo_cedula').val() : '';
+            if (cedula === cedulaMenor && tipo === tipoMenor) {
+              $(cedulaRepInput).addClass('input-error');
+              mostrarAviso('⚠️ La cédula del representante no puede ser igual a la del menor.');
+              return false;
+            }
+
+            if (tipo === 'V') {
+              const num = parseInt(cedula);
+              if (!isNaN(num) && num > 80000000) {
+                $(cedulaRepInput).addClass('input-error');
+                mostrarAviso('⚠️ Cédula V- del representante no puede ser mayor a 80.000.000.');
+                return false;
+              }
+            }
+
+            $('#nombre_rep').attr('placeholder', 'Buscando datos...');
+            const data = await verificarCedulaRepEnBD(tipo, cedula);
+
+            if (data && data.existe) {
+              if (data.es_representante === true || data.es_representante === 1) {
+                $('#nombre_rep').val(data.nombre || '');
+                $('#apellido_rep').val(data.apellido || '');
+                if (data.fecha_nacimiento) {
+                  $('#fechaN_rep').val(data.fecha_nacimiento);
+                  calcularEdadRep();
                 }
-              });
+                if (data.telefono_numero) $('#telefono_rep').val(data.telefono_numero);
+                if (data.prefijo_id) $('#prefijo_rep').val(data.prefijo_id);
+                if (data.genero) $('#genero_rep').val(data.genero);
+                if (data.email) $('#email_rep').val(data.email);
+                alternarCamposRepresentante(true);
+                $('#nombre_rep').attr('placeholder', 'Nombre Del Representante');
+              } else {
+                $('#nombre_rep').val('');
+                $('#apellido_rep').val('');
+                $('#fechaN_rep').val('');
+                $('#edad_rep').val('');
+                $('#telefono_rep').val('');
+                $('#prefijo_rep').val('');
+                $('#genero_rep').val('');
+                $('#email_rep').val('');
+                $(cedulaRepInput).addClass('input-error');
+                alternarCamposRepresentante(true);
+                mostrarAviso('⚠️ Esta cédula ya está registrada pero no pertenece a un representante. Ingrese otra cédula.');
+                esValido = false;
+              }
+            } else {
+              if ($('#nombre_rep').prop('readonly')) {
+                $('#nombre_rep').val('');
+                $('#apellido_rep').val('');
+                $('#fechaN_rep').val('');
+                $('#edad_rep').val('');
+                $('#telefono_rep').val('');
+                $('#prefijo_rep').val('');
+                $('#genero_rep').val('');
+                $('#email_rep').val('');
+              }
+              alternarCamposRepresentante(false);
+              $('#nombre_rep').attr('placeholder', 'Nombre Del Representante');
+            }
+            return esValido;
+          }
 
-              document.getElementById('municipio').addEventListener('change', function() {
-                var municipioId = this.value;
-                var sectorSelect = document.getElementById('sector');
-                sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
-                if (municipioId) {
-                  $.ajax({
-                    url: '../../cfg/ajax/obtener_sectores.php',
-                    method: 'GET',
-                    data: {
-                      Id_Municipio: municipioId
-                    },
-                    dataType: 'json',
-                    cache: false,
-                    success: function(data) {
-                      for (var i = 0; i < data.length; i++) {
-                        sectorSelect.innerHTML += '<option value="' + data[i].Id_Sector + '">' + data[i].nombre_sector + '</option>';
-                      }
-                    }
-                  });
-                }
-              });
+          if (document.getElementById('cedula_rep')) {
+            document.getElementById('cedula_rep').addEventListener('blur', validarCedulaRepFormato);
+            document.getElementById('tipo_cedula_rep').addEventListener('change', validarCedulaRepFormato);
+          }
 
-              const selectAnalfabeta = document.getElementById('analfabeta');
-              const mision = document.getElementById('mision');
-              const añosAprobados = document.getElementById('años_aprobados');
-              const selectEtnia = document.getElementById('etnia');
-              const tipoEtnia = document.getElementById('tipo_etnia');
-              const selectDiscapacidad = document.getElementById('discapacidad');
+          $(document).ready(function() {
+            if (cedulaRepOriginal && cedulaRepOriginal.trim() !== '') {
+              alternarCamposRepresentante(true);
+            }
+          });
 
-              const limitesMision = {
-                "robinson": 6,
-                "ribas": 5,
-                "sucre": 6
-              };
-
-              function toggleOptions() {
-                const esAnalfabeta = selectAnalfabeta.value === 'Si';
-                const siTieneDiscapacidad = selectDiscapacidad.value === 'Si';
-                const noTieneDiscapacidad = selectDiscapacidad.value === 'No';
-
-                if (esAnalfabeta) {
-                  $('#mision, #años_aprobados').prop('disabled', false);
-                } else if (selectAnalfabeta.value === 'No') {
-                  $('#mision, #años_aprobados').prop('disabled', true);
-                  $('#años_help').text('');
-                } else {
-                  $('#mision, #años_aprobados').prop('disabled', false);
-                }
-                if (selectEtnia.value === 'Si') {
-                  $('#tipo_etnia').prop('disabled', false);
-                } else if (selectEtnia.value === 'No') {
-                  $('#tipo_etnia').prop('disabled', true);
-                } else {
-                  $('#tipo_etnia').prop('disabled', false);
-                }
-                if (siTieneDiscapacidad) {
-                  $('#btn_modal_disc').prop('disabled', false).removeClass('btn-second').addClass('btn-info');
-
-                  if (typeof discapacidadesData !== 'undefined' && Array.isArray(discapacidadesData) && discapacidadesData.length > 0) {
-                    if (!$('#discapacidades_ids').val() || $('#discapacidades_ids').val() === '[]') {
-                      let nombres = discapacidadesData.map(d => d.nombre);
-                      $('#discapacidades_ids').val(JSON.stringify(discapacidadesData));
-                      $('#btn_modal_disc').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
-                    }
+          document.getElementById('pais_nacimiento').addEventListener('change', function() {
+            var paisId = this.value;
+            var estadoSelect = document.getElementById('estado_nacimiento');
+            var municipioSelect = document.getElementById('municipio_nacimiento');
+            estadoSelect.innerHTML = '<option value="">--- Seleccione Un Estado ---</option>';
+            municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
+            if (paisId) {
+              $.ajax({
+                url: '../../cfg/ajax/obtener_estados.php',
+                method: 'GET',
+                data: {
+                  Id_Pais: paisId
+                },
+                dataType: 'json',
+                cache: false,
+                success: function(data) {
+                  for (var i = 0; i < data.length; i++) {
+                    estadoSelect.innerHTML += '<option value="' + data[i].Id_Estado + '">' + data[i].nombre_estado + '</option>';
                   }
-                } else {
-                  $('#btn_modal_disc').prop('disabled', true).removeClass('btn-info').addClass('btn-second');
-                  $('#discapacidades_ids').val('[]');
-                  $('#btn_modal_disc').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+                }
+              });
+            }
+          });
+
+          document.getElementById('estado_nacimiento').addEventListener('change', function() {
+            var estadoId = this.value;
+            var municipioSelect = document.getElementById('municipio_nacimiento');
+            municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
+            if (estadoId) {
+              $.ajax({
+                url: '../../cfg/ajax/obtener_municipios.php',
+                method: 'GET',
+                data: {
+                  Id_Estado: estadoId
+                },
+                dataType: 'json',
+                cache: false,
+                success: function(data) {
+                  for (var i = 0; i < data.length; i++) {
+                    municipioSelect.innerHTML += '<option value="' + data[i].Id_Municipio + '">' + data[i].nombre_municipio + '</option>';
+                  }
+                }
+              });
+            }
+          });
+
+          document.getElementById('estado').addEventListener('change', function() {
+            var estadoId = this.value;
+            var municipioSelect = document.getElementById('municipio');
+            var sectorSelect = document.getElementById('sector');
+            municipioSelect.innerHTML = '<option value="">--- Seleccione Un Municipio ---</option>';
+            if (sectorSelect) sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
+            if (estadoId) {
+              $.ajax({
+                url: '../../cfg/ajax/obtener_municipios.php',
+                method: 'GET',
+                data: {
+                  Id_Estado: estadoId
+                },
+                dataType: 'json',
+                cache: false,
+                success: function(data) {
+                  for (var i = 0; i < data.length; i++) {
+                    municipioSelect.innerHTML += '<option value="' + data[i].Id_Municipio + '">' + data[i].nombre_municipio + '</option>';
+                  }
+                }
+              });
+            }
+          });
+
+          document.getElementById('municipio').addEventListener('change', function() {
+            var municipioId = this.value;
+            var sectorSelect = document.getElementById('sector');
+            sectorSelect.innerHTML = '<option value="">--- Seleccione Un Sector ---</option>';
+            if (municipioId) {
+              $.ajax({
+                url: '../../cfg/ajax/obtener_sectores.php',
+                method: 'GET',
+                data: {
+                  Id_Municipio: municipioId
+                },
+                dataType: 'json',
+                cache: false,
+                success: function(data) {
+                  for (var i = 0; i < data.length; i++) {
+                    sectorSelect.innerHTML += '<option value="' + data[i].Id_Sector + '">' + data[i].nombre_sector + '</option>';
+                  }
+                }
+              });
+            }
+          });
+
+          const selectAnalfabeta = document.getElementById('analfabeta');
+          const mision = document.getElementById('mision');
+          const añosAprobados = document.getElementById('años_aprobados');
+          const selectEtnia = document.getElementById('etnia');
+          const tipoEtnia = document.getElementById('tipo_etnia');
+          const selectDiscapacidad = document.getElementById('discapacidad');
+
+          const limitesMision = {
+            "robinson": 6,
+            "ribas": 5,
+            "sucre": 6
+          };
+
+          function toggleOptions() {
+            const esAnalfabeta = selectAnalfabeta.value === 'Si';
+            const siTieneDiscapacidad = selectDiscapacidad.value === 'Si';
+            const noTieneDiscapacidad = selectDiscapacidad.value === 'No';
+
+            if (esAnalfabeta) {
+              $('#mision, #años_aprobados').prop('disabled', false);
+            } else if (selectAnalfabeta.value === 'No') {
+              $('#mision, #años_aprobados').prop('disabled', true);
+              $('#años_help').text('');
+            } else {
+              $('#mision, #años_aprobados').prop('disabled', false);
+            }
+            if (selectEtnia.value === 'Si') {
+              $('#tipo_etnia').prop('disabled', false);
+            } else if (selectEtnia.value === 'No') {
+              $('#tipo_etnia').prop('disabled', true);
+            } else {
+              $('#tipo_etnia').prop('disabled', false);
+            }
+            if (siTieneDiscapacidad) {
+              $('#btn_modal_disc').prop('disabled', false).removeClass('btn-second').addClass('btn-info');
+
+              if (typeof discapacidadesData !== 'undefined' && Array.isArray(discapacidadesData) && discapacidadesData.length > 0) {
+                if (!$('#discapacidades_ids').val() || $('#discapacidades_ids').val() === '[]') {
+                  let nombres = discapacidadesData.map(d => d.nombre);
+                  $('#discapacidades_ids').val(JSON.stringify(discapacidadesData));
+                  $('#btn_modal_disc').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
                 }
               }
+            } else {
+              $('#btn_modal_disc').prop('disabled', true).removeClass('btn-info').addClass('btn-second');
+              $('#discapacidades_ids').val('[]');
+              $('#btn_modal_disc').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+            }
+          }
 
-              if (selectAnalfabeta) selectAnalfabeta.addEventListener('change', toggleOptions);
-              if (selectEtnia) selectEtnia.addEventListener('change', toggleOptions);
-              selectDiscapacidad.addEventListener('change', toggleOptions);
+          if (selectAnalfabeta) selectAnalfabeta.addEventListener('change', toggleOptions);
+          if (selectEtnia) selectEtnia.addEventListener('change', toggleOptions);
+          selectDiscapacidad.addEventListener('change', toggleOptions);
 
-              selectDiscapacidad.addEventListener('change', function() {
-                toggleOptions();
-                if (this.value === 'No') {
-                  $('#discapacidades_ids').val('[]');
-                  $('#btn_modal_disc')
-                    .prop('disabled', true)
-                    .removeClass('btn-info')
-                    .addClass('btn-second')
-                    .attr('data-original-title', 'Ninguna seleccionada')
-                    .tooltip('fixTitle');
-                }
-              });
-              toggleOptions();
+          selectDiscapacidad.addEventListener('change', function() {
+            toggleOptions();
+            if (this.value === 'No') {
+              $('#discapacidades_ids').val('[]');
+              $('#btn_modal_disc')
+                .prop('disabled', true)
+                .removeClass('btn-info')
+                .addClass('btn-second')
+                .attr('data-original-title', 'Ninguna seleccionada')
+                .tooltip('fixTitle');
+            }
+          });
+          toggleOptions();
 
-              $('#mision').on('change', function() {
-                const seleccion = $(this).val();
-                const maxAños = limitesMision[seleccion];
-                if (maxAños) {
-                  $('#años_aprobados').attr('max', maxAños).attr('placeholder', 'Máx: ' + maxAños);
-                  $('#años_help').text('Duración máxima para Misión ' + seleccion.charAt(0).toUpperCase() + seleccion.slice(1) + ': ' + maxAños + ' años.');
-                  const valorActual = parseInt($('#años_aprobados').val());
-                  if (valorActual > maxAños) $('#años_aprobados').val(maxAños);
-                } else {
-                  $('#años_aprobados').removeAttr('max').attr('placeholder', '');
-                  $('#años_help').text('');
-                }
-              });
+          $('#mision').on('change', function() {
+            const seleccion = $(this).val();
+            const maxAños = limitesMision[seleccion];
+            if (maxAños) {
+              $('#años_aprobados').attr('max', maxAños).attr('placeholder', 'Máx: ' + maxAños);
+              $('#años_help').text('Duración máxima para Misión ' + seleccion.charAt(0).toUpperCase() + seleccion.slice(1) + ': ' + maxAños + ' años.');
+              const valorActual = parseInt($('#años_aprobados').val());
+              if (valorActual > maxAños) $('#años_aprobados').val(maxAños);
+            } else {
+              $('#años_aprobados').removeAttr('max').attr('placeholder', '');
+              $('#años_help').text('');
+            }
+          });
 
-              $('#años_aprobados').on('input', function() {
-                const max = parseInt($(this).attr('max'));
-                const val = parseInt($(this).val());
-                if (!isNaN(max) && val > max) {
-                  $(this).addClass('input-error');
-                  $('#años_help').text('⚠️ No puede exceder ' + max + ' años.').css('color', 'crimson');
-                } else {
-                  $(this).removeClass('input-error');
-                  const m = $('#mision').val();
-                  if (limitesMision[m]) {
-                    $('#años_help').text('Duración máxima para Misión ' + m.charAt(0).toUpperCase() + m.slice(1) + ': ' + limitesMision[m] + ' años.').css('color', '#777');
-                  } else {
-                    $('#años_help').text('');
-                  }
-                }
-              });
+          $('#años_aprobados').on('input', function() {
+            const max = parseInt($(this).attr('max'));
+            const val = parseInt($(this).val());
+            if (!isNaN(max) && val > max) {
+              $(this).addClass('input-error');
+              $('#años_help').text('⚠️ No puede exceder ' + max + ' años.').css('color', 'crimson');
+            } else {
+              $(this).removeClass('input-error');
+              const m = $('#mision').val();
+              if (limitesMision[m]) {
+                $('#años_help').text('Duración máxima para Misión ' + m.charAt(0).toUpperCase() + m.slice(1) + ': ' + limitesMision[m] + ' años.').css('color', '#777');
+              } else {
+                $('#años_help').text('');
+              }
+            }
+          });
 
-              function normalizarSiSinDatos() {
-                let cambios = [];
+          function normalizarSiSinDatos() {
+            let cambios = [];
 
-                const $selectDisc = $('#discapacidad');
-                const discIdsRaw = $('#discapacidades_ids').val();
-                let discLista = [];
-                try {
-                  discLista = JSON.parse(discIdsRaw || '[]');
-                } catch (e) {
-                  discLista = [];
-                }
+            const $selectDisc = $('#discapacidad');
+            const discIdsRaw = $('#discapacidades_ids').val();
+            let discLista = [];
+            try {
+              discLista = JSON.parse(discIdsRaw || '[]');
+            } catch (e) {
+              discLista = [];
+            }
 
-                if ($selectDisc.val() === 'Si' && (!Array.isArray(discLista) || discLista.length === 0)) {
-                  $selectDisc.val('No');
-                  $('#discapacidades_ids').val('[]');
-                  $('#btn_modal_disc').prop('disabled', true).removeClass('btn-info').addClass('btn-second').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
-                  cambios.push('discapacidad');
-                }
+            if ($selectDisc.val() === 'Si' && (!Array.isArray(discLista) || discLista.length === 0)) {
+              $selectDisc.val('No');
+              $('#discapacidades_ids').val('[]');
+              $('#btn_modal_disc').prop('disabled', true).removeClass('btn-info').addClass('btn-second').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+              cambios.push('discapacidad');
+            }
 
-                const $selectRep = $('#tiene_representante');
-                if ($selectRep.length) {
-                  const repIdsRaw = $('#representantes_ids').val();
-                  let repLista = [];
-                  try {
-                    repLista = JSON.parse(repIdsRaw || '[]');
-                  } catch (e) {
-                    repLista = [];
-                  }
-
-                  if ($selectRep.val() === 'Si' && (!Array.isArray(repLista) || repLista.length === 0)) {
-                    $selectRep.val('No');
-                    $('#representantes_ids').val('[]');
-                    $('#btn_modal_rep').prop('disabled', true).removeClass('btn-info').addClass('btn-second').attr('data-original-title', 'Sin Representantes').tooltip('fixTitle');
-                    cambios.push('representante');
-                  }
-                }
-
-                const $selectEtnia = $('#etnia');
-                if ($selectEtnia.val() === 'Si' && (!$('#tipo_etnia').val() || $('#tipo_etnia').val() === '')) {
-                  $selectEtnia.val('No');
-                  $('#tipo_etnia').val('').prop('disabled', true);
-                  cambios.push('etnia');
-                }
-
-                if (typeof toggleOptions === 'function') toggleOptions();
-                return {
-                  cambios
-                };
+            const $selectRep = $('#tiene_representante');
+            if ($selectRep.length) {
+              const repIdsRaw = $('#representantes_ids').val();
+              let repLista = [];
+              try {
+                repLista = JSON.parse(repIdsRaw || '[]');
+              } catch (e) {
+                repLista = [];
               }
 
-              $('#btn_modal_pat, #btn_modal_ale').tooltip();
-
-              let listaPatologias = [];
-              let listaAlergias = [];
-              let listaSintomas = [];
-
-              function construirOpcionesPatologias() {
-                let html = '<option value="">--- Seleccione una patología ---</option>';
-                listaPatologias.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(p => {
-                  html += `<option value="${p.id}" data-nombre="${p.nombre}" data-cie="${p.cie || ''}">${p.nombre}</option>`;
-                });
-                return html;
+              if ($selectRep.val() === 'Si' && (!Array.isArray(repLista) || repLista.length === 0)) {
+                $selectRep.val('No');
+                $('#representantes_ids').val('[]');
+                $('#btn_modal_rep').prop('disabled', true).removeClass('btn-info').addClass('btn-second').attr('data-original-title', 'Sin Representantes').tooltip('fixTitle');
+                cambios.push('representante');
               }
+            }
 
-              function construirOpcionesAlergias() {
-                let html = '<option value="">--- Seleccione una alergia ---</option>';
-                listaAlergias.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(a => {
-                  html += `<option value="${a.id}" data-nombre="${a.nombre}">${a.nombre}</option>`;
-                });
-                return html;
+            const $selectEtnia = $('#etnia');
+            if ($selectEtnia.val() === 'Si' && (!$('#tipo_etnia').val() || $('#tipo_etnia').val() === '')) {
+              $selectEtnia.val('No');
+              $('#tipo_etnia').val('').prop('disabled', true);
+              cambios.push('etnia');
+            }
+
+            if (typeof toggleOptions === 'function') toggleOptions();
+            return {
+              cambios
+            };
+          }
+
+          $('#btn_modal_pat, #btn_modal_ale').tooltip();
+
+          let listaPatologias = [];
+          let listaAlergias = [];
+          let listaSintomas = [];
+
+          function construirOpcionesPatologias() {
+            let html = '<option value="">--- Seleccione una patología ---</option>';
+            listaPatologias.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(p => {
+              html += `<option value="${p.id}" data-nombre="${p.nombre}" data-cie="${p.cie || ''}">${p.nombre}</option>`;
+            });
+            return html;
+          }
+
+          function construirOpcionesAlergias() {
+            let html = '<option value="">--- Seleccione una alergia ---</option>';
+            listaAlergias.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(a => {
+              html += `<option value="${a.id}" data-nombre="${a.nombre}">${a.nombre}</option>`;
+            });
+            return html;
+          }
+
+          function construirOpcionesSintomas() {
+            let html = '<option value="">--- Seleccione un síntoma ---</option>';
+            listaSintomas.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(s => {
+              html += `<option value="${s.id}">${s.nombre}</option>`;
+            });
+            return html;
+          }
+
+          $(document).ready(function() {
+            <?php
+            $q_init_pat = $conexion->query("SELECT Id_patologia, nombre_patologia, codigo_cie FROM patologias WHERE estatus = 1 ORDER BY nombre_patologia ASC");
+            if ($q_init_pat) {
+              while ($p = $q_init_pat->fetch_assoc()) {
+                echo "listaPatologias.push({id: " . intval($p['Id_patologia']) . ", nombre: " . json_encode($p['nombre_patologia']) . ", cie: " . json_encode($p['codigo_cie']) . "});\n";
               }
-
-              function construirOpcionesSintomas() {
-                let html = '<option value="">--- Seleccione un síntoma ---</option>';
-                listaSintomas.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(s => {
-                  html += `<option value="${s.id}">${s.nombre}</option>`;
-                });
-                return html;
+            }
+            $q_init_ale = $conexion->query("SELECT Id_alergias_conocidas, nombre_alergia FROM alergias_conocidas WHERE estatus = 1 ORDER BY nombre_alergia ASC");
+            if ($q_init_ale) {
+              while ($a = $q_init_ale->fetch_assoc()) {
+                echo "listaAlergias.push({id: " . intval($a['Id_alergias_conocidas']) . ", nombre: " . json_encode($a['nombre_alergia']) . "});\n";
               }
+            }
+            $q_init_sin = $conexion->query("SELECT Id_sintomas, nombre_sintoma FROM sintomas WHERE estatus = 1 ORDER BY nombre_sintoma ASC");
+            if ($q_init_sin) {
+              while ($s = $q_init_sin->fetch_assoc()) {
+                echo "listaSintomas.push({id: " . intval($s['Id_sintomas']) . ", nombre: " . json_encode($s['nombre_sintoma']) . "});\n";
+              }
+            }
+            ?>
+          });
 
-              $(document).ready(function() {
-                <?php
-                $q_init_pat = $conexion->query("SELECT Id_patologia, nombre_patologia, codigo_cie FROM patologias WHERE estatus = 1 ORDER BY nombre_patologia ASC");
-                if ($q_init_pat) {
-                  while ($p = $q_init_pat->fetch_assoc()) {
-                    echo "listaPatologias.push({id: " . intval($p['Id_patologia']) . ", nombre: " . json_encode($p['nombre_patologia']) . ", cie: " . json_encode($p['codigo_cie']) . "});\n";
-                  }
-                }
-                $q_init_ale = $conexion->query("SELECT Id_alergias_conocidas, nombre_alergia FROM alergias_conocidas WHERE estatus = 1 ORDER BY nombre_alergia ASC");
-                if ($q_init_ale) {
-                  while ($a = $q_init_ale->fetch_assoc()) {
-                    echo "listaAlergias.push({id: " . intval($a['Id_alergias_conocidas']) . ", nombre: " . json_encode($a['nombre_alergia']) . "});\n";
-                  }
-                }
-                $q_init_sin = $conexion->query("SELECT Id_sintomas, nombre_sintoma FROM sintomas WHERE estatus = 1 ORDER BY nombre_sintoma ASC");
-                if ($q_init_sin) {
-                  while ($s = $q_init_sin->fetch_assoc()) {
-                    echo "listaSintomas.push({id: " . intval($s['Id_sintomas']) . ", nombre: " . json_encode($s['nombre_sintoma']) . "});\n";
-                  }
-                }
-                ?>
-              });
-
-              function agregarFilaPatologia(id_guardado = "", fecha_guardada = "") {
-                let htmlPat = `
+          function agregarFilaPatologia(id_guardado = "", fecha_guardada = "") {
+            let htmlPat = `
                 <div class="row fila-pat" style="margin-bottom: 10px;">
                   <div class="col-sm-6">
                     <div class="input-group">
@@ -1561,14 +1566,14 @@ verificarAcceso('Editar Pacientes Menores de Edad');
                   <div class="col-sm-4"><input type="date" class="form-control input-fecha-pat" max="<?php echo date('Y-m-d'); ?>"></div>
                   <div class="col-sm-2"><button type="button" class="btn btn-danger btn-remove-pat"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px;height:15px;"></i></button></div>
                 </div>`;
-                let $fila = $(htmlPat);
-                $('#contenedor_filas_patologias').append($fila);
-                if (id_guardado !== "" && id_guardado !== null) setTimeout(() => $fila.find('.select-pat').val(id_guardado.toString().trim()), 10);
-                if (fecha_guardada !== "" && fecha_guardada !== null) $fila.find('.input-fecha-pat').val(fecha_guardada.toString().trim());
-              }
+            let $fila = $(htmlPat);
+            $('#contenedor_filas_patologias').append($fila);
+            if (id_guardado !== "" && id_guardado !== null) setTimeout(() => $fila.find('.select-pat').val(id_guardado.toString().trim()), 10);
+            if (fecha_guardada !== "" && fecha_guardada !== null) $fila.find('.input-fecha-pat').val(fecha_guardada.toString().trim());
+          }
 
-              function agregarFilaAlergia(id_guardado = "", fecha_guardada = "") {
-                let htmlAle = `
+          function agregarFilaAlergia(id_guardado = "", fecha_guardada = "") {
+            let htmlAle = `
                 <div class="row fila-ale" style="margin-bottom: 10px;">
                   <div class="col-sm-6">
                     <div class="input-group">
@@ -1581,915 +1586,915 @@ verificarAcceso('Editar Pacientes Menores de Edad');
                   <div class="col-sm-4"><input type="date" class="form-control input-fecha-ale" max="<?php echo date('Y-m-d'); ?>"></div>
                   <div class="col-sm-2"><button type="button" class="btn btn-danger btn-remove-ale"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px;height:15px;"></i></button></div>
                 </div>`;
-                let $fila = $(htmlAle);
-                $('#contenedor_filas_alergias').append($fila);
-                if (id_guardado !== "" && id_guardado !== null) setTimeout(() => $fila.find('.select-ale').val(id_guardado.toString().trim()), 10);
-                if (fecha_guardada !== "" && fecha_guardada !== null) $fila.find('.input-fecha-ale').val(fecha_guardada.toString().trim());
-              }
+            let $fila = $(htmlAle);
+            $('#contenedor_filas_alergias').append($fila);
+            if (id_guardado !== "" && id_guardado !== null) setTimeout(() => $fila.find('.select-ale').val(id_guardado.toString().trim()), 10);
+            if (fecha_guardada !== "" && fecha_guardada !== null) $fila.find('.input-fecha-ale').val(fecha_guardada.toString().trim());
+          }
 
-              function inicializarDatosMedicos() {
-                $('#contenedor_filas_patologias').empty();
-                $('#contenedor_filas_alergias').empty();
+          function inicializarDatosMedicos() {
+            $('#contenedor_filas_patologias').empty();
+            $('#contenedor_filas_alergias').empty();
 
-                let patSeleccionadas = [];
-                let patNombres = [];
-                if (patologiasData && patologiasData.trim() !== "") {
-                  let items = patologiasData.split('||');
-                  items.forEach(function(item) {
-                    if (item.trim() !== "") {
-                      let parts = item.split('::');
-                      if (parts.length >= 3) {
-                        let id_pat = parts[0] ? parts[0].trim() : '';
-                        let fecha_pat = parts[3] ? parts[3].trim() : '';
-                        agregarFilaPatologia(id_pat, fecha_pat);
-                        setTimeout(() => {
-                          let opt = $(`.select-pat option[value="${id_pat}"]`).first();
-                          if (opt.length) patNombres.push(opt.text().trim());
-                        }, 50);
-                        patSeleccionadas.push({
-                          id: parseInt(id_pat),
-                          fecha: fecha_pat
-                        });
-                      }
-                    }
-                  });
-                  $('#patologias_ids').val(JSON.stringify(patSeleccionadas));
-                  setTimeout(() => {
-                    if (patNombres.length > 0) $('#btn_modal_pat').attr('data-original-title', patNombres.join(', ')).tooltip('fixTitle');
-                  }, 100);
-                } else {
-                  agregarFilaPatologia();
-                }
-
-                let aleSeleccionadas = [];
-                let aleNombres = [];
-                if (alergiasData && alergiasData.trim() !== "") {
-                  let items = alergiasData.split('||');
-                  items.forEach(function(item) {
-                    if (item.trim() !== "") {
-                      let parts = item.split('::');
-                      if (parts.length >= 2) {
-                        let id_ale = parts[0] ? parts[0].trim() : '';
-                        let fecha_ale = parts[2] ? parts[2].trim() : '';
-                        agregarFilaAlergia(id_ale, fecha_ale);
-                        setTimeout(() => {
-                          let opt = $(`.select-ale option[value="${id_ale}"]`).first();
-                          if (opt.length) aleNombres.push(opt.text().trim());
-                        }, 50);
-                        aleSeleccionadas.push({
-                          id: parseInt(id_ale),
-                          fecha: fecha_ale
-                        });
-                      }
-                    }
-                  });
-                  $('#alergias_ids').val(JSON.stringify(aleSeleccionadas));
-                  setTimeout(() => {
-                    if (aleNombres.length > 0) $('#btn_modal_ale').attr('data-original-title', aleNombres.join(', ')).tooltip('fixTitle');
-                  }, 100);
-                } else {
-                  agregarFilaAlergia();
-                }
-              }
-
-              document.addEventListener('DOMContentLoaded', inicializarDatosMedicos);
-
-              $('#add_fila_pat').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if ($('.fila-pat').length === 0) {
-                  agregarFilaPatologia();
-                  return;
-                }
-                const $ultima = $('.fila-pat').last();
-                if (!$ultima.find('.select-pat').val()) {
-                  mostrarAviso("⚠️ Debe seleccionar una patología en la fila actual antes de añadir otra.");
-                  return;
-                }
-                agregarFilaPatologia();
-              });
-
-              $('#add_fila_ale').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if ($('.fila-ale').length === 0) {
-                  agregarFilaAlergia();
-                  return;
-                }
-                const $ultima = $('.fila-ale').last();
-                if (!$ultima.find('.select-ale').val()) {
-                  mostrarAviso("⚠️ Debe seleccionar una alergia en la fila actual antes de añadir otra.");
-                  return;
-                }
-                agregarFilaAlergia();
-              });
-
-              $(document).on('click', '.btn-remove-pat', function(e) {
-                e.preventDefault();
-                const $fila = $(this).closest('.fila-pat');
-                const tieneDatos = $fila.find('.select-pat').val() || $fila.find('.input-fecha-pat').val();
-                if (tieneDatos) {
-                  $fila.find('.select-pat').val('');
-                  $fila.find('.input-fecha-pat').val('');
-                  return;
-                }
-                if ($('.fila-pat').length <= 1) return;
-                $fila.remove();
-              });
-
-              $(document).on('click', '.btn-remove-ale', function(e) {
-                e.preventDefault();
-                const $fila = $(this).closest('.fila-ale');
-                const tieneDatos = $fila.find('.select-ale').val() || $fila.find('.input-fecha-ale').val();
-                if (tieneDatos) {
-                  $fila.find('.select-ale').val('');
-                  $fila.find('.input-fecha-ale').val('');
-                  return;
-                }
-                if ($('.fila-ale').length <= 1) return;
-                $fila.remove();
-              });
-
-              $('#guardar_pat_listo').click(function(e) {
-                let seleccionadas = [],
-                  nombres = [],
-                  errorFecha = false,
-                  filaVacia = false;
-                $('.fila-pat').each(function() {
-                  let $sel = $(this).find('.select-pat');
-                  let id = $sel.val();
-                  let fecha = $(this).find('.input-fecha-pat').val();
-                  if (!id) {
-                    if ($('.fila-pat').length > 1) filaVacia = true;
-                    return;
+            let patSeleccionadas = [];
+            let patNombres = [];
+            if (patologiasData && patologiasData.trim() !== "") {
+              let items = patologiasData.split('||');
+              items.forEach(function(item) {
+                if (item.trim() !== "") {
+                  let parts = item.split('::');
+                  if (parts.length >= 3) {
+                    let id_pat = parts[0] ? parts[0].trim() : '';
+                    let fecha_pat = parts[3] ? parts[3].trim() : '';
+                    agregarFilaPatologia(id_pat, fecha_pat);
+                    setTimeout(() => {
+                      let opt = $(`.select-pat option[value="${id_pat}"]`).first();
+                      if (opt.length) patNombres.push(opt.text().trim());
+                    }, 50);
+                    patSeleccionadas.push({
+                      id: parseInt(id_pat),
+                      fecha: fecha_pat
+                    });
                   }
-                  if (!fecha) errorFecha = true;
-                  let opt = $sel.find('option:selected');
-                  seleccionadas.push({
-                    id: parseInt(id),
-                    nombre: opt.data('nombre'),
-                    codigo_cie: opt.data('cie'),
-                    fecha: fecha
-                  });
-                  nombres.push(opt.text().trim());
-                });
-                if (filaVacia) {
-                  mostrarAviso("⚠️ Hay filas de patologías sin seleccionar. Complételas o elimínelas.");
-                  return false;
                 }
-                if (errorFecha && e.originalEvent) {
-                  mostrarAviso("⚠️ Hay patologías seleccionadas sin fecha.");
-                  return false;
-                }
-                $('#patologias_ids').val(JSON.stringify(seleccionadas));
-                if (nombres.length > 0) $('#btn_modal_pat').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle').removeClass('input-error');
-                else $('#btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
-                $('#modalPatologias').modal('hide');
               });
+              $('#patologias_ids').val(JSON.stringify(patSeleccionadas));
+              setTimeout(() => {
+                if (patNombres.length > 0) $('#btn_modal_pat').attr('data-original-title', patNombres.join(', ')).tooltip('fixTitle');
+              }, 100);
+            } else {
+              agregarFilaPatologia();
+            }
 
-              $('#guardar_ale_listo').click(function(e) {
-                let seleccionadas = [],
-                  nombres = [],
-                  errorFecha = false,
-                  filaVacia = false;
-                $('.fila-ale').each(function() {
-                  let $sel = $(this).find('.select-ale');
-                  let id = $sel.val();
-                  let fecha = $(this).find('.input-fecha-ale').val();
-                  if (!id) {
-                    if ($('.fila-ale').length > 1) filaVacia = true;
-                    return;
+            let aleSeleccionadas = [];
+            let aleNombres = [];
+            if (alergiasData && alergiasData.trim() !== "") {
+              let items = alergiasData.split('||');
+              items.forEach(function(item) {
+                if (item.trim() !== "") {
+                  let parts = item.split('::');
+                  if (parts.length >= 2) {
+                    let id_ale = parts[0] ? parts[0].trim() : '';
+                    let fecha_ale = parts[2] ? parts[2].trim() : '';
+                    agregarFilaAlergia(id_ale, fecha_ale);
+                    setTimeout(() => {
+                      let opt = $(`.select-ale option[value="${id_ale}"]`).first();
+                      if (opt.length) aleNombres.push(opt.text().trim());
+                    }, 50);
+                    aleSeleccionadas.push({
+                      id: parseInt(id_ale),
+                      fecha: fecha_ale
+                    });
                   }
-                  if (!fecha) errorFecha = true;
-                  let opt = $sel.find('option:selected');
-                  seleccionadas.push({
-                    id: parseInt(id),
-                    nombre: opt.data('nombre'),
-                    fecha: fecha
-                  });
-                  nombres.push(opt.text().trim());
-                });
-                if (filaVacia) {
-                  mostrarAviso("⚠️ Hay filas de alergias sin seleccionar. Complételas o elimínelas.");
-                  return false;
-                }
-                if (errorFecha && e.originalEvent) {
-                  mostrarAviso("⚠️ Hay alergias seleccionadas sin fecha.");
-                  return false;
-                }
-                $('#alergias_ids').val(JSON.stringify(seleccionadas));
-                if (nombres.length > 0) $('#btn_modal_ale').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle').removeClass('input-error');
-                else $('#btn_modal_ale').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
-                $('#modalAlergias').modal('hide');
-              });
-
-              let selectDestinoTarget = null;
-              $(document).on('click', '.btn-search-pat', function() {
-                selectDestinoTarget = $(this).closest('.input-group').find('.select-pat');
-                $('#modalBuscarPat').modal('show');
-                $('#inputBuscarPat').val('').trigger('keyup');
-              });
-              $('#inputBuscarPat').on('keyup', function() {
-                let texto = $(this).val().toLowerCase(),
-                  html = '';
-                $('.select-pat:first option').not('[value=""]').each(function() {
-                  let nombre = $(this).text();
-                  if (nombre.toLowerCase().includes(texto)) html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pat" data-id="${$(this).val()}">${nombre}</a>`;
-                });
-                $('#listaResultadosPat').html(html);
-              });
-              $(document).on('click', '.seleccionar-pat', function(e) {
-                e.preventDefault();
-                selectDestinoTarget.val($(this).data('id')).trigger('change');
-                $('#modalBuscarPat').modal('hide');
-              });
-
-              $(document).on('click', '.btn-search-ale', function() {
-                selectDestinoTarget = $(this).closest('.input-group').find('.select-ale');
-                $('#modalBuscarAle').modal('show');
-                $('#inputBuscarAle').val('').trigger('keyup');
-              });
-              $('#inputBuscarAle').on('keyup', function() {
-                let texto = $(this).val().toLowerCase(),
-                  html = '';
-                $('.select-ale:first option').not('[value=""]').each(function() {
-                  let nombre = $(this).text();
-                  if (nombre.toLowerCase().includes(texto)) html += `<a href="#" class="list-group-item list-group-item-action seleccionar-ale" data-id="${$(this).val()}">${nombre}</a>`;
-                });
-                $('#listaResultadosAle').html(html);
-              });
-              $(document).on('click', '.seleccionar-ale', function(e) {
-                e.preventDefault();
-                selectDestinoTarget.val($(this).data('id')).trigger('change');
-                $('#modalBuscarAle').modal('hide');
-              });
-
-              $(document).on('change', '.select-pat', function() {
-                let val = $(this).val();
-                if (!val) return;
-                if ($('.select-pat').filter(function() {
-                    return $(this).val() === val;
-                  }).length > 1) {
-                  mostrarAviso("⚠️ Esta patología ya fue seleccionada.");
-                  $(this).val("");
                 }
               });
-              $(document).on('change', '.select-ale', function() {
-                let val = $(this).val();
-                if (!val) return;
-                if ($('.select-ale').filter(function() {
-                    return $(this).val() === val;
-                  }).length > 1) {
-                  mostrarAviso("⚠️ Esta alergia ya fue seleccionada.");
-                  $(this).val("");
-                }
-              });
+              $('#alergias_ids').val(JSON.stringify(aleSeleccionadas));
+              setTimeout(() => {
+                if (aleNombres.length > 0) $('#btn_modal_ale').attr('data-original-title', aleNombres.join(', ')).tooltip('fixTitle');
+              }, 100);
+            } else {
+              agregarFilaAlergia();
+            }
+          }
 
-              $('#cancelar_pat_modal').on('click', function(e) {
-                e.preventDefault();
-                inicializarDatosMedicos();
-                $('#modalPatologias').modal('hide');
-              });
-              $('#cancelar_ale_modal').on('click', function(e) {
-                e.preventDefault();
-                inicializarDatosMedicos();
-                $('#modalAlergias').modal('hide');
-              });
+          document.addEventListener('DOMContentLoaded', inicializarDatosMedicos);
 
-              $('#btn_abrir_sintomas_ajax').click(function() {
-                $('#modalSintomasAjax').modal('show');
-                if ($('.fila-sintoma-ajax').length === 0) agregarFilaSintomaAjax();
-              });
+          $('#add_fila_pat').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($('.fila-pat').length === 0) {
+              agregarFilaPatologia();
+              return;
+            }
+            const $ultima = $('.fila-pat').last();
+            if (!$ultima.find('.select-pat').val()) {
+              mostrarAviso("⚠️ Debe seleccionar una patología en la fila actual antes de añadir otra.");
+              return;
+            }
+            agregarFilaPatologia();
+          });
 
-              function agregarFilaSintomaAjax() {
-                let htmlSintoma = `
+          $('#add_fila_ale').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($('.fila-ale').length === 0) {
+              agregarFilaAlergia();
+              return;
+            }
+            const $ultima = $('.fila-ale').last();
+            if (!$ultima.find('.select-ale').val()) {
+              mostrarAviso("⚠️ Debe seleccionar una alergia en la fila actual antes de añadir otra.");
+              return;
+            }
+            agregarFilaAlergia();
+          });
+
+          $(document).on('click', '.btn-remove-pat', function(e) {
+            e.preventDefault();
+            const $fila = $(this).closest('.fila-pat');
+            const tieneDatos = $fila.find('.select-pat').val() || $fila.find('.input-fecha-pat').val();
+            if (tieneDatos) {
+              $fila.find('.select-pat').val('');
+              $fila.find('.input-fecha-pat').val('');
+              return;
+            }
+            if ($('.fila-pat').length <= 1) return;
+            $fila.remove();
+          });
+
+          $(document).on('click', '.btn-remove-ale', function(e) {
+            e.preventDefault();
+            const $fila = $(this).closest('.fila-ale');
+            const tieneDatos = $fila.find('.select-ale').val() || $fila.find('.input-fecha-ale').val();
+            if (tieneDatos) {
+              $fila.find('.select-ale').val('');
+              $fila.find('.input-fecha-ale').val('');
+              return;
+            }
+            if ($('.fila-ale').length <= 1) return;
+            $fila.remove();
+          });
+
+          $('#guardar_pat_listo').click(function(e) {
+            let seleccionadas = [],
+              nombres = [],
+              errorFecha = false,
+              filaVacia = false;
+            $('.fila-pat').each(function() {
+              let $sel = $(this).find('.select-pat');
+              let id = $sel.val();
+              let fecha = $(this).find('.input-fecha-pat').val();
+              if (!id) {
+                if ($('.fila-pat').length > 1) filaVacia = true;
+                return;
+              }
+              if (!fecha) errorFecha = true;
+              let opt = $sel.find('option:selected');
+              seleccionadas.push({
+                id: parseInt(id),
+                nombre: opt.data('nombre'),
+                codigo_cie: opt.data('cie'),
+                fecha: fecha
+              });
+              nombres.push(opt.text().trim());
+            });
+            if (filaVacia) {
+              mostrarAviso("⚠️ Hay filas de patologías sin seleccionar. Complételas o elimínelas.");
+              return false;
+            }
+            if (errorFecha && e.originalEvent) {
+              mostrarAviso("⚠️ Hay patologías seleccionadas sin fecha.");
+              return false;
+            }
+            $('#patologias_ids').val(JSON.stringify(seleccionadas));
+            if (nombres.length > 0) $('#btn_modal_pat').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle').removeClass('input-error');
+            else $('#btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+            $('#modalPatologias').modal('hide');
+          });
+
+          $('#guardar_ale_listo').click(function(e) {
+            let seleccionadas = [],
+              nombres = [],
+              errorFecha = false,
+              filaVacia = false;
+            $('.fila-ale').each(function() {
+              let $sel = $(this).find('.select-ale');
+              let id = $sel.val();
+              let fecha = $(this).find('.input-fecha-ale').val();
+              if (!id) {
+                if ($('.fila-ale').length > 1) filaVacia = true;
+                return;
+              }
+              if (!fecha) errorFecha = true;
+              let opt = $sel.find('option:selected');
+              seleccionadas.push({
+                id: parseInt(id),
+                nombre: opt.data('nombre'),
+                fecha: fecha
+              });
+              nombres.push(opt.text().trim());
+            });
+            if (filaVacia) {
+              mostrarAviso("⚠️ Hay filas de alergias sin seleccionar. Complételas o elimínelas.");
+              return false;
+            }
+            if (errorFecha && e.originalEvent) {
+              mostrarAviso("⚠️ Hay alergias seleccionadas sin fecha.");
+              return false;
+            }
+            $('#alergias_ids').val(JSON.stringify(seleccionadas));
+            if (nombres.length > 0) $('#btn_modal_ale').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle').removeClass('input-error');
+            else $('#btn_modal_ale').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+            $('#modalAlergias').modal('hide');
+          });
+
+          let selectDestinoTarget = null;
+          $(document).on('click', '.btn-search-pat', function() {
+            selectDestinoTarget = $(this).closest('.input-group').find('.select-pat');
+            $('#modalBuscarPat').modal('show');
+            $('#inputBuscarPat').val('').trigger('keyup');
+          });
+          $('#inputBuscarPat').on('keyup', function() {
+            let texto = $(this).val().toLowerCase(),
+              html = '';
+            $('.select-pat:first option').not('[value=""]').each(function() {
+              let nombre = $(this).text();
+              if (nombre.toLowerCase().includes(texto)) html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pat" data-id="${$(this).val()}">${nombre}</a>`;
+            });
+            $('#listaResultadosPat').html(html);
+          });
+          $(document).on('click', '.seleccionar-pat', function(e) {
+            e.preventDefault();
+            selectDestinoTarget.val($(this).data('id')).trigger('change');
+            $('#modalBuscarPat').modal('hide');
+          });
+
+          $(document).on('click', '.btn-search-ale', function() {
+            selectDestinoTarget = $(this).closest('.input-group').find('.select-ale');
+            $('#modalBuscarAle').modal('show');
+            $('#inputBuscarAle').val('').trigger('keyup');
+          });
+          $('#inputBuscarAle').on('keyup', function() {
+            let texto = $(this).val().toLowerCase(),
+              html = '';
+            $('.select-ale:first option').not('[value=""]').each(function() {
+              let nombre = $(this).text();
+              if (nombre.toLowerCase().includes(texto)) html += `<a href="#" class="list-group-item list-group-item-action seleccionar-ale" data-id="${$(this).val()}">${nombre}</a>`;
+            });
+            $('#listaResultadosAle').html(html);
+          });
+          $(document).on('click', '.seleccionar-ale', function(e) {
+            e.preventDefault();
+            selectDestinoTarget.val($(this).data('id')).trigger('change');
+            $('#modalBuscarAle').modal('hide');
+          });
+
+          $(document).on('change', '.select-pat', function() {
+            let val = $(this).val();
+            if (!val) return;
+            if ($('.select-pat').filter(function() {
+                return $(this).val() === val;
+              }).length > 1) {
+              mostrarAviso("⚠️ Esta patología ya fue seleccionada.");
+              $(this).val("");
+            }
+          });
+          $(document).on('change', '.select-ale', function() {
+            let val = $(this).val();
+            if (!val) return;
+            if ($('.select-ale').filter(function() {
+                return $(this).val() === val;
+              }).length > 1) {
+              mostrarAviso("⚠️ Esta alergia ya fue seleccionada.");
+              $(this).val("");
+            }
+          });
+
+          $('#cancelar_pat_modal').on('click', function(e) {
+            e.preventDefault();
+            inicializarDatosMedicos();
+            $('#modalPatologias').modal('hide');
+          });
+          $('#cancelar_ale_modal').on('click', function(e) {
+            e.preventDefault();
+            inicializarDatosMedicos();
+            $('#modalAlergias').modal('hide');
+          });
+
+          $('#btn_abrir_sintomas_ajax').click(function() {
+            $('#modalSintomasAjax').modal('show');
+            if ($('.fila-sintoma-ajax').length === 0) agregarFilaSintomaAjax();
+          });
+
+          function agregarFilaSintomaAjax() {
+            let htmlSintoma = `
                 <div class="row fila-sintoma-ajax" style="margin-bottom: 10px;">
                   <div class="col-sm-10"><select class="form-control select-sintoma-ajax">${construirOpcionesSintomas()}</select></div>
                   <div class="col-sm-2"><button type="button" class="btn btn-danger btn-remove-sintoma-ajax"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px;height:15px;"></i></button></div>
                 </div>`;
-                $('#contenedor_filas_sintomas_ajax').append(htmlSintoma);
+            $('#contenedor_filas_sintomas_ajax').append(htmlSintoma);
+          }
+          $('#add_fila_sintoma_ajax').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($('.fila-sintoma-ajax').length === 0) {
+              agregarFilaSintomaAjax();
+              return;
+            }
+            const $ultima = $('.fila-sintoma-ajax').last();
+            if (!$ultima.find('.select-sintoma-ajax').val()) {
+              mostrarAviso("⚠️ Debe seleccionar un síntoma en la fila actual antes de añadir otro.");
+              return;
+            }
+            agregarFilaSintomaAjax();
+          });
+          $(document).on('click', '.btn-remove-sintoma-ajax', function(e) {
+            e.preventDefault();
+            const $fila = $(this).closest('.fila-sintoma-ajax');
+            if ($fila.find('.select-sintoma-ajax').val()) {
+              $fila.find('.select-sintoma-ajax').val('');
+              return;
+            }
+            if ($('.fila-sintoma-ajax').length <= 1) return;
+            $fila.remove();
+          });
+          $('#btn_confirmar_sintomas_ajax').click(function() {
+            let seleccionados = [],
+              filaVacia = false;
+            $('.select-sintoma-ajax').each(function() {
+              let val = $(this).val();
+              if (val) seleccionados.push(val);
+              else if ($('.select-sintoma-ajax').length > 1) filaVacia = true;
+            });
+            if (filaVacia) {
+              mostrarAviso("⚠️ Hay filas de síntomas sin seleccionar.");
+              return;
+            }
+            $('#ajax_sintomas_ids').val(seleccionados.join(','));
+            let boton = $('#btn_abrir_sintomas_ajax');
+            if (seleccionados.length > 0) boton.attr('data-original-title', seleccionados.length + ' síntoma(s)').tooltip('fixTitle').removeClass('btn-info').addClass('btn-success');
+            else boton.attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle').removeClass('btn-success').addClass('btn-info');
+            $('#modalSintomasAjax').modal('hide');
+          });
+
+          $('#btn_guardar_ajax_pat').click(function() {
+            let nombre = $('#ajax_nombre_pat').val().trim();
+            let cie = $('#ajax_cie_pat').val().trim();
+            let contagiosa = $('#ajax_contagiosa_pat').val();
+            let sintomas = $('#ajax_sintomas_ids').val();
+            if (!nombre) {
+              mostrarAviso("El nombre de la patología es obligatorio.");
+              return;
+            }
+            $.ajax({
+              url: window.location.href,
+              method: 'POST',
+              data: {
+                ajax_nueva_patologia: 1,
+                nombre_patologia: nombre,
+                codigo_cie: cie,
+                enfermedad_contagiosa: contagiosa,
+                sintomas_ids: sintomas
+              },
+              dataType: 'json',
+              success: function(res) {
+                if (res.success) {
+                  listaPatologias.push({
+                    id: parseInt(res.id),
+                    nombre: res.nombre,
+                    cie: res.cie || ''
+                  });
+                  let nuevasOpciones = construirOpcionesPatologias();
+                  $('.select-pat').each(function() {
+                    let valorActual = $(this).val();
+                    $(this).html(nuevasOpciones);
+                    if (valorActual) $(this).val(valorActual);
+                  });
+                  let selectVacio = $('.select-pat').filter(function() {
+                    return !$(this).val();
+                  }).first();
+                  if (selectVacio.length > 0) selectVacio.val(res.id).trigger('change');
+                  else agregarFilaPatologia(res.id, "");
+                  $('#modalNuevaPatologia').modal('hide');
+                  $('#formAjaxPatologia')[0].reset();
+                  $('#contenedor_filas_sintomas_ajax').empty();
+                  $('#ajax_sintomas_ids').val('');
+                  $('#btn_abrir_sintomas_ajax').removeClass('btn-success').addClass('btn-info').attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle');
+                  mostrarAvisoExito("Patología guardada con éxito.");
+                } else {
+                  mostrarAviso(res.error);
+                }
+              },
+              error: function(xhr) {
+                mostrarAviso("⚠️ Error al guardar la patología.<br>" + xhr.responseText.substring(0, 200));
               }
-              $('#add_fila_sintoma_ajax').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if ($('.fila-sintoma-ajax').length === 0) {
-                  agregarFilaSintomaAjax();
-                  return;
-                }
-                const $ultima = $('.fila-sintoma-ajax').last();
-                if (!$ultima.find('.select-sintoma-ajax').val()) {
-                  mostrarAviso("⚠️ Debe seleccionar un síntoma en la fila actual antes de añadir otro.");
-                  return;
-                }
-                agregarFilaSintomaAjax();
-              });
-              $(document).on('click', '.btn-remove-sintoma-ajax', function(e) {
-                e.preventDefault();
-                const $fila = $(this).closest('.fila-sintoma-ajax');
-                if ($fila.find('.select-sintoma-ajax').val()) {
-                  $fila.find('.select-sintoma-ajax').val('');
-                  return;
-                }
-                if ($('.fila-sintoma-ajax').length <= 1) return;
-                $fila.remove();
-              });
-              $('#btn_confirmar_sintomas_ajax').click(function() {
-                let seleccionados = [],
-                  filaVacia = false;
-                $('.select-sintoma-ajax').each(function() {
-                  let val = $(this).val();
-                  if (val) seleccionados.push(val);
-                  else if ($('.select-sintoma-ajax').length > 1) filaVacia = true;
-                });
-                if (filaVacia) {
-                  mostrarAviso("⚠️ Hay filas de síntomas sin seleccionar.");
-                  return;
-                }
-                $('#ajax_sintomas_ids').val(seleccionados.join(','));
-                let boton = $('#btn_abrir_sintomas_ajax');
-                if (seleccionados.length > 0) boton.attr('data-original-title', seleccionados.length + ' síntoma(s)').tooltip('fixTitle').removeClass('btn-info').addClass('btn-success');
-                else boton.attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle').removeClass('btn-success').addClass('btn-info');
-                $('#modalSintomasAjax').modal('hide');
-              });
+            });
+          });
 
-              $('#btn_guardar_ajax_pat').click(function() {
-                let nombre = $('#ajax_nombre_pat').val().trim();
-                let cie = $('#ajax_cie_pat').val().trim();
-                let contagiosa = $('#ajax_contagiosa_pat').val();
-                let sintomas = $('#ajax_sintomas_ids').val();
-                if (!nombre) {
-                  mostrarAviso("El nombre de la patología es obligatorio.");
-                  return;
+          $('#btn_guardar_ajax_ale').click(function() {
+            let nombre = $('#ajax_nombre_ale').val().trim();
+            if (!nombre) {
+              mostrarAviso("El nombre de la alergia es obligatorio.");
+              return;
+            }
+            $.ajax({
+              url: window.location.href,
+              method: 'POST',
+              data: {
+                ajax_nueva_alergia: 1,
+                nombre_alergia: nombre
+              },
+              dataType: 'json',
+              success: function(res) {
+                if (res.success) {
+                  listaAlergias.push({
+                    id: parseInt(res.id),
+                    nombre: res.nombre
+                  });
+                  let nuevasOpciones = construirOpcionesAlergias();
+                  $('.select-ale').each(function() {
+                    let valorActual = $(this).val();
+                    $(this).html(nuevasOpciones);
+                    if (valorActual) $(this).val(valorActual);
+                  });
+                  let selectVacio = $('.select-ale').filter(function() {
+                    return !$(this).val();
+                  }).first();
+                  if (selectVacio.length > 0) selectVacio.val(res.id).trigger('change');
+                  else agregarFilaAlergia(res.id, "");
+                  $('#modalNuevaAlergia').modal('hide');
+                  $('#formAjaxAlergia')[0].reset();
+                  mostrarAvisoExito("Alergia guardada con éxito.");
+                } else {
+                  mostrarAviso(res.error);
                 }
-                $.ajax({
-                  url: window.location.href,
-                  method: 'POST',
-                  data: {
-                    ajax_nueva_patologia: 1,
-                    nombre_patologia: nombre,
-                    codigo_cie: cie,
-                    enfermedad_contagiosa: contagiosa,
-                    sintomas_ids: sintomas
-                  },
-                  dataType: 'json',
-                  success: function(res) {
-                    if (res.success) {
-                      listaPatologias.push({
-                        id: parseInt(res.id),
-                        nombre: res.nombre,
-                        cie: res.cie || ''
-                      });
-                      let nuevasOpciones = construirOpcionesPatologias();
-                      $('.select-pat').each(function() {
-                        let valorActual = $(this).val();
-                        $(this).html(nuevasOpciones);
-                        if (valorActual) $(this).val(valorActual);
-                      });
-                      let selectVacio = $('.select-pat').filter(function() {
-                        return !$(this).val();
-                      }).first();
-                      if (selectVacio.length > 0) selectVacio.val(res.id).trigger('change');
-                      else agregarFilaPatologia(res.id, "");
-                      $('#modalNuevaPatologia').modal('hide');
-                      $('#formAjaxPatologia')[0].reset();
-                      $('#contenedor_filas_sintomas_ajax').empty();
-                      $('#ajax_sintomas_ids').val('');
-                      $('#btn_abrir_sintomas_ajax').removeClass('btn-success').addClass('btn-info').attr('data-original-title', 'Ninguno seleccionado').tooltip('fixTitle');
-                      mostrarAvisoExito("Patología guardada con éxito.");
-                    } else {
-                      mostrarAviso(res.error);
-                    }
-                  },
-                  error: function(xhr) {
-                    mostrarAviso("⚠️ Error al guardar la patología.<br>" + xhr.responseText.substring(0, 200));
-                  }
-                });
-              });
-
-              $('#btn_guardar_ajax_ale').click(function() {
-                let nombre = $('#ajax_nombre_ale').val().trim();
-                if (!nombre) {
-                  mostrarAviso("El nombre de la alergia es obligatorio.");
-                  return;
-                }
-                $.ajax({
-                  url: window.location.href,
-                  method: 'POST',
-                  data: {
-                    ajax_nueva_alergia: 1,
-                    nombre_alergia: nombre
-                  },
-                  dataType: 'json',
-                  success: function(res) {
-                    if (res.success) {
-                      listaAlergias.push({
-                        id: parseInt(res.id),
-                        nombre: res.nombre
-                      });
-                      let nuevasOpciones = construirOpcionesAlergias();
-                      $('.select-ale').each(function() {
-                        let valorActual = $(this).val();
-                        $(this).html(nuevasOpciones);
-                        if (valorActual) $(this).val(valorActual);
-                      });
-                      let selectVacio = $('.select-ale').filter(function() {
-                        return !$(this).val();
-                      }).first();
-                      if (selectVacio.length > 0) selectVacio.val(res.id).trigger('change');
-                      else agregarFilaAlergia(res.id, "");
-                      $('#modalNuevaAlergia').modal('hide');
-                      $('#formAjaxAlergia')[0].reset();
-                      mostrarAvisoExito("Alergia guardada con éxito.");
-                    } else {
-                      mostrarAviso(res.error);
-                    }
-                  },
-                  error: function(xhr) {
-                    mostrarAviso("⚠️ Error al guardar la alergia.<br>" + xhr.responseText.substring(0, 200));
-                  }
-                });
-              });
-
-              $('#btnGuardarSintomaBD').click(function() {
-                let nombre = $('#nombre_nuevo_sintoma').val().trim();
-                if (!nombre) {
-                  mostrarAviso("El nombre del síntoma es obligatorio.");
-                  return;
-                }
-                $.ajax({
-                  url: window.location.href,
-                  method: 'POST',
-                  data: {
-                    ajax_nuevo_sintoma: 1,
-                    nombre_sintoma: nombre
-                  },
-                  dataType: 'json',
-                  success: function(res) {
-                    if (res.success) {
-                      listaSintomas.push({
-                        id: parseInt(res.id),
-                        nombre: res.nombre
-                      });
-                      let nuevasOpciones = construirOpcionesSintomas();
-                      $('.select-sintoma-ajax').each(function() {
-                        let valorActual = $(this).val();
-                        $(this).html(nuevasOpciones);
-                        if (valorActual) $(this).val(valorActual);
-                      });
-                      let selectVacio = $('.select-sintoma-ajax').filter(function() {
-                        return !$(this).val();
-                      }).first();
-                      if (selectVacio.length > 0) selectVacio.val(res.id);
-                      else $('.select-sintoma-ajax').last().val(res.id);
-                      $('#modalNuevoSintoma').modal('hide');
-                      $('#nombre_nuevo_sintoma').val('');
-                      mostrarAvisoExito("Síntoma guardado con éxito.");
-                    } else {
-                      mostrarAviso(res.error);
-                    }
-                  },
-                  error: function(xhr) {
-                    mostrarAviso("⚠️ Error al guardar el síntoma.<br>" + xhr.responseText.substring(0, 200));
-                  }
-                });
-              });
-
-              let listaDiscapacidades = [];
-
-              function construirOpcionesDiscapacidades() {
-                let html = '<option value="">--- Seleccione una discapacidad ---</option>';
-                listaDiscapacidades.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(d => {
-                  html += `<option value="${d.id}" data-nombre="${d.nombre}">${d.nombre}</option>`;
-                });
-                return html;
+              },
+              error: function(xhr) {
+                mostrarAviso("⚠️ Error al guardar la alergia.<br>" + xhr.responseText.substring(0, 200));
               }
+            });
+          });
 
-              $(document).ready(function() {
-                <?php
-                $q_init_disc = $conexion->query("SELECT Id_discapacidad, nombre_discapacidad FROM discapacidades WHERE estatus = 1 ORDER BY nombre_discapacidad ASC");
-                if ($q_init_disc) {
-                  while ($d = $q_init_disc->fetch_assoc()) {
-                    echo "listaDiscapacidades.push({id: " . intval($d['Id_discapacidad']) . ", nombre: " . json_encode($d['nombre_discapacidad']) . "});\n";
-                  }
+          $('#btnGuardarSintomaBD').click(function() {
+            let nombre = $('#nombre_nuevo_sintoma').val().trim();
+            if (!nombre) {
+              mostrarAviso("El nombre del síntoma es obligatorio.");
+              return;
+            }
+            $.ajax({
+              url: window.location.href,
+              method: 'POST',
+              data: {
+                ajax_nuevo_sintoma: 1,
+                nombre_sintoma: nombre
+              },
+              dataType: 'json',
+              success: function(res) {
+                if (res.success) {
+                  listaSintomas.push({
+                    id: parseInt(res.id),
+                    nombre: res.nombre
+                  });
+                  let nuevasOpciones = construirOpcionesSintomas();
+                  $('.select-sintoma-ajax').each(function() {
+                    let valorActual = $(this).val();
+                    $(this).html(nuevasOpciones);
+                    if (valorActual) $(this).val(valorActual);
+                  });
+                  let selectVacio = $('.select-sintoma-ajax').filter(function() {
+                    return !$(this).val();
+                  }).first();
+                  if (selectVacio.length > 0) selectVacio.val(res.id);
+                  else $('.select-sintoma-ajax').last().val(res.id);
+                  $('#modalNuevoSintoma').modal('hide');
+                  $('#nombre_nuevo_sintoma').val('');
+                  mostrarAvisoExito("Síntoma guardado con éxito.");
+                } else {
+                  mostrarAviso(res.error);
                 }
-                ?>
-                $('#select_disc_unica').html(construirOpcionesDiscapacidades());
-              });
+              },
+              error: function(xhr) {
+                mostrarAviso("⚠️ Error al guardar el síntoma.<br>" + xhr.responseText.substring(0, 200));
+              }
+            });
+          });
 
-              function agregarFilaDiscapacidad(id_guardado = "", fecha_guardada = "") {
-                const optionsHtml = construirOpcionesDiscapacidades();
-                const htmlNueva = `
+          let listaDiscapacidades = [];
+
+          function construirOpcionesDiscapacidades() {
+            let html = '<option value="">--- Seleccione una discapacidad ---</option>';
+            listaDiscapacidades.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(d => {
+              html += `<option value="${d.id}" data-nombre="${d.nombre}">${d.nombre}</option>`;
+            });
+            return html;
+          }
+
+          $(document).ready(function() {
+            <?php
+            $q_init_disc = $conexion->query("SELECT Id_discapacidad, nombre_discapacidad FROM discapacidades WHERE estatus = 1 ORDER BY nombre_discapacidad ASC");
+            if ($q_init_disc) {
+              while ($d = $q_init_disc->fetch_assoc()) {
+                echo "listaDiscapacidades.push({id: " . intval($d['Id_discapacidad']) . ", nombre: " . json_encode($d['nombre_discapacidad']) . "});\n";
+              }
+            }
+            ?>
+            $('#select_disc_unica').html(construirOpcionesDiscapacidades());
+          });
+
+          function agregarFilaDiscapacidad(id_guardado = "", fecha_guardada = "") {
+            const optionsHtml = construirOpcionesDiscapacidades();
+            const htmlNueva = `
                 <div class="row fila-disc-modal" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd;">
                   <div class="col-sm-6"><label>Tipo de Discapacidad (*):</label><select class="form-control select-disc-dinamico">${optionsHtml}</select></div>
                   <div class="col-sm-4"><label>Fecha detección (Opcional):</label><input type="date" class="form-control input-fecha-disc-dinamico" max="<?php echo date('Y-m-d'); ?>"></div>
                   <div class="col-sm-2"><label style="display:block;">&nbsp;</label><button type="button" class="btn btn-danger btn-remove-disc-modal"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px;height:15px;"></i></button></div>
                 </div>`;
-                let $fila = $(htmlNueva);
-                $('.fila-disc-modal').last().after($fila);
-                if (id_guardado) $fila.find('.select-disc-dinamico').val(id_guardado);
-                if (fecha_guardada) $fila.find('.input-fecha-disc-dinamico').val(fecha_guardada);
+            let $fila = $(htmlNueva);
+            $('.fila-disc-modal').last().after($fila);
+            if (id_guardado) $fila.find('.select-disc-dinamico').val(id_guardado);
+            if (fecha_guardada) $fila.find('.input-fecha-disc-dinamico').val(fecha_guardada);
+          }
+
+          $('#btn_add_disc_row').on('click', function(e) {
+            e.preventDefault();
+            const $ultima = $('.fila-disc-modal').last();
+            if (!$ultima.find('.select-disc-dinamico').val()) {
+              mostrarAviso("⚠️ Debe seleccionar una discapacidad en la fila actual antes de añadir otra.");
+              return;
+            }
+            agregarFilaDiscapacidad();
+          });
+
+          $(document).on('click', '.btn-remove-disc-modal', function(e) {
+            e.preventDefault();
+            const $fila = $(this).closest('.fila-disc-modal');
+            const tieneDatos = $fila.find('.select-disc-dinamico').val() || $fila.find('.input-fecha-disc-dinamico').val();
+            if (tieneDatos) {
+              $fila.find('.select-disc-dinamico').val('');
+              $fila.find('.input-fecha-disc-dinamico').val('');
+              return;
+            }
+            if ($('.fila-disc-modal').length <= 1) return;
+            $fila.remove();
+          });
+
+          $(document).on('change', '.select-disc-dinamico', function() {
+            let val = $(this).val();
+            if (!val) return;
+            if ($('.select-disc-dinamico').filter(function() {
+                return $(this).val() === val;
+              }).length > 1) {
+              mostrarAviso("⚠️ Esta discapacidad ya fue seleccionada en otra fila.");
+              $(this).val("");
+            }
+          });
+
+          $('#btn_modal_disc').on('click', function() {
+            $('.fila-disc-modal').not(':first').remove();
+            $('#select_disc_unica').html(construirOpcionesDiscapacidades()).val('');
+            $('#fecha_disc_unica').val('');
+            if (Array.isArray(discapacidadesData) && discapacidadesData.length > 0) {
+              $('#select_disc_unica').val(discapacidadesData[0].id);
+              $('#fecha_disc_unica').val(discapacidadesData[0].fecha || '');
+              for (let i = 1; i < discapacidadesData.length; i++) {
+                agregarFilaDiscapacidad(discapacidadesData[i].id, discapacidadesData[i].fecha || '');
               }
-
-              $('#btn_add_disc_row').on('click', function(e) {
-                e.preventDefault();
-                const $ultima = $('.fila-disc-modal').last();
-                if (!$ultima.find('.select-disc-dinamico').val()) {
-                  mostrarAviso("⚠️ Debe seleccionar una discapacidad en la fila actual antes de añadir otra.");
-                  return;
-                }
-                agregarFilaDiscapacidad();
-              });
-
-              $(document).on('click', '.btn-remove-disc-modal', function(e) {
-                e.preventDefault();
-                const $fila = $(this).closest('.fila-disc-modal');
-                const tieneDatos = $fila.find('.select-disc-dinamico').val() || $fila.find('.input-fecha-disc-dinamico').val();
-                if (tieneDatos) {
-                  $fila.find('.select-disc-dinamico').val('');
-                  $fila.find('.input-fecha-disc-dinamico').val('');
-                  return;
-                }
-                if ($('.fila-disc-modal').length <= 1) return;
-                $fila.remove();
-              });
-
-              $(document).on('change', '.select-disc-dinamico', function() {
-                let val = $(this).val();
-                if (!val) return;
-                if ($('.select-disc-dinamico').filter(function() {
-                    return $(this).val() === val;
-                  }).length > 1) {
-                  mostrarAviso("⚠️ Esta discapacidad ya fue seleccionada en otra fila.");
-                  $(this).val("");
-                }
-              });
-
-              $('#btn_modal_disc').on('click', function() {
-                $('.fila-disc-modal').not(':first').remove();
-                $('#select_disc_unica').html(construirOpcionesDiscapacidades()).val('');
-                $('#fecha_disc_unica').val('');
-                if (Array.isArray(discapacidadesData) && discapacidadesData.length > 0) {
-                  $('#select_disc_unica').val(discapacidadesData[0].id);
-                  $('#fecha_disc_unica').val(discapacidadesData[0].fecha || '');
-                  for (let i = 1; i < discapacidadesData.length; i++) {
-                    agregarFilaDiscapacidad(discapacidadesData[i].id, discapacidadesData[i].fecha || '');
-                  }
-                } else {
-                  const dataGuardada = $('#discapacidades_ids').val();
-                  if (dataGuardada && dataGuardada.trim() !== "" && dataGuardada !== "[]") {
-                    try {
-                      const lista = JSON.parse(dataGuardada);
-                      if (Array.isArray(lista) && lista.length > 0) {
-                        $('#select_disc_unica').val(lista[0].id);
-                        if (lista[0].fecha) $('#fecha_disc_unica').val(lista[0].fecha);
-                        for (let i = 1; i < lista.length; i++) agregarFilaDiscapacidad(lista[i].id, lista[i].fecha);
-                      }
-                    } catch (e) {}
-                  }
-                }
-              });
-
-              $('#guardar_disc_listo').click(function(e) {
-                e.preventDefault();
-                let seleccionadas = [],
-                  nombres = [],
-                  filaVacia = false;
-                $('.fila-disc-modal').each(function() {
-                  let $sel = $(this).find('.select-disc-dinamico');
-                  let id = $sel.val();
-                  let fecha = $(this).find('.input-fecha-disc-dinamico').val();
-                  if (!id) {
-                    if ($('.fila-disc-modal').length > 1) filaVacia = true;
-                    return;
-                  }
-                  let nombre = $sel.find('option:selected').data('nombre') || '';
-                  seleccionadas.push({
-                    id: parseInt(id),
-                    nombre: nombre,
-                    fecha: fecha
-                  });
-                  nombres.push(nombre);
-                });
-                if (filaVacia) {
-                  mostrarAviso("⚠️ Hay filas de discapacidades sin seleccionar.");
-                  return false;
-                }
-                $('#discapacidades_ids').val(JSON.stringify(seleccionadas));
-                let boton = $('#btn_modal_disc');
-                if (nombres.length > 0) boton.attr('data-original-title', nombres.join(', ')).tooltip('fixTitle').removeClass('input-error');
-                else boton.attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
-                $('#modalDiscapacidades').modal('hide');
-              });
-
-              $('#cancelar_disc_modal').on('click', function(e) {
-                e.preventDefault();
-                $('#modalDiscapacidades').modal('hide');
-              });
-
-              $('#discapacidad').on('change', function() {
-                const siTiene = this.value === 'Si';
-                $('#btn_modal_disc').prop('disabled', !siTiene);
-                if (!siTiene) {
-                  $('#discapacidades_ids').val('[]');
-                  $('#btn_modal_disc').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
-                } else if (Array.isArray(discapacidadesData) && discapacidadesData.length > 0) {
-                  let nombres = discapacidadesData.map(d => d.nombre);
-                  $('#btn_modal_disc').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
-                  $('#discapacidades_ids').val(JSON.stringify(discapacidadesData));
-                }
-              });
-
-              $(document).ready(function() {
-                if ($('#discapacidad').val() === 'Si') {
-                  $('#btn_modal_disc').prop('disabled', false);
-                  if (Array.isArray(discapacidadesData) && discapacidadesData.length > 0) {
-                    $('#btn_modal_disc').attr('data-original-title', discapacidadesData.map(d => d.nombre).join(', ')).tooltip('fixTitle');
-                    $('#discapacidades_ids').val(JSON.stringify(discapacidadesData));
-                  }
-                } else {
-                  $('#btn_modal_disc').prop('disabled', true);
-                }
-              });
-
-              function actualizarBotonRepresentantes() {
-                const repIdsRaw = $('#representantes_ids').val();
-                let repLista = [];
+            } else {
+              const dataGuardada = $('#discapacidades_ids').val();
+              if (dataGuardada && dataGuardada.trim() !== "" && dataGuardada !== "[]") {
                 try {
-                  repLista = JSON.parse(repIdsRaw || '[]');
-                } catch (e) {
-                  repLista = [];
-                }
-
-                const $btn = $('#btn_modal_rep');
-                const hayRepresentantes = Array.isArray(repLista) && repLista.length > 0;
-
-                if (hayRepresentantes) {
-                  const nombres = repLista.map(function(r) {
-                    let txt = r.nombre + ' (' + (r.tipo || 'Legal');
-                    if (r.parentesco && String(r.parentesco).trim() !== '') {
-                      txt += ' - ' + r.parentesco;
-                    }
-                    txt += ')';
-                    return txt;
-                  });
-
-                  const tooltipTexto = nombres.length === 1 ?
-                    nombres[0] :
-                    nombres.length + ' representantes: ' + nombres.join(', ');
-
-                  $btn
-                    .attr('data-original-title', tooltipTexto)
-                    .tooltip('fixTitle')
-                    .removeClass('input-error btn-second')
-                    .addClass('btn-info')
-                    .html('<i></i> Gestionar Representantes');
-                } else {
-                  $btn
-                    .attr('data-original-title', 'Sin Representantes')
-                    .tooltip('fixTitle')
-                    .removeClass('btn-info')
-                    .addClass('btn-second')
-                    .html('<i></i> Gestionar Representantes');
-                }
+                  const lista = JSON.parse(dataGuardada);
+                  if (Array.isArray(lista) && lista.length > 0) {
+                    $('#select_disc_unica').val(lista[0].id);
+                    if (lista[0].fecha) $('#fecha_disc_unica').val(lista[0].fecha);
+                    for (let i = 1; i < lista.length; i++) agregarFilaDiscapacidad(lista[i].id, lista[i].fecha);
+                  }
+                } catch (e) {}
               }
+            }
+          });
 
-              document.addEventListener('DOMContentLoaded', function() {
-                const inputRep = document.getElementById('representantes_ids');
-                if (inputRep) {
-                  const observer = new MutationObserver(function() {
-                    actualizarBotonRepresentantes();
-                  });
-                  observer.observe(inputRep, {
-                    attributes: true,
-                    attributeFilter: ['value']
-                  });
+          $('#guardar_disc_listo').click(function(e) {
+            e.preventDefault();
+            let seleccionadas = [],
+              nombres = [],
+              filaVacia = false;
+            $('.fila-disc-modal').each(function() {
+              let $sel = $(this).find('.select-disc-dinamico');
+              let id = $sel.val();
+              let fecha = $(this).find('.input-fecha-disc-dinamico').val();
+              if (!id) {
+                if ($('.fila-disc-modal').length > 1) filaVacia = true;
+                return;
+              }
+              let nombre = $sel.find('option:selected').data('nombre') || '';
+              seleccionadas.push({
+                id: parseInt(id),
+                nombre: nombre,
+                fecha: fecha
+              });
+              nombres.push(nombre);
+            });
+            if (filaVacia) {
+              mostrarAviso("⚠️ Hay filas de discapacidades sin seleccionar.");
+              return false;
+            }
+            $('#discapacidades_ids').val(JSON.stringify(seleccionadas));
+            let boton = $('#btn_modal_disc');
+            if (nombres.length > 0) boton.attr('data-original-title', nombres.join(', ')).tooltip('fixTitle').removeClass('input-error');
+            else boton.attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+            $('#modalDiscapacidades').modal('hide');
+          });
 
-                  actualizarBotonRepresentantes();
+          $('#cancelar_disc_modal').on('click', function(e) {
+            e.preventDefault();
+            $('#modalDiscapacidades').modal('hide');
+          });
+
+          $('#discapacidad').on('change', function() {
+            const siTiene = this.value === 'Si';
+            $('#btn_modal_disc').prop('disabled', !siTiene);
+            if (!siTiene) {
+              $('#discapacidades_ids').val('[]');
+              $('#btn_modal_disc').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+            } else if (Array.isArray(discapacidadesData) && discapacidadesData.length > 0) {
+              let nombres = discapacidadesData.map(d => d.nombre);
+              $('#btn_modal_disc').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
+              $('#discapacidades_ids').val(JSON.stringify(discapacidadesData));
+            }
+          });
+
+          $(document).ready(function() {
+            if ($('#discapacidad').val() === 'Si') {
+              $('#btn_modal_disc').prop('disabled', false);
+              if (Array.isArray(discapacidadesData) && discapacidadesData.length > 0) {
+                $('#btn_modal_disc').attr('data-original-title', discapacidadesData.map(d => d.nombre).join(', ')).tooltip('fixTitle');
+                $('#discapacidades_ids').val(JSON.stringify(discapacidadesData));
+              }
+            } else {
+              $('#btn_modal_disc').prop('disabled', true);
+            }
+          });
+
+          function actualizarBotonRepresentantes() {
+            const repIdsRaw = $('#representantes_ids').val();
+            let repLista = [];
+            try {
+              repLista = JSON.parse(repIdsRaw || '[]');
+            } catch (e) {
+              repLista = [];
+            }
+
+            const $btn = $('#btn_modal_rep');
+            const hayRepresentantes = Array.isArray(repLista) && repLista.length > 0;
+
+            if (hayRepresentantes) {
+              const nombres = repLista.map(function(r) {
+                let txt = r.nombre + ' (' + (r.tipo || 'Legal');
+                if (r.parentesco && String(r.parentesco).trim() !== '') {
+                  txt += ' - ' + r.parentesco;
                 }
+                txt += ')';
+                return txt;
               });
 
-              $(document).on('hidden.bs.modal', '#modalRepresentantes', function() {
-                setTimeout(actualizarBotonRepresentantes, 50);
-              });
+              const tooltipTexto = nombres.length === 1 ?
+                nombres[0] :
+                nombres.length + ' representantes: ' + nombres.join(', ');
 
-              $(document).on('click', '#guardar_rep_listo', function() {
-                setTimeout(actualizarBotonRepresentantes, 100);
-              });
+              $btn
+                .attr('data-original-title', tooltipTexto)
+                .tooltip('fixTitle')
+                .removeClass('input-error btn-second')
+                .addClass('btn-info')
+                .html('<i></i> Gestionar Representantes');
+            } else {
+              $btn
+                .attr('data-original-title', 'Sin Representantes')
+                .tooltip('fixTitle')
+                .removeClass('btn-info')
+                .addClass('btn-second')
+                .html('<i></i> Gestionar Representantes');
+            }
+          }
 
-              $(document).ready(function() {
-                if (Array.isArray(representantesData) && representantesData.length > 0) {
-                  $('#representantes_ids').val(JSON.stringify(representantesData));
-                }
-
+          document.addEventListener('DOMContentLoaded', function() {
+            const inputRep = document.getElementById('representantes_ids');
+            if (inputRep) {
+              const observer = new MutationObserver(function() {
                 actualizarBotonRepresentantes();
-
-                const repIdsRaw = $('#representantes_ids').val();
-                let repLista = [];
-                try {
-                  repLista = JSON.parse(repIdsRaw || '[]');
-                } catch (e) {
-                  repLista = [];
-                }
-                if (!Array.isArray(repLista) || repLista.length === 0) {
-                  $('#btn_modal_rep').addClass('input-error');
-                } else {
-                  $('#btn_modal_rep').removeClass('input-error');
-                }
+              });
+              observer.observe(inputRep, {
+                attributes: true,
+                attributeFilter: ['value']
               });
 
-              async function validarPestana(tabSelector) {
-                let esValido = true;
-                let errores = [];
-                limpiarErroresPestana(tabSelector);
+              actualizarBotonRepresentantes();
+            }
+          });
 
-                $(tabSelector).find('[required]').each(function() {
-                  var $input = $(this);
-                  var valor = $input.val();
-                  if ($input.is(':visible') && !$input.prop('disabled')) {
-                    if (valor === null || valor.trim() === "" || valor.includes('--- Seleccione')) {
-                      $input.addClass('input-error');
-                      esValido = false;
-                      errores.push(`El campo '${$input.prev('p').text().replace('(*):', '').replace('(*)', '').trim()}' es obligatorio.`);
-                    }
-                  }
-                });
+          $(document).on('hidden.bs.modal', '#modalRepresentantes', function() {
+            setTimeout(actualizarBotonRepresentantes, 50);
+          });
 
-                if (tabSelector === '#info') {
-                  const cedulaValida = await validarDatosUnicos();
-                  if (!cedulaValida) esValido = false;
+          $(document).on('click', '#guardar_rep_listo', function() {
+            setTimeout(actualizarBotonRepresentantes, 100);
+          });
 
-                  const fechaNac = $('#fechaN').val();
-                  if (fechaNac) {
-                    const edadAnios = parseInt($('#edad').attr('data-edad-anios') || 'NaN');
-                    if (isNaN(edadAnios) || edadAnios < 0 || edadAnios >= 18) {
-                      $('#fechaN').addClass('input-error');
-                      esValido = false;
-                      errores.push("El paciente debe ser menor de 18 años (Fecha de Nacimiento).");
-                    }
-                  } else {
-                    $('#fechaN').addClass('input-error');
-                    esValido = false;
-                    errores.push("La Fecha de Nacimiento es obligatoria.");
-                  }
+          $(document).ready(function() {
+            if (Array.isArray(representantesData) && representantesData.length > 0) {
+              $('#representantes_ids').val(JSON.stringify(representantesData));
+            }
+
+            actualizarBotonRepresentantes();
+
+            const repIdsRaw = $('#representantes_ids').val();
+            let repLista = [];
+            try {
+              repLista = JSON.parse(repIdsRaw || '[]');
+            } catch (e) {
+              repLista = [];
+            }
+            if (!Array.isArray(repLista) || repLista.length === 0) {
+              $('#btn_modal_rep').addClass('input-error');
+            } else {
+              $('#btn_modal_rep').removeClass('input-error');
+            }
+          });
+
+          async function validarPestana(tabSelector) {
+            let esValido = true;
+            let errores = [];
+            limpiarErroresPestana(tabSelector);
+
+            $(tabSelector).find('[required]').each(function() {
+              var $input = $(this);
+              var valor = $input.val();
+              if ($input.is(':visible') && !$input.prop('disabled')) {
+                if (valor === null || valor.trim() === "" || valor.includes('--- Seleccione')) {
+                  $input.addClass('input-error');
+                  esValido = false;
+                  errores.push(`El campo '${$input.prev('p').text().replace('(*):', '').replace('(*)', '').trim()}' es obligatorio.`);
                 }
+              }
+            });
 
-                if (tabSelector === '#ocupacion_estudios') {
-                  if (!$('#años_aprobados').prop('disabled')) {
-                    const años = parseInt($('#años_aprobados').val());
-                    const max = parseInt($('#años_aprobados').attr('max'));
-                    if (!isNaN(max) && !isNaN(años) && años > max) {
-                      errores.push("Los Años Aprobados exceden el máximo permitido (" + max + " años).");
-                      $('#años_aprobados').addClass('input-error');
-                      esValido = false;
-                    }
-                  }
+            if (tabSelector === '#info') {
+              const cedulaValida = await validarDatosUnicos();
+              if (!cedulaValida) esValido = false;
+
+              const fechaNac = $('#fechaN').val();
+              if (fechaNac) {
+                const edadAnios = parseInt($('#edad').attr('data-edad-anios') || 'NaN');
+                if (isNaN(edadAnios) || edadAnios < 0 || edadAnios >= 18) {
+                  $('#fechaN').addClass('input-error');
+                  esValido = false;
+                  errores.push("El paciente debe ser menor de 18 años (Fecha de Nacimiento).");
                 }
+              } else {
+                $('#fechaN').addClass('input-error');
+                esValido = false;
+                errores.push("La Fecha de Nacimiento es obligatoria.");
+              }
+            }
 
-                if (tabSelector === '#direccion') {
-                  if ($('#municipio').val().trim() === "") {
-                    $('#municipio').addClass('input-error');
-                    esValido = false;
-                    errores.push("Debe seleccionar un Municipio.");
-                  }
+            if (tabSelector === '#ocupacion_estudios') {
+              if (!$('#años_aprobados').prop('disabled')) {
+                const años = parseInt($('#años_aprobados').val());
+                const max = parseInt($('#años_aprobados').attr('max'));
+                if (!isNaN(max) && !isNaN(años) && años > max) {
+                  errores.push("Los Años Aprobados exceden el máximo permitido (" + max + " años).");
+                  $('#años_aprobados').addClass('input-error');
+                  esValido = false;
                 }
+              }
+            }
 
-                if (tabSelector === '#salud_otros') {
-                  const repIdsRaw = $('#representantes_ids').val();
-                  let repLista = [];
-                  try {
-                    repLista = JSON.parse(repIdsRaw || '[]');
-                  } catch (e) {
-                    repLista = [];
-                  }
+            if (tabSelector === '#direccion') {
+              if ($('#municipio').val().trim() === "") {
+                $('#municipio').addClass('input-error');
+                esValido = false;
+                errores.push("Debe seleccionar un Municipio.");
+              }
+            }
 
-                  if (!Array.isArray(repLista) || repLista.length === 0) {
-                    $('#btn_modal_rep').addClass('input-error');
-                    errores.push("Debe registrar al menos un <b>Representante</b> (haga clic en 'Gestionar Representantes').");
-                    esValido = false;
-                  } else {
-                    $('#btn_modal_rep').removeClass('input-error');
-                  }
-
-                  // Validar grupo sanguíneo
-                  if ($('#grupo_sanguineo').val() === "") {
-                    $('#grupo_sanguineo').addClass('input-error');
-                    esValido = false;
-                    errores.push("Debe seleccionar un Grupo Sanguíneo.");
-                  }
-                }
-
-                if (!esValido && errores.length > 0) {
-                  mostrarAviso('⚠️ Errores de Formulario:<ul><li>' + errores.filter((v, i, a) => a.indexOf(v) === i).join('</li><li>') + '</li></ul>');
-                }
-                return esValido;
+            if (tabSelector === '#salud_otros') {
+              const repIdsRaw = $('#representantes_ids').val();
+              let repLista = [];
+              try {
+                repLista = JSON.parse(repIdsRaw || '[]');
+              } catch (e) {
+                repLista = [];
               }
 
-              $('.next-tab').off('click').on('click', async function() {
-                const $btn = $(this);
-                const tabActualSelector = $btn.data('tab-actual');
-                const tabSiguienteName = $btn.data('tab-siguiente');
-                const nextTabLink = $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"] a`);
+              if (!Array.isArray(repLista) || repLista.length === 0) {
+                $('#btn_modal_rep').addClass('input-error');
+                errores.push("Debe registrar al menos un <b>Representante</b> (haga clic en 'Gestionar Representantes').");
+                esValido = false;
+              } else {
+                $('#btn_modal_rep').removeClass('input-error');
+              }
 
-                $btn.prop('disabled', true).text('Validando...');
-                const esValido = await validarPestana(tabActualSelector);
-                $btn.prop('disabled', false).text(tabSiguienteName === 'confirmar' ? 'Actualizar' : 'Siguiente');
+              // Validar grupo sanguíneo
+              if ($('#grupo_sanguineo').val() === "") {
+                $('#grupo_sanguineo').addClass('input-error');
+                esValido = false;
+                errores.push("Debe seleccionar un Grupo Sanguíneo.");
+              }
+            }
 
-                if (esValido) {
-                  if (tabSiguienteName === 'confirmar') {
-                    normalizarSiSinDatos();
+            if (!esValido && errores.length > 0) {
+              mostrarAviso('⚠️ Errores de Formulario:<ul><li>' + errores.filter((v, i, a) => a.indexOf(v) === i).join('</li><li>') + '</li></ul>');
+            }
+            return esValido;
+          }
 
-                    const cedulaFinalValida = await validarDatosUnicos();
-                    if (!cedulaFinalValida) {
-                      mostrarAviso("⚠️ Conflicto de Cédula. Regrese a la pestaña 'Datos Personales' y corrija.");
-                      return;
-                    }
-                    $('#modalGuardarPaciente').modal('show');
-                  } else {
-                    $('.nav-tabs li').removeClass('active');
-                    $('.tab-content .tab-pane').removeClass('active');
-                    $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"]`).removeClass('disabled-tab').addClass('active');
-                    nextTabLink.tab('show');
-                    $('#' + tabSiguienteName).addClass('active');
-                  }
-                }
-              });
+          $('.next-tab').off('click').on('click', async function() {
+            const $btn = $(this);
+            const tabActualSelector = $btn.data('tab-actual');
+            const tabSiguienteName = $btn.data('tab-siguiente');
+            const nextTabLink = $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"] a`);
 
-              $('.prev-tab').on('click', function() {
-                const tabActualSelector = $(this).data('tab-actual');
-                const tabAnteriorName = $(this).data('tab-anterior');
-                if (tabAnteriorName) {
-                  const prevTabLink = $(`.nav-tabs li[data-tab-name="${tabAnteriorName}"] a`);
-                  const $anteriorTabLi = $(`.nav-tabs li[data-tab-name="${tabAnteriorName}"]`);
-                  $('.nav-tabs li').removeClass('active');
-                  $('.tab-content .tab-pane').removeClass('active');
-                  $anteriorTabLi.addClass('active');
-                  prevTabLink.tab('show');
-                  $('#' + tabAnteriorName).addClass('active');
-                } else {
-                  $('#modalConfirmarRegreso').modal('show');
-                }
-              });
+            $btn.prop('disabled', true).text('Validando...');
+            const esValido = await validarPestana(tabActualSelector);
+            $btn.prop('disabled', false).text(tabSiguienteName === 'confirmar' ? 'Actualizar' : 'Siguiente');
 
-              $('#confirmarGuardadoFinal').on('click', function() {
+            if (esValido) {
+              if (tabSiguienteName === 'confirmar') {
                 normalizarSiSinDatos();
-                $('#modalGuardarPaciente').modal('hide');
-                $('#formularioPaciente').submit();
-              });
 
-              function soloNumerosSinE(campo, maxDigitos) {
-                if (!campo) return;
-                campo.addEventListener("keydown", function(e) {
-                  const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
-                  if (teclasPermitidas.includes(e.key)) return;
-                  if (e.key.toLowerCase() === "e") {
-                    e.preventDefault();
-                    return;
-                  }
-                  if (!/^[0-9]$/.test(e.key)) {
-                    e.preventDefault();
-                    return;
-                  }
-                  if (campo.value.length >= maxDigitos) {
-                    e.preventDefault();
-                  }
-                });
-                campo.addEventListener("input", function() {
-                  campo.value = campo.value.replace(/[^0-9]/g, "").slice(0, maxDigitos);
-                });
-              }
-              soloNumerosSinE(document.getElementById("telefono_rep"), 7);
-              soloNumerosSinE(document.getElementById("tiempo_residencia"), 4);
-
-              function filtrarCedulaPorTipo() {
-                const tipo = $('#tipo_cedula').val();
-                const $ced = $('#cedula');
-                let valor = $ced.val();
-                let nuevoValor = valor;
-                let maxLen = 20;
-                if (tipo === 'V' || tipo === 'E') {
-                  nuevoValor = valor.replace(/[^0-9]/g, '');
-                  maxLen = 8;
-                } else if (tipo === 'PN') {
-                  nuevoValor = valor.replace(/[^0-9]/g, '');
-                  maxLen = 20;
-                } else if (tipo === 'RP') {
-                  nuevoValor = valor.replace(/[^0-9]/g, '');
-                  if (nuevoValor.length > 8) nuevoValor = nuevoValor.substring(0, 8) + '-' + nuevoValor.substring(8, 9);
-                  maxLen = 10;
+                const cedulaFinalValida = await validarDatosUnicos();
+                if (!cedulaFinalValida) {
+                  mostrarAviso("⚠️ Conflicto de Cédula. Regrese a la pestaña 'Datos Personales' y corrija.");
+                  return;
                 }
-                $ced.attr('maxlength', maxLen).val(nuevoValor);
+                $('#modalGuardarPaciente').modal('show');
+              } else {
+                $('.nav-tabs li').removeClass('active');
+                $('.tab-content .tab-pane').removeClass('active');
+                $(`.nav-tabs li[data-tab-name="${tabSiguienteName}"]`).removeClass('disabled-tab').addClass('active');
+                nextTabLink.tab('show');
+                $('#' + tabSiguienteName).addClass('active');
               }
-              $('#cedula').on('input', filtrarCedulaPorTipo);
-              $('#tipo_cedula').on('change', filtrarCedulaPorTipo);
-              filtrarCedulaPorTipo();
+            }
+          });
 
-              $('#cedula_rep').on('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);
-              });
+          $('.prev-tab').on('click', function() {
+            const tabActualSelector = $(this).data('tab-actual');
+            const tabAnteriorName = $(this).data('tab-anterior');
+            if (tabAnteriorName) {
+              const prevTabLink = $(`.nav-tabs li[data-tab-name="${tabAnteriorName}"] a`);
+              const $anteriorTabLi = $(`.nav-tabs li[data-tab-name="${tabAnteriorName}"]`);
+              $('.nav-tabs li').removeClass('active');
+              $('.tab-content .tab-pane').removeClass('active');
+              $anteriorTabLi.addClass('active');
+              prevTabLink.tab('show');
+              $('#' + tabAnteriorName).addClass('active');
+            } else {
+              $('#modalConfirmarRegreso').modal('show');
+            }
+          });
 
-              $(document).ready(function() {
-                if ($('#discapacidad').val() === 'Si') {
-                  $('#btn_modal_disc').prop('disabled', false);
-                }
-              });
-            </script>
+          $('#confirmarGuardadoFinal').on('click', function() {
+            normalizarSiSinDatos();
+            $('#modalGuardarPaciente').modal('hide');
+            $('#formularioPaciente').submit();
+          });
+
+          function soloNumerosSinE(campo, maxDigitos) {
+            if (!campo) return;
+            campo.addEventListener("keydown", function(e) {
+              const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+              if (teclasPermitidas.includes(e.key)) return;
+              if (e.key.toLowerCase() === "e") {
+                e.preventDefault();
+                return;
+              }
+              if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+                return;
+              }
+              if (campo.value.length >= maxDigitos) {
+                e.preventDefault();
+              }
+            });
+            campo.addEventListener("input", function() {
+              campo.value = campo.value.replace(/[^0-9]/g, "").slice(0, maxDigitos);
+            });
+          }
+          soloNumerosSinE(document.getElementById("telefono_rep"), 7);
+          soloNumerosSinE(document.getElementById("tiempo_residencia"), 4);
+
+          function filtrarCedulaPorTipo() {
+            const tipo = $('#tipo_cedula').val();
+            const $ced = $('#cedula');
+            let valor = $ced.val();
+            let nuevoValor = valor;
+            let maxLen = 20;
+            if (tipo === 'V' || tipo === 'E') {
+              nuevoValor = valor.replace(/[^0-9]/g, '');
+              maxLen = 8;
+            } else if (tipo === 'PN') {
+              nuevoValor = valor.replace(/[^0-9]/g, '');
+              maxLen = 20;
+            } else if (tipo === 'RP') {
+              nuevoValor = valor.replace(/[^0-9]/g, '');
+              if (nuevoValor.length > 8) nuevoValor = nuevoValor.substring(0, 8) + '-' + nuevoValor.substring(8, 9);
+              maxLen = 10;
+            }
+            $ced.attr('maxlength', maxLen).val(nuevoValor);
+          }
+          $('#cedula').on('input', filtrarCedulaPorTipo);
+          $('#tipo_cedula').on('change', filtrarCedulaPorTipo);
+          filtrarCedulaPorTipo();
+
+          $('#cedula_rep').on('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);
+          });
+
+          $(document).ready(function() {
+            if ($('#discapacidad').val() === 'Si') {
+              $('#btn_modal_disc').prop('disabled', false);
+            }
+          });
+        </script>

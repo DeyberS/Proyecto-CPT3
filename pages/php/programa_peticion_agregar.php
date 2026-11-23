@@ -8,69 +8,94 @@ include("../../cfg/conexion.php");
   <title>Programa de Crónicos | Nueva Petición</title>
 </head>
 
-<style>
-  .tags-input-container {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 5px;
-    width: 100%;
-    min-height: 34px;
-    padding: 4px 12px;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #555;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-    cursor: text;
-  }
-  .tags-input-container:focus-within {
-    border-color: #66afe9;
-    outline: 0;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
-  }
-  .tags-input-fake {
-    border: none;
-    outline: none;
-    background: transparent;
-    flex-grow: 1;
-    min-width: 150px;
-    height: 24px;
-    box-shadow: none !important;
-  }
-  .tag-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 12px;
-    margin-bottom: 2px;
-    margin-top: 2px;
-  }
-  .tag-badge .remove-tag {
-    margin-left: 6px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  .table-detalle th { background-color: #f4f4f4; text-align: center; }
-  .table-detalle td { text-align: center; vertical-align: middle !important; }
-  .area-trabajo-blanca {
-    background-color: #ffffff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-  .table-responsive { max-height: 350px; overflow-y: auto; }
-  .table-detalle thead th { position: sticky; top: 0; background-color: #f4f4f4; z-index: 1; }
-  .badge-edit { cursor: pointer; }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+      min-height: 34px;
+      padding: 4px 12px;
+      font-size: 14px;
+      line-height: 1.42857143;
+      color: #555;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+      transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+      cursor: text;
+    }
+
+    .tags-input-container:focus-within {
+      border-color: #66afe9;
+      outline: 0;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      background: transparent;
+      flex-grow: 1;
+      min-width: 150px;
+      height: 24px;
+      box-shadow: none !important;
+    }
+
+    .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 2px;
+      margin-top: 2px;
+    }
+
+    .tag-badge .remove-tag {
+      margin-left: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .table-detalle th {
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    .table-detalle td {
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .table-responsive {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .table-detalle thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f4f4f4;
+      z-index: 1;
+    }
+
+    .badge-edit {
+      cursor: pointer;
+    }
+  </style>
   <section class="content-header">
     <h1>Nueva Petición a Guanare</h1>
     <ol class="breadcrumb">
@@ -223,7 +248,9 @@ include("../../cfg/conexion.php");
               </thead>
               <tbody id="cuerpoTablaPacientesModal">
                 <!-- Aquí se cargan los pacientes por AJAX -->
-                <tr><td colspan="5" class="text-center text-muted"><i class="fa fa-spinner fa-spin"></i> Cargando pacientes...</td></tr>
+                <tr>
+                  <td colspan="5" class="text-center text-muted"><i class="fa fa-spinner fa-spin"></i> Cargando pacientes...</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -370,7 +397,6 @@ include("../../cfg/conexion.php");
       </div>
     </div>
   </div>
-
 </div>
 
 <?php include('includes/footer.php'); ?>
@@ -384,10 +410,48 @@ include("../../cfg/conexion.php");
   let medicamentosPacienteTemp = [];
 
   // Simulamos el catálogo de pacientes crónicos (en producción vendría de AJAX)
-  const pacientesCronicosSimulados = [
-    { id: 1, cedula: 'V-12345678', nombre: 'Ana Pérez', edad: 45, enfermedad: 'Diabetes Mellitus Tipo 2', medicamentos: [{ id_med: 1, nombre: 'Metformina 850mg', dosis: '850mg', frecuencia: 'Cada 12h', cantidad: 60 }] },
-    { id: 2, cedula: 'V-87654321', nombre: 'Carlos Gómez', edad: 62, enfermedad: 'Hipertensión Arterial', medicamentos: [{ id_med: 2, nombre: 'Enalapril 10mg', dosis: '10mg', frecuencia: 'Cada 24h', cantidad: 30 }] },
-    { id: 3, cedula: 'V-11223344', nombre: 'María Rodríguez', edad: 38, enfermedad: 'Epilepsia', medicamentos: [{ id_med: 3, nombre: 'Carbamazepina 200mg', dosis: '200mg', frecuencia: 'Cada 12h', cantidad: 60 }] }
+  const pacientesCronicosSimulados = [{
+      id: 1,
+      cedula: 'V-12345678',
+      nombre: 'Ana Pérez',
+      edad: 45,
+      enfermedad: 'Diabetes Mellitus Tipo 2',
+      medicamentos: [{
+        id_med: 1,
+        nombre: 'Metformina 850mg',
+        dosis: '850mg',
+        frecuencia: 'Cada 12h',
+        cantidad: 60
+      }]
+    },
+    {
+      id: 2,
+      cedula: 'V-87654321',
+      nombre: 'Carlos Gómez',
+      edad: 62,
+      enfermedad: 'Hipertensión Arterial',
+      medicamentos: [{
+        id_med: 2,
+        nombre: 'Enalapril 10mg',
+        dosis: '10mg',
+        frecuencia: 'Cada 24h',
+        cantidad: 30
+      }]
+    },
+    {
+      id: 3,
+      cedula: 'V-11223344',
+      nombre: 'María Rodríguez',
+      edad: 38,
+      enfermedad: 'Epilepsia',
+      medicamentos: [{
+        id_med: 3,
+        nombre: 'Carbamazepina 200mg',
+        dosis: '200mg',
+        frecuencia: 'Cada 12h',
+        cantidad: 60
+      }]
+    }
   ];
 
   // ==========================================
@@ -439,7 +503,10 @@ include("../../cfg/conexion.php");
         pacientesCronicosSimulados.forEach(function(p) {
           let existe = listaPacientesPeticion.find(x => x.id === p.id);
           if (!existe) {
-            listaPacientesPeticion.push({ ...p, seleccionado: true });
+            listaPacientesPeticion.push({
+              ...p,
+              seleccionado: true
+            });
             agregados++;
           }
         });
@@ -526,7 +593,10 @@ include("../../cfg/conexion.php");
       seleccionados.forEach(function(id) {
         let paciente = pacientesCronicosSimulados.find(p => p.id === id);
         if (paciente && !listaPacientesPeticion.find(x => x.id === id)) {
-          listaPacientesPeticion.push({ ...paciente, seleccionado: true });
+          listaPacientesPeticion.push({
+            ...paciente,
+            seleccionado: true
+          });
           agregados++;
         }
       });
@@ -549,8 +619,12 @@ include("../../cfg/conexion.php");
       }
 
       listaPacientesPeticion.forEach(function(p, index) {
-        let totalCant = p.medicamentos.reduce(function(sum, m) { return sum + m.cantidad; }, 0);
-        let medsResumen = p.medicamentos.map(function(m) { return m.nombre + ' (' + m.dosis + ')'; }).join('<br>');
+        let totalCant = p.medicamentos.reduce(function(sum, m) {
+          return sum + m.cantidad;
+        }, 0);
+        let medsResumen = p.medicamentos.map(function(m) {
+          return m.nombre + ' (' + m.dosis + ')';
+        }).join('<br>');
 
         tbody.append(`<tr>
           <td><input type="checkbox" class="check-paciente-tabla" data-index="${index}" ${p.seleccionado ? 'checked' : ''}></td>
@@ -580,7 +654,9 @@ include("../../cfg/conexion.php");
 
     $('#checkTodosPacientes').on('change', function() {
       let checked = $(this).is(':checked');
-      listaPacientesPeticion.forEach(function(p) { p.seleccionado = checked; });
+      listaPacientesPeticion.forEach(function(p) {
+        p.seleccionado = checked;
+      });
       actualizarTablaPacientes();
     });
 
@@ -699,8 +775,8 @@ include("../../cfg/conexion.php");
       }
 
       listaPacientes
-            listaPacientesPeticion[pacienteEditandoIndex].medicamentos = JSON.parse(JSON.stringify(medicamentosPacienteTemp));
-      
+      listaPacientesPeticion[pacienteEditandoIndex].medicamentos = JSON.parse(JSON.stringify(medicamentosPacienteTemp));
+
       actualizarTablaPacientes();
       $('#modalMedicamentosPaciente').modal('hide');
       mostrarAviso('Medicamentos actualizados correctamente.', 'exito');
@@ -726,7 +802,7 @@ include("../../cfg/conexion.php");
       }
 
       let seleccionados = listaPacientesPeticion.filter(p => p.seleccionado);
-      
+
       if (seleccionados.length === 0) {
         mostrarAviso('Debe incluir al menos un paciente en la petición.');
         return;
@@ -755,7 +831,7 @@ include("../../cfg/conexion.php");
       });
 
       $('#detalles_peticion_json').val(JSON.stringify(detallesParaEnviar));
-      
+
       $('#modalGuardarPeticion').modal('show');
     });
 
@@ -776,4 +852,3 @@ include("../../cfg/conexion.php");
 
   });
 </script>
-</div>

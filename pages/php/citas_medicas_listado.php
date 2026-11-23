@@ -7,75 +7,76 @@ verificarAcceso('Gestionar Citas');
   <title>Citas Médicas | Listado</title>
 </head>
 
-<style>
-  @keyframes pulso-borde {
-    0% {
-      box-shadow: inset 0 0 0px rgba(255, 193, 7, 0);
-    }
-
-    50% {
-      box-shadow: inset 0 0 10px rgba(255, 193, 7, 0.3);
-    }
-
-    100% {
-      box-shadow: inset 0 0 0px rgba(255, 193, 7, 0);
-    }
-  }
-
-  @keyframes parpadeo-alerta {
-    0% {
-      opacity: 1;
-    }
-
-    50% {
-      opacity: 0.6;
-    }
-
-    100% {
-      opacity: 1;
-    }
-  }
-
-  #modalEditarFechaHora .modal-dialog {
-    max-width: 95%;
-    width: 800px;
-    font-size: 18px;
-  }
-
-  #modalEditarFechaHora .modal-body {
-    max-height: 60vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  .fc {
-    font-size: 0.9em;
-  }
-
-  .fc .fc-toolbar {
-    margin-bottom: 10px !important;
-    padding: 5px;
-  }
-
-  .fc .fc-toolbar-title {
-    font-size: 1.2em !important;
-    font-weight: bold;
-    text-transform: capitalize;
-  }
-
-  .fc .fc-daygrid-day-frame {
-    min-height: 80px !important;
-  }
-
-  .fc-event {
-    border-radius: 3px !important;
-    padding: 2px 5px !important;
-    font-size: 0.85em !important;
-    cursor: pointer;
-  }
-</style>
-
 <div class="content-wrapper">
+
+  <style>
+    @keyframes pulso-borde {
+      0% {
+        box-shadow: inset 0 0 0px rgba(255, 193, 7, 0);
+      }
+
+      50% {
+        box-shadow: inset 0 0 10px rgba(255, 193, 7, 0.3);
+      }
+
+      100% {
+        box-shadow: inset 0 0 0px rgba(255, 193, 7, 0);
+      }
+    }
+
+    @keyframes parpadeo-alerta {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.6;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    #modalEditarFechaHora .modal-dialog {
+      max-width: 95%;
+      width: 800px;
+      font-size: 18px;
+    }
+
+    #modalEditarFechaHora .modal-body {
+      max-height: 60vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .fc {
+      font-size: 0.9em;
+    }
+
+    .fc .fc-toolbar {
+      margin-bottom: 10px !important;
+      padding: 5px;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 1.2em !important;
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+
+    .fc .fc-daygrid-day-frame {
+      min-height: 80px !important;
+    }
+
+    .fc-event {
+      border-radius: 3px !important;
+      padding: 2px 5px !important;
+      font-size: 0.85em !important;
+      cursor: pointer;
+    }
+  </style>
+
   <?php
   include('../../cfg/conexion.php');
 
@@ -134,9 +135,9 @@ verificarAcceso('Gestionar Citas');
           <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." value="" style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
         </form>
       </div>
-      <span data-toggle="tooltip" data-placement="right" title="Filtros avanzados de búsqueda">
+      <span data-toggle="tooltip" data-placement="top" title="Filtrar búsqueda">
         <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
-          <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar consulta"></i>
+          <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:15px; height:20px; filter:invert(1);" title="filtrar cita"></i>
         </button>
       </span>
     </div>
@@ -298,6 +299,7 @@ verificarAcceso('Gestionar Citas');
         </tbody>
       </table>
     </div>
+
     <nav id="contenedorPaginacion" aria-label="Page navigation">
       <ul class="pagination">
         <?php
@@ -550,117 +552,118 @@ verificarAcceso('Gestionar Citas');
       </div>
     </div>
   </div>
+</div>
 
-  <?php
-  include('includes/footer.php');
-  ?>
+<?php
+include('includes/footer.php');
+?>
 
-  <script src="../../plugins/fullcalendar/dist/index.global.js"></script>
-  <script src="../../plugins/fullcalendar/dist/index.global.min.js"></script>
-  <script>
-    var calendar;
+<script src="../../plugins/fullcalendar/dist/index.global.js" data-persistent="true"></script>
+<script src="../../plugins/fullcalendar/dist/index.global.min.js" data-persistent="true"></script>
+<script>
+  var calendar;
 
-    $('.reporte').on('click', function(e) {
-      e.preventDefault();
-      $('#ModalReporteCitas').modal('show');
-    });
+  $('.reporte').on('click', function(e) {
+    e.preventDefault();
+    $('#ModalReporteCitas').modal('show');
+  });
 
-    $('#btnEjecutarReporteCitas').on('click', function() {
-      var tipo = $('#tipo_reporte_citas').val();
-      window.open('../../cfg/reportes/generar_pdf_citas.php?tipo=' + tipo, '_blank');
-      $('#ModalReporteCitas').modal('hide');
-    });
+  $('#btnEjecutarReporteCitas').on('click', function() {
+    var tipo = $('#tipo_reporte_citas').val();
+    window.open('../../cfg/reportes/generar_pdf_citas.php?tipo=' + tipo, '_blank');
+    $('#ModalReporteCitas').modal('hide');
+  });
 
-    $(document).on('click', '.btn-desactivar', function(e) {
-      e.preventDefault();
-      var IdCita = $(this).data('id');
-      var urlDesactivar = "../../cfg/desactivar/desactivar_cita.php?Id=" + IdCita;
-      $('#desactivar').attr('href', urlDesactivar);
-      $('#DesactivarCita').modal('show');
-    })
+  $(document).on('click', '.btn-desactivar', function(e) {
+    e.preventDefault();
+    var IdCita = $(this).data('id');
+    var urlDesactivar = "../../cfg/desactivar/desactivar_cita.php?Id=" + IdCita;
+    $('#desactivar').attr('href', urlDesactivar);
+    $('#DesactivarCita').modal('show');
+  })
 
-    function gestionarReprogramacion(id, estatusActual) {
-      if (estatusActual === 'Inasistente') {
-        $.ajax({
-          url: '../../cfg/ajax/actualizar_estado_cita.php',
-          type: 'POST',
-          data: {
-            id: id,
-            estado: 'Reprogramada'
-          },
-          success: function(response) {
-            if (response.trim() === "ok") {
-              window.location.href = 'citas_medicas_editar.php?Id=' + id;
-            } else {
-              alert("Error al intentar cambiar el estado a Reprogramada.");
-            }
-          },
-          error: function() {
-            alert("Error de conexión al intentar reprogramar.");
+  function gestionarReprogramacion(id, estatusActual) {
+    if (estatusActual === 'Inasistente') {
+      $.ajax({
+        url: '../../cfg/ajax/actualizar_estado_cita.php',
+        type: 'POST',
+        data: {
+          id: id,
+          estado: 'Reprogramada'
+        },
+        success: function(response) {
+          if (response.trim() === "ok") {
+            window.location.href = 'citas_medicas_editar.php?Id=' + id;
+          } else {
+            alert("Error al intentar cambiar el estado a Reprogramada.");
           }
-        });
-      }
+        },
+        error: function() {
+          alert("Error de conexión al intentar reprogramar.");
+        }
+      });
     }
+  }
 
-    document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
 
-      $('#modalEditarFechaHora').on('show.bs.modal', function() {
-        inicializarModal();
+    $('#modalEditarFechaHora').on('show.bs.modal', function() {
+      inicializarModal();
+    });
+
+    $('#btnAgregarDia').on('click', function() {
+      agregarFilaDia('', '', '', false);
+    });
+
+    $(document).on('click', '.btn-eliminar-fila', function() {
+      $(this).closest('.fila-dia').remove();
+    });
+
+    const opcionesDias = [{
+        val: '1',
+        label: 'Lunes'
+      },
+      {
+        val: '2',
+        label: 'Martes'
+      },
+      {
+        val: '3',
+        label: 'Miércoles'
+      },
+      {
+        val: '4',
+        label: 'Jueves'
+      },
+      {
+        val: '5',
+        label: 'Viernes'
+      },
+      {
+        val: '6',
+        label: 'Sábado'
+      },
+      {
+        val: '7',
+        label: 'Domingo'
+      }
+    ];
+
+    function agregarFilaDia(diaDefault = '', horaInicioDefault = '', horaFinDefault = '', noLaborable = false) {
+      let index = $('.fila-dia').length;
+
+      if (index >= 7) {
+        alert("Ya has agregado los 7 días de la semana.");
+        return;
+      }
+
+      let selectOptions = '<option value="">-- Seleccione --</option>';
+      opcionesDias.forEach(function(d) {
+        let selected = (d.val == diaDefault) ? 'selected' : '';
+        selectOptions += `<option value="${d.val}" ${selected}>${d.label}</option>`;
       });
 
-      $('#btnAgregarDia').on('click', function() {
-        agregarFilaDia('', '', '', false);
-      });
-
-      $(document).on('click', '.btn-eliminar-fila', function() {
-        $(this).closest('.fila-dia').remove();
-      });
-
-      const opcionesDias = [{
-          val: '1',
-          label: 'Lunes'
-        },
-        {
-          val: '2',
-          label: 'Martes'
-        },
-        {
-          val: '3',
-          label: 'Miércoles'
-        },
-        {
-          val: '4',
-          label: 'Jueves'
-        },
-        {
-          val: '5',
-          label: 'Viernes'
-        },
-        {
-          val: '6',
-          label: 'Sábado'
-        },
-        {
-          val: '7',
-          label: 'Domingo'
-        }
-      ];
-
-      function agregarFilaDia(diaDefault = '', horaInicioDefault = '', horaFinDefault = '', noLaborable = false) {
-        let index = $('.fila-dia').length;
-
-        if (index >= 7) {
-          alert("Ya has agregado los 7 días de la semana.");
-          return;
-        }
-
-        let selectOptions = '<option value="">-- Seleccione --</option>';
-        opcionesDias.forEach(function(d) {
-          let selected = (d.val == diaDefault) ? 'selected' : '';
-          selectOptions += `<option value="${d.val}" ${selected}>${d.label}</option>`;
-        });
-
-        let htmlFila = `
+      let htmlFila = `
           <div class="row fila-dia" style="margin-bottom: 12px; background: #f9f9f9; padding: 10px 5px; border-radius: 4px; border: 1px solid #e3e3e3;">
             <div class="col-md-3 col-sm-3 col-xs-12 form-group" style="margin-bottom: 5px;">
               <label style="font-size: 11px;">Día</label>
@@ -694,304 +697,303 @@ verificarAcceso('Gestionar Citas');
           </div>
         `;
 
-        $('#contenedorFilasDias').append(htmlFila);
-      }
+      $('#contenedorFilasDias').append(htmlFila);
+    }
 
-      function inicializarModal() {
-        $('#contenedorFilasDias').empty();
+    function inicializarModal() {
+      $('#contenedorFilasDias').empty();
 
-        agregarFilaDia('', '', '', false);
-      }
+      agregarFilaDia('', '', '', false);
+    }
 
-      $(document).on('change', '.select-dia', function() {
-        var $fila = $(this).closest('.fila-dia');
-        var diaSeleccionado = $(this).val();
+    $(document).on('change', '.select-dia', function() {
+      var $fila = $(this).closest('.fila-dia');
+      var diaSeleccionado = $(this).val();
 
-        if (diaSeleccionado !== '') {
-          $.ajax({
-            url: '../../cfg/ajax/obtener_horarios.php',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-              dia_semana: diaSeleccionado
-            },
-            success: function(respuesta) {
-              if (respuesta.existe) {
-                $fila.find('.input-hora-inicio').val(respuesta.hora_inicio);
-                $fila.find('.input-hora-fin').val(respuesta.hora_fin);
-
-                if (respuesta.estatus == '0') {
-                  $fila.find('.chk-no-laborable').prop('checked', true);
-                  $fila.find('.input-hora-inicio').prop('disabled', true);
-                  $fila.find('.input-hora-fin').prop('disabled', true);
-                } else {
-                  $fila.find('.chk-no-laborable').prop('checked', false);
-                  $fila.find('.input-hora-inicio').prop('disabled', false);
-                  $fila.find('.input-hora-fin').prop('disabled', false);
-                }
-              } else {
-                limpiarCamposFila($fila);
-              }
-            },
-            error: function() {
-              console.error('Error al consultar el horario del día seleccionado.');
-            }
-          });
-        } else {
-          limpiarCamposFila($fila);
-        }
-      });
-
-      function limpiarCamposFila($fila) {
-        $fila.find('.input-hora-inicio').val('');
-        $fila.find('.input-hora-fin').val('');
-        $fila.find('.chk-no-laborable').prop('checked', false);
-      }
-
-      $(document).on('change', '.chk-no-laborable', function() {
-        let inputHoraInicio = $(this).closest('.fila-dia').find('.input-hora-inicio');
-        let inputHoraFin = $(this).closest('.fila-dia').find('.input-hora-fin');
-
-        if ($(this).is(':checked')) {
-          inputHoraInicio.prop('disabled', true).val('');
-          inputHoraFin.prop('disabled', true).val('');
-        } else {
-          inputHoraInicio.prop('disabled', false);
-          inputHoraFin.prop('disabled', false);
-        }
-      });
-
-      $('#btnGuardarFechaHora').off('click').on('click', function() {
-        let configuracion = [];
-        let diasSeleccionados = new Set();
-        let hayError = false;
-        let mensajeError = "";
-
-        $('.fila-dia').each(function(i, el) {
-          let dia = $(el).find('.select-dia').val();
-          let horaInicio = $(el).find('.input-hora-inicio').val();
-          let horaFin = $(el).find('.input-hora-fin').val();
-          let esNoLaborable = $(el).find('.chk-no-laborable').is(':checked') ? 1 : 0;
-
-          if (!dia) {
-            hayError = true;
-            mensajeError = "Por favor selecciona un día de la semana en todas las filas.";
-            return false;
-          }
-
-          if (diasSeleccionados.has(dia)) {
-            hayError = true;
-            mensajeError = "Has seleccionado el mismo día más de una vez. Por favor corrige los duplicados.";
-            return false;
-          }
-          diasSeleccionados.add(dia);
-
-          if (!esNoLaborable && (!horaInicio || !horaFin)) {
-            hayError = true;
-            mensajeError = "Debes ingresar tanto una hora de inicio como una hora límite para los días laborables.";
-            return false;
-          }
-
-          configuracion.push({
-            dia: dia,
-            hora_inicio: esNoLaborable ? null : horaInicio,
-            hora_fin: esNoLaborable ? null : horaFin,
-            no_laborable: esNoLaborable
-          });
-        });
-
-        if (hayError) {
-          alert(mensajeError);
-          return;
-        }
-
-        let btn = $(this);
-        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
-
+      if (diaSeleccionado !== '') {
         $.ajax({
-          url: '../../cfg/ajax/guardar_fecha_hora.php',
+          url: '../../cfg/ajax/obtener_horarios.php',
           type: 'POST',
           dataType: 'json',
           data: {
-            config: JSON.stringify(configuracion)
+            dia_semana: diaSeleccionado
           },
           success: function(respuesta) {
-            btn.prop('disabled', false).html('<i class="fa fa-save"></i> Guardar Cambios');
-            $('#modalEditarFechaHora').modal('hide');
+            if (respuesta.existe) {
+              $fila.find('.input-hora-inicio').val(respuesta.hora_inicio);
+              $fila.find('.input-hora-fin').val(respuesta.hora_fin);
 
-            if (respuesta.status === 'ok') {
-              $('#mensajeExito').text(respuesta.mensaje);
-              $('#modalExito').modal('show');
-
-              setTimeout(function() {
-                location.reload();
-              }, 1500);
+              if (respuesta.estatus == '0') {
+                $fila.find('.chk-no-laborable').prop('checked', true);
+                $fila.find('.input-hora-inicio').prop('disabled', true);
+                $fila.find('.input-hora-fin').prop('disabled', true);
+              } else {
+                $fila.find('.chk-no-laborable').prop('checked', false);
+                $fila.find('.input-hora-inicio').prop('disabled', false);
+                $fila.find('.input-hora-fin').prop('disabled', false);
+              }
             } else {
-              $('#mensajeError').text(respuesta.mensaje || "Ocurrió un error al procesar la solicitud.");
-              $('#modalError').modal('show');
+              limpiarCamposFila($fila);
             }
           },
-          error: function(xhr, status, error) {
-            btn.prop('disabled', false).html('<i class="fa fa-save"></i> Guardar Cambios');
-            alert("Error en el servidor al intentar guardar: " + error);
+          error: function() {
+            console.error('Error al consultar el horario del día seleccionado.');
           }
         });
-      });
-
+      } else {
+        limpiarCamposFila($fila);
+      }
     });
 
-    function cambiarEstado(id, nuevoEstado) {
-      $('#citaIdEstado').val(id);
-      $('#citaNuevoEstado').val(nuevoEstado);
-
-      $('#textoConfirmacionEstado').text('¿Está seguro que desea cambiar el estado de esta cita a ' + nuevoEstado + '?');
-
-      $('#modalCambioEstado').modal('show');
+    function limpiarCamposFila($fila) {
+      $fila.find('.input-hora-inicio').val('');
+      $fila.find('.input-hora-fin').val('');
+      $fila.find('.chk-no-laborable').prop('checked', false);
     }
 
-    $(document).ready(function() {
-      $('#btnConfirmarEstado').on('click', function() {
-        var id = $('#citaIdEstado').val();
-        var nuevoEstado = $('#citaNuevoEstado').val();
+    $(document).on('change', '.chk-no-laborable', function() {
+      let inputHoraInicio = $(this).closest('.fila-dia').find('.input-hora-inicio');
+      let inputHoraFin = $(this).closest('.fila-dia').find('.input-hora-fin');
 
-        var btn = $(this);
-        btn.prop('disabled', true).text('Procesando...');
-
-        $.post('../../cfg/ajax/actualizar_estado_cita.php', {
-          id: id,
-          estado: nuevoEstado
-        }, function(data) {
-          $('#modalCambioEstado').modal('hide');
-          btn.prop('disabled', false).text('Aceptar');
-
-          if (data.trim() == 'ok') {
-            cargarDatosAjax(window.location.href);
-
-            $('#mensajeExito').text('El estado de la cita se actualizó correctamente.');
-            $('#modalExito').modal('show');
-          } else {
-            $('#mensajeError').text('Error al actualizar el estado de la cita.');
-            $('#modalError').modal('show');
-          }
-        }).fail(function() {
-          $('#modalCambioEstado').modal('hide');
-          btn.prop('disabled', false).text('Aceptar');
-          alert("Error de conexión al procesar el cambio de estado.");
-        });
-      });
+      if ($(this).is(':checked')) {
+        inputHoraInicio.prop('disabled', true).val('');
+        inputHoraFin.prop('disabled', true).val('');
+      } else {
+        inputHoraInicio.prop('disabled', false);
+        inputHoraFin.prop('disabled', false);
+      }
     });
 
-    $(document).ready(function() {
-      $('#btnToggleVista').on('click', function(e) {
-        e.preventDefault();
-        var vistaActual = $(this).attr('data-vista');
+    $('#btnGuardarFechaHora').off('click').on('click', function() {
+      let configuracion = [];
+      let diasSeleccionados = new Set();
+      let hayError = false;
+      let mensajeError = "";
 
-        if (vistaActual === 'tabla') {
-          $('#contenedorTabla').hide();
-          $('#contenedorCalendario').show();
-          $('.pagination').hide();
-          $(this).attr('data-vista', 'calendario');
-          $(this).html('<i class="fa fa-table"></i> Ver Tabla');
-          renderizarCalendario();
-        } else {
-          $('#contenedorCalendario').hide();
-          $('#contenedorTabla').show();
-          $('.pagination').show();
-          $(this).attr('data-vista', 'tabla');
-          $(this).html('<i class="fa fa-calendar"></i> Ver Calendario');
+      $('.fila-dia').each(function(i, el) {
+        let dia = $(el).find('.select-dia').val();
+        let horaInicio = $(el).find('.input-hora-inicio').val();
+        let horaFin = $(el).find('.input-hora-fin').val();
+        let esNoLaborable = $(el).find('.chk-no-laborable').is(':checked') ? 1 : 0;
+
+        if (!dia) {
+          hayError = true;
+          mensajeError = "Por favor selecciona un día de la semana en todas las filas.";
+          return false;
         }
+
+        if (diasSeleccionados.has(dia)) {
+          hayError = true;
+          mensajeError = "Has seleccionado el mismo día más de una vez. Por favor corrige los duplicados.";
+          return false;
+        }
+        diasSeleccionados.add(dia);
+
+        if (!esNoLaborable && (!horaInicio || !horaFin)) {
+          hayError = true;
+          mensajeError = "Debes ingresar tanto una hora de inicio como una hora límite para los días laborables.";
+          return false;
+        }
+
+        configuracion.push({
+          dia: dia,
+          hora_inicio: esNoLaborable ? null : horaInicio,
+          hora_fin: esNoLaborable ? null : horaFin,
+          no_laborable: esNoLaborable
+        });
       });
 
-      function renderizarCalendario() {
-        var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          locale: 'es',
-          height: 490,
-          contentHeight: '490',
-          aspectRatio: 1.5,
-          buttonText: {
-            today: 'Hoy',
-            week: 'Semana',
-            month: 'Mes',
-            day: 'Dia',
-            list: 'Agenda',
-          },
-          headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,listWeek'
-          },
-          events: '../../cfg/ajax/obtener_eventos_citas.php',
-          eventClick: function(info) {
-            $('#eventoTitulo').text(info.event.title);
-            $('#eventoMotivo').text(info.event.extendedProps.description || 'No especificado');
-
-            var fechaFormateada = info.event.start ? info.event.start.toLocaleString() : 'No disponible';
-            $('#eventoFecha').text(fechaFormateada);
-            $('#modalDetalleCitaEvento').modal('show');
-          }
-        });
-        calendar.render();
+      if (hayError) {
+        alert(mensajeError);
+        return;
       }
 
-      window.cargarDatosAjax = function(url) {
-        $('.tbody').css('opacity', '0.4');
+      let btn = $(this);
+      btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
 
-        $.get(url, function(data) {
-          var htmlParsed = $(data);
+      $.ajax({
+        url: '../../cfg/ajax/guardar_fecha_hora.php',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+          config: JSON.stringify(configuracion)
+        },
+        success: function(respuesta) {
+          btn.prop('disabled', false).html('<i class="fa fa-save"></i> Guardar Cambios');
+          $('#modalEditarFechaHora').modal('hide');
 
-          $('.tbody').html(htmlParsed.find('.tbody').html()).css('opacity', '1');
-          $('nav[aria-label="Page navigation"]').html(htmlParsed.find('nav[aria-label="Page navigation"]').html());
-          e
-          window.history.pushState(null, '', url);
-        }).fail(function() {
-          alert("Error de conexión al aplicar filtros.");
-          $('.tbody').css('opacity', '1');
-        });
-      };
+          if (respuesta.status === 'ok') {
+            $('#mensajeExito').text(respuesta.mensaje);
+            $('#modalExito').modal('show');
 
-      let timerBusqueda;
-      $('#buscar').on('keyup', function() {
-        clearTimeout(timerBusqueda);
-        let query = $(this).val();
-        timerBusqueda = setTimeout(function() {
-          var url = 'citas_medicas_listado.php?buscar=' + encodeURIComponent(query);
-          cargarDatosAjax(url);
-        }, 400);
-      });
-
-      $('#formBusquedaRapida').on('submit', function(e) {
-        e.preventDefault();
-      });
-
-      $('#formBusquedaAvanzada').on('submit', function(e) {
-        e.preventDefault();
-        var url = 'citas_medicas_listado.php?' + $(this).serialize();
-        $('#modalBusquedaAvanzada').modal('hide');
-        cargarDatosAjax(url);
-      });
-
-      $(document).on('click', 'nav[aria-label="Page navigation"] .pagination a', function(e) {
-        e.preventDefault();
-        var url = $(this).attr('href');
-        if (url) {
-          cargarDatosAjax(url);
+            setTimeout(function() {
+              location.reload();
+            }, 1500);
+          } else {
+            $('#mensajeError').text(respuesta.mensaje || "Ocurrió un error al procesar la solicitud.");
+            $('#modalError').modal('show');
+          }
+        },
+        error: function(xhr, status, error) {
+          btn.prop('disabled', false).html('<i class="fa fa-save"></i> Guardar Cambios');
+          alert("Error en el servidor al intentar guardar: " + error);
         }
       });
-
-      window.limpiarFiltrosAjax = function() {
-        $('#formBusquedaAvanzada')[0].reset();
-        $('#buscar').val('');
-        var urlLimpia = window.location.href.split('?')[0];
-        cargarDatosAjax(urlLimpia);
-        $('#modalBusquedaAvanzada').modal('hide');
-      };
-
-      <?php if ($mostrar_modal_exito) : ?>
-        $('#modalExito').modal('show');
-      <?php elseif ($mostrar_modal_error) : ?>
-        $('#modalError').modal('show');
-      <?php endif; ?>
     });
-  </script>
+
+  });
+
+  function cambiarEstado(id, nuevoEstado) {
+    $('#citaIdEstado').val(id);
+    $('#citaNuevoEstado').val(nuevoEstado);
+
+    $('#textoConfirmacionEstado').text('¿Está seguro que desea cambiar el estado de esta cita a ' + nuevoEstado + '?');
+
+    $('#modalCambioEstado').modal('show');
+  }
+
+  $(document).ready(function() {
+    $('#btnConfirmarEstado').on('click', function() {
+      var id = $('#citaIdEstado').val();
+      var nuevoEstado = $('#citaNuevoEstado').val();
+
+      var btn = $(this);
+      btn.prop('disabled', true).text('Procesando...');
+
+      $.post('../../cfg/ajax/actualizar_estado_cita.php', {
+        id: id,
+        estado: nuevoEstado
+      }, function(data) {
+        $('#modalCambioEstado').modal('hide');
+        btn.prop('disabled', false).text('Aceptar');
+
+        if (data.trim() == 'ok') {
+          cargarDatosAjax(window.location.href);
+
+          $('#mensajeExito').text('El estado de la cita se actualizó correctamente.');
+          $('#modalExito').modal('show');
+        } else {
+          $('#mensajeError').text('Error al actualizar el estado de la cita.');
+          $('#modalError').modal('show');
+        }
+      }).fail(function() {
+        $('#modalCambioEstado').modal('hide');
+        btn.prop('disabled', false).text('Aceptar');
+        alert("Error de conexión al procesar el cambio de estado.");
+      });
+    });
+  });
+
+  $(document).ready(function() {
+    $('#btnToggleVista').on('click', function(e) {
+      e.preventDefault();
+      var vistaActual = $(this).attr('data-vista');
+
+      if (vistaActual === 'tabla') {
+        $('#contenedorTabla').hide();
+        $('#contenedorCalendario').show();
+        $('.pagination').hide();
+        $(this).attr('data-vista', 'calendario');
+        $(this).html('<i class="fa fa-table"></i> Ver Tabla');
+        renderizarCalendario();
+      } else {
+        $('#contenedorCalendario').hide();
+        $('#contenedorTabla').show();
+        $('.pagination').show();
+        $(this).attr('data-vista', 'tabla');
+        $(this).html('<i class="fa fa-calendar"></i> Ver Calendario');
+      }
+    });
+
+    function renderizarCalendario() {
+      var calendarEl = document.getElementById('calendar');
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        height: 490,
+        contentHeight: '490',
+        aspectRatio: 1.5,
+        buttonText: {
+          today: 'Hoy',
+          week: 'Semana',
+          month: 'Mes',
+          day: 'Dia',
+          list: 'Agenda',
+        },
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        events: '../../cfg/ajax/obtener_eventos_citas.php',
+        eventClick: function(info) {
+          $('#eventoTitulo').text(info.event.title);
+          $('#eventoMotivo').text(info.event.extendedProps.description || 'No especificado');
+
+          var fechaFormateada = info.event.start ? info.event.start.toLocaleString() : 'No disponible';
+          $('#eventoFecha').text(fechaFormateada);
+          $('#modalDetalleCitaEvento').modal('show');
+        }
+      });
+      calendar.render();
+    }
+
+    window.cargarDatosAjax = function(url) {
+      $('.tbody').css('opacity', '0.4');
+
+      $.get(url, function(data) {
+        var htmlParsed = $(data);
+
+        $('.tbody').html(htmlParsed.find('.tbody').html()).css('opacity', '1');
+        $('nav[aria-label="Page navigation"]').html(htmlParsed.find('nav[aria-label="Page navigation"]').html());
+        window.history.pushState(null, '', url);
+      }).fail(function() {
+        alert("Error de conexión al aplicar filtros.");
+        $('.tbody').css('opacity', '1');
+      });
+    };
+
+    let timerBusqueda;
+    $('#buscar').on('keyup', function() {
+      clearTimeout(timerBusqueda);
+      let query = $(this).val();
+      timerBusqueda = setTimeout(function() {
+        var url = 'citas_medicas_listado.php?buscar=' + encodeURIComponent(query);
+        cargarDatosAjax(url);
+      }, 400);
+    });
+
+    $('#formBusquedaRapida').on('submit', function(e) {
+      e.preventDefault();
+    });
+
+    $('#formBusquedaAvanzada').on('submit', function(e) {
+      e.preventDefault();
+      var url = 'citas_medicas_listado.php?' + $(this).serialize();
+      $('#modalBusquedaAvanzada').modal('hide');
+      cargarDatosAjax(url);
+    });
+
+    $(document).on('click', 'nav[aria-label="Page navigation"] .pagination a', function(e) {
+      e.preventDefault();
+      var url = $(this).attr('href');
+      if (url) {
+        cargarDatosAjax(url);
+      }
+    });
+
+    window.limpiarFiltrosAjax = function() {
+      $('#formBusquedaAvanzada')[0].reset();
+      $('#buscar').val('');
+      var urlLimpia = window.location.href.split('?')[0];
+      cargarDatosAjax(urlLimpia);
+      $('#modalBusquedaAvanzada').modal('hide');
+    };
+
+    <?php if ($mostrar_modal_exito) : ?>
+      $('#modalExito').modal('show');
+    <?php elseif ($mostrar_modal_error) : ?>
+      $('#modalError').modal('show');
+    <?php endif; ?>
+  });
+</script>

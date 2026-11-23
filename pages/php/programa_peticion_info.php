@@ -65,147 +65,212 @@ if ($peticion['estado'] == 'Recibida Total') {
     <title>Petición | Información</title>
 </head>
 
-<style>
-    :root {
-        --primary: #2c3e50;
-        --accent: #3498db;
-        --bg: #f4f7f6;
-    }
+<div class="content-wrapper">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f4f7f6;
+        }
 
-    @media screen {
-        html, body {
-            overflow: hidden !important;
-            height: 118vh !important;
-            background-color: var(--bg) !important;
+        @media screen {
+
+            html,
+            body {
+                overflow: hidden !important;
+                height: 118vh !important;
+                background-color: var(--bg) !important;
+            }
+
+            .wrapper,
+            .content-wrapper {
+                height: 118vh !important;
+                min-height: 118vh !important;
+                overflow: hidden !important;
+                background-color: #f4f7f9 !important;
+            }
+
+            .content-custom {
+                padding: 20px 10px;
+                margin-left: 60px;
+                height: calc(100vh - 50px);
+                overflow: hidden;
+            }
         }
-        .wrapper, .content-wrapper {
-            height: 118vh !important;
-            min-height: 118vh !important;
-            overflow: hidden !important;
-            background-color: #f4f7f9 !important;
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
         }
-        .content-custom {
-            padding: 20px 10px;
-            margin-left: 60px;
-            height: calc(100vh - 50px);
+
+        .receipt-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 10px auto;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+        }
+
+        .receipt-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 30px;
+            border-bottom: 5px solid <?php echo $tipo_bg; ?>;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .card-body {
+            padding: 20px 30px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
-    }
 
-    body { font-family: 'Segoe UI', sans-serif; }
-
-    .receipt-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin: 10px auto;
-        border: none;
-        display: flex;
-        flex-direction: column;
-        max-height: 85vh;
-    }
-
-    .receipt-header {
-        background: var(--primary);
-        color: white;
-        padding: 20px 30px;
-        border-bottom: 5px solid <?php echo $tipo_bg; ?>;
-        position: relative;
-        flex-shrink: 0;
-    }
-
-    .card-body {
-        padding: 20px 30px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .status-badge {
-        position: absolute;
-        top: 25px;
-        right: 30px;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-weight: 800;
-        background-color: <?php echo $tipo_bg; ?>;
-        color: white;
-    }
-
-    .info-entrega {
-        background: #ebf5fb;
-        border-radius: 10px;
-        padding: 20px;
-        border: 1px solid #d6eaf8;
-        height: 100%;
-    }
-
-    .label-custom {
-        font-size: 11px;
-        color: #95a5a6;
-        text-transform: uppercase;
-        font-weight: 700;
-        display: block;
-    }
-
-    .val-custom {
-        font-size: 16px;
-        color: #2c3e50;
-        font-weight: 500;
-    }
-
-    .table-scroll-container {
-        max-height: 300px;
-        overflow-y: auto;
-        border-bottom: 1px solid #eee;
-        margin-bottom: 15px;
-    }
-    .table-scroll-container::-webkit-scrollbar { width: 6px; }
-    .table-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
-    .table-scroll-container::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 5px; }
-    .table-scroll-container::-webkit-scrollbar-thumb:hover { background: #95a5a6; }
-
-    .table-productos { margin-bottom: 0; }
-    .table-productos th {
-        background-color: #f8f9fa;
-        color: var(--primary);
-        font-size: 13px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-    .table-productos td { vertical-align: middle !important; font-size: 14px; }
-
-    .qty-badge {
-        font-size: 14px;
-        font-weight: bold;
-        padding: 5px 10px;
-        border: 1px solid #eee;
-        border-radius: 5px;
-        display: inline-block;
-    }
-    .qty-solicitada { color: var(--primary); background: #f8f9fa; }
-    .qty-recibida { color: #27ae60; background: #e8f8f5; }
-    .qty-pendiente { color: #e74c3c; background: #fdedec; }
-
-    .print-only { display: none !important; }
-
-    @media print {
-        body, html, .wrapper, .content-wrapper, .receipt-card {
-            height: auto !important;
-            max-height: none !important;
-            overflow: visible !important;
+        .status-badge {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 800;
+            background-color: <?php echo $tipo_bg; ?>;
+            color: white;
         }
-        .table-scroll-container { max-height: none !important; overflow: visible !important; }
-        .table-productos th { position: static; }
-        .no-print { display: none !important; }
-        .print-only { display: block !important; }
-        .receipt-card { box-shadow: none; border: 1px solid #eee; margin: 0; }
-    }
-</style>
 
-<div class="content-wrapper">
+        .info-entrega {
+            background: #ebf5fb;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #d6eaf8;
+            height: 100%;
+        }
+
+        .label-custom {
+            font-size: 11px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+        }
+
+        .val-custom {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .table-scroll-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 5px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #95a5a6;
+        }
+
+        .table-productos {
+            margin-bottom: 0;
+        }
+
+        .table-productos th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-size: 13px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-productos td {
+            vertical-align: middle !important;
+            font-size: 14px;
+        }
+
+        .qty-badge {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .qty-solicitada {
+            color: var(--primary);
+            background: #f8f9fa;
+        }
+
+        .qty-recibida {
+            color: #27ae60;
+            background: #e8f8f5;
+        }
+
+        .qty-pendiente {
+            color: #e74c3c;
+            background: #fdedec;
+        }
+
+        .print-only {
+            display: none !important;
+        }
+
+        @media print {
+
+            body,
+            html,
+            .wrapper,
+            .content-wrapper,
+            .receipt-card {
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .table-scroll-container {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .table-productos th {
+                position: static;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            .receipt-card {
+                box-shadow: none;
+                border: 1px solid #eee;
+                margin: 0;
+            }
+        }
+    </style>
+
     <section class="content">
         <div class="receipt-card">
             <div class="receipt-header">
@@ -249,7 +314,7 @@ if ($peticion['estado'] == 'Recibida Total') {
                                 </thead>
                                 <tbody>
                                     <?php if (!empty($peticion['detalles'])) : ?>
-                                        <?php foreach ($peticion['detalles'] as $d) : 
+                                        <?php foreach ($peticion['detalles'] as $d) :
                                             $pendiente = $d['cantidad_solicitada'] - $d['cantidad_recibida'];
                                             $clase_pendiente = ($pendiente > 0) ? 'qty-pendiente' : 'qty-recibida';
                                         ?>
@@ -270,7 +335,9 @@ if ($peticion['estado'] == 'Recibida Total') {
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else : ?>
-                                        <tr><td colspan="7" class="text-center">No se encontraron medicamentos en esta petición.</td></tr>
+                                        <tr>
+                                            <td colspan="7" class="text-center">No se encontraron medicamentos en esta petición.</td>
+                                        </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>

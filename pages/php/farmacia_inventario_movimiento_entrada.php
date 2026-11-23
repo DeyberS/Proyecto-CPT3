@@ -15,26 +15,102 @@ verificarAcceso('Generar Entradas de Inventario');
 
 <head>
   <title>Inventario | Entrada de Medicamentos</title>
-  <style>
-    #avisoModal { z-index: 1000000 !important; }
-    .tags-input-container { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px; border: 1px solid #d2d6de; background-color: #fff; min-height: 34px; cursor: text; }
-    .tags-input-container .tag-badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: white; }
-    .tags-input-container .tag-badge i { margin-left: 6px; cursor: pointer; font-size: 10px; }
-    .tags-input-fake { border: none; outline: none; flex-grow: 1; min-width: 150px; padding: 2px; }
-    .table-responsive { max-height: 220px; overflow-y: auto; }
-    .table-detalle thead th { position: sticky; top: 0; background-color: #f4f4f4; z-index: 1; }
-    .table-detalle th { background-color: #f4f4f4; text-align: center; }
-    .table-detalle td { text-align: center; vertical-align: middle !important; }
-    .row-vence-pronto { background-color: #fff3cd !important; }
-    .area-trabajo-blanca { background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 20px; overflow: hidden; }
-    input[type="date"][readonly], input[type="date"][disabled] { background-color: #eeeeee !important; cursor: not-allowed; }
-    .btn-error-sombreado { box-shadow: 0 0 0 3px crimson; }
-    .modal.fade .modal-dialog { transition: transform 0.3s ease-out; }
-    .modal.out { opacity: 0; }
-  </style>
 </head>
 
 <div class="content-wrapper">
+  <style>
+    #avisoModal {
+      z-index: 1000000 !important;
+    }
+
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 4px;
+      border: 1px solid #d2d6de;
+      background-color: #fff;
+      min-height: 34px;
+      cursor: text;
+    }
+
+    .tags-input-container .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .tags-input-container .tag-badge i {
+      margin-left: 6px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      min-width: 150px;
+      padding: 2px;
+    }
+
+    .table-responsive {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .table-detalle thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f4f4f4;
+      z-index: 1;
+    }
+
+    .table-detalle th {
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    .table-detalle td {
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .row-vence-pronto {
+      background-color: #fff3cd !important;
+    }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    input[type="date"][readonly],
+    input[type="date"][disabled] {
+      background-color: #eeeeee !important;
+      cursor: not-allowed;
+    }
+
+    .btn-error-sombreado {
+      box-shadow: 0 0 0 3px crimson;
+    }
+
+    .modal.fade .modal-dialog {
+      transition: transform 0.3s ease-out;
+    }
+
+    .modal.out {
+      opacity: 0;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Entrada de Medicamentos</h1>
     <ol class="breadcrumb">
@@ -64,9 +140,12 @@ verificarAcceso('Generar Entradas de Inventario');
               </span>
             </div>
             <div class="box-tools pull-right" style="margin-top: -5px;">
-              <button type="button" class="btn btn-danger btn-sm" id="btnAbrirModalPedidos">
-                <i class="fa fa-download"></i> Cargar Pedido
+              <button type="button" class="btn btn-danger btn-sm" id="btnQuitarPedido" style="display: none;">
+                <i class="fa fa-times"></i> Quitar Pedido
               </button>
+              <button type="button" class="btn btn-primary btn-sm" id="btnAbrirModalPedidos">
+                <i class="fa fa-download"></i> Cargar Pedido
+              </button>   
             </div>
             <br>
 
@@ -80,7 +159,9 @@ verificarAcceso('Generar Entradas de Inventario');
                     <label>Receptor (*):</label>
                     <?php
                     $id_persona_logueada = $_SESSION['id'] ?? 0;
-                    if (empty($id_receptor_seleccionado)) { $id_receptor_seleccionado = $id_persona_logueada; }
+                    if (empty($id_receptor_seleccionado)) {
+                      $id_receptor_seleccionado = $id_persona_logueada;
+                    }
                     ?>
                     <select name="receptor" id="receptor" class="form-control" required>
                       <option value="">--- Seleccione el receptor ---</option>
@@ -123,7 +204,8 @@ verificarAcceso('Generar Entradas de Inventario');
                     <div class="input-group">
                       <input type="date" id="fecha_recepcion" name="fecha_recepcion" class="form-control" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" onkeydown="return false;" style="width: 100%;">
                       <div class="input-group-btn" style="width: 100%;">
-                        <input type="time" id="hora_recepcion" name="hora_recepcion" class="form-control" value="<?php date_default_timezone_set('America/Caracas'); echo date('H:i'); ?>">
+                        <input type="time" id="hora_recepcion" name="hora_recepcion" class="form-control" value="<?php date_default_timezone_set('America/Caracas');
+                                                                                                                  echo date('H:i'); ?>">
                       </div>
                     </div>
                   </div>
@@ -175,375 +257,401 @@ verificarAcceso('Generar Entradas de Inventario');
       </div>
     </form>
   </section>
-</div>
 
-<div class="modal fade" id="modalAgregarMedicamento" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Ingresar Lote de Medicamento</h4>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
-              <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre, principio activo, presentacion, etc...">
+  <div class="modal fade" id="modalAgregarMedicamento" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Ingresar Lote de Medicamento</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
+                <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre, principio activo, presentacion, etc...">
+              </div>
             </div>
-          </div>
-          <br><br>
-          <div class="col-sm-12 form-group">
-            <label>Medicamento del Catálogo (*):</label>
-            <div class="input-group">
-              <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control">
-                <option value="">--- Seleccione un Medicamento ---</option>
-                <?php
-                $sql_medicamentos = "SELECT dm.Id AS id_desc, m.nombre_medicamento, p.nombre_presentacion, GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), ' ', IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes FROM descripcion_medicamento dm INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_descripcion_medicamento LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo WHERE m.estatus = 1 AND (dm.estatus = '1' OR dm.estatus = 1) GROUP BY dm.Id ORDER BY m.nombre_medicamento ASC";
-                $resultado_medicamentos = $conexion->query($sql_medicamentos);
-                if ($resultado_medicamentos && $resultado_medicamentos->num_rows > 0) {
-                  while ($row_med = $resultado_medicamentos->fetch_assoc()) {
-                    $comp = trim($row_med['componentes']) ? " (" . htmlspecialchars($row_med['componentes']) . ")" : "";
-                    $componentesLimpios = trim($row_med['componentes']) ? htmlspecialchars($row_med['componentes']) : 'Sin principios activos registrados';
-                    echo '<option value="' . $row_med['id_desc'] . '" data-nombre="' . htmlspecialchars($row_med['nombre_medicamento'] . " [" . $row_med['nombre_presentacion'] . "]") . '" data-componentes="' . $componentesLimpios . '">' . htmlspecialchars($row_med['nombre_medicamento']) . $comp . " - [" . htmlspecialchars($row_med['nombre_presentacion']) . "]" . '</option>';
+            <br><br>
+            <div class="col-sm-12 form-group">
+              <label>Medicamento del Catálogo (*):</label>
+              <div class="input-group">
+                <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control">
+                  <option value="">--- Seleccione un Medicamento ---</option>
+                  <?php
+                  $sql_medicamentos = "SELECT dm.Id AS id_desc, m.nombre_medicamento, p.nombre_presentacion, GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), ' ', IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes FROM descripcion_medicamento dm INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_descripcion_medicamento LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo WHERE m.estatus = 1 AND (dm.estatus = '1' OR dm.estatus = 1) GROUP BY dm.Id ORDER BY m.nombre_medicamento ASC";
+                  $resultado_medicamentos = $conexion->query($sql_medicamentos);
+                  if ($resultado_medicamentos && $resultado_medicamentos->num_rows > 0) {
+                    while ($row_med = $resultado_medicamentos->fetch_assoc()) {
+                      $comp = trim($row_med['componentes']) ? " (" . htmlspecialchars($row_med['componentes']) . ")" : "";
+                      $componentesLimpios = trim($row_med['componentes']) ? htmlspecialchars($row_med['componentes']) : 'Sin principios activos registrados';
+                      echo '<option value="' . $row_med['id_desc'] . '" data-nombre="' . htmlspecialchars($row_med['nombre_medicamento'] . " [" . $row_med['nombre_presentacion'] . "]") . '" data-componentes="' . $componentesLimpios . '">' . htmlspecialchars($row_med['nombre_medicamento']) . $comp . " - [" . htmlspecialchars($row_med['nombre_presentacion']) . "]" . '</option>';
+                    }
                   }
-                }
-                ?>
-              </select>
-              <span class="input-group-btn">
-                <button class="btn btn-info" type="button" id="btnBuscarFiltrar" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada de Medicamentos" style="height: 34px;"><i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i></button>
-              </span>
+                  ?>
+                </select>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" id="btnBuscarFiltrar" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada de Medicamentos" style="height: 34px;"><i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i></button>
+                </span>
+              </div>
             </div>
-          </div>
-          <div class="col-sm-4 form-group">
-            <label>Existencia Actual:</label>
-            <input type="text" id="existencia_actual" class="form-control" readonly disabled style="background-color: #f9f9f9;">
-          </div>
-          <div class="col-sm-4 form-group">
-            <label>Stock Mínimo:</label>
-            <input type="text" id="stock_minimo" class="form-control" readonly disabled style="background-color: #f9f9f9;">
-          </div>
-          <div class="col-sm-4 form-group">
-            <label>Stock Máximo:</label>
-            <input type="text" id="stock_maximo" class="form-control" readonly disabled style="background-color: #f9f9f9;">
-          </div>
-          <div class="clearfix"></div>
-          <div class="col-sm-4 form-group mt-3">
-            <label style="width: 100%;">Número de Lote (*):
-              <button type="button" id="btnCopiarUltimoLote" class="btn btn-info btn-xs pull-right" style="display: none; padding: 2px 5px;" title="Copiar Lote y Fechas del último ingresado"><i class="fa fa-copy"></i> Usar Último</button>
-            </label>
-            <div class="input-group">
-              <input type="text" id="lote" class="form-control" list="lista_lotes" placeholder="Ej: L-2026X" style="text-transform: uppercase;">
-              <datalist id="lista_lotes"></datalist>
-              <span class="input-group-btn">
-                <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;"><i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i></button>
-              </span>
+            <div class="col-sm-4 form-group">
+              <label>Existencia Actual:</label>
+              <input type="text" id="existencia_actual" class="form-control" readonly disabled style="background-color: #f9f9f9;">
             </div>
-          </div>
-          <div class="col-sm-4 form-group mt-3">
-            <label>F. Fabricación (*):</label>
-            <input type="date" id="fecha_fabricacion" class="form-control" onkeydown="return false;">
-          </div>
-          <div class="col-sm-4 form-group mt-3">
-            <label>F. Vencimiento (*):</label>
-            <input type="date" id="fecha_vencimiento" class="form-control" disabled onkeydown="return false;">
-          </div>
-          <div class="clearfix"></div>
-          <div class="col-sm-4 form-group mt-3">
-            <label>Unidades a Ingresar (*):</label>
-            <input type="text" id="cantidad" class="form-control" placeholder="Solo números, sin 0 inicial" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
+            <div class="col-sm-4 form-group">
+              <label>Stock Mínimo:</label>
+              <input type="text" id="stock_minimo" class="form-control" readonly disabled style="background-color: #f9f9f9;">
+            </div>
+            <div class="col-sm-4 form-group">
+              <label>Stock Máximo:</label>
+              <input type="text" id="stock_maximo" class="form-control" readonly disabled style="background-color: #f9f9f9;">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-sm-4 form-group mt-3">
+              <label style="width: 100%;">Número de Lote (*):
+                <button type="button" id="btnCopiarUltimoLote" class="btn btn-info btn-xs pull-right" style="display: none; padding: 2px 5px;" title="Copiar Lote y Fechas del último ingresado"><i class="fa fa-copy"></i> Usar Último</button>
+              </label>
+              <div class="input-group">
+                <input type="text" id="lote" class="form-control" list="lista_lotes" placeholder="Ej: L-2026X" style="text-transform: uppercase;">
+                <datalist id="lista_lotes"></datalist>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;"><i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i></button>
+                </span>
+              </div>
+            </div>
+            <div class="col-sm-4 form-group mt-3">
+              <label>F. Fabricación (*):</label>
+              <input type="date" id="fecha_fabricacion" class="form-control" onkeydown="return false;">
+            </div>
+            <div class="col-sm-4 form-group mt-3">
+              <label>F. Vencimiento (*):</label>
+              <input type="date" id="fecha_vencimiento" class="form-control" disabled onkeydown="return false;">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-sm-4 form-group mt-3">
+              <label>Unidades a Ingresar (*):</label>
+              <input type="text" id="cantidad" class="form-control" placeholder="Solo números, sin 0 inicial" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
+            </div>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-success" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalConfirmarLote" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Confirmación de lote existente</h5>
-      </div>
-      <div class="modal-body">
-        <p id="modalConfirmarLoteTexto" style="font-size: 16px;"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal" id="btnCancelarLote">Cancelar</button>
-        <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnAceptarLote">Aceptar</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-success" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalBúsquedaAvanzadaMedicamento" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel">Filtros de Búsqueda Avanzada</h5>
-      </div>
-      <div class="modal-body">
-        <form id="formFiltroModal">
-          <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_nombre">Nombre (o ID):</label>
-                <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre o ID...">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_presentacion">Presentación:</label>
-                <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
-                  <option value="">-- Todos --</option>
-                  <?php
-                  $sql_tipos = "SELECT Id_presentacion, nombre_presentacion FROM presentacion WHERE estatus = 1 ORDER BY nombre_presentacion DESC";
-                  $res_tipos = $conexion->query($sql_tipos);
-                  while ($row_t = $res_tipos->fetch_assoc()) {
-                    echo '<option value="' . $row_t['Id_presentacion'] . '">' . $row_t['nombre_presentacion'] . '</option>';
-                  }
-                  ?>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_principios">Principios activos (contiene):</label>
-                <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Ibuprofeno">
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_contenido_neto">Contenido neto:</label>
-                <input type="text" id="filtro_contenido_neto" name="filtro_contenido_neto" class="form-control" placeholder="Ej: 20 Capsulas">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_via">Vía de aplicación:</label>
-                <select id="filtro_via" name="filtro_via" class="form-control">
-                  <option value="">-- Todas --</option>
-                  <option value="Oral">Oral</option>
-                  <option value="Sublingual">Sublingual</option>
-                  <option value="Rectal">Rectal</option>
-                  <option value="Intravenosa">Intravenosa</option>
-                  <option value="Intramuscular">Intramuscular</option>
-                  <option value="Subcutanea">Subcutanea</option>
-                  <option value="Intradermica">Intradermica</option>
-                  <option value="Topica">Topica</option>
-                  <option value="Transdermica">Transdermica</option>
-                  <option value="Inhalatoria">Inhalatoria</option>
-                  <option value="Oftalmica">Oftalmica</option>
-                  <option value="Otica">Otica</option>
-                  <option value="Nasal">Nasal</option>
-                  <option value="Vaginal">Vaginal</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_almacenamiento">C. de almacenamiento:</label>
-                <select id="filtro_almacenamiento" name="filtro_almacenamiento" class="form-control">
-                  <option value="">-- Todas --</option>
-                  <option value="-25_a_-10">Congelacion (-25°C a -10°C)</option>
-                  <option value="2_a_8">Refrigeracion (2°C a 8°C)</option>
-                  <option value="8_a_15">Lugar Fresco (8°C a 15°C)</option>
-                  <option value="15_a_25">Temperatura Ambiente (15°C a 25°C)</option>
-                  <option value="max_30">Temperatura Maxima (30°C)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_laboratorio">Laboratorio:</label>
-                <select id="filtro_laboratorio" name="filtro_laboratorio" class="form-control">
-                  <option value="">-- Todos --</option>
-                  <?php
-                  $sql_labs = "SELECT Id_laboratorio, nombre_laboratorio FROM laboratorio WHERE estatus = 1 ORDER BY nombre_laboratorio ASC";
-                  $res_labs = $conexion->query($sql_labs);
-                  while ($row_l = $res_labs->fetch_assoc()) {
-                    echo '<option value="' . $row_l['Id_laboratorio'] . '">' . $row_l['nombre_laboratorio'] . '</option>';
-                  }
-                  ?>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_excipientes">Excipientes (contiene):</label>
-                <input type="text" id="filtro_excipientes" name="filtro_excipientes" class="form-control" placeholder="Escriba texto de excipientes...">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_barcode">Código de barras:</label>
-                <input type="text" id="filtro_barcode" name="filtro_barcode" class="form-control" placeholder="Escriba código de barras exacto...">
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-second" id="btnLimpiarFiltros">Limpiar Filtros</button>
-        <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
+  <div class="modal fade" id="modalConfirmarLote" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Confirmación de lote existente</h5>
+        </div>
+        <div class="modal-body">
+          <p id="modalConfirmarLoteTexto" style="font-size: 16px;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal" id="btnCancelarLote">Cancelar</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnAceptarLote">Aceptar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalCargarPedido" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h4 class="modal-title"><i class="fa fa-list"></i> Seleccionar Pedido Pendiente</h4>
-      </div>
-      <div class="modal-body">
-        <table class="table table-bordered table-striped table-hover">
-          <thead style="background-color: #f4f4f4;">
-            <tr>
-              <th class="text-center">N° Pedido</th>
-              <th class="text-center">Fecha Creación</th>
-              <th class="text-center">Proveedor Solicitado</th>
-              <th class="text-center">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php
-            $sql_pedidos = "SELECT p.id_pedido, p.fecha_creacion, pr.nombre_proveedor, p.id_proveedor FROM pedidos p INNER JOIN proveedor pr ON p.id_proveedor = pr.Id_proveedor WHERE p.estado = 'Pendiente' AND p.estatus = 1";
-            $res_pedidos = $conexion->query($sql_pedidos);
-            if ($res_pedidos && $res_pedidos->num_rows > 0) {
-              while ($row_p = $res_pedidos->fetch_assoc()) {
-                echo "<tr>
-                  <td class='text-center'><strong>#" . $row_p['id_pedido'] . "</strong></td>
-                  <td class='text-center'>" . date('d/m/Y H:i', strtotime($row_p['fecha_creacion'])) . "</td>
-                  <td class='text-center'>" . $row_p['nombre_proveedor'] . "</td>
-                  <td class='text-center'>
-                    <button type='button' class='btn btn-info btn-xs' onclick='verDetallePedidoPrevio(" . $row_p['id_pedido'] . ")' title='Ver medicamentos de este pedido'><i class='fa fa-info-circle'></i> Ver Info</button>
-                    <button type='button' class='btn btn-success btn-xs btn-seleccionar-pedido' data-id='" . $row_p['id_pedido'] . "' data-idprov='" . $row_p['id_proveedor'] . "' style='margin-left: 5px;'><i class='fa fa-check'></i> Seleccionar</button>
-                  </td>
-                </tr>";
-              }
-            } else {
-              echo "<tr><td colspan='4' class='text-center text-muted'>No hay pedidos pendientes en este momento.</td></tr>";
-            }
-            ?>
-          </tbody>
-        </table>
+  <div class="modal fade" id="modalBúsquedaAvanzadaMedicamento" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel">Filtros de Búsqueda Avanzada</h5>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltroModal">
+            <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_nombre">Nombre (o ID):</label>
+                  <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre o ID...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
+                    <option value="">-- Todos --</option>
+                    <?php
+                    $sql_tipos = "SELECT Id_presentacion, nombre_presentacion FROM presentacion WHERE estatus = 1 ORDER BY nombre_presentacion DESC";
+                    $res_tipos = $conexion->query($sql_tipos);
+                    while ($row_t = $res_tipos->fetch_assoc()) {
+                      echo '<option value="' . $row_t['Id_presentacion'] . '">' . $row_t['nombre_presentacion'] . '</option>';
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_principios">Principios activos (contiene):</label>
+                  <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Ibuprofeno">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_contenido_neto">Contenido neto:</label>
+                  <input type="text" id="filtro_contenido_neto" name="filtro_contenido_neto" class="form-control" placeholder="Ej: 20 Capsulas">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_via">Vía de aplicación:</label>
+                  <select id="filtro_via" name="filtro_via" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="Oral">Oral</option>
+                    <option value="Sublingual">Sublingual</option>
+                    <option value="Rectal">Rectal</option>
+                    <option value="Intravenosa">Intravenosa</option>
+                    <option value="Intramuscular">Intramuscular</option>
+                    <option value="Subcutanea">Subcutanea</option>
+                    <option value="Intradermica">Intradermica</option>
+                    <option value="Topica">Topica</option>
+                    <option value="Transdermica">Transdermica</option>
+                    <option value="Inhalatoria">Inhalatoria</option>
+                    <option value="Oftalmica">Oftalmica</option>
+                    <option value="Otica">Otica</option>
+                    <option value="Nasal">Nasal</option>
+                    <option value="Vaginal">Vaginal</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_almacenamiento">C. de almacenamiento:</label>
+                  <select id="filtro_almacenamiento" name="filtro_almacenamiento" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="-25_a_-10">Congelacion (-25°C a -10°C)</option>
+                    <option value="2_a_8">Refrigeracion (2°C a 8°C)</option>
+                    <option value="8_a_15">Lugar Fresco (8°C a 15°C)</option>
+                    <option value="15_a_25">Temperatura Ambiente (15°C a 25°C)</option>
+                    <option value="max_30">Temperatura Maxima (30°C)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_laboratorio">Laboratorio:</label>
+                  <select id="filtro_laboratorio" name="filtro_laboratorio" class="form-control">
+                    <option value="">-- Todos --</option>
+                    <?php
+                    $sql_labs = "SELECT Id_laboratorio, nombre_laboratorio FROM laboratorio WHERE estatus = 1 ORDER BY nombre_laboratorio ASC";
+                    $res_labs = $conexion->query($sql_labs);
+                    while ($row_l = $res_labs->fetch_assoc()) {
+                      echo '<option value="' . $row_l['Id_laboratorio'] . '">' . $row_l['nombre_laboratorio'] . '</option>';
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_excipientes">Excipientes (contiene):</label>
+                  <input type="text" id="filtro_excipientes" name="filtro_excipientes" class="form-control" placeholder="Escriba texto de excipientes...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_barcode">Código de barras:</label>
+                  <input type="text" id="filtro_barcode" name="filtro_barcode" class="form-control" placeholder="Escriba código de barras exacto...">
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-second" id="btnLimpiarFiltros">Limpiar Filtros</button>
+          <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalVerDetallePedidoPrevio" tabindex="-1" role="dialog" style="z-index: 1060;">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title"><i class="fa fa-shopping-basket"></i> Vista Previa - Contenido del Pedido <span id="num_pedido_previo_titulo"></span></h4>
-      </div>
-      <div class="modal-body">
-        <div style="max-height: 280px; overflow-y: auto; border-bottom: 1px solid #eee;">
-          <table class="table table-bordered table-striped" style="margin-bottom: 0;">
-            <thead style="background-color: #f8f9fa;">
+  <div class="modal fade" id="modalCargarPedido" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title"><i class="fa fa-list"></i> Seleccionar Pedido Pendiente</h4>
+        </div>
+        <div class="modal-body">
+          <table class="table table-bordered table-striped table-hover">
+            <thead style="background-color: #f4f4f4;">
               <tr>
-                <th>Medicamento / Presentación</th>
-                <th class="text-center" style="width: 150px;">Cant. Solicitada</th>
+                <th class="text-center">N° Pedido</th>
+                <th class="text-center">Fecha Creación</th>
+                <th class="text-center">Proveedor Solicitado</th>
+                <th class="text-center">Acción</th>
               </tr>
             </thead>
-            <tbody id="cuerpo_detalle_pedido_previo"></tbody>
+            <tbody>
+              <?php
+              $sql_pedidos = "SELECT p.id_pedido, p.fecha_creacion, pr.nombre_proveedor, p.id_proveedor FROM pedidos p INNER JOIN proveedor pr ON p.id_proveedor = pr.Id_proveedor WHERE p.estado = 'Pendiente' AND p.estatus = 1";
+              $res_pedidos = $conexion->query($sql_pedidos);
+              if ($res_pedidos && $res_pedidos->num_rows > 0) {
+                while ($row_p = $res_pedidos->fetch_assoc()) {
+                  echo "<tr>
+                    <td class='text-center'><strong>#" . $row_p['id_pedido'] . "</strong></td>
+                    <td class='text-center'>" . date('d/m/Y H:i', strtotime($row_p['fecha_creacion'])) . "</td>
+                    <td class='text-center'>" . $row_p['nombre_proveedor'] . "</td>
+                    <td class='text-center'>
+                      <button type='button' class='btn btn-info btn-xs' onclick='verDetallePedidoPrevio(" . $row_p['id_pedido'] . ")' title='Ver medicamentos de este pedido'><i class='fa fa-info-circle'></i> Ver Info</button>
+                      <button type='button' class='btn btn-success btn-xs btn-seleccionar-pedido' data-id='" . $row_p['id_pedido'] . "' data-idprov='" . $row_p['id_proveedor'] . "' style='margin-left: 5px;'><i class='fa fa-check'></i> Seleccionar</button>
+                    </td>
+                  </tr>";
+                }
+              } else {
+                echo "<tr><td colspan='4' class='text-center text-muted'>No hay pedidos pendientes en este momento.</td></tr>";
+              }
+              ?>
+            </tbody>
           </table>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-      </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalNuevoProveedor" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-info">
-        <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nuevo Proveedor</h4>
-      </div>
-      <div class="modal-body">
-        <form id="formNuevoProveedor" onsubmit="return false;">
-          <div class="form-group">
-            <label for="nuevo_nombre_proveedor">Nombre del Proveedor (*):</label>
-            <input type="text" class="form-control" id="nuevo_nombre_proveedor" name="nombre_proveedor" placeholder="Ej: SUAF Portuguesa" required autocomplete="off">
+  <div class="modal fade" id="modalVerDetallePedidoPrevio" tabindex="-1" role="dialog" style="z-index: 1060;">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title"><i class="fa fa-shopping-basket"></i> Vista Previa - Contenido del Pedido <span id="num_pedido_previo_titulo"></span></h4>
+        </div>
+        <div class="modal-body">
+          <div style="max-height: 280px; overflow-y: auto; border-bottom: 1px solid #eee;">
+            <table class="table table-bordered table-striped" style="margin-bottom: 0;">
+              <thead style="background-color: #f8f9fa;">
+                <tr>
+                  <th>Medicamento / Presentación</th>
+                  <th class="text-center" style="width: 150px;">Cant. Solicitada</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo_detalle_pedido_previo"></tbody>
+            </table>
           </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-info" id="btnGuardarProveedor"><i class="fa fa-save"></i> Guardar</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div id="headerAviso" class="modal-header bg-crimson">
-        <h5 class="modal-title" id="avisoModalLabel">Aviso Importante</h5>
-      </div>
-      <div class="modal-body">
-        <p id="avisoTexto"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+  <div class="modal fade" id="modalNuevoProveedor" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nuevo Proveedor</h4>
+        </div>
+        <div class="modal-body">
+          <form id="formNuevoProveedor" onsubmit="return false;">
+            <div class="form-group">
+              <label for="nuevo_nombre_proveedor">Nombre del Proveedor (*):</label>
+              <input type="text" class="form-control" id="nuevo_nombre_proveedor" name="nombre_proveedor" placeholder="Ej: SUAF Portuguesa" required autocomplete="off">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-info" id="btnGuardarProveedor"><i class="fa fa-save"></i> Guardar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-labelledby="modalRegresarInventarioLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title" id="modalRegresarInventarioLabel">Confirmación de Regreso</h5>
-      </div>
-      <div class="modal-body">
-        <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <a href="farmacia_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+  <div class="modal fade" id="modalQuitarPedido" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Quitar Pedido Vinculado</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro que desea quitar el pedido vinculado?</p>
+          <p class="text-danger" style="margin: 0;">
+            <b>Se perderán todos los medicamentos cargados en la tabla</b> (incluyendo los lotes y fechas que ya haya asignado a cada fila).
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmarQuitarPedido"><i class="fa fa-times"></i> Quitar Pedido</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalEntradaGuardar" tabindex="-1" role="dialog" aria-labelledby="modalEntradaGuardarLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-green">
-        <h5 class="modal-title" id="modalEntradaGuardarLabel">Confirmación de Guardado</h5>
-      </div>
-      <div class="modal-body">
-        <p>¿Está seguro de que desea guardar la información de esta entrada del inventario?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Guardar</button>
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div id="headerAviso" class="modal-header bg-crimson">
+          <h5 class="modal-title" id="avisoModalLabel">Aviso Importante</h5>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-labelledby="modalRegresarInventarioLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title" id="modalRegresarInventarioLabel">Confirmación de Regreso</h5>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="farmacia_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalEntradaGuardar" tabindex="-1" role="dialog" aria-labelledby="modalEntradaGuardarLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h5 class="modal-title" id="modalEntradaGuardarLabel">Confirmación de Guardado</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea guardar la información de esta entrada del inventario?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?php
+  include('modales/inventario/medicamentos_agregar_modal.php');
+  ?>
+
 </div>
 
 <?php
-include('modales/inventario/medicamentos_agregar_modal.php');
-if (isset($conexion)) { $conexion->close(); }
+if (isset($conexion)) {
+  $conexion->close();
+}
 include('includes/footer.php');
 ?>
 
@@ -554,7 +662,11 @@ include('includes/footer.php');
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    $('#infoLote').tooltip({ html: true, placement: 'right', title: 'Llene los datos del lote' });
+    $('#infoLote').tooltip({
+      html: true,
+      placement: 'right',
+      title: 'Llene los datos del lote'
+    });
 
     let listaDetalles = [];
     let lotesCargados = [];
@@ -682,7 +794,9 @@ include('includes/footer.php');
       $.ajax({
         url: '../../cfg/ajax/guardar_proveedor.php',
         type: 'POST',
-        data: { nombre_proveedor: nombreProveedor },
+        data: {
+          nombre_proveedor: nombreProveedor
+        },
         dataType: 'json',
         success: function(response) {
           if (response.exito) {
@@ -754,7 +868,10 @@ include('includes/footer.php');
         $.ajax({
           url: '../../cfg/ajax/obtener_descripcion_medicamento.php',
           type: 'POST',
-          data: { id: medicamentoId, modo: 'entrada' },
+          data: {
+            id: medicamentoId,
+            modo: 'entrada'
+          },
           dataType: 'json',
           success: function(data) {
             if (!data.error) {
@@ -902,6 +1019,37 @@ include('includes/footer.php');
       $('#modalCargarPedido').modal('hide');
     });
 
+    $('#btnQuitarPedido').on('click', function() {
+      $('#modalQuitarPedido').modal('show');
+    });
+
+    $('#confirmarQuitarPedido').on('click', function() {
+      // 1) Limpiar estado de la lista
+      listaDetalles = [];
+      editandoIndex = -1;
+
+      // 2) Resetear el ID del pedido
+      $('#id_pedido_oculto').val('0');
+
+      // 3) Ocultar el banner y el botón
+      $('#info_pedido_cargado').slideUp();
+      $('#btnQuitarPedido').hide();
+
+      // 4) Volver a mostrar los botones de agregar manual
+      $('#btnAbrirModalAgregar, #btnAbrirModalCrear').show();
+      $('#btnAbrirModalAgregar').removeClass('btn-error-sombreado');
+
+      // 5) Reactivar el select de proveedor
+      $('#proveedor').css('pointer-events', 'auto').css('background-color', '');
+
+      // 6) Refrescar la tabla (la deja vacía)
+      actualizarTablaDetalles();
+
+      // 7) Cerrar modal y avisar
+      $('#modalQuitarPedido').modal('hide');
+      mostrarExito('Pedido quitado exitosamente.<br>Ahora puede agregar medicamentos manualmente.');
+    });
+
     function cargarPedidoLogica(idPedido, idProveedor) {
       $('#proveedor').val(idProveedor).trigger('change');
       $('#proveedor').css('pointer-events', 'none').css('background-color', '#eee');
@@ -909,11 +1057,14 @@ include('includes/footer.php');
       $('#txt_id_pedido_cargado').text(idPedido.toString().padStart(6, '0'));
       $('#info_pedido_cargado').slideDown();
       $('#btnAbrirModalAgregar, #btnAbrirModalCrear').hide();
+      $('#btnQuitarPedido').show();
 
       $.ajax({
         url: '../../cfg/ajax/obtener_detalles_pedido.php',
         type: 'POST',
-        data: { id_pedido: idPedido },
+        data: {
+          id_pedido: idPedido
+        },
         dataType: 'json',
         success: function(data) {
           if (data && data.length > 0) {
@@ -930,7 +1081,7 @@ include('includes/footer.php');
               });
             });
             actualizarTablaDetalles();
-            mostrarAviso("✅ <b>Pedido cargado.</b><br><br>Se han traído las cantidades solicitadas. <b>Atención:</b> Use el botón amarillo de Editar en cada fila para asignar el número de Lote y las Fechas correspondientes antes de guardar.");
+            mostrarExito("✅ <b>Pedido cargado.</b><br><br>Se han traído las cantidades solicitadas. <b>Atención:</b> Use el botón amarillo de Editar en cada fila para asignar el número de Lote y las Fechas correspondientes antes de guardar.");
           }
         }
       });
@@ -951,7 +1102,9 @@ include('includes/footer.php');
       $.ajax({
         url: '../../cfg/ajax/obtener_detalle_pedido.php',
         type: 'POST',
-        data: { id_pedido: idPedido },
+        data: {
+          id_pedido: idPedido
+        },
         dataType: 'json',
         success: function(respuesta) {
           var html = '';
@@ -1077,7 +1230,11 @@ include('includes/footer.php');
         listaDetalles.push(nuevoItem);
       }
 
-      ultimoLoteIngresado = { lote: lote, fecha_fabricacion: f_fab, fecha_vencimiento: f_venc };
+      ultimoLoteIngresado = {
+        lote: lote,
+        fecha_fabricacion: f_fab,
+        fecha_vencimiento: f_venc
+      };
 
       actualizarTablaDetalles();
       $('#modalAgregarMedicamento').modal('hide');
@@ -1195,7 +1352,11 @@ include('includes/footer.php');
             let ultimaEtiqueta = tagsArray.pop();
             $(this).val(ultimaEtiqueta);
             renderizarTags();
-            if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+            if (tagsArray.length === 0) {
+              $('#btnLimpiarFiltros').click();
+            } else {
+              $('#btnAplicarFiltros').click();
+            }
           }
         }
       });
@@ -1204,11 +1365,20 @@ include('includes/footer.php');
         let index = $(this).data('index');
         tagsArray.splice(index, 1);
         renderizarTags();
-        if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+        if (tagsArray.length === 0) {
+          $('#btnLimpiarFiltros').click();
+        } else {
+          $('#btnAplicarFiltros').click();
+        }
       });
 
-      $contenedor.on('click', function() { $inputFalso.focus(); });
-      $('#btnLimpiarFiltros').on('click', function() { tagsArray = []; renderizarTags(); });
+      $contenedor.on('click', function() {
+        $inputFalso.focus();
+      });
+      $('#btnLimpiarFiltros').on('click', function() {
+        tagsArray = [];
+        renderizarTags();
+      });
     }
 
     inicializarTags('#filtro_busqueda_rapida');
@@ -1229,7 +1399,10 @@ include('includes/footer.php');
         $.ajax({
           url: '../../cfg/ajax/filtrar_medicamentos.php',
           type: 'POST',
-          data: { recarga_silenciosa: true, modo: modoOperacion },
+          data: {
+            recarga_silenciosa: true,
+            modo: modoOperacion
+          },
           dataType: 'json',
           success: function(response) {
             const select = $('#Id_descripcion_medicamento');
@@ -1263,7 +1436,9 @@ include('includes/footer.php');
             }
 
             select.html(nuevasOpciones);
-            if (valorSeleccionado) { select.val(valorSeleccionado); }
+            if (valorSeleccionado) {
+              select.val(valorSeleccionado);
+            }
             window.opcionesOriginalesMedicamentos = nuevasOpciones;
           }
         });

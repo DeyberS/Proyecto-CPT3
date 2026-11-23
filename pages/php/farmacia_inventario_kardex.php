@@ -56,43 +56,44 @@ if ($f_stock_max > 0) {
     <title>Farmacia | Kardex de Medicamentos</title>
 </head>
 
-<style>
-    .table-kardex thead {
-        background-color: #f4f4f4;
-    }
-
-    .kardex-footer-bar {
-        background-color: #222;
-        color: #fff;
-        height: 30px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: fixed;
-        bottom: 0;
-        z-index: 100;
-        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.4);
-        width: 83%;
-    }
-
-    #pagination_container .pagination {
-        margin: 0;
-    }
-
-    #pagination_container .pagination>li>a {
-        background-color: #333 !important;
-        border-color: #444 !important;
-        color: #fff !important;
-    }
-
-    #pagination_container .pagination>.active>a {
-        background-color: #222 !important;
-        border-color: #222 !important;
-    }
-</style>
-
 <div class="content-wrapper">
+
+    <style>
+        .table-kardex thead {
+            background-color: #f4f4f4;
+        }
+
+        .kardex-footer-bar {
+            background-color: #222;
+            color: #fff;
+            height: 30px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            bottom: 0;
+            z-index: 100;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.4);
+            width: 83%;
+        }
+
+        #pagination_container .pagination {
+            margin: 0;
+        }
+
+        #pagination_container .pagination>li>a {
+            background-color: #333 !important;
+            border-color: #444 !important;
+            color: #fff !important;
+        }
+
+        #pagination_container .pagination>.active>a {
+            background-color: #222 !important;
+            border-color: #222 !important;
+        }
+    </style>
+
     <?php
     $registros_por_pagina = 8;
     $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
@@ -178,11 +179,11 @@ if ($f_stock_max > 0) {
     <section class="content">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <a href="farmacia_inventario_listado.php" style="height:31px;" class="btn-sm btn-primary pull-right"><i class="fa fa-book"></i> Ir al Inventario</a>
+                <a href="farmacia_inventario_listado.php" class="btn-sm btn-primary pull-right"><i class="fa fa-book"></i> Ir al Inventario</a>
 
                 <p class="pull-right" style="width:5px;"></p>
                 <?php if (in_array('Generar reporte de kardex', $_SESSION["permisos"])) : ?>
-                    <button class="btn-sm btn-info pull-right" id="btnGenerarReporteDirecto"><i class="fa fa-file-pdf-o"></i>Generar Reporte</button>
+                    <a href="#" id="btnGenerarReporteDirecto" class="btn-sm btn-info pull-right"><i class="fa fa-book"></i> Generar Reporte </a>
                 <?php endif; ?>
 
                 <div class="pull-left form-inline">
@@ -192,9 +193,9 @@ if ($f_stock_max > 0) {
                 </div>
 
                 <p class="pull-right" style="width:5px;"></p>
-                <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de los movimientos en el inventario.">
+                <span data-toggle="tooltip" data-placement="top" title="Filtrar búsqueda">
                     <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzadaKardex">
-                        <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+                        <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:15px; height:20px; filter:invert(1);" title="Filtrar kardex"></i>
                     </button>
                 </span>
             </div>
@@ -203,7 +204,7 @@ if ($f_stock_max > 0) {
             <div class="box-body">
                 <div id="contenedorTabla">
                     <table class="table table-sm table-hover mt-4" width="100%" id="t_user">
-                        <thead class="table-dark" style="background-color: #222; color: white; font-size: 12px;">
+                        <thead class="table-dark">
                             <tr>
                                 <th>Medicamento</th>
                                 <th>Lote</th>
@@ -298,101 +299,99 @@ if ($f_stock_max > 0) {
                             <span style="margin-left: 15px; border-left: 1px solid #555; padding-left: 15px;"></span>
                         <?php endif; ?>
                     </div>
-
                 </div>
-
             </div>
         </div>
     </section>
-</div>
 
-<div class="modal fade" id="modalBusquedaAvanzadaKardex" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <form id="formBusquedaAvanzada" method="GET" action="">
-                <div class="modal-header bg-primary">
-                    <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Kardex</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-4 form-group">
-                            <label>Fecha Desde</label>
-                            <input type="date" name="f_desde" class="form-control" max="<?php echo date('Y-m-d'); ?>" value="<?php echo $f_desde; ?>">
+    <div class="modal fade" id="modalBusquedaAvanzadaKardex" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <form id="formBusquedaAvanzada" method="GET" action="">
+                    <div class="modal-header bg-primary">
+                        <h4 class="modal-title" id="modalFiltrosLabel"><i class="fa fa-filter"></i> Filtros Avanzados de Kardex</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label>Fecha Desde</label>
+                                <input type="date" name="f_desde" class="form-control" max="<?php echo date('Y-m-d'); ?>" value="<?php echo $f_desde; ?>">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label>Fecha Hasta</label>
+                                <input type="date" name="f_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>" value="<?php echo $f_hasta; ?>">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label>Tipo de Movimiento</label>
+                                <select name="f_tipo_mov" class="form-control">
+                                    <option value="">Todos</option>
+                                    <?php
+                                    $res_tipos = $conexion->query("SELECT nombre FROM tipo_movimiento ORDER BY nombre ASC");
+                                    while ($tp = $res_tipos->fetch_assoc()) {
+                                        $sel = ($f_tipo_mov == $tp['nombre']) ? 'selected' : '';
+                                        echo "<option value='" . htmlspecialchars($tp['nombre']) . "' $sel>" . htmlspecialchars($tp['nombre']) . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-4 form-group">
-                            <label>Fecha Hasta</label>
-                            <input type="date" name="f_hasta" class="form-control" min="<?php echo date('Y-m-d'); ?>" value="<?php echo $f_hasta; ?>">
+
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label>Medicamento</label>
+                                <input type="text" name="buscar" class="form-control" placeholder="Nombre..." oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo htmlspecialchars($busqueda); ?>">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label>Lote</label>
+                                <input type="text" name="f_lote" class="form-control" placeholder="Ej: LOTE-XYZ" value="<?php echo htmlspecialchars($f_lote); ?>">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label>Proveedor</label>
+                                <input type="text" name="f_proveedor" class="form-control" placeholder="Nombre de proveedor..." oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo htmlspecialchars($f_proveedor); ?>">
+                            </div>
                         </div>
-                        <div class="col-md-4 form-group">
-                            <label>Tipo de Movimiento</label>
-                            <select name="f_tipo_mov" class="form-control">
-                                <option value="">Todos</option>
-                                <?php
-                                $res_tipos = $conexion->query("SELECT nombre FROM tipo_movimiento ORDER BY nombre ASC");
-                                while ($tp = $res_tipos->fetch_assoc()) {
-                                    $sel = ($f_tipo_mov == $tp['nombre']) ? 'selected' : '';
-                                    echo "<option value='" . htmlspecialchars($tp['nombre']) . "' $sel>" . htmlspecialchars($tp['nombre']) . "</option>";
-                                }
-                                ?>
-                            </select>
+
+                        <div class="row">
+                            <div class="col-md-3 form-group">
+                                <label>Cantidad Movimiento Mín.</label>
+                                <input type="number" name="f_cant_min" class="form-control" min="1" placeholder="Ej: 1" value="<?php echo $f_cant_min > 0 ? $f_cant_min : ''; ?>">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Cantidad Movimiento Máx.</label>
+                                <input type="number" name="f_cant_max" class="form-control" min="1" placeholder="Ej: 500" value="<?php echo $f_cant_max > 0 ? $f_cant_max : ''; ?>">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Stock Momento Mínimo</label>
+                                <input type="number" name="f_stock_min" class="form-control" min="0" placeholder="Ej: 0" value="<?php echo $f_stock_min > 0 ? $f_stock_min : ''; ?>">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Stock Momento Máximo</label>
+                                <input type="number" name="f_stock_max" class="form-control" min="0" placeholder="Ej: 1000" value="<?php echo $f_stock_max > 0 ? $f_stock_max : ''; ?>">
+                            </div>
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-4 form-group">
-                            <label>Medicamento</label>
-                            <input type="text" name="buscar" class="form-control" placeholder="Nombre..." oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo htmlspecialchars($busqueda); ?>">
-                        </div>
-                        <div class="col-md-4 form-group">
-                            <label>Lote</label>
-                            <input type="text" name="f_lote" class="form-control" placeholder="Ej: LOTE-XYZ" value="<?php echo htmlspecialchars($f_lote); ?>">
-                        </div>
-                        <div class="col-md-4 form-group">
-                            <label>Proveedor</label>
-                            <input type="text" name="f_proveedor" class="form-control" placeholder="Nombre de proveedor..." oninput="this.value = this.value.replace(/[0-9]/g, '');" value="<?php echo htmlspecialchars($f_proveedor); ?>">
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-second pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
+                        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-3 form-group">
-                            <label>Cantidad Movimiento Mín.</label>
-                            <input type="number" name="f_cant_min" class="form-control" min="1" placeholder="Ej: 1" value="<?php echo $f_cant_min > 0 ? $f_cant_min : ''; ?>">
-                        </div>
-                        <div class="col-md-3 form-group">
-                            <label>Cantidad Movimiento Máx.</label>
-                            <input type="number" name="f_cant_max" class="form-control" min="1" placeholder="Ej: 500" value="<?php echo $f_cant_max > 0 ? $f_cant_max : ''; ?>">
-                        </div>
-                        <div class="col-md-3 form-group">
-                            <label>Stock Momento Mínimo</label>
-                            <input type="number" name="f_stock_min" class="form-control" min="0" placeholder="Ej: 0" value="<?php echo $f_stock_min > 0 ? $f_stock_min : ''; ?>">
-                        </div>
-                        <div class="col-md-3 form-group">
-                            <label>Stock Momento Máximo</label>
-                            <input type="number" name="f_stock_max" class="form-control" min="0" placeholder="Ej: 1000" value="<?php echo $f_stock_max > 0 ? $f_stock_max : ''; ?>">
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-second pull-left" onclick="limpiarFiltrosAjax()">Limpiar Filtros</button>
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-                    <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Aplicar Búsqueda</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="ModalAdvertencia" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-crimson">
-                <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Atención</h4>
-            </div>
-            <div class="modal-body text-center">
-                <p style="font-size: 16px; margin-top: 10px;">Debe aplicar al menos un filtro de búsqueda para generar el reporte de Kardex.</p>
-            </div>
-            <div class="modal-footer text-center">
-                <button type="button" class="btn btn-second" data-dismiss="modal">Entendido</button>
+    <div class="modal fade" id="ModalAdvertencia" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-crimson">
+                    <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Atención</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <p style="font-size: 16px; margin-top: 10px;">Debe aplicar al menos un filtro de búsqueda para generar el reporte de Kardex.</p>
+                </div>
+                <div class="modal-footer text-center">
+                    <button type="button" class="btn btn-second" data-dismiss="modal">Entendido</button>
+                </div>
             </div>
         </div>
     </div>

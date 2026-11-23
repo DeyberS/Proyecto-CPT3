@@ -151,26 +151,115 @@ verificarAcceso('Generar Despacho de Inventario');
   <title>Inventario | Despacho de Medicamentos</title>
 </head>
 
-<style>
-  #avisoModal { z-index: 1000000 !important; }
-  .table-responsive { max-height: 220px; overflow-y: auto; }
-  .table-detalle thead th { position: sticky; top: 0; background-color: #f4f4f4; z-index: 1; }
-  .input-group { display: flex !important; width: 100% !important; align-items: stretch; }
-  .input-group .form-control { flex: 1 1 auto; width: 1% !important; height: 34px !important; }
-  .input-group-btn { width: auto !important; display: flex !important; align-items: stretch; }
-  .input-group-btn .btn { height: 34px !important; display: flex; align-items: center; justify-content: center; }
-  .input-group-btn style[width="25%"], .input-group-btn[style*="width: 25%"] { width: 65px !important; flex: 0 0 65px !important; }
-  .tags-input-container { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px; border: 1px solid #d2d6de; background-color: #fff; min-height: 34px; cursor: text; }
-  .tags-input-container .tag-badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: white; }
-  .tags-input-container .tag-badge i { margin-left: 6px; cursor: pointer; font-size: 10px; }
-  .tags-input-fake { border: none; outline: none; flex-grow: 1; min-width: 150px; padding: 2px; }
-  .table-detalle th { background-color: #f4f4f4; text-align: center; }
-  .table-detalle td { text-align: center; vertical-align: middle !important; }
-  .area-trabajo-blanca { background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 20px; overflow: hidden; }
-  input[type="date"][readonly], input[type="date"][disabled] { background-color: #eeeeee !important; cursor: not-allowed; }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    #avisoModal {
+      z-index: 1000000 !important;
+    }
+
+    .table-responsive {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .table-detalle thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f4f4f4;
+      z-index: 1;
+    }
+
+    .input-group {
+      display: flex !important;
+      width: 100% !important;
+      align-items: stretch;
+    }
+
+    .input-group .form-control {
+      flex: 1 1 auto;
+      width: 1% !important;
+      height: 34px !important;
+    }
+
+    .input-group-btn {
+      width: auto !important;
+      display: flex !important;
+      align-items: stretch;
+    }
+
+    .input-group-btn .btn {
+      height: 34px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .input-group-btn style[width="25%"],
+    .input-group-btn[style*="width: 25%"] {
+      width: 65px !important;
+      flex: 0 0 65px !important;
+    }
+
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 4px;
+      border: 1px solid #d2d6de;
+      background-color: #fff;
+      min-height: 34px;
+      cursor: text;
+    }
+
+    .tags-input-container .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .tags-input-container .tag-badge i {
+      margin-left: 6px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      min-width: 150px;
+      padding: 2px;
+    }
+
+    .table-detalle th {
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    .table-detalle td {
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    input[type="date"][readonly],
+    input[type="date"][disabled] {
+      background-color: #eeeeee !important;
+      cursor: not-allowed;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Despachar Medicamentos</h1>
     <ol class="breadcrumb">
@@ -380,399 +469,402 @@ verificarAcceso('Generar Despacho de Inventario');
       </div>
     </form>
   </section>
-</div>
 
-<div class="modal fade" id="modalSeleccionTipoPaciente" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title text-white"><i class="fa fa-users"></i> Tipo de Paciente</h4>
-      </div>
-      <div class="modal-body text-center">
-        <p>¿Qué tipo de paciente desea registrar?</p>
-        <div class="d-flex flex-column">
-          <button type="button" class="btn btn-primary btn-block mb-2" id="btnAbrirModalAdulto">
-            <i class="fa fa-user"></i> Paciente Adulto (+18)
-          </button>
-          <button type="button" class="btn btn-info btn-block" id="btnAbrirModalMenor">
-            <i class="fa fa-child"></i> Paciente Menor (-18)
-          </button>
+  <div class="modal fade" id="modalSeleccionTipoPaciente" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title text-white"><i class="fa fa-users"></i> Tipo de Paciente</h4>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+        <div class="modal-body text-center">
+          <p>¿Qué tipo de paciente desea registrar?</p>
+          <div class="d-flex flex-column">
+            <button type="button" class="btn btn-primary btn-block mb-2" id="btnAbrirModalAdulto">
+              <i class="fa fa-user"></i> Paciente Adulto (+18)
+            </button>
+            <button type="button" class="btn btn-info btn-block" id="btnAbrirModalMenor">
+              <i class="fa fa-child"></i> Paciente Menor (-18)
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalEvidencia" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title" style="color:white;"><i class="fa fa-file-image-o"></i> Gestionar Evidencia</h4>
-      </div>
-      <div class="modal-body text-center">
-        <div id="modal-placeholder" style="padding: 40px 20px; border: 2px dashed #ddd; border-radius: 10px; color: #999;">
-          <i class="fa fa-cloud-upload" style="font-size: 50px; margin-bottom: 15px;"></i>
-          <h4 id="placeholder-texto">Cargando interfaz...</h4>
+  <div class="modal fade" id="modalEvidencia" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title" style="color:white;"><i class="fa fa-file-image-o"></i> Gestionar Evidencia</h4>
         </div>
-        <div id="modal-seccion-camara" style="display:none;">
-          <video id="video-modal" width="100%" style="max-width: 450px; border-radius: 8px; background: #000;" autoplay></video>
-          <canvas id="canvas-modal" style="display:none;"></canvas>
-          <div style="margin-top:10px;">
-            <button type="button" id="btn-capturar-modal" class="btn btn-success"><i class="fa fa-camera"></i> Tomar Foto</button>
+        <div class="modal-body text-center">
+          <div id="modal-placeholder" style="padding: 40px 20px; border: 2px dashed #ddd; border-radius: 10px; color: #999;">
+            <i class="fa fa-cloud-upload" style="font-size: 50px; margin-bottom: 15px;"></i>
+            <h4 id="placeholder-texto">Cargando interfaz...</h4>
+          </div>
+          <div id="modal-seccion-camara" style="display:none;">
+            <video id="video-modal" width="100%" style="max-width: 450px; border-radius: 8px; background: #000;" autoplay></video>
+            <canvas id="canvas-modal" style="display:none;"></canvas>
+            <div style="margin-top:10px;">
+              <button type="button" id="btn-capturar-modal" class="btn btn-success"><i class="fa fa-camera"></i> Tomar Foto</button>
+            </div>
+          </div>
+          <input type="file" id="input-archivo-modal" accept="image/*" style="display:none;">
+          <div id="modal-contenedor-previa" style="display:none; margin-top:10px;">
+            <img id="foto-previa-modal" src="" style="max-width: 100%; max-height: 400px; border: 3px solid #3c8dbc; border-radius: 5px;">
           </div>
         </div>
-        <input type="file" id="input-archivo-modal" accept="image/*" style="display:none;">
-        <div id="modal-contenedor-previa" style="display:none; margin-top:10px;">
-          <img id="foto-previa-modal" src="" style="max-width: 100%; max-height: 400px; border: 3px solid #3c8dbc; border-radius: 5px;">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-aceptar-evidencia" style="display:none;">Confirmar y Usar</button>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn-aceptar-evidencia" style="display:none;">Confirmar y Usar</button>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalVisualizarFoto" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title" style="color:white;"><i class="fa fa-eye"></i> Vista Previa de Evidencia</h4>
-      </div>
-      <div class="modal-body text-center">
-        <img id="img-vista-grande" src="" style="width: 100%; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2);">
+  <div class="modal fade" id="modalVisualizarFoto" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title" style="color:white;"><i class="fa fa-eye"></i> Vista Previa de Evidencia</h4>
+        </div>
+        <div class="modal-body text-center">
+          <img id="img-vista-grande" src="" style="width: 100%; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2);">
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalBuscarMedico" tabindex="-1" role="dialog" aria-labelledby="labelModalMedico" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-info" style="border-top-left-radius: 8px; border-top-right-radius: 8px;">
-        <h4 class="modal-title" id="labelModalMedico"><i class="fa fa-user-md"></i> Buscar Médico Externo</h4>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-sm-6 form-group">
-            <label>Filtrar por Cédula:</label>
-            <div class="input-group">
-              <span class="input-group-btn" style="width: 30%;">
-                <select id="modal_buscar_tipo_cedula" class="form-control" style="padding: 6px 2px; height: 34px;">
-                  <option value="V">V-</option>
-                </select>
-              </span>
-              <input type="text" id="modal_buscar_cedula" class="form-control" placeholder="Ej: 12345678" style="height: 34px;" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            </div>
-          </div>
-          <div class="col-sm-6 form-group">
-            <label>Filtrar por Nombre:</label>
-            <input type="text" id="modal_buscar_nombre" class="form-control" placeholder="Ej: Carlos Mendoza" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
-          </div>
+  <div class="modal fade" id="modalBuscarMedico" tabindex="-1" role="dialog" aria-labelledby="labelModalMedico" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info" style="border-top-left-radius: 8px; border-top-right-radius: 8px;">
+          <h4 class="modal-title" id="labelModalMedico"><i class="fa fa-user-md"></i> Buscar Médico Externo</h4>
         </div>
-
-        <div class="form-group">
-          <label>Seleccione el Médico:</label>
-          <select id="modal_select_resultados_medicos" class="form-control">
-            <option value="" disabled selected>Comience a escribir para buscar un médico...</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-info" id="btnAceptarMedicoModal">Aceptar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title"><i class="fa fa-share-square-o"></i> Despachar Medicamento</h4>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
-              <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre, principio activo, presentacion, etc...">
-            </div>
-          </div>
-          <br><br>
-          <div class="col-sm-12 form-group">
-            <label>Medicamento del Catálogo (*):</label>
-            <div class="input-group">
-              <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control select2" style="width: 100%;">
-                <option value="">--- Seleccione un Medicamento ---</option>
-                <?php
-                $sql_medicamentos = "SELECT dm.Id AS id_desc, m.nombre_medicamento, p.nombre_presentacion,
-                    GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), ' ', IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
-                    FROM descripcion_medicamento dm
-                    INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
-                    INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
-                    LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_descripcion_medicamento
-                    LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
-                    LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
-                    WHERE m.estatus = 1 AND (dm.estatus = '1' OR dm.estatus = 1) 
-                    AND EXISTS (
-                        SELECT 1 FROM lotes_medicamentos lm 
-                        INNER JOIN existencias_stock ex ON lm.Id = ex.Id_lote 
-                        WHERE lm.Id_descripcion_medicamento = dm.Id 
-                        AND lm.estado_lote = 'Disponible' 
-                        AND ex.cantidad_actual > 0 
-                        AND lm.fecha_vencimiento > CURDATE()
-                    )
-                    GROUP BY dm.Id ORDER BY m.nombre_medicamento ASC";
-
-                $resultado_medicamentos = $conexion->query($sql_medicamentos);
-                if ($resultado_medicamentos && $resultado_medicamentos->num_rows > 0) {
-                  while ($row_med = $resultado_medicamentos->fetch_assoc()) {
-                    $comp = trim($row_med['componentes']) ? " (" . htmlspecialchars($row_med['componentes']) . ")" : "";
-                    $componentesLimpios = trim($row_med['componentes']) ? htmlspecialchars($row_med['componentes']) : 'Sin principios activos';
-                    echo '<option value="' . $row_med['id_desc'] . '" data-nombre="' . htmlspecialchars($row_med['nombre_medicamento'] . " [" . $row_med['nombre_presentacion'] . "]") . '" data-componentes="' . $componentesLimpios . '">' . htmlspecialchars($row_med['nombre_medicamento']) . $comp . " - [" . htmlspecialchars($row_med['nombre_presentacion']) . "]" . '</option>';
-                  }
-                }
-                ?>
-              </select>
-              <span class="input-group-btn">
-                <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada" id="btnBusquedaAvanzada">
-                  <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
-                </button>
-              </span>
-            </div>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3" style="display:none;">
-            <label>Lote Disponible (*):</label>
-            <div class="input-group">
-              <select id="lote_seleccionado" class="form-control">
-                <option value="">Seleccione el medicamento primero</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3">
-            <label>Existencia Actual:</label>
-            <div class="input-group">
-              <input type="text" id="existencia_actual" class="form-control" value="0" readonly disabled style="background-color: #f9f9f9;">
-              <span class="input-group-btn">
-                <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;">
-                  <i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i>
-                </button>
-              </span>
-            </div>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3">
-            <label>Cantidad a Retirar (*):</label>
-            <input type="text" id="cantidad" class="form-control" placeholder="1" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
-          </div>
-
-          <div class="col-sm-4 form-group mt-3" id="grupo_recetada" style="display:none;">
-            <label>Cantidad en Récipe:</label>
-            <input type="text" id="cantidad_recetada" class="form-control" placeholder="Ej: 20" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
-          </div>
-
-          <div class="clearfix"></div>
-
-          <div class="col-sm-12 form-group mt-3">
-            <input type="hidden" id="dosis_aplicacion" class="form-control" rows="2" placeholder="Ej: Tomar 1 tableta cada 8 horas...">
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-success" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true" data-backdrop="static">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel">Filtros de Búsqueda Avanzada</h5>
-      </div>
-      <div class="modal-body">
-        <form id="formFiltroModal">
-          <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+        <div class="modal-body">
           <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_nombre">Nombre (o ID):</label>
-                <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre o ID...">
+            <div class="col-sm-6 form-group">
+              <label>Filtrar por Cédula:</label>
+              <div class="input-group">
+                <span class="input-group-btn" style="width: 30%;">
+                  <select id="modal_buscar_tipo_cedula" class="form-control" style="padding: 6px 2px; height: 34px;">
+                    <option value="V">V-</option>
+                  </select>
+                </span>
+                <input type="text" id="modal_buscar_cedula" class="form-control" placeholder="Ej: 12345678" style="height: 34px;" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-sm-6 form-group">
+              <label>Filtrar por Nombre:</label>
+              <input type="text" id="modal_buscar_nombre" class="form-control" placeholder="Ej: Carlos Mendoza" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Seleccione el Médico:</label>
+            <select id="modal_select_resultados_medicos" class="form-control">
+              <option value="" disabled selected>Comience a escribir para buscar un médico...</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-info" id="btnAceptarMedicoModal">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title"><i class="fa fa-share-square-o"></i> Despachar Medicamento</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-12">
               <div class="form-group">
-                <label for="filtro_presentacion">Presentación:</label>
-                <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
-                  <option value="">-- Todos --</option>
+                <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
+                <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre, principio activo, presentacion, etc...">
+              </div>
+            </div>
+            <br><br>
+            <div class="col-sm-12 form-group">
+              <label>Medicamento del Catálogo (*):</label>
+              <div class="input-group">
+                <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control select2" style="width: 100%;">
+                  <option value="">--- Seleccione un Medicamento ---</option>
                   <?php
-                  $sql_tipos = "SELECT Id_presentacion, nombre_presentacion FROM presentacion WHERE estatus = 1 ORDER BY nombre_presentacion DESC";
-                  $res_tipos = $conexion->query($sql_tipos);
-                  while ($row_t = $res_tipos->fetch_assoc()) {
-                    echo '<option value="' . $row_t['Id_presentacion'] . '">' . $row_t['nombre_presentacion'] . '</option>';
+                  $sql_medicamentos = "SELECT dm.Id AS id_desc, m.nombre_medicamento, p.nombre_presentacion,
+                      GROUP_CONCAT(CONCAT(IFNULL(pa.nombre,''), ' ', IFNULL(dpm.cantidad_unidad_medida,''), ' ', IFNULL(um.unidad,'')) SEPARATOR ' + ') AS componentes
+                      FROM descripcion_medicamento dm
+                      INNER JOIN medicamento m ON dm.Id_medicamento = m.Id_medicamento
+                      INNER JOIN presentacion p ON dm.Id_presentacion = p.Id_presentacion
+                      LEFT JOIN detalle_principio_medicamento dpm ON dm.Id = dpm.id_descripcion_medicamento
+                      LEFT JOIN unidad_medida um ON dpm.id_tipo_unidad_medida = um.Id_unidad_medida
+                      LEFT JOIN principio_activo pa ON dpm.id_principio_activo = pa.Id_principio_activo
+                      WHERE m.estatus = 1 AND (dm.estatus = '1' OR dm.estatus = 1) 
+                      AND EXISTS (
+                          SELECT 1 FROM lotes_medicamentos lm 
+                          INNER JOIN existencias_stock ex ON lm.Id = ex.Id_lote 
+                          WHERE lm.Id_descripcion_medicamento = dm.Id 
+                          AND lm.estado_lote = 'Disponible' 
+                          AND ex.cantidad_actual > 0 
+                          AND lm.fecha_vencimiento > CURDATE()
+                      )
+                      GROUP BY dm.Id ORDER BY m.nombre_medicamento ASC";
+
+                  $resultado_medicamentos = $conexion->query($sql_medicamentos);
+                  if ($resultado_medicamentos && $resultado_medicamentos->num_rows > 0) {
+                    while ($row_med = $resultado_medicamentos->fetch_assoc()) {
+                      $comp = trim($row_med['componentes']) ? " (" . htmlspecialchars($row_med['componentes']) . ")" : "";
+                      $componentesLimpios = trim($row_med['componentes']) ? htmlspecialchars($row_med['componentes']) : 'Sin principios activos';
+                      echo '<option value="' . $row_med['id_desc'] . '" data-nombre="' . htmlspecialchars($row_med['nombre_medicamento'] . " [" . $row_med['nombre_presentacion'] . "]") . '" data-componentes="' . $componentesLimpios . '">' . htmlspecialchars($row_med['nombre_medicamento']) . $comp . " - [" . htmlspecialchars($row_med['nombre_presentacion']) . "]" . '</option>';
+                    }
                   }
                   ?>
                 </select>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada" id="btnBusquedaAvanzada">
+                    <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_principios">Principios activos (contiene):</label>
-                <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Ibuprofeno">
-              </div>
-            </div>
-          </div>
 
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_contenido_neto">Contenido neto:</label>
-                <input type="text" id="filtro_contenido_neto" name="filtro_contenido_neto" class="form-control" placeholder="Ej: 20 Capsulas">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_via">Vía de aplicación:</label>
-                <select id="filtro_via" name="filtro_via" class="form-control">
-                  <option value="">-- Todas --</option>
-                  <option value="Oral">Oral</option>
-                  <option value="Sublingual">Sublingual</option>
-                  <option value="Rectal">Rectal</option>
-                  <option value="Intravenosa">Intravenosa</option>
-                  <option value="Intramuscular">Intramuscular</option>
-                  <option value="Subcutanea">Subcutanea</option>
-                  <option value="Intradermica">Intradermica</option>
-                  <option value="Topica">Topica</option>
-                  <option value="Transdermica">Transdermica</option>
-                  <option value="Inhalatoria">Inhalatoria</option>
-                  <option value="Oftalmica">Oftalmica</option>
-                  <option value="Otica">Otica</option>
-                  <option value="Nasal">Nasal</option>
-                  <option value="Vaginal">Vaginal</option>
+            <div class="col-sm-4 form-group mt-3" style="display:none;">
+              <label>Lote Disponible (*):</label>
+              <div class="input-group">
+                <select id="lote_seleccionado" class="form-control">
+                  <option value="">Seleccione el medicamento primero</option>
                 </select>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_almacenamiento">C. de almacenamiento:</label>
-                <select id="filtro_almacenamiento" name="filtro_almacenamiento" class="form-control">
-                  <option value="">-- Todas --</option>
-                  <option value="-25_a_-10">Congelacion (-25°C a -10°C)</option>
-                  <option value="2_a_8">Refrigeracion (2°C a 8°C)</option>
-                  <option value="8_a_15">Lugar Fresco (8°C a 15°C)</option>
-                  <option value="15_a_25">Temperatura Ambiente (15°C a 25°C)</option>
-                  <option value="max_30">Temperatura Maxima (30°C)</option>
-                </select>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Existencia Actual:</label>
+              <div class="input-group">
+                <input type="text" id="existencia_actual" class="form-control" value="0" readonly disabled style="background-color: #f9f9f9;">
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;">
+                    <i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
               </div>
+            </div>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Cantidad a Retirar (*):</label>
+              <input type="text" id="cantidad" class="form-control" placeholder="1" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
+            </div>
+
+            <div class="col-sm-4 form-group mt-3" id="grupo_recetada" style="display:none;">
+              <label>Cantidad en Récipe:</label>
+              <input type="text" id="cantidad_recetada" class="form-control" placeholder="Ej: 20" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="col-sm-12 form-group mt-3">
+              <input type="hidden" id="dosis_aplicacion" class="form-control" rows="2" placeholder="Ej: Tomar 1 tableta cada 8 horas...">
             </div>
           </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-success" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-          <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_laboratorio">Laboratorio:</label>
-                <select id="filtro_laboratorio" name="filtro_laboratorio" class="form-control">
-                  <option value="">-- Todos --</option>
-                  <?php
-                  $sql_labs = "SELECT Id_laboratorio, nombre_laboratorio FROM laboratorio WHERE estatus = 1 ORDER BY nombre_laboratorio ASC";
-                  $res_labs = $conexion->query($sql_labs);
-                  while ($row_l = $res_labs->fetch_assoc()) {
-                    echo '<option value="' . $row_l['Id_laboratorio'] . '">' . $row_l['nombre_laboratorio'] . '</option>';
-                  }
-                  ?>
-                </select>
+  <div class="modal fade" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel">Filtros de Búsqueda Avanzada</h5>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltroModal">
+            <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_nombre">Nombre (o ID):</label>
+                  <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre o ID...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
+                    <option value="">-- Todos --</option>
+                    <?php
+                    $sql_tipos = "SELECT Id_presentacion, nombre_presentacion FROM presentacion WHERE estatus = 1 ORDER BY nombre_presentacion DESC";
+                    $res_tipos = $conexion->query($sql_tipos);
+                    while ($row_t = $res_tipos->fetch_assoc()) {
+                      echo '<option value="' . $row_t['Id_presentacion'] . '">' . $row_t['nombre_presentacion'] . '</option>';
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_principios">Principios activos (contiene):</label>
+                  <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Ibuprofeno">
+                </div>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_excipientes">Excipientes (contiene):</label>
-                <input type="text" id="filtro_excipientes" name="filtro_excipientes" class="form-control" placeholder="Escriba texto de excipientes...">
+
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_contenido_neto">Contenido neto:</label>
+                  <input type="text" id="filtro_contenido_neto" name="filtro_contenido_neto" class="form-control" placeholder="Ej: 20 Capsulas">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_via">Vía de aplicación:</label>
+                  <select id="filtro_via" name="filtro_via" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="Oral">Oral</option>
+                    <option value="Sublingual">Sublingual</option>
+                    <option value="Rectal">Rectal</option>
+                    <option value="Intravenosa">Intravenosa</option>
+                    <option value="Intramuscular">Intramuscular</option>
+                    <option value="Subcutanea">Subcutanea</option>
+                    <option value="Intradermica">Intradermica</option>
+                    <option value="Topica">Topica</option>
+                    <option value="Transdermica">Transdermica</option>
+                    <option value="Inhalatoria">Inhalatoria</option>
+                    <option value="Oftalmica">Oftalmica</option>
+                    <option value="Otica">Otica</option>
+                    <option value="Nasal">Nasal</option>
+                    <option value="Vaginal">Vaginal</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_almacenamiento">C. de almacenamiento:</label>
+                  <select id="filtro_almacenamiento" name="filtro_almacenamiento" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="-25_a_-10">Congelacion (-25°C a -10°C)</option>
+                    <option value="2_a_8">Refrigeracion (2°C a 8°C)</option>
+                    <option value="8_a_15">Lugar Fresco (8°C a 15°C)</option>
+                    <option value="15_a_25">Temperatura Ambiente (15°C a 25°C)</option>
+                    <option value="max_30">Temperatura Maxima (30°C)</option>
+                  </select>
+                </div>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_barcode">Código de barras:</label>
-                <input type="text" id="filtro_barcode" name="filtro_barcode" class="form-control" placeholder="Escriba código de barras exacto...">
+
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_laboratorio">Laboratorio:</label>
+                  <select id="filtro_laboratorio" name="filtro_laboratorio" class="form-control">
+                    <option value="">-- Todos --</option>
+                    <?php
+                    $sql_labs = "SELECT Id_laboratorio, nombre_laboratorio FROM laboratorio WHERE estatus = 1 ORDER BY nombre_laboratorio ASC";
+                    $res_labs = $conexion->query($sql_labs);
+                    while ($row_l = $res_labs->fetch_assoc()) {
+                      echo '<option value="' . $row_l['Id_laboratorio'] . '">' . $row_l['nombre_laboratorio'] . '</option>';
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_excipientes">Excipientes (contiene):</label>
+                  <input type="text" id="filtro_excipientes" name="filtro_excipientes" class="form-control" placeholder="Escriba texto de excipientes...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_barcode">Código de barras:</label>
+                  <input type="text" id="filtro_barcode" name="filtro_barcode" class="form-control" placeholder="Escriba código de barras exacto...">
+                </div>
               </div>
             </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-second" id="btnLimpiarFiltros">Limpiar Filtros</button>
-        <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-second" id="btnLimpiarFiltros">Limpiar Filtros</button>
+          <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div id="headerDespachoAviso" class="modal-header bg-crimson">
-        <h5 class="modal-title">Aviso Importante</h5>
-      </div>
-      <div class="modal-body">
-        <p id="avisoTexto"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div id="headerDespachoAviso" class="modal-header bg-crimson">
+          <h5 class="modal-title">Aviso Importante</h5>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title">Confirmación de Regreso</h5>
-      </div>
-      <div class="modal-body">
-        <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <a href="farmacia_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+  <div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title">Confirmación de Regreso</h5>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="farmacia_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalDespachoGuardar" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-green">
-        <h5 class="modal-title">Confirmación de Despacho</h5>
-      </div>
-      <div class="modal-body">
-        <p>¿Está seguro de que desea procesar este despacho del inventario?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
+  <div class="modal fade" id="modalDespachoGuardar" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h5 class="modal-title">Confirmación de Despacho</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea procesar este despacho del inventario?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
+        </div>
       </div>
     </div>
   </div>
+
+  <?php
+  include('modales/inventario/medicamentos_agregar_modal.php');
+  include('modales/recursos_humanos/medico_agregar_modal.php');
+  include('modales/personas/pacientes_agregar_modal.php');
+  include('modales/personas/pacientes_menores_agregar_modal.php');
+  ?>
+
 </div>
 
 <?php
-include('modales/inventario/medicamentos_agregar_modal.php');
-include('modales/recursos_humanos/medico_agregar_modal.php');
-include('modales/personas/pacientes_agregar_modal.php');        
-include('modales/personas/pacientes_menores_agregar_modal.php');
-
 if (isset($conexion)) {
   $conexion->close();
 }
@@ -884,7 +976,11 @@ include('includes/footer.php');
       $.ajax({
         url: '../../cfg/ajax/buscar_medicos.php',
         type: 'POST',
-        data: { tipo_cedula: tipo_cedula, cedula: cedula, nombre: nombre },
+        data: {
+          tipo_cedula: tipo_cedula,
+          cedula: cedula,
+          nombre: nombre
+        },
         dataType: 'json',
         success: function(response) {
           select.empty();
@@ -924,7 +1020,10 @@ include('includes/footer.php');
         $('#medico_externo').val(nombre);
         $('#busqueda_cedula_medico').attr('readonly', true);
         $('#medico_externo').attr('readonly', true);
-        $('#tipo_cedula_medico').css({ 'pointer-events': 'none', 'background-color': '#eee' });
+        $('#tipo_cedula_medico').css({
+          'pointer-events': 'none',
+          'background-color': '#eee'
+        });
         $('#modalBuscarMedico').modal('hide');
       } else {
         mostrarAviso("Debe realizar una búsqueda y seleccionar un médico válido de la lista.");
@@ -935,7 +1034,10 @@ include('includes/footer.php');
       if ($('#busqueda_cedula_medico').val().trim() === "" && $('#medico_externo').val().trim() === "") {
         $('#busqueda_cedula_medico').removeAttr('readonly');
         $('#medico_externo').removeAttr('readonly');
-        $('#tipo_cedula_medico').css({ 'pointer-events': 'auto', 'background-color': '#fff' });
+        $('#tipo_cedula_medico').css({
+          'pointer-events': 'auto',
+          'background-color': '#fff'
+        });
       }
     });
 
@@ -1006,7 +1108,11 @@ include('includes/footer.php');
         $('#placeholder-texto').text('Iniciando Cámara...');
         const video = document.getElementById('video-modal');
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+          navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: "environment"
+              }
+            })
             .then(stream => {
               streamModal = stream;
               video.srcObject = stream;
@@ -1019,7 +1125,9 @@ include('includes/footer.php');
       } else {
         $('#placeholder-texto').text('Seleccionando archivo...');
         $('#input-archivo-modal').click();
-        setTimeout(() => { $('#placeholder-texto').text('Esperando archivo...'); }, 1000);
+        setTimeout(() => {
+          $('#placeholder-texto').text('Esperando archivo...');
+        }, 1000);
       }
     };
 
@@ -1107,7 +1215,12 @@ include('includes/footer.php');
         $.ajax({
           url: '../../cfg/ajax/obtener_prescripciones.php',
           type: 'POST',
-          data: { busqueda: busqueda, tipo_cedula: tipoCed, metodo: metodo, es_menor: es_menor },
+          data: {
+            busqueda: busqueda,
+            tipo_cedula: tipoCed,
+            metodo: metodo,
+            es_menor: es_menor
+          },
           success: function(res) {
             $('#id_prescripcion').html(res).trigger('change');
             if (res.includes("No se encontro ninguna prescripcion")) {
@@ -1162,7 +1275,10 @@ include('includes/footer.php');
         $.ajax({
           url: '../../cfg/ajax/obtener_medicamentos_prescripcion.php',
           type: 'POST',
-          data: { id_prescripcion: id_receta, tipo_despacho: $('#tipo_despacho').val() },
+          data: {
+            id_prescripcion: id_receta,
+            tipo_despacho: $('#tipo_despacho').val()
+          },
           dataType: 'json',
           success: function(response) {
             if (response && response.length > 0) {
@@ -1276,7 +1392,11 @@ include('includes/footer.php');
             let ultimaEtiqueta = tagsArray.pop();
             $(this).val(ultimaEtiqueta);
             renderizarTags();
-            if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+            if (tagsArray.length === 0) {
+              $('#btnLimpiarFiltros').click();
+            } else {
+              $('#btnAplicarFiltros').click();
+            }
           }
         }
       });
@@ -1285,11 +1405,20 @@ include('includes/footer.php');
         let index = $(this).data('index');
         tagsArray.splice(index, 1);
         renderizarTags();
-        if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+        if (tagsArray.length === 0) {
+          $('#btnLimpiarFiltros').click();
+        } else {
+          $('#btnAplicarFiltros').click();
+        }
       });
 
-      $contenedor.on('click', function() { $inputFalso.focus(); });
-      $('#btnLimpiarFiltros').on('click', function() { tagsArray = []; renderizarTags(); });
+      $contenedor.on('click', function() {
+        $inputFalso.focus();
+      });
+      $('#btnLimpiarFiltros').on('click', function() {
+        tagsArray = [];
+        renderizarTags();
+      });
     }
 
     inicializarTags('#filtro_busqueda_rapida');
@@ -1329,7 +1458,10 @@ include('includes/footer.php');
         $.ajax({
           url: '../../cfg/ajax/obtener_descripcion_medicamento.php',
           type: 'POST',
-          data: { id: medicamentoId, modo: 'despacho' },
+          data: {
+            id: medicamentoId,
+            modo: 'despacho'
+          },
           dataType: 'json',
           success: function(data) {
             if (!data.error) {
@@ -1437,7 +1569,10 @@ include('includes/footer.php');
         $.ajax({
           url: '../../cfg/ajax/obtener_paciente.php',
           type: 'POST',
-          data: { cedula: cedula, tipo_cedula: tipo },
+          data: {
+            cedula: cedula,
+            tipo_cedula: tipo
+          },
           dataType: 'json',
           success: function(response) {
             if (response.encontrado) {
@@ -1482,7 +1617,10 @@ include('includes/footer.php');
         $.ajax({
           url: '../../cfg/ajax/obtener_medico.php',
           type: 'POST',
-          data: { cedula: cedula, tipo_cedula: tipo },
+          data: {
+            cedula: cedula,
+            tipo_cedula: tipo
+          },
           dataType: 'json',
           success: function(response) {
             if (response.encontrado) {
@@ -1710,10 +1848,22 @@ include('includes/footer.php');
         var cedulaMedico = $('#busqueda_cedula_medico').val();
         var medicoExterno = $('#medico_externo').val();
 
-        if (!cedulaExterno || cedulaExterno.trim() === "") { $('#cedula_externo').addClass('input-error'); hayErrores = true; }
-        if (!pacienteExterno || pacienteExterno.trim() === "") { $('#paciente_externo').addClass('input-error'); hayErrores = true; }
-        if (!cedulaMedico || cedulaMedico.trim() === "") { $('#busqueda_cedula_medico').addClass('input-error'); hayErrores = true; }
-        if (!medicoExterno || medicoExterno.trim() === "") { $('#medico_externo').addClass('input-error'); hayErrores = true; }
+        if (!cedulaExterno || cedulaExterno.trim() === "") {
+          $('#cedula_externo').addClass('input-error');
+          hayErrores = true;
+        }
+        if (!pacienteExterno || pacienteExterno.trim() === "") {
+          $('#paciente_externo').addClass('input-error');
+          hayErrores = true;
+        }
+        if (!cedulaMedico || cedulaMedico.trim() === "") {
+          $('#busqueda_cedula_medico').addClass('input-error');
+          hayErrores = true;
+        }
+        if (!medicoExterno || medicoExterno.trim() === "") {
+          $('#medico_externo').addClass('input-error');
+          hayErrores = true;
+        }
 
         if (hayErrores) {
           mostrarAviso("Faltan datos requeridos. Complete todos los campos marcados en rojo en la sección del Paciente Externo.");
@@ -1844,7 +1994,9 @@ include('includes/footer.php');
       $.ajax({
         url: '../../cfg/ajax/filtrar_medicamentos.php',
         type: 'POST',
-        data: { recarga_silenciosa: true },
+        data: {
+          recarga_silenciosa: true
+        },
         dataType: 'json',
         success: function(response) {
           const select = $('#Id_descripcion_medicamento');

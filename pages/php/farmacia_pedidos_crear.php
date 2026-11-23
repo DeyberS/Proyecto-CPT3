@@ -8,97 +8,97 @@ include("../../cfg/conexion.php");
   <title>Pedidos | Añadir</title>
 </head>
 
-<style>
-  .tags-input-container {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 5px;
-    width: 100%;
-    min-height: 34px;
-    padding: 4px 12px;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #555;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-    cursor: text;
-  }
-
-  .tags-input-container:focus-within {
-    border-color: #66afe9;
-    outline: 0;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
-  }
-
-  .tags-input-fake {
-    border: none;
-    outline: none;
-    background: transparent;
-    flex-grow: 1;
-    min-width: 150px;
-    height: 24px;
-    box-shadow: none !important;
-  }
-
-  .tag-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 12px;
-    margin-bottom: 2px;
-    margin-top: 2px;
-  }
-
-  .tag-badge .remove-tag {
-    margin-left: 6px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-
-  .table-detalle th {
-    background-color: #f4f4f4;
-    text-align: center;
-  }
-
-  .table-detalle td {
-    text-align: center;
-    vertical-align: middle !important;
-  }
-
-  .area-trabajo-blanca {
-    background-color: #ffffff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-
-  input[type="date"][readonly],
-  input[type="date"][disabled] {
-    background-color: #eeeeee !important;
-    cursor: not-allowed;
-  }
-
-  .table-responsive {
-    max-height: 220px;
-    overflow-y: auto;
-  }
-
-  .table-detalle thead th {
-    position: sticky;
-    top: 0;
-    background-color: #f4f4f4;
-    z-index: 1;
-  }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+      min-height: 34px;
+      padding: 4px 12px;
+      font-size: 14px;
+      line-height: 1.42857143;
+      color: #555;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+      transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+      cursor: text;
+    }
+
+    .tags-input-container:focus-within {
+      border-color: #66afe9;
+      outline: 0;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      background: transparent;
+      flex-grow: 1;
+      min-width: 150px;
+      height: 24px;
+      box-shadow: none !important;
+    }
+
+    .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 2px;
+      margin-top: 2px;
+    }
+
+    .tag-badge .remove-tag {
+      margin-left: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .table-detalle th {
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    .table-detalle td {
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    input[type="date"][readonly],
+    input[type="date"][disabled] {
+      background-color: #eeeeee !important;
+      cursor: not-allowed;
+    }
+
+    .table-responsive {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .table-detalle thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f4f4f4;
+      z-index: 1;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Añadir Pedido></h1>
     <ol class="breadcrumb">
@@ -470,7 +470,6 @@ include("../../cfg/conexion.php");
       </div>
     </div>
   </div>
-
 </div>
 
 <?php include('includes/footer.php'); ?>

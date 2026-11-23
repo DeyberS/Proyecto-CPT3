@@ -40,21 +40,21 @@ verificarAcceso('Editar Lotes'); // O 'Gestionar Vacunas'
             <div class="tab-pane active" id="tab_1">
               <div class="box-body">
                 <form action="../../cfg/editar/editar_lote.php" id="formularioLote" class="form-group" method="POST" novalidate>
-                  
+
                   <!-- ======================================================= -->
                   <!-- SIMULACIÓN DE DATOS (BORRAR CUANDO CONECTES LA BD REAL) -->
                   <!-- ======================================================= -->
                   <?php
                   // En la versión real, aquí iría tu consulta SQL. Por ahora, quemamos los datos.
                   $row = [
-                      'Id_lote' => $id_lote,
-                      'nombre_lote' => 'VPI-001',
-                      'fecha_fabricacion' => '2025-01-01',
-                      'fecha_vencimiento' => '2026-01-01',
-                      'estado_lote' => 'Disponible',
-                      'Id_medicamento' => '1',
-                      'Id_proveedor' => '1',
-                      'existencia' => 150
+                    'Id_lote' => $id_lote,
+                    'nombre_lote' => 'VPI-001',
+                    'fecha_fabricacion' => '2025-01-01',
+                    'fecha_vencimiento' => '2026-01-01',
+                    'estado_lote' => 'Disponible',
+                    'Id_medicamento' => '1',
+                    'Id_proveedor' => '1',
+                    'existencia' => 150
                   ];
                   ?>
 
@@ -181,121 +181,121 @@ verificarAcceso('Editar Lotes'); // O 'Gestionar Vacunas'
       </div>
     </div>
   </div>
-
-  <?php include('includes/footer.php'); ?>
-
-  <script>
-    $(document).ready(function() {
-      const formulario = $('#formularioLote');
-      const fechaFabricacionInput = $('#fecha_fabricacion');
-      const fechaVencimientoInput = $('#fecha_vencimiento');
-
-      $('#fecha_fabricacion, #fecha_vencimiento').on('keydown', function(e) {
-        e.preventDefault();
-      });
-
-      function mostrarAviso(mensaje) {
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
-      }
-
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
-        $('.form-group').removeClass('input-error');
-      }
-
-      const today = new Date().toISOString().split('T')[0];
-      fechaFabricacionInput.attr('max', today);
-
-      fechaFabricacionInput.on('change', function() {
-        const fabricacionDate = $(this).val();
-        if (fabricacionDate) {
-          fechaVencimientoInput.prop('disabled', false).attr('min', fabricacionDate);
-        } else {
-          fechaVencimientoInput.prop('disabled', true).val('').removeAttr('min');
-        }
-      });
-
-      fechaVencimientoInput.on('change', function() {
-        const fabricacionDate = fechaFabricacionInput.val();
-        const selectedDate = $(this).val();
-
-        if (fabricacionDate && selectedDate < fabricacionDate) {
-          mostrarAviso('La fecha de vencimiento no puede ser anterior a la de fabricación.');
-          $(this).val('');
-        } else if (selectedDate && selectedDate <= today) {
-          mostrarAviso('La fecha de vencimiento debe ser una fecha futura.');
-          $(this).val('');
-        }
-      });
-
-      // SIMULACIÓN DE VERIFICACIÓN DE DUPLICIDAD
-      function verificarLoteYMostrarModal() {
-        const nombre = $('#nombre_lote').val().trim();
-        const id_medicamento = $('#medicamento').val();
-        const id_lote = $('input[name="Id"]').val();
-        const btnGuardar = $('#btnGuardar');
-
-        const textoOriginal = btnGuardar.text();
-        btnGuardar.text('Verificando...').attr('disabled', true);
-
-        setTimeout(function() {
-          btnGuardar.text(textoOriginal).attr('disabled', false);
-          limpiarErrores();
-
-          // Simulamos que "VPI-002" ya existe para probar la validación
-          if (nombre.toUpperCase() === 'VPI-002' && id_medicamento == '1') {
-            $('#group_nombre').addClass('input-error');
-            $('#nombre_lote').addClass('input-error');
-            mostrarAviso('⚠️ Error de Duplicidad:<br>Ya existe OTRO lote con el nombre <b>' + nombre + '</b> asignado a esta misma vacuna.');
-          } else {
-            $('#modalGuardar').modal('show');
-          }
-        }, 800);
-      }
-
-      formulario.on('submit', function(e) {
-        e.preventDefault();
-        limpiarErrores();
-        let errores = [];
-
-        if ($('#nombre_lote').val().trim() === "") {
-          errores.push("El nombre del lote no puede estar vacío.");
-          $('#nombre_lote').addClass('input-error');
-        }
-        if ($('#fecha_fabricacion').val().trim() === "") {
-          errores.push("La fecha de fabricación no puede estar vacía.");
-          $('#fecha_fabricacion').addClass('input-error');
-        }
-        if ($('#fecha_vencimiento').val().trim() === "") {
-          errores.push("La fecha de vencimiento no puede estar vacía.");
-          $('#fecha_vencimiento').addClass('input-error');
-        }
-        if ($('#medicamento').val().trim() === "") {
-          errores.push("Debe asignar una vacuna a este lote.");
-          $('#medicamento').addClass('input-error');
-        }
-        if ($('#proveedor').val().trim() === "") {
-          errores.push("Debe asignar un proveedor a este lote.");
-          $('#proveedor').addClass('input-error');
-        }
-
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          verificarLoteYMostrarModal();
-        }
-      });
-
-      $('#confirmarGuardar').on('click', function() {
-        // SIMULACIÓN: Aquí se enviaría el formulario real
-        // $('#formularioLote').off('submit').submit();
-        $('#modalGuardar').modal('hide');
-        mostrarAviso("✅ <b>Lote de Vacuna actualizado (Simulado).</b><br><br>En la versión real, esto guardaría los cambios en la base de datos.");
-        setTimeout(function() {
-          window.location.href = 'vacunacion_lotes_listado.php';
-        }, 2500);
-      });
-    });
-  </script>
 </div>
+
+<?php include('includes/footer.php'); ?>
+
+<script>
+  $(document).ready(function() {
+    const formulario = $('#formularioLote');
+    const fechaFabricacionInput = $('#fecha_fabricacion');
+    const fechaVencimientoInput = $('#fecha_vencimiento');
+
+    $('#fecha_fabricacion, #fecha_vencimiento').on('keydown', function(e) {
+      e.preventDefault();
+    });
+
+    function mostrarAviso(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
+
+    function limpiarErrores() {
+      $('input, select').removeClass('input-error');
+      $('.form-group').removeClass('input-error');
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    fechaFabricacionInput.attr('max', today);
+
+    fechaFabricacionInput.on('change', function() {
+      const fabricacionDate = $(this).val();
+      if (fabricacionDate) {
+        fechaVencimientoInput.prop('disabled', false).attr('min', fabricacionDate);
+      } else {
+        fechaVencimientoInput.prop('disabled', true).val('').removeAttr('min');
+      }
+    });
+
+    fechaVencimientoInput.on('change', function() {
+      const fabricacionDate = fechaFabricacionInput.val();
+      const selectedDate = $(this).val();
+
+      if (fabricacionDate && selectedDate < fabricacionDate) {
+        mostrarAviso('La fecha de vencimiento no puede ser anterior a la de fabricación.');
+        $(this).val('');
+      } else if (selectedDate && selectedDate <= today) {
+        mostrarAviso('La fecha de vencimiento debe ser una fecha futura.');
+        $(this).val('');
+      }
+    });
+
+    // SIMULACIÓN DE VERIFICACIÓN DE DUPLICIDAD
+    function verificarLoteYMostrarModal() {
+      const nombre = $('#nombre_lote').val().trim();
+      const id_medicamento = $('#medicamento').val();
+      const id_lote = $('input[name="Id"]').val();
+      const btnGuardar = $('#btnGuardar');
+
+      const textoOriginal = btnGuardar.text();
+      btnGuardar.text('Verificando...').attr('disabled', true);
+
+      setTimeout(function() {
+        btnGuardar.text(textoOriginal).attr('disabled', false);
+        limpiarErrores();
+
+        // Simulamos que "VPI-002" ya existe para probar la validación
+        if (nombre.toUpperCase() === 'VPI-002' && id_medicamento == '1') {
+          $('#group_nombre').addClass('input-error');
+          $('#nombre_lote').addClass('input-error');
+          mostrarAviso('⚠️ Error de Duplicidad:<br>Ya existe OTRO lote con el nombre <b>' + nombre + '</b> asignado a esta misma vacuna.');
+        } else {
+          $('#modalGuardar').modal('show');
+        }
+      }, 800);
+    }
+
+    formulario.on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let errores = [];
+
+      if ($('#nombre_lote').val().trim() === "") {
+        errores.push("El nombre del lote no puede estar vacío.");
+        $('#nombre_lote').addClass('input-error');
+      }
+      if ($('#fecha_fabricacion').val().trim() === "") {
+        errores.push("La fecha de fabricación no puede estar vacía.");
+        $('#fecha_fabricacion').addClass('input-error');
+      }
+      if ($('#fecha_vencimiento').val().trim() === "") {
+        errores.push("La fecha de vencimiento no puede estar vacía.");
+        $('#fecha_vencimiento').addClass('input-error');
+      }
+      if ($('#medicamento').val().trim() === "") {
+        errores.push("Debe asignar una vacuna a este lote.");
+        $('#medicamento').addClass('input-error');
+      }
+      if ($('#proveedor').val().trim() === "") {
+        errores.push("Debe asignar un proveedor a este lote.");
+        $('#proveedor').addClass('input-error');
+      }
+
+      if (errores.length > 0) {
+        mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        verificarLoteYMostrarModal();
+      }
+    });
+
+    $('#confirmarGuardar').on('click', function() {
+      // SIMULACIÓN: Aquí se enviaría el formulario real
+      // $('#formularioLote').off('submit').submit();
+      $('#modalGuardar').modal('hide');
+      mostrarAviso("✅ <b>Lote de Vacuna actualizado (Simulado).</b><br><br>En la versión real, esto guardaría los cambios en la base de datos.");
+      setTimeout(function() {
+        window.location.href = 'vacunacion_lotes_listado.php';
+      }, 2500);
+    });
+  });
+</script>

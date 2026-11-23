@@ -53,21 +53,21 @@ verificarAcceso('Editar Medicamentos');
   <title>Medicamentos | Editar</title>
 </head>
 
-<style>
-  .tooltip-inner {
-    max-width: 300px;
-    background-color: #3c8dbc !important;
-    color: white;
-    font-weight: bold;
-    border: 1px solid #fff;
-  }
-
-  .tooltip.right .tooltip-arrow {
-    border-right-color: #3c8dbc !important;
-  }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    .tooltip-inner {
+      max-width: 300px;
+      background-color: #3c8dbc !important;
+      color: white;
+      font-weight: bold;
+      border: 1px solid #fff;
+    }
+
+    .tooltip.right .tooltip-arrow {
+      border-right-color: #3c8dbc !important;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Editar Medicamentos</h1>
     <ol class="breadcrumb">
@@ -207,133 +207,133 @@ verificarAcceso('Editar Medicamentos');
                     </button>
                   </div>
                   <input type="hidden" name="patologias_seleccionadas" id="patologias_seleccionadas" value="<?php echo $valor_patologias; ?>" required>
-                 <div class=" clearfix">
+                  <div class=" clearfix">
+                  </div>
+                  <div class="col-sm-4 form-group">
+                    <p>Código de Barras:</p>
+                    <input type="text" name="codigo_barras" class="form-control" value="<?= $row['codigo_barras'] ?>">
+                  </div>
+                  <div class="col-sm-12" style="margin-top: 4%;">
+                    <div style="float:right;">
+                      <button type="button" class="btn btn-second" data-toggle="modal" data-target="#modalRegresar">Regresar</button>
+                      <button type="submit" class="btn btn-success" id="btnGuardar">Actualizar</button>
+                    </div>
+                  </div>
+                </form>
               </div>
-              <div class="col-sm-4 form-group">
-                <p>Código de Barras:</p>
-                <input type="text" name="codigo_barras" class="form-control" value="<?= $row['codigo_barras'] ?>">
-              </div>
-              <div class="col-sm-12" style="margin-top: 4%;">
-                <div style="float:right;">
-                  <button type="button" class="btn btn-second" data-toggle="modal" data-target="#modalRegresar">Regresar</button>
-                  <button type="submit" class="btn btn-success" id="btnGuardar">Actualizar</button>
-                </div>
-              </div>
-              </form>
             </div>
           </div>
         </div>
       </div>
     </div>
-</div>
-</section>
-</div>
+  </section>
 
-<div class="modal fade" id="modal_pat" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-info">
-        <h4 class="modal-title">Agregar Patologías</h4>
-      </div>
-      <div class="modal-body">
-        <div id="contenedor_filas_patologias">
+  <div class="modal fade" id="modal_pat" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title">Agregar Patologías</h4>
         </div>
-        <button type="button" class="btn btn-success btn-sm" id="add_fila_pat">
-          <i class="fa fa-plus"></i> Añadir Otra Patología
-        </button>
-        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologia">
-          <i class="fa fa-plus-circle"></i> Nueva Patología
-        </button>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="guardar_pat_listo" data-dismiss="modal">Listo</button>
+        <div class="modal-body">
+          <div id="contenedor_filas_patologias">
+          </div>
+          <button type="button" class="btn btn-success btn-sm" id="add_fila_pat">
+            <i class="fa fa-plus"></i> Añadir Otra Patología
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologia">
+            <i class="fa fa-plus-circle"></i> Nueva Patología
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="guardar_pat_listo" data-dismiss="modal">Listo</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalPrincipios" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-info">
-        <h4 class="modal-title">Editar Composición del Medicamento</h4>
-      </div>
-      <div class="modal-body">
-        <div id="contenedor_filas_principios">
-          <?php
-          if ($sql_actuales->num_rows > 0) {
-            while ($pa = $sql_actuales->fetch_assoc()) {
-          ?>
-              <div class="row fila-pa" style="margin-bottom: 10px;">
-                <div class="col-sm-6">
-                  <div class="input-group">
-                    <select class="form-control select-pa">
-                      <option value="" id="pa">--- Seleccione un principio activo ---</option>
-                      <?php
-                      $sql_p = $conexion->query("SELECT * FROM principio_activo");
-                      while ($rp = $sql_p->fetch_assoc()) {
-                        $s = ($rp['id_principio_activo'] == $pa['id_principio_activo']) ? 'selected' : '';
-                        echo "<option value='" . $rp['id_principio_activo'] . "' data-nombre='" . $rp['nombre'] . "' $s>" . $rp['nombre'] . "</option>";
-                      }
-                      ?>
-                    </select>
-                    <span class="input-group-btn">
-                      <button class="btn btn-info btn-search-pa" type="button" title="Buscar P.A.">
-                        <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
-                      </button>
-                    </span>
+  <div class="modal fade" id="modalPrincipios" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title">Editar Composición del Medicamento</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_principios">
+            <?php
+            if ($sql_actuales->num_rows > 0) {
+              while ($pa = $sql_actuales->fetch_assoc()) {
+            ?>
+                <div class="row fila-pa" style="margin-bottom: 10px;">
+                  <div class="col-sm-6">
+                    <div class="input-group">
+                      <select class="form-control select-pa">
+                        <option value="" id="pa">--- Seleccione un principio activo ---</option>
+                        <?php
+                        $sql_p = $conexion->query("SELECT * FROM principio_activo");
+                        while ($rp = $sql_p->fetch_assoc()) {
+                          $s = ($rp['id_principio_activo'] == $pa['id_principio_activo']) ? 'selected' : '';
+                          echo "<option value='" . $rp['id_principio_activo'] . "' data-nombre='" . $rp['nombre'] . "' $s>" . $rp['nombre'] . "</option>";
+                        }
+                        ?>
+                      </select>
+                      <span class="input-group-btn">
+                        <button class="btn btn-info btn-search-pa" type="button" title="Buscar P.A.">
+                          <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <input type="text" class="form-control cant-pa" id="u_medida" value="<?= $pa['cantidad_unidad_medida'] ?>" placeholder="Cant.">
+                  </div>
+                  <div class="col-sm-2">
+                    <select class="form-control uni-pa" id="tipo_unidad_medida" data-unidad-actual="<?= $pa['id_tipo_unidad_medida'] ?>"></select>
+                  </div>
+                  <div class="col-sm-2">
+                    <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
                   </div>
                 </div>
-                <div class="col-sm-2">
-                  <input type="text" class="form-control cant-pa" id="u_medida" value="<?= $pa['cantidad_unidad_medida'] ?>" placeholder="Cant.">
+              <?php
+              }
+            } else {
+              ?>
+              <div class="row fila-pa" style="margin-bottom: 10px;">
+                <div class="col-sm-6">
+                  <select class="form-control select-pa">
+                    <option value="">--- Seleccione un principio activo ---</option>
+                    <?php
+                    $sql_p = $conexion->query("SELECT * FROM principio_activo");
+                    while ($rp = $sql_p->fetch_assoc()) {
+                      echo "<option value='" . $rp['id_principio_activo'] . "' data-nombre='" . $rp['nombre'] . "'>" . $rp['nombre'] . "</option>";
+                    }
+                    ?>
+                  </select>
                 </div>
                 <div class="col-sm-2">
-                  <select class="form-control uni-pa" id="tipo_unidad_medida" data-unidad-actual="<?= $pa['id_tipo_unidad_medida'] ?>"></select>
+                  <input type="text" class="form-control cant-pa" placeholder="Cant.">
                 </div>
                 <div class="col-sm-2">
-                  <button type="button" class="btn btn-danger btn-remove-pa"><i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i></button>
+                  <select class="form-control uni-pa" data-unidad-actual=""></select>
                 </div>
+                <div class="col-sm-2">
+                  <button type="button" class="btn btn-danger btn-remove-pa"><i></i></button>
+                </div>
+              <?php } ?>
               </div>
-            <?php
-            }
-          } else {
-            ?>
-            <div class="row fila-pa" style="margin-bottom: 10px;">
-              <div class="col-sm-6">
-                <select class="form-control select-pa">
-                  <option value="">--- Seleccione un principio activo ---</option>
-                  <?php
-                  $sql_p = $conexion->query("SELECT * FROM principio_activo");
-                  while ($rp = $sql_p->fetch_assoc()) {
-                    echo "<option value='" . $rp['id_principio_activo'] . "' data-nombre='" . $rp['nombre'] . "'>" . $rp['nombre'] . "</option>";
-                  }
-                  ?>
-                </select>
+              <div class="col-sm-12 form-group" style="left:-10px;">
+                <p>Excipientes:</p>
+                <input type="text" name="excipientes" class="form-control" value="<?= $row['excipientes'] ?>">
               </div>
-              <div class="col-sm-2">
-                <input type="text" class="form-control cant-pa" placeholder="Cant.">
-              </div>
-              <div class="col-sm-2">
-                <select class="form-control uni-pa" data-unidad-actual=""></select>
-              </div>
-              <div class="col-sm-2">
-                <button type="button" class="btn btn-danger btn-remove-pa"><i></i></button>
-              </div>
-            <?php } ?>
-            </div>
-            <div class="col-sm-12 form-group" style="left:-10px;">
-              <p>Excipientes:</p>
-              <input type="text" name="excipientes" class="form-control" value="<?= $row['excipientes'] ?>">
-            </div>
-            <button type="button" class="btn btn-success btn-sm" id="btn_add_pa">
-              <i class="fa fa-plus"></i> Añadir Otro Principio Activo
-            </button>
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoPA">
-              <i class="fa fa-plus-circle"></i> Nuevo Principio Activo
-            </button>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal" id="guardar_pa_temp">Listo</button>
+              <button type="button" class="btn btn-success btn-sm" id="btn_add_pa">
+                <i class="fa fa-plus"></i> Añadir Otro Principio Activo
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoPA">
+                <i class="fa fa-plus-circle"></i> Nuevo Principio Activo
+              </button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" id="guardar_pa_temp">Listo</button>
+          </div>
         </div>
       </div>
     </div>
@@ -491,417 +491,416 @@ verificarAcceso('Editar Medicamentos');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    $(document).ready(function() {
-      const tipoInicial = $("#presentacion").val();
+<script>
+  $(document).ready(function() {
+    const tipoInicial = $("#presentacion").val();
 
-      function mostrarAviso(mensaje) {
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
+    function mostrarAviso(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
+
+    function limpiarErrores() {
+      $('.form-group').removeClass('input-error');
+      $('.form-control').removeClass('input-error');
+      $('#btn_modal_pa').removeClass('btn-error-sombreado');
+    }
+
+    $('#btn_add_pa').on('click', function() {
+      var nuevaFila = $('.fila-pa:first').clone();
+      nuevaFila.find('input').val('');
+      nuevaFila.find('select').val('');
+      nuevaFila.find('.uni-pa').attr('data-unidad-actual', '');
+
+      $('#contenedor_filas_principios').append(nuevaFila);
+
+      actualizarUnidades($("#presentacion").val());
+    });
+
+    $('#contenedor_filas_principios').on('click', '.btn-remove-pa', function() {
+      if ($('.fila-pa').length > 1) $(this).closest('.fila-pa').remove();
+    });
+
+    $('#guardar_pa_temp').on('click', function() {
+      var resumen = [];
+      var datos_para_db = [];
+
+      $('.fila-pa').each(function() {
+        var nombre = $(this).find('.select-pa option:selected').data('nombre');
+        var id_pa = $(this).find('.select-pa').val();
+        var cantidad = $(this).find('.cant-pa').val();
+        var unidad = $(this).find('.uni-pa option:selected').text();
+        var id_unidad = $(this).find('.uni-pa').val();
+
+        if (id_pa && cantidad && id_unidad) {
+          resumen.push(nombre + " " + cantidad + " " + unidad);
+          datos_para_db.push(id_pa + "," + cantidad + "," + id_unidad);
+        }
+      });
+
+      $('#composicion_detallada').val(datos_para_db.join('|'));
+      $('#btn_modal_pa').attr('data-original-title', resumen.join(', ') || 'Ninguno seleccionado').tooltip('fixTitle');
+    });
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    let patologias = $('#patologias_seleccionadas').val().split(',');
+    patologias.forEach(function(id) {
+      if (id !== "") {
+        $('.checkbox-patologia[value="' + id + '"]').prop('checked', true);
+      }
+    });
+
+    if ($('#composicion_detallada').val() !== "") {
+      console.log("Composición cargada: " + $('#composicion_detallada').val());
+    }
+
+    let selectDestinoTarget = null;
+
+    $(document).on('click', '.btn-search-pa', function() {
+      selectDestinoTarget = $(this).closest('.input-group').find('.select-pa');
+      $('#modalBuscarPA').modal('show');
+      $('#inputBuscarPA').val('').trigger('keyup');
+    });
+
+    $('#inputBuscarPA').on('keyup', function() {
+      let texto = $(this).val().toLowerCase();
+      let html = '';
+      let opciones = $('.select-pa:first option').not('[value=""]');
+
+      opciones.each(function() {
+        let nombre = $(this).text();
+        if (nombre.toLowerCase().includes(texto)) {
+          html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pa" data-id="${$(this).val()}">${nombre}</a>`;
+        }
+      });
+      $('#listaResultadosPA').html(html);
+    });
+
+    $(document).on('click', '.seleccionar-pa', function(e) {
+      e.preventDefault();
+      selectDestinoTarget.val($(this).data('id')).trigger('change');
+      $('#modalBuscarPA').modal('hide');
+    });
+
+    $(document).on('click', '.btn-search-pat', function() {
+      selectDestinoTarget = $(this).closest('.input-group').find('.select-pat');
+      $('#modalBuscarPat').modal('show');
+      $('#inputBuscarPat').val('').trigger('keyup');
+    });
+
+    $('#inputBuscarPat').on('keyup', function() {
+      let texto = $(this).val().toLowerCase();
+      let html = '';
+      let opciones = $('.select-pat:first option').not('[value=""]');
+
+      opciones.each(function() {
+        let nombre = $(this).text();
+        if (nombre.toLowerCase().includes(texto)) {
+          html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pat" data-id="${$(this).val()}">${nombre}</a>`;
+        }
+      });
+      $('#listaResultadosPat').html(html);
+    });
+
+    $(document).on('click', '.seleccionar-pat', function(e) {
+      e.preventDefault();
+      selectDestinoTarget.val($(this).data('id')).trigger('change');
+      $('#modalBuscarPat').modal('hide');
+    });
+
+    $('#btnGuardarNuevoPA').click(function() {
+      let nombre = $('#nombre_pa_nuevo').val();
+      let desc = $('#desc_pa_nuevo').val();
+
+      if (nombre.trim() === '') {
+        mostrarAviso("Nombre obligatorio");
+        return;
       }
 
-      function limpiarErrores() {
-        $('.form-group').removeClass('input-error');
-        $('.form-control').removeClass('input-error');
-        $('#btn_modal_pa').removeClass('btn-error-sombreado');
+      $.ajax({
+        url: '../../cfg/ajax/guardar_principio_activo.php',
+        type: 'POST',
+        data: {
+          nombre: nombre,
+          descripcion: desc
+        },
+        success: function(response) {
+          if (response !== "error") {
+            $('#modalNuevoPA').modal('hide');
+            let nuevaOpcion = `<option value="${response}" data-nombre="${nombre}">${nombre}</option>`;
+            $('.select-pa').append(nuevaOpcion);
+            $('#nombre_pa_nuevo, #desc_pa_nuevo').val('');
+            mostrarAviso("Principio Activo guardado con éxito");
+          } else {
+            mostrarAviso("Error al guardar en DB");
+          }
+        }
+      });
+    });
+
+    $('#btnGuardarNuevaPat').click(function() {
+      let nombre = $('#nombre_pat_nuevo').val();
+      let cie = $('#cie_pat_nuevo').val();
+      let contagioso = $('#contagioso_pat_nuevo').val();
+
+      if (nombre.trim() === '' || cie.trim() === '') {
+        mostrarAviso("Nombre y CIE obligatorios");
+        return;
       }
 
-      $('#btn_add_pa').on('click', function() {
-        var nuevaFila = $('.fila-pa:first').clone();
-        nuevaFila.find('input').val('');
-        nuevaFila.find('select').val('');
-        nuevaFila.find('.uni-pa').attr('data-unidad-actual', '');
-
-        $('#contenedor_filas_principios').append(nuevaFila);
-
-        actualizarUnidades($("#presentacion").val());
-      });
-
-      $('#contenedor_filas_principios').on('click', '.btn-remove-pa', function() {
-        if ($('.fila-pa').length > 1) $(this).closest('.fila-pa').remove();
-      });
-
-      $('#guardar_pa_temp').on('click', function() {
-        var resumen = [];
-        var datos_para_db = [];
-
-        $('.fila-pa').each(function() {
-          var nombre = $(this).find('.select-pa option:selected').data('nombre');
-          var id_pa = $(this).find('.select-pa').val();
-          var cantidad = $(this).find('.cant-pa').val();
-          var unidad = $(this).find('.uni-pa option:selected').text();
-          var id_unidad = $(this).find('.uni-pa').val();
-
-          if (id_pa && cantidad && id_unidad) {
-            resumen.push(nombre + " " + cantidad + " " + unidad);
-            datos_para_db.push(id_pa + "," + cantidad + "," + id_unidad);
+      $.ajax({
+        url: '../../cfg/ajax/guardar_patologia.php',
+        type: 'POST',
+        data: {
+          nombre: nombre,
+          cie: cie,
+          contagioso: contagioso
+        },
+        success: function(response) {
+          if (response !== "error") {
+            $('#modalNuevaPatologia').modal('hide');
+            let nuevaOpcion = `<option value="${response}">${nombre}</option>`;
+            $('.select-pat').append(nuevaOpcion);
+            $('#nombre_pat_nuevo, #cie_pat_nuevo').val('');
+            mostrarAviso("Patología guardada con éxito");
+          } else {
+            mostrarAviso("Error al guardar en DB (Posible código CIE duplicado)");
           }
-        });
-
-        $('#composicion_detallada').val(datos_para_db.join('|'));
-        $('#btn_modal_pa').attr('data-original-title', resumen.join(', ') || 'Ninguno seleccionado').tooltip('fixTitle');
+        }
       });
+    });
 
-      $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip();
+    $(document).on('change', '.select-pa', function() {
+      let selectActual = $(this);
+      let valorActual = selectActual.val();
 
-        let patologias = $('#patologias_seleccionadas').val().split(',');
-        patologias.forEach(function(id) {
-          if (id !== "") {
-            $('.checkbox-patologia[value="' + id + '"]').prop('checked', true);
-          }
-        });
+      if (valorActual === "") return;
 
-        if ($('#composicion_detallada').val() !== "") {
-          console.log("Composición cargada: " + $('#composicion_detallada').val());
+      let conteo = 0;
+      $('.select-pa').each(function() {
+        if ($(this).val() === valorActual) {
+          conteo++;
         }
       });
 
-      let selectDestinoTarget = null;
+      if (conteo > 1) {
+        mostrarAviso("⚠️ <b>Atención:</b> Este principio activo ya ha sido seleccionado en otra fila. Por favor, elija uno diferente o modifique la cantidad en el que ya agregó.");
+        selectActual.val("");
+      }
+    });
 
-      $(document).on('click', '.btn-search-pa', function() {
-        selectDestinoTarget = $(this).closest('.input-group').find('.select-pa');
-        $('#modalBuscarPA').modal('show');
-        $('#inputBuscarPA').val('').trigger('keyup');
-      });
+    $(document).on('change', '.select-pat', function() {
+      let selectActual = $(this);
+      let valorActual = selectActual.val();
 
-      $('#inputBuscarPA').on('keyup', function() {
-        let texto = $(this).val().toLowerCase();
-        let html = '';
-        let opciones = $('.select-pa:first option').not('[value=""]');
+      if (valorActual === "") return;
 
-        opciones.each(function() {
-          let nombre = $(this).text();
-          if (nombre.toLowerCase().includes(texto)) {
-            html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pa" data-id="${$(this).val()}">${nombre}</a>`;
-          }
-        });
-        $('#listaResultadosPA').html(html);
-      });
-
-      $(document).on('click', '.seleccionar-pa', function(e) {
-        e.preventDefault();
-        selectDestinoTarget.val($(this).data('id')).trigger('change');
-        $('#modalBuscarPA').modal('hide');
-      });
-
-      $(document).on('click', '.btn-search-pat', function() {
-        selectDestinoTarget = $(this).closest('.input-group').find('.select-pat');
-        $('#modalBuscarPat').modal('show');
-        $('#inputBuscarPat').val('').trigger('keyup');
-      });
-
-      $('#inputBuscarPat').on('keyup', function() {
-        let texto = $(this).val().toLowerCase();
-        let html = '';
-        let opciones = $('.select-pat:first option').not('[value=""]');
-
-        opciones.each(function() {
-          let nombre = $(this).text();
-          if (nombre.toLowerCase().includes(texto)) {
-            html += `<a href="#" class="list-group-item list-group-item-action seleccionar-pat" data-id="${$(this).val()}">${nombre}</a>`;
-          }
-        });
-        $('#listaResultadosPat').html(html);
-      });
-
-      $(document).on('click', '.seleccionar-pat', function(e) {
-        e.preventDefault();
-        selectDestinoTarget.val($(this).data('id')).trigger('change');
-        $('#modalBuscarPat').modal('hide');
-      });
-
-      $('#btnGuardarNuevoPA').click(function() {
-        let nombre = $('#nombre_pa_nuevo').val();
-        let desc = $('#desc_pa_nuevo').val();
-
-        if (nombre.trim() === '') {
-          mostrarAviso("Nombre obligatorio");
-          return;
-        }
-
-        $.ajax({
-          url: '../../cfg/ajax/guardar_principio_activo.php',
-          type: 'POST',
-          data: {
-            nombre: nombre,
-            descripcion: desc
-          },
-          success: function(response) {
-            if (response !== "error") {
-              $('#modalNuevoPA').modal('hide');
-              let nuevaOpcion = `<option value="${response}" data-nombre="${nombre}">${nombre}</option>`;
-              $('.select-pa').append(nuevaOpcion);
-              $('#nombre_pa_nuevo, #desc_pa_nuevo').val('');
-              mostrarAviso("Principio Activo guardado con éxito");
-            } else {
-              mostrarAviso("Error al guardar en DB");
-            }
-          }
-        });
-      });
-
-      $('#btnGuardarNuevaPat').click(function() {
-        let nombre = $('#nombre_pat_nuevo').val();
-        let cie = $('#cie_pat_nuevo').val();
-        let contagioso = $('#contagioso_pat_nuevo').val();
-
-        if (nombre.trim() === '' || cie.trim() === '') {
-          mostrarAviso("Nombre y CIE obligatorios");
-          return;
-        }
-
-        $.ajax({
-          url: '../../cfg/ajax/guardar_patologia.php',
-          type: 'POST',
-          data: {
-            nombre: nombre,
-            cie: cie,
-            contagioso: contagioso
-          },
-          success: function(response) {
-            if (response !== "error") {
-              $('#modalNuevaPatologia').modal('hide');
-              let nuevaOpcion = `<option value="${response}">${nombre}</option>`;
-              $('.select-pat').append(nuevaOpcion);
-              $('#nombre_pat_nuevo, #cie_pat_nuevo').val('');
-              mostrarAviso("Patología guardada con éxito");
-            } else {
-              mostrarAviso("Error al guardar en DB (Posible código CIE duplicado)");
-            }
-          }
-        });
-      });
-
-      $(document).on('change', '.select-pa', function() {
-        let selectActual = $(this);
-        let valorActual = selectActual.val();
-
-        if (valorActual === "") return;
-
-        let conteo = 0;
-        $('.select-pa').each(function() {
-          if ($(this).val() === valorActual) {
-            conteo++;
-          }
-        });
-
-        if (conteo > 1) {
-          mostrarAviso("⚠️ <b>Atención:</b> Este principio activo ya ha sido seleccionado en otra fila. Por favor, elija uno diferente o modifique la cantidad en el que ya agregó.");
-          selectActual.val("");
+      let conteo = 0;
+      $('.select-pat').each(function() {
+        if ($(this).val() === valorActual) {
+          conteo++;
         }
       });
 
-      $(document).on('change', '.select-pat', function() {
-        let selectActual = $(this);
-        let valorActual = selectActual.val();
+      if (conteo > 1) {
+        mostrarAviso("⚠️ <b>Atención:</b> Esta patología ya ha sido seleccionada en esta lista. Por favor, elija una diferente.");
+        selectActual.val("");
+      }
+    });
 
-        if (valorActual === "") return;
+    let patologiasExistentes = "<?= $valor_patologias; ?>".split(',');
+    if (patologiasExistentes[0] !== "") {
+      patologiasExistentes.forEach(id => {
+        agregarFilaPatologia(id);
+      });
 
-        let conteo = 0;
+      setTimeout(() => {
+        let nombresInit = [];
         $('.select-pat').each(function() {
-          if ($(this).val() === valorActual) {
-            conteo++;
-          }
+          let txt = $(this).find('option:selected').text();
+          if (txt && $(this).val() !== "") nombresInit.push(txt.trim());
         });
+        $('#btn_modal_pat').attr('data-original-title', nombresInit.join(', ')).tooltip('fixTitle');
+      }, 500);
+    }
 
-        if (conteo > 1) {
-          mostrarAviso("⚠️ <b>Atención:</b> Esta patología ya ha sido seleccionada en esta lista. Por favor, elija una diferente.");
-          selectActual.val("");
-        }
-      });
+    $('#btnGuardarLab').click(function() {
+      var nombre = $('#nombre_lab_nuevo').val();
 
-      let patologiasExistentes = "<?= $valor_patologias; ?>".split(',');
-      if (patologiasExistentes[0] !== "") {
-        patologiasExistentes.forEach(id => {
-          agregarFilaPatologia(id);
-        });
-
-        setTimeout(() => {
-          let nombresInit = [];
-          $('.select-pat').each(function() {
-            let txt = $(this).find('option:selected').text();
-            if (txt && $(this).val() !== "") nombresInit.push(txt.trim());
-          });
-          $('#btn_modal_pat').attr('data-original-title', nombresInit.join(', ')).tooltip('fixTitle');
-        }, 500);
+      if (nombre.trim() === "") {
+        mostrarAviso("Por favor ingrese un nombre");
+        return;
       }
 
-      $('#btnGuardarLab').click(function() {
-        var nombre = $('#nombre_lab_nuevo').val();
-
-        if (nombre.trim() === "") {
-          mostrarAviso("Por favor ingrese un nombre");
-          return;
-        }
-
-        $.ajax({
-          url: '../../cfg/ajax/guardar_laboratorio.php',
-          type: 'POST',
-          data: {
-            nombre: nombre
-          },
-          success: function(response) {
-            if (response != "error") {
-              $('#modalNuevoLaboratorio').modal('hide');
-              $('#nombre_lab_nuevo').val('');
-              $('#laboratorio').append('<option value="' + response + '" selected>' + nombre + '</option>');
-              mostrarAviso("Laboratorio guardado correctamente");
-            } else {
-              mostrarAviso("Error al guardar el laboratorio");
-            }
+      $.ajax({
+        url: '../../cfg/ajax/guardar_laboratorio.php',
+        type: 'POST',
+        data: {
+          nombre: nombre
+        },
+        success: function(response) {
+          if (response != "error") {
+            $('#modalNuevoLaboratorio').modal('hide');
+            $('#nombre_lab_nuevo').val('');
+            $('#laboratorio').append('<option value="' + response + '" selected>' + nombre + '</option>');
+            mostrarAviso("Laboratorio guardado correctamente");
+          } else {
+            mostrarAviso("Error al guardar el laboratorio");
           }
-        });
-      });
-
-      function actualizarUnidades(idTipo) {
-        if (idTipo) {
-          fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idTipo)
-            .then(r => r.text())
-            .then(data => {
-              $('.uni-pa, #tipo_concentracion').each(function() {
-                $(this).html(data);
-
-                const unidadGuardada = $(this).data('unidad-actual');
-
-                if (unidadGuardada) {
-                  $(this).val(unidadGuardada);
-                }
-              });
-            })
-            .catch(error => console.error('Error al cargar unidades:', error));
         }
-      }
-
-      $('#presentacion').on('change', function() {
-        actualizarUnidades($(this).val());
       });
+    });
 
-      actualizarUnidades(tipoInicial);
-      $('#btn_modal_pa').tooltip();
+    function actualizarUnidades(idTipo) {
+      if (idTipo) {
+        fetch('../../cfg/ajax/obtener_unidades_medicamentos.php?id=' + idTipo)
+          .then(r => r.text())
+          .then(data => {
+            $('.uni-pa, #tipo_concentracion').each(function() {
+              $(this).html(data);
 
-      $(document).on('input', '#medicamento', function() {
-        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').substring(0, 50);
-      });
+              const unidadGuardada = $(this).data('unidad-actual');
 
-      $(document).on('input', '.cant-pa', function() {
-        this.value = this.value.replace(/[^0-9.]/g, '');
-      });
-
-      $(document).on('input', '#stock_minimo', function() {
-        this.value = this.value.replace(/[^0-9.]/g, '');
-      });
-
-      $(document).on('input', '#stock_maximo', function() {
-        this.value = this.value.replace(/[^0-9.]/g, '');
-      });
-
-      function verificarMedicamentoEditarYMostrarModal() {
-        const nombre = $('#medicamento').val().trim();
-        const id_presentacion = $('#presentacion').val();
-        const codigo_barras = $('input[name="codigo_barras"]').val().trim();
-        const id_actual = $('input[name="Id"]').val();
-        const btnGuardar = $('#btnGuardar');
-
-        const textoOriginal = btnGuardar.text();
-        btnGuardar.text('Verificando...').attr('disabled', true);
-
-        $.ajax({
-          url: '../../cfg/ajax/verificar_existencia_medicamento.php',
-          method: 'POST',
-          dataType: 'json',
-          data: {
-            nombre: nombre,
-            id_presentacion: id_presentacion,
-            codigo_barras: codigo_barras,
-            id_actual: id_actual
-          },
-          success: function(response) {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-
-            if (response.existe_duplicado) {
-              let mensaje = "";
-              if (response.tipo_error === 'codigo') {
-                mensaje = `⚠️ El código de barras ya está registrado en otro medicamento: <b>${response.detalle}</b>.`;
-                $('input[name="codigo_barras"]').addClass('input-error');
-              } else {
-                mensaje = `⚠️ Ya existe OTRO registro de <b>${nombre}</b> con esa misma presentación.`;
-                $('#medicamento, #presentacion').addClass('input-error');
+              if (unidadGuardada) {
+                $(this).val(unidadGuardada);
               }
-              mostrarAviso('⚠️ Error de Duplicidad:<br>' + mensaje);
+            });
+          })
+          .catch(error => console.error('Error al cargar unidades:', error));
+      }
+    }
+
+    $('#presentacion').on('change', function() {
+      actualizarUnidades($(this).val());
+    });
+
+    actualizarUnidades(tipoInicial);
+    $('#btn_modal_pa').tooltip();
+
+    $(document).on('input', '#medicamento', function() {
+      this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').substring(0, 50);
+    });
+
+    $(document).on('input', '.cant-pa', function() {
+      this.value = this.value.replace(/[^0-9.]/g, '');
+    });
+
+    $(document).on('input', '#stock_minimo', function() {
+      this.value = this.value.replace(/[^0-9.]/g, '');
+    });
+
+    $(document).on('input', '#stock_maximo', function() {
+      this.value = this.value.replace(/[^0-9.]/g, '');
+    });
+
+    function verificarMedicamentoEditarYMostrarModal() {
+      const nombre = $('#medicamento').val().trim();
+      const id_presentacion = $('#presentacion').val();
+      const codigo_barras = $('input[name="codigo_barras"]').val().trim();
+      const id_actual = $('input[name="Id"]').val();
+      const btnGuardar = $('#btnGuardar');
+
+      const textoOriginal = btnGuardar.text();
+      btnGuardar.text('Verificando...').attr('disabled', true);
+
+      $.ajax({
+        url: '../../cfg/ajax/verificar_existencia_medicamento.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          nombre: nombre,
+          id_presentacion: id_presentacion,
+          codigo_barras: codigo_barras,
+          id_actual: id_actual
+        },
+        success: function(response) {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+
+          if (response.existe_duplicado) {
+            let mensaje = "";
+            if (response.tipo_error === 'codigo') {
+              mensaje = `⚠️ El código de barras ya está registrado en otro medicamento: <b>${response.detalle}</b>.`;
+              $('input[name="codigo_barras"]').addClass('input-error');
             } else {
-              $('#modalGuardar').modal('show');
+              mensaje = `⚠️ Ya existe OTRO registro de <b>${nombre}</b> con esa misma presentación.`;
+              $('#medicamento, #presentacion').addClass('input-error');
             }
-          },
-          error: function() {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
+            mostrarAviso('⚠️ Error de Duplicidad:<br>' + mensaje);
+          } else {
+            $('#modalGuardar').modal('show');
           }
-        });
+        },
+        error: function() {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+          mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
+        }
+      });
+    }
+
+    $('#formularioMedicamento').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let errores = [];
+
+      if ($('#medicamento').val().trim() === "") {
+        errores.push("Falta el nombre del medicamento.");
+        $('#medicamento').addClass('input-error');
+      }
+      if ($('#presentacion').val().trim() === "") {
+        errores.push("Falta la presentacion del medicamento.");
+        $('#presentacion').addClass('input-error');
+      }
+      if ($('#composicion_detallada').val().trim() === "") {
+        errores.push("Debe gestionar al menos un principio activo en el modal.");
+        $('#btn_modal_pa').addClass('btn-error-sombreado');
+      }
+      if ($('#contenido_neto').val().trim() === "") {
+        errores.push("Falta el contenido neto del medicamento.");
+        $('#contenido_neto').addClass('input-error');
+      }
+      if ($('#via_aplicacion').val().trim() === "") {
+        errores.push("Falta el tipo de aplicacion.");
+        $('#via_aplicacion').addClass('input-error');
+      }
+      if ($('#almacenamiento').val().trim() === "") {
+        errores.push("Falta el tipo de almacenamiento.");
+        $('#almacenamiento').addClass('input-error');
       }
 
-      $('#formularioMedicamento').on('submit', function(e) {
-        e.preventDefault();
-        limpiarErrores();
-        let errores = [];
+      if (errores.length > 0) {
+        mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        verificarMedicamentoEditarYMostrarModal();
+      }
+    });
 
-        if ($('#medicamento').val().trim() === "") {
-          errores.push("Falta el nombre del medicamento.");
-          $('#medicamento').addClass('input-error');
-        }
-        if ($('#presentacion').val().trim() === "") {
-          errores.push("Falta la presentacion del medicamento.");
-          $('#presentacion').addClass('input-error');
-        }
-        if ($('#composicion_detallada').val().trim() === "") {
-          errores.push("Debe gestionar al menos un principio activo en el modal.");
-          $('#btn_modal_pa').addClass('btn-error-sombreado');
-        }
-        if ($('#contenido_neto').val().trim() === "") {
-          errores.push("Falta el contenido neto del medicamento.");
-          $('#contenido_neto').addClass('input-error');
-        }
-        if ($('#via_aplicacion').val().trim() === "") {
-          errores.push("Falta el tipo de aplicacion.");
-          $('#via_aplicacion').addClass('input-error');
-        }
-        if ($('#almacenamiento').val().trim() === "") {
-          errores.push("Falta el tipo de almacenamiento.");
-          $('#almacenamiento').addClass('input-error');
-        }
+    $('#confirmarGuardar').on('click', function() {
+      $('#modalGuardar').modal('hide');
+      $('#formularioMedicamento').off('submit').submit();
+    });
 
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          verificarMedicamentoEditarYMostrarModal();
+    $('#modalPatologias').on('show.bs.modal', function() {
+      let seleccionadas = $('#patologias_seleccionadas').val().split(',');
+      $('.checkbox-patologia').prop('checked', false);
+      seleccionadas.forEach(id => {
+        if (id !== "") {
+          $(`.checkbox-patologia[value="${id}"]`).prop('checked', true);
         }
       });
+    });
 
-      $('#confirmarGuardar').on('click', function() {
-        $('#modalGuardar').modal('hide');
-        $('#formularioMedicamento').off('submit').submit();
-      });
+    <?php if (isset($patologias_json)) : ?>
+      let patsExistentes = <?php echo $patologias_json; ?>;
+      patsExistentes.forEach(p => agregarFilaPatologia(p.id_patologia));
+    <?php endif; ?>
 
-      $('#modalPatologias').on('show.bs.modal', function() {
-        let seleccionadas = $('#patologias_seleccionadas').val().split(',');
-        $('.checkbox-patologia').prop('checked', false);
-        seleccionadas.forEach(id => {
-          if (id !== "") {
-            $(`.checkbox-patologia[value="${id}"]`).prop('checked', true);
-          }
-        });
-      });
-
-      <?php if (isset($patologias_json)) : ?>
-        let patsExistentes = <?php echo $patologias_json; ?>;
-        patsExistentes.forEach(p => agregarFilaPatologia(p.id_patologia));
-      <?php endif; ?>
-
-      function agregarFilaPatologia(idSeleccionado = "") {
-        let htmlPat = `
+    function agregarFilaPatologia(idSeleccionado = "") {
+      let htmlPat = `
         <div class="row fila-pat" style="margin-bottom: 10px;">
             <div class="col-sm-10">
               <div class="input-group">
@@ -927,54 +926,54 @@ verificarAcceso('Editar Medicamentos');
                 </button>
             </div>
         </div>`;
-        $('#contenedor_filas_patologias').append(htmlPat);
-        if (idSeleccionado) {
-          $('#contenedor_filas_patologias .fila-pat:last .select-pat').val(idSeleccionado);
-        }
+      $('#contenedor_filas_patologias').append(htmlPat);
+      if (idSeleccionado) {
+        $('#contenedor_filas_patologias .fila-pat:last .select-pat').val(idSeleccionado);
       }
+    }
 
-      $('#btn_modal_pat').click(function() {
-        if ($('#contenedor_filas_patologias').children().length === 0) {
-          agregarFilaPatologia();
-        }
-      });
-
-      $('#add_fila_pat').click(() => agregarFilaPatologia());
-
-      $(document).on('click', '.btn-remove-pat', function() {
-        $(this).closest('.fila-pat').remove();
-      });
-
-      $('#btn_modal_pat').tooltip();
-
-      $('#guardar_pat_listo').click(function() {
-        let ids = [];
-        let nombres = [];
-
-        $('.select-pat').each(function() {
-          let val = $(this).val();
-          if (val && val !== "") {
-            ids.push(val);
-            let txt = $(this).find('option:selected').text();
-            if (txt) {
-              nombres.push(txt.trim());
-            }
-          }
-        });
-
-        $('#patologias_seleccionadas').val(ids.join('|'));
-
-        if (ids.length > 0) {
-          $('#btn_modal_pat').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
-        } else {
-          $('#btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
-        }
-      });
-
-      $('#btn_modal_pat').click(function() {
-        if ($('#contenedor_filas_patologias').children().length === 0) {
-          agregarFilaPatologia();
-        }
-      });
+    $('#btn_modal_pat').click(function() {
+      if ($('#contenedor_filas_patologias').children().length === 0) {
+        agregarFilaPatologia();
+      }
     });
-  </script>
+
+    $('#add_fila_pat').click(() => agregarFilaPatologia());
+
+    $(document).on('click', '.btn-remove-pat', function() {
+      $(this).closest('.fila-pat').remove();
+    });
+
+    $('#btn_modal_pat').tooltip();
+
+    $('#guardar_pat_listo').click(function() {
+      let ids = [];
+      let nombres = [];
+
+      $('.select-pat').each(function() {
+        let val = $(this).val();
+        if (val && val !== "") {
+          ids.push(val);
+          let txt = $(this).find('option:selected').text();
+          if (txt) {
+            nombres.push(txt.trim());
+          }
+        }
+      });
+
+      $('#patologias_seleccionadas').val(ids.join('|'));
+
+      if (ids.length > 0) {
+        $('#btn_modal_pat').attr('data-original-title', nombres.join(', ')).tooltip('fixTitle');
+      } else {
+        $('#btn_modal_pat').attr('data-original-title', 'Ninguna seleccionada').tooltip('fixTitle');
+      }
+    });
+
+    $('#btn_modal_pat').click(function() {
+      if ($('#contenedor_filas_patologias').children().length === 0) {
+        agregarFilaPatologia();
+      }
+    });
+  });
+</script>

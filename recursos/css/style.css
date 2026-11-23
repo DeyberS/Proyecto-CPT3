@@ -5,7 +5,291 @@ body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
-  overflow-y: auto; 
+  overflow-y: auto;
+}
+
+.wrapper {
+  display: block !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  background-color: #f4f7f9 !important;
+}
+
+.content-wrapper {
+  background-color: #f4f7f9 !important;
+}
+
+.content-custom {
+  padding: 50px 10px;
+  margin-left: 60px;
+}
+
+/* PAGES/PHP/PAPELERA */
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.content-wrapper::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+html,
+body,
+.content-wrapper {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-collapse .ocultar-al-colapsar {
+  display: none !important;
+}
+
+.main-sidebar {
+  position: fixed !important;
+  top: 0px !important;
+  bottom: 0px !important;
+  left: 0 !important;
+  height: auto !important;
+  max-height: calc(100vh - 60px) !important;
+  z-index: 810;
+}
+
+.sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  position: relative !important;
+  padding: 0 !important;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.main-sidebar {
+  position: fixed !important;
+  top: 0px !important;
+  bottom: 0px !important;
+  left: 0 !important;
+  height: auto !important;
+  max-height: calc(100vh - 60px) !important;
+  z-index: 810;
+}
+
+.sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  position: relative !important;
+  padding: 0 !important;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+@keyframes glow-recipes-yellow {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(243, 156, 18, 0.4);
+    box-shadow: 0 0 10px rgba(243, 156, 18, 0.6);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.glow-active {
+  animation: glow-recipes-yellow 2s infinite;
+  border-radius: 4px;
+}
+
+.treeview > a > .pull-right-container > .arrow-indicator {
+  display: inline-block;
+  float: left;
+  font-size: 12px;
+  color: #b8c7ce;
+  transition: transform 0.2s;
+}
+
+.treeview.menu-open > a > .pull-right-container > .arrow-indicator {
+  transform: rotate(90deg);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #00a65a;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.welcome-banner {
+  background: linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc);
+  color: white;
+  padding: 25px 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.welcome-banner h2 {
+  margin: 0 0 5px 0;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+.welcome-banner p {
+  margin: 0;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.modern-card {
+  background-color: #2b3035;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 140px;
+  justify-content: center;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+.modern-card .card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.modern-card .info {
+  color: #ffffff;
+  flex: 1;
+  padding-right: 15px;
+}
+
+.modern-card .info h3 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  color: #f8f9fa;
+}
+
+.modern-card .info p {
+  font-size: 13px;
+  color: #adb5bd;
+  margin: 0;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+.modern-card .icon-box {
+  width: 65px;
+  height: 65px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.modern-card .card-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 5px 0;
+  text-align: center;
+  z-index: 2;
+  transition: background 0.3s ease;
+}
+
+.modern-card .card-footer:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.modern-card .card-footer a {
+  color: #00bcd4;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  display: block;
+}
+
+.bg-gradient-blue {
+  background: linear-gradient(135deg, #36d1dc, #5b86e5);
+}
+.bg-gradient-green {
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+}
+.bg-gradient-orange {
+  background: linear-gradient(135deg, #ff8008, #ffc837);
+}
+.bg-gradient-red {
+  background: linear-gradient(135deg, #ed213a, #93291e);
+}
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #8e2de2, #4a00e0);
+}
+.bg-gradient-teal {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+.bg-gradient-pink {
+  background: linear-gradient(135deg, #ec008c, #fc6767);
+}
+.bg-gradient-gray {
+  background: linear-gradient(135deg, #606c88, #3f4c6b);
+}
+
+.card-list {
+  height: auto;
+  min-height: 140px;
+}
+
+.card-list h3 {
+  font-size: 22px !important;
+  margin-bottom: 10px !important;
+}
+
+.card-list ul {
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: #ced4da;
+}
+
+.card-list li {
+  margin-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 5px;
 }
 
 /* ============================================= */
@@ -13,10 +297,10 @@ body {
 /* ============================================= */
 
 .wrapper {
-  min-height: 100vh; 
-  display: block; 
+  min-height: 100vh;
+  display: block;
   overflow-x: hidden;
-  zoom:80%;
+  zoom: 80%;
 }
 
 @media (min-width: 1024px) {
@@ -26,7 +310,7 @@ body {
 }
 
 .content-wrapper {
-  min-height: calc(100vh - 50px) !important; 
+  min-height: calc(100vh - 50px) !important;
   display: block !important;
 }
 
@@ -103,7 +387,6 @@ body {
 /*  alinear notificaciones y usuario             */
 /* ============================================= */
 @media (max-width: 767px) {
-
   /* ---------- 1. Ocultar la barra CPT ---------- */
   .main-header > .logo {
     display: none !important;
@@ -182,7 +465,6 @@ body {
 /* ============================================= */
 
 @media (max-width: 767px) {
-
   /* 1. Desactivar el zoom en móvil: rompe position:fixed en Chrome Android */
   .wrapper {
     zoom: 1 !important;
@@ -224,7 +506,7 @@ body {
   body.sidebar-open #contenedorPaginacion {
     opacity: 0;
     pointer-events: none;
-    transform: none !important;   /* asegura que no se desplace */
+    transform: none !important; /* asegura que no se desplace */
   }
 
   /* 6. Tabla: mantener el min-width dentro del contenedor con scroll */
@@ -252,7 +534,6 @@ body {
 .skin-black .main-header .navbar .nav > .notifications-menu > a:hover,
 .skin-black .main-header .navbar .nav > .user-menu > a:hover {
   opacity: 0.8;
-  background-color: royalblue;
 }
 
 /* ============================================= */
@@ -260,17 +541,16 @@ body {
 /*  Evita que "Cambios" empuje a "Acciones"      */
 /* ============================================= */
 @media (max-width: 767px) {
-
   #t_user td.td-cambios,
   #t_user td.td-acciones {
     vertical-align: middle;
     padding: 4px 6px !important;
-    white-space: nowrap;          /* los botones no se parten */
-    min-width: 100px;             /* ancho mínimo para 3 íconos */
+    white-space: nowrap; /* los botones no se parten */
+    min-width: 100px; /* ancho mínimo para 3 íconos */
     box-sizing: border-box;
   }
 
-  #t_user td.td-cambios  .btn-sm,
+  #t_user td.td-cambios .btn-sm,
   #t_user td.td-acciones .btn-sm {
     display: inline-block;
     float: none !important;
@@ -281,7 +561,7 @@ body {
     box-sizing: border-box;
   }
 
-  #t_user td.td-cambios  img,
+  #t_user td.td-cambios img,
   #t_user td.td-acciones img {
     display: block;
     margin: 0 auto;
@@ -296,12 +576,11 @@ body {
 /*  Normaliza TODOS los .btn-sm dentro de tds    */
 /* ============================================= */
 @media (max-width: 767px) {
-
   #t_user td.td-acciones {
     vertical-align: middle;
     padding: 4px 6px !important;
-    white-space: nowrap;          /* 4 botones no se parten */
-    min-width: 140px;             /* espacio para 4 íconos */
+    white-space: nowrap; /* 4 botones no se parten */
+    min-width: 140px; /* espacio para 4 íconos */
     box-sizing: border-box;
   }
 
@@ -419,12 +698,12 @@ body {
   -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.05);
 }
-#box_main_left{
-  margin-left:16px; 
+#box_main_left {
+  margin-left: 16px;
   width: 47%;
 }
-#box_main_right{
-  margin-right:16px; 
+#box_main_right {
+  margin-right: 16px;
   width: 47%;
 }
 .skin-black .main-header .navbar-toggle {
@@ -508,7 +787,7 @@ body {
 }
 .skin-black .sidebar-menu > li.header {
   color: #4b646f;
-  background: rgba(0, 0, 0, 0.2);
+  background: #111 !important;
 }
 .skin-black .sidebar-menu > li > a {
   border-left: 3px solid transparent;
@@ -731,11 +1010,19 @@ body {
   border-bottom-left-radius: 2px;
 }
 .skin-black-light .sidebar-form input[type="text"]:focus,
-.skin-black-light .sidebar-form input[type="text"]:focus + .input-group-btn .btn {
+.skin-black-light
+  .sidebar-form
+  input[type="text"]:focus
+  + .input-group-btn
+  .btn {
   background-color: #fff;
   color: #666;
 }
-.skin-black-light .sidebar-form input[type="text"]:focus + .input-group-btn .btn {
+.skin-black-light
+  .sidebar-form
+  input[type="text"]:focus
+  + .input-group-btn
+  .btn {
   border-left-color: #fff;
 }
 .skin-black-light .sidebar-form .btn {
@@ -746,7 +1033,10 @@ body {
   border-bottom-left-radius: 0;
 }
 @media (min-width: 768px) {
-  .skin-black-light.sidebar-mini.sidebar-collapse .sidebar-menu > li > .treeview-menu {
+  .skin-black-light.sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li
+    > .treeview-menu {
     border-left: 1px solid #d2d6de;
   }
 }
@@ -759,7 +1049,7 @@ body {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
-  color:white;
+  color: white;
   transition: transform 0.3s ease;
 }
 
@@ -783,7 +1073,6 @@ body {
   outline: none;
 }
 
-
 .login-button:hover {
   background-color: #0e4bb5;
 }
@@ -804,37 +1093,8 @@ body {
   text-decoration: underline;
 }
 
-/* Loader */
-#full_loader{
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: black;
-  opacity: 0.5;
-  z-index: 9999;
-}
-#loader{
-  border: 8px solid #f3f3f3;
-  border-top: 8px solid #3498db;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 1.5s linear infinite;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  margin-top: -30px;
-  margin-left: -30px;
-  z-index: 1000;
-}
-@keyframes spin{
-  0% {transform: rotate(0deg);}
-  100% {transform: rotate(360deg);}
-}
-.hidden{
-  display:none;
+.hidden {
+  display: none;
 }
 
 /* Layout */
@@ -858,17 +1118,12 @@ body {
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
   position: relative;
 }
-.layout-boxed {
-  background: url('../img/boxed-bg.jpg') repeat fixed;
-}
-/*
- * Content Wrapper - contains the main content
- * ```.right-side has been deprecated as of v2.0.0 in favor of .content-wrapper  ```
- */
+
 .content-wrapper,
 .right-side,
 .main-footer {
-  -webkit-transition: -webkit-transform 0.3s ease-in-out, margin 0.3s ease-in-out;
+  -webkit-transition: -webkit-transform 0.3s ease-in-out,
+    margin 0.3s ease-in-out;
   -moz-transition: -moz-transform 0.3s ease-in-out, margin 0.3s ease-in-out;
   -o-transition: -o-transform 0.3s ease-in-out, margin 0.3s ease-in-out;
   transition: transform 0.3s ease-in-out, margin 0.3s ease-in-out;
@@ -974,7 +1229,7 @@ h6,
 .h4,
 .h5,
 .h6 {
-  font-family: 'Source Sans Pro', sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
 }
 /* General Links */
 a {
@@ -1088,7 +1343,7 @@ a:focus {
   text-align: center;
   font-size: 9px;
   padding: 2px 3px;
-  line-height: .9;
+  line-height: 0.9;
 }
 .main-header .logo {
   -webkit-transition: width 0.3s ease-in-out;
@@ -1152,7 +1407,7 @@ a:focus {
   margin-right: 5px;
 }
 .content-header > .breadcrumb > li + li:before {
-  content: '>\00a0';
+  content: ">\00a0";
 }
 @media (max-width: 991px) {
   .content-header > .breadcrumb {
@@ -1349,7 +1604,13 @@ a:focus {
   padding: 0;
   margin-right: 10px;
 }
-.sidebar-menu li.active > a > .fa-angle-left > a > .pull-right-container > .fa-angle-left {
+.sidebar-menu
+  li.active
+  > a
+  > .fa-angle-left
+  > a
+  > .pull-right-container
+  > .fa-angle-left {
   -webkit-transform: rotate(-90deg);
   -ms-transform: rotate(-90deg);
   -o-transform: rotate(-90deg);
@@ -1422,7 +1683,11 @@ a:focus {
     padding-bottom: 5px;
     border-bottom-right-radius: 4px;
   }
-  .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span:not(.pull-right),
+  .sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li:hover
+    > a
+    > span:not(.pull-right),
   .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
     display: block !important;
     position: absolute;
@@ -1435,13 +1700,22 @@ a:focus {
     padding: 12px 5px 12px 20px;
     background-color: inherit;
   }
-  .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > .pull-right-container {
+  .sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li:hover
+    > a
+    > .pull-right-container {
     float: right;
-    width: auto!important;
-    left: 200px!important;
-    top: 10px!important;
+    width: auto !important;
+    left: 200px !important;
+    top: 10px !important;
   }
-  .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > .pull-right-container > .label:not(:first-of-type) {
+  .sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li:hover
+    > a
+    > .pull-right-container
+    > .label:not(:first-of-type) {
     display: none;
   }
   .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
@@ -1825,7 +2099,14 @@ a:focus {
   text-overflow: ellipsis;
   padding: 10px;
 }
-.navbar-nav > .notifications-menu > .dropdown-menu > li .menu > li > a > .glyphicon,
+.navbar-nav
+  > .notifications-menu
+  > .dropdown-menu
+  > li
+  .menu
+  > li
+  > a
+  > .glyphicon,
 .navbar-nav > .notifications-menu > .dropdown-menu > li .menu > li > a > .fa,
 .navbar-nav > .notifications-menu > .dropdown-menu > li .menu > li > a > .ion {
   width: 20px;
@@ -1964,6 +2245,7 @@ a:focus {
   border-radius: 50%;
   margin-right: 10px;
   margin-top: -2px;
+  filter: invert(1);
 }
 @media (max-width: 767px) {
   .navbar-nav > .user-menu .user-image {
@@ -2210,235 +2492,233 @@ a:focus {
 .nav-tabs-custom.tab-default > .nav-tabs > li.active {
   border-top-color: #d2d6de;
 }
-#mas_b{
-	font-size: 12px;
-	border-radius: 2px;
-  height: 30px;
-  width: 30px;
-  margin-left:0px;
-}
-#erase_b{
+#mas_b {
   font-size: 12px;
-	border-radius: 2px;
+  border-radius: 2px;
   height: 30px;
   width: 30px;
-  margin-right:0px;
+  margin-left: 0px;
 }
-#mas_menu{
+#erase_b {
+  font-size: 12px;
+  border-radius: 2px;
+  height: 30px;
+  width: 30px;
+  margin-right: 0px;
+}
+#mas_menu {
   font-size: 12px;
 }
 
-#buscar{
-  float: left; 
-  width: 200px; 
-  height: 30px; 
+#buscar {
+  float: left;
+  width: 200px;
+  height: 30px;
 }
-footer{
-  background-color:white;
+footer {
+  background-color: white;
   text-align-last: center;
-  position:fixed; 
-  bottom:0; 
-  width:100%;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
 }
-.page-link{
+.page-link {
   background-color: red;
 }
 
-.fixed-bottom{
-  position:fixed; 
-  left:550px; 
-  bottom:10px;
+.fixed-bottom {
+  position: fixed;
+  left: 550px;
+  bottom: 10px;
 }
 
 /*Formularios :3*/
 
 .formulario__label {
-	display: block;
-	font-weight: 700;
-	padding: 0 0 10px 10px;
-	cursor: pointer;
+  display: block;
+  font-weight: 700;
+  padding: 0 0 10px 10px;
+  cursor: pointer;
 }
 
-
 .formulario__grupo-input {
-	position: relative;
-	display: flex;
+  position: relative;
+  display: flex;
 }
 
 .formulario__input {
-	width: 100%;
-	padding: 0 40px 0 10px;
+  width: 100%;
+  padding: 0 40px 0 10px;
 
-	display: block;
-    padding: .375rem .75rem;
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #212529;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border-radius: .375rem;
-    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
-
+  display: block;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .formulario__input:focus {
-	border: 3px solid #0075FF;
-	outline: none;
-	box-shadow: 3px 0px 30px rgba(163,163,163, 0.4);
+  border: 3px solid #0075ff;
+  outline: none;
+  box-shadow: 3px 0px 30px rgba(163, 163, 163, 0.4);
 }
 
 .formulario__input-error {
-	font-size: 12px;
-	margin-bottom: 0;
-	display: none;
+  font-size: 12px;
+  margin-bottom: 0;
+  display: none;
 }
 
 .formulario__input-error-activo {
-	display: block;
+  display: block;
 }
 
 .formulario__validacion-estado {
-	position: absolute;
-	right: 10px;
-	bottom: 15px;
-	z-index: 100;
-	font-size: 16px;
-	opacity: 0;
+  position: absolute;
+  right: 10px;
+  bottom: 15px;
+  z-index: 100;
+  font-size: 16px;
+  opacity: 0;
 }
 
 .formulario__checkbox {
-	margin-right: 10px;
+  margin-right: 10px;
 }
 
-.formulario__grupo-terminos, 
+.formulario__grupo-terminos,
 .formulario__mensaje,
 .formulario__grupo-btn-enviar {
-	grid-column: span 2;
+  grid-column: span 2;
 }
 
 .formulario__mensaje {
-	height: 45px;
-	line-height: 45px;
-	background: #F66060;
-	padding: 0 15px;
-	border-radius: 3px;
-	display: none;
+  height: 45px;
+  line-height: 45px;
+  background: #f66060;
+  padding: 0 15px;
+  border-radius: 3px;
+  display: none;
 }
 
 .formulario__mensaje-activo {
-	display: block;
+  display: block;
 }
 
 .formulario__mensaje p {
-	margin: 0;
+  margin: 0;
 }
 
 .formulario__grupo-btn-enviar {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .formulario__btn {
-	height: 45px;
-	line-height: 45px;
-	width: 30%;
-	background: #000;
-	color: #fff;
-	font-weight: bold;
-	border: none;
-	border-radius: 3px;
-	cursor: pointer;
-	transition: .1s ease all;
+  height: 45px;
+  line-height: 45px;
+  width: 30%;
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: 0.1s ease all;
 }
 
 .formulario__btn:hover {
-	box-shadow: 3px 0px 30px rgba(163,163,163, 1);
+  box-shadow: 3px 0px 30px rgba(163, 163, 163, 1);
 }
 
 .formulario__mensaje-exito {
-	font-size: 14px;
-	color: #119200;
-	display: none;
+  font-size: 14px;
+  color: #119200;
+  display: none;
 }
 
 .formulario__mensaje-exito-activo {
-	display: block;
+  display: block;
 }
-.formulario__grid{
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	column-gap: 20px;
+.formulario__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 20px;
 }
 
 /* ----- -----  Estilos para Validacion ----- ----- */
 .formulario__grupo-correcto .formulario__validacion-estado {
-	color: #1ed12d;
-	opacity: 1;
-	font-size: 25px;
-	top: 7.3px;
+  color: #1ed12d;
+  opacity: 1;
+  font-size: 25px;
+  top: 7.3px;
 }
 .formulario__grupo-correcto .formulario__input {
-	border: 3px solid #1ed12d;
+  border: 3px solid #1ed12d;
 }
 
 .formulario__grupo-incorrecto .formulario__label {
-	color: #bb2929;
+  color: #bb2929;
 }
 
 .formulario__grupo-incorrecto .formulario__validacion-estado {
-	color: #bb2929;
-	opacity: 1;
-	font-size: 25px;
-	top: 7.3px;
+  color: #bb2929;
+  opacity: 1;
+  font-size: 25px;
+  top: 7.3px;
 }
 
 .formulario__grupo-incorrecto .formulario__input {
-	border: 3px solid #bb2929;
+  border: 3px solid #bb2929;
 }
-.form-desactive-view{
-  border-style:none;
+.form-desactive-view {
+  border-style: none;
 }
-.toast-zone{
+.toast-zone {
   position: absolute;
   text-align: center;
-  font-family: sans-serif;   
+  font-family: sans-serif;
   right: 25px;
   bottom: 20px;
   width: 200px;
   height: 40px;
 }
-#miToast{
+#miToast {
   border-radius: 6px;
-  background: dodgerblue; 
-  color:white;
+  background: dodgerblue;
+  color: white;
   width: 200px;
   height: 40px;
 }
-.spinner_section{
-        position: fixed; 
-        top:0; 
-        left:0; 
-        right:0; 
-        bottom:0; 
-        display:flex; 
-        background:#111111bd;
-        opacity: 0;
-        pointer-events: none;
+.spinner_section {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  background: #111111bd;
+  opacity: 0;
+  pointer-events: none;
 }
-.spinner--show{
-        opacity: 1;
-        pointer-events: unset;
-        transition: .20s;
+.spinner--show {
+  opacity: 1;
+  pointer-events: unset;
+  transition: 0.2s;
 }
-.spinner-border{
-        margin-top: 330px;
-        margin-left: 480px;  
+.spinner-border {
+  margin-top: 330px;
+  margin-left: 480px;
 }
 .small-box {
   border-radius: 2px;
@@ -2502,50 +2782,50 @@ footer{
 .small-box:hover .icon {
   font-size: 95px;
 }
-.bg-info{
+.bg-info {
   background-color: #5bc0de;
   border-color: #46b8da;
-  color:white;
+  color: white;
 }
-.bg-yellow{
+.bg-yellow {
   background-color: #f0ad4e;
   border-color: #eea236;
-  color:white;
+  color: white;
 }
-.bg-crimson{
-    background-color: #d9534f;
-    border-color: #d43f3a;
-    color:white;
+.bg-crimson {
+  background-color: #d9534f;
+  border-color: #d43f3a;
+  color: white;
 }
-.bg-royalblue{
+.bg-royalblue {
   background-color: #337ab7;
   border-color: #2e6da4;
-  color:white;
+  color: white;
 }
-.bg-green{
+.bg-green {
   background-color: #5cb85c;
   border-color: #4cae4c;
-  color:white;
+  color: white;
 }
-.btn-second{
+.btn-second {
   background-color: #eeecec;
   border-color: #c2c2c2;
-  color:black;
+  color: black;
 }
 
-.btn-second:hover{
+.btn-second:hover {
   background-color: #cccccc;
   border-color: #c2c2c2;
 }
 
 .btn-importar {
   background-color: #605ca8 !important;
-  border-color:     #605ca8 !important;
+  border-color: #605ca8 !important;
   color: #fff !important;
 }
 .btn-importar:hover {
   background-color: #4e4a8f !important;
-  border-color:     #4e4a8f !important;
+  border-color: #4e4a8f !important;
 }
 
 .btn-error-sombreado {
@@ -2561,9 +2841,215 @@ footer{
 }
 
 .table-dark {
-  background-color: #112; 
-  color: white; 
+  background-color: #112;
+  color: white;
   font-size: 12px;
+}
+
+/* Variantes del status-dot */
+.status-dot {
+  background-color: #00a65a;
+} /* fallback original */
+.status-dot.online {
+  background-color: #28a745;
+}
+.status-dot.offline {
+  background-color: #dc3545;
+}
+.status-dot.disabled {
+  background-color: #6c757d;
+}
+.status-dot.blocked {
+  background-color: #ffc107;
+}
+.status-dot.error {
+  background-color: #6c757d;
+}
+
+.sidebar-icon {
+  height: 25px;
+  width: 25px;
+  margin-top: -4px;
+  margin-right: 10px;
+  filter: invert(1);
+}
+
+.invert-color {
+  filter: invert(1);
+}
+
+/* ============================================= */
+/*  BUSCADOR CON ICONOS INTERNOS (lupa + limpiar)*/
+/* ============================================= */
+
+.search-wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  float: left;
+  margin-right: 6px;
+}
+
+/* Input */
+.search-wrap #buscar {
+  float: none !important;
+  width: 260px !important;
+  height: 36px !important;
+  padding: 6px 38px 6px 40px !important; /* espacio iconos izq/der */
+  border-radius: 0px !important;
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: width 0.35s ease, box-shadow 0.25s ease, border-color 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.search-wrap #buscar:hover {
+  border-color: #9bb0e8;
+}
+
+.search-wrap #buscar:focus {
+  width: 320px !important;
+  border-color: royalblue;
+  background-color: #f7f9ff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.25),
+    0 4px 12px rgba(65, 105, 225, 0.15);
+}
+
+/* Icono lupa (izquierda) */
+.search-wrap::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  background: url("../imagenes/iconos/filled/symbols/magnifying_glass@2x.png")
+    no-repeat center center / contain;
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 2;
+}
+
+.search-wrap:focus-within::before {
+  opacity: 1;
+  animation: searchPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes searchPulse {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.18);
+  }
+}
+
+/* Botón limpiar (derecha) */
+.search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  border: none;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent url("../imagenes/iconos/filled/symbols/no@2x.png")
+    no-repeat center center / 14px 14px;
+  cursor: pointer;
+  transform: translateY(-50%) scale(0.8);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+  z-index: 2;
+}
+
+.search-wrap.has-value .search-clear {
+  opacity: 0.7;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+}
+
+.search-clear:hover {
+  opacity: 1 !important;
+  background-color: gray;
+  transform: translateY(-50%) rotate(90deg) scale(1.05);
+}
+
+.search-clear:active {
+  transform: translateY(-50%) rotate(90deg) scale(0.85);
+}
+
+/* Feedback visual al presionar el input */
+.search-wrap:active #buscar {
+  transform: scale(0.995);
+}
+
+/* ---------- Móvil ---------- */
+@media (max-width: 767px) {
+  .search-wrap {
+    float: none !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 8px 0 !important;
+  }
+  .search-wrap #buscar,
+  .search-wrap #buscar:focus {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ============================================= */
+/*  FIX: Centrar iconos del menú al colapsar     */
+/* ============================================= */
+@media (min-width: 768px) {
+  /* 1. El <a> se vuelve flexbox centrado y pierde padding asimétrico */
+  body.sidebar-mini.sidebar-collapse .sidebar-menu > li > a {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 12px 0 !important; /* anula el padding-left: 15px */
+    margin: 0 !important;
+    text-align: center !important;
+    width: 50px !important; /* ancho real del sidebar colapsado */
+    box-sizing: border-box !important;
+  }
+
+  /* 2. Resetear TODOS los márgenes inline de los <img> del menú */
+  body.sidebar-mini.sidebar-collapse .sidebar-menu > li > a > img {
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+  }
+
+  /* 3. Ocultar de forma explícita el <span> del texto (por si AdminLTE falla) */
+  body.sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li
+    > a
+    > span:not(.pull-right):not(.pull-right-container) {
+    display: none !important;
+  }
+
+  /* 4. Ocultar la flecha del treeview */
+  body.sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li
+    > a
+    > .pull-right-container {
+    display: none !important;
+  }
 }
 
 @media (max-width: 767px) {
@@ -2575,5 +3061,1039 @@ footer{
   }
   .small-box p {
     font-size: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Header fijo en móvil */
+  .main-header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1030;
+    width: 100%;
+  }
+
+  /* Compensar la altura del header fijo */
+  .content-wrapper {
+    padding-top: 50px !important;
+  }
+
+  /* El sidebar ya tenía padding-top:50px en tu CSS, sigue igual */
+}
+
+/* 1. Centrado perfecto del Avatar (a la fuerza) */
+@media (min-width: 768px) {
+  body.sidebar-mini.sidebar-collapse .main-sidebar .user-panel {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 15px 0 !important;
+    width: 100% !important;
+  }
+
+  body.sidebar-mini.sidebar-collapse .main-sidebar .user-panel > .image {
+    float: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    width: 35px !important;
+    height: 35px !important;
+  }
+
+  body.sidebar-mini.sidebar-collapse .main-sidebar .user-panel > .image > img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  body.sidebar-mini.sidebar-collapse .main-sidebar .user-panel > .info {
+    display: none !important;
+  }
+}
+
+/* 2. Arreglar el Footer (Reloj) para que ocupe su espacio y no flote */
+.sidebar-footer {
+  position: relative !important; /* Quitamos el absolute para que no tape nada */
+  bottom: auto !important;
+  left: auto !important;
+  flex-shrink: 0 !important; /* Evita que el reloj se encoja */
+  width: 100% !important;
+  padding: 15px !important;
+  z-index: 1001 !important;
+  color: #b8c7ce;
+  border-top: 1px solid #374850 !important;
+  background-color: #112 !important; /* Fondo sólido */
+}
+
+/* 3. Configurar el Menú para que haga scroll correctamente */
+.sidebar-menu {
+  flex: 1 1 auto !important; /* Permite que el menú ocupe el espacio central */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding-bottom: 0 !important; /* Ya no necesitamos los 90px de padding */
+  margin-bottom: 0 !important;
+}
+
+/* 4. ¡LA MAGIA! Hacer que "MENU DE NAVEGACION" se quede fijo arriba */
+.sidebar-menu > li.header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+}
+
+@media (min-width: 768px) {
+  /* Permitir que los flyouts sobresalgan del sidebar */
+  body.sidebar-mini.sidebar-collapse .main-sidebar .sidebar {
+    overflow: visible !important;
+  }
+
+  body.sidebar-mini.sidebar-collapse .main-sidebar .sidebar-menu {
+    overflow: visible !important; /* ⚠️ ver nota de trade-off abajo */
+    overflow-x: visible !important;
+  }
+
+  /* Flyout del submenú al hover */
+  body.sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li.treeview:hover
+    > .treeview-menu {
+    display: block !important;
+    position: absolute !important;
+    left: 100% !important;
+    top: 44px !important;
+    width: 220px !important;
+    padding: 5px 0 !important;
+    margin: 0 !important;
+    background: #2c3b41 !important;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.35);
+    z-index: 9999 !important;
+  }
+
+  /* Título flotante del módulo al hover */
+  body.sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li.treeview:hover
+    > a
+    > span:not(.pull-right) {
+    display: block !important;
+    position: absolute !important;
+    left: 100% !important;
+    top: 0 !important;
+    width: 220px !important;
+    padding: 12px 20px !important;
+    margin: 0 !important;
+    background: #112 !important;
+    color: #ffffff !important;
+    border-radius: 0 4px 0 0;
+    box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.35);
+    z-index: 9999 !important;
+  }
+
+  /* También para <li> simples (sin submenú): mostrar el nombre al hover */
+  body.sidebar-mini.sidebar-collapse
+    .sidebar-menu
+    > li:not(.treeview):hover
+    > a
+    > span:not(.pull-right) {
+    display: block !important;
+    position: absolute !important;
+    left: 100% !important;
+    top: 0 !important;
+    width: 220px !important;
+    padding: 12px 20px !important;
+    margin: 0 !important;
+    background: #112 !important;
+    color: #ffffff !important;
+    box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.35);
+    z-index: 9999 !important;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#full_loader {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+  z-index: 900 !important; /* < 1050 (modales Bootstrap) */
+  display: none;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: none; /* no bloquea si no está activo */
+  transition: left 0.25s ease, top 0.25s ease;
+}
+#full_loader.is-visible {
+  display: flex !important;
+  pointer-events: auto !important; /* solo bloquea cuando está activo */
+}
+#loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1.5s linear infinite;
+}
+
+body.sidebar-collapse #full_loader {
+  left: 0px !important;
+}
+
+/* Cubrir tablet y Android landscape (antes solo 767px) */
+@media (max-width: 991px) {
+  #full_loader {
+    left: 0 !important;
+    top: 50px !important;
+  }
+}
+
+/* ============================================================
+RESPONSIVE MÓVIL (Android / pantallas ≤767px)
+Solo se aplica en celulares. Desktop/tablet quedan intactos.
+============================================================ */
+@media (max-width: 767px) {
+  /* ---------- 1. CONTENEDOR GENERAL ---------- */
+  .breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px 8px;
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+  .breadcrumb > li > a {
+    padding: 0 3px;
+  }
+
+  /* ---------- 2. TABS (nav-tabs) → scroll horizontal ---------- */
+  .nav-tabs-custom {
+    box-shadow: none !important;
+    margin-bottom: 0 !important;
+  }
+  .nav-tabs-custom > .nav-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-right: 0 !important;
+    border-bottom: 2px solid #d2d6de;
+    padding-bottom: 0;
+  }
+  .nav-tabs-custom > .nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-tabs-custom > .nav-tabs > li {
+    float: none !important;
+    flex: 0 0 auto;
+    margin: 0 !important;
+  }
+  .nav-tabs-custom > .nav-tabs > li > a {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    margin: 0 2px 0 0 !important;
+    border-radius: 4px 4px 0 0 !important;
+    white-space: nowrap;
+  }
+  .nav-tabs-custom .tab-content {
+    padding: 12px 15px !important;
+    border-top: none !important;
+  }
+
+  /* Secciones internas de cada tab (anulan el margin-bottom:6%) */
+  .tab-pane section[style*="margin-bottom"] {
+    margin-bottom: 15px !important;
+  }
+
+  /* ---------- 3. ÁREAS BLANCAS / BOXES ---------- */
+  .area-trabajo-blanca {
+    padding: 10px !important;
+    border-radius: 4px !important;
+  }
+  .box,
+  .box-header,
+  .box-body,
+  .box-footer {
+    margin-bottom: 10px !important;
+    padding: 10px !important;
+  }
+
+  /* ---------- 4. FORMULARIOS ---------- */
+  .form-group {
+    margin-bottom: 10px !important;
+  }
+  .form-group > p {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    color: #333;
+  }
+  .form-control {
+    font-size: 14px !important;
+    height: 38px !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+  }
+  textarea.form-control {
+    height: auto !important;
+    min-height: 70px;
+  }
+  select.form-control {
+    height: 38px !important;
+  }
+
+  /* Fuente 16px en focus = evita el zoom automático de Samsung/Chrome */
+  input:focus,
+  select:focus,
+  textarea:focus {
+    font-size: 16px !important;
+  }
+
+  /* ---------- 5. INPUT GROUPS (cédula, fechas, teléfono) ---------- */
+  .input-group {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+  }
+  /* El input ocupa todo el resto */
+  .input-group > .form-control {
+    flex: 1 1 auto !important;
+    width: auto !important;
+  }
+
+  /* El addon NO crece: se queda del ancho de su contenido */
+  .input-group > .input-group-addon {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  /* El botón (lupa, agregar) NO crece */
+  .input-group > .input-group-btn {
+    flex: 0 0 auto !important;
+    width: auto !important;
+  }
+  .input-group > .input-group-addon > select,
+  .input-group > .input-group-addon > .form-control {
+    width: 100% !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+  .input-group > .form-control:last-child {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+  }
+
+  /* Prefijos fijos (no se encogen ni crecen) */
+  #tipo_cedula,
+  #tipo_cedula_rep,
+  #prefijo_telefono {
+    width: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+    height: 38px !important;
+  }
+  #edad {
+    width: 55px !important;
+    min-width: 55px !important;
+    max-width: 55px !important;
+    height: 38px !important;
+  }
+  #tiempo {
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+    height: 38px !important;
+  }
+
+  /* ---------- 6. BOTONES ---------- */
+  .btn {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    border-radius: 4px !important;
+    min-height: 36px;
+  }
+  .btn-sm {
+    padding: 5px 9px !important;
+    font-size: 12px !important;
+    min-height: 30px;
+  }
+  .btn-xs {
+    padding: 3px 6px !important;
+    font-size: 11px !important;
+    min-height: 24px;
+  }
+  .btn-block {
+    width: 100% !important;
+  }
+
+  /* ---------- 7. BOTONES INFERIORES DE CADA TAB ---------- */
+  section .row > .col-sm-12[style*="text-align: right"],
+  section .row > .col-sm-12[style*="text-align:right"] {
+    display: flex !important;
+    flex-direction: column-reverse;
+    gap: 6px;
+    padding: 0 8px;
+    margin-top: 12px !important;
+  }
+  section .row > .col-sm-12[style*="text-align: right"] > .btn,
+  section .row > .col-sm-12[style*="text-align:right"] > .btn {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Botones al pie de .box-footer (Entrada inventario, etc) */
+  .box-footer .btn {
+    width: 100%;
+    margin: 4px 0 !important;
+  }
+  .box-footer .text-right {
+    text-align: center !important;
+  }
+
+  /* ---------- 8. BOTONES DE GESTIÓN (Patologías, Alergias, Rep, Disc) ---------- */
+  #btn_modal_pat,
+  #btn_modal_ale,
+  #btn_modal_rep,
+  #btn_modal_disc {
+    font-size: 12px !important;
+    padding: 8px 8px !important;
+    white-space: normal !important;
+    line-height: 1.2 !important;
+  }
+  #group_representante > div,
+  #group_discapacidad > div {
+    flex-wrap: wrap;
+  }
+  #tiene_representante,
+  #discapacidad {
+    width: 70px !important;
+    min-width: 70px !important;
+  }
+
+  /* ---------- 9. MODALES ---------- */
+  .modal-dialog {
+    margin: 8px !important;
+    width: auto !important;
+    max-width: calc(100% - 16px) !important;
+  }
+  .modal-lg,
+  .modal-md,
+  .modal-sm {
+    width: auto !important;
+    max-width: calc(100% - 16px) !important;
+  }
+  .modal-content {
+    border-radius: 6px !important;
+  }
+  .modal-header {
+    padding: 10px 12px !important;
+  }
+  .modal-title {
+    font-size: 15px !important;
+    line-height: 1.3 !important;
+  }
+  .modal-body {
+    padding: 12px !important;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-footer {
+    padding: 8px 12px !important;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+  }
+  .modal-footer > .btn,
+  .modal-footer > a.btn {
+    width: 100%;
+    margin: 0 !important;
+  }
+
+  /* Modales anidados (síntoma dentro de patología) */
+  .modal.in .modal.in .modal-dialog {
+    max-width: calc(100% - 16px) !important;
+  }
+
+  /* ---------- 10. FILAS DINÁMICAS DENTRO DE MODALES ---------- */
+  .fila-pat,
+  .fila-ale,
+  .fila-sintoma-ajax,
+  .fila-disc-modal {
+    margin-bottom: 8px !important;
+    padding: 6px;
+    background: #fafafa;
+    border-radius: 4px;
+    border: 1px solid #eee;
+  }
+  .fila-pat > [class*="col-"],
+  .fila-ale > [class*="col-"],
+  .fila-sintoma-ajax > [class*="col-"],
+  .fila-disc-modal > [class*="col-"] {
+    padding-left: 4px;
+    padding-right: 4px;
+    margin-bottom: 4px;
+  }
+  .fila-pat .btn-danger,
+  .fila-ale .btn-danger,
+  .fila-sintoma-ajax .btn-danger,
+  .fila-disc-modal .btn-danger {
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  /* ---------- 12. TOOLTIPS ---------- */
+  /* En tap se quedan pegados y tapan el contenido → los desactivamos */
+  .tooltip {
+    display: none !important;
+  }
+
+  /* ---------- 13. HEADER (usuario / notificaciones) ---------- */
+  .navbar-custom-menu .dropdown-menu {
+    width: calc(100vw - 20px) !important;
+    max-width: 320px;
+    right: 0 !important;
+    left: auto !important;
+  }
+  .navbar-custom-menu .user-header {
+    padding: 10px !important;
+  }
+
+  /* ---------- 14. TAP LIMPIO (quita el highlight azul en Android) ---------- */
+  a,
+  button,
+  .btn,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:hover,
+  .btn:focus,
+  .btn:active {
+    outline: none !important;
+  }
+
+  /* ---------- 15. TEXTOS DE AYUDA ---------- */
+  #años_help,
+  .help-block,
+  .text-muted {
+    font-size: 11px;
+  }
+
+  /* ============================================================
+   CONSULTA_AGREGAR — arreglos específicos
+   ============================================================ */
+
+  /* ---------- A. .row-actions: 3 botones que se salían ---------- */
+  .row-actions {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    margin: 15px 0 !important;
+    padding: 0 !important;
+  }
+  .row-actions .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* ---------- B. Input-group cédula (addon 80px + input + botón 34px) ---------- */
+  .fila-paciente-top .input-group {
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+  }
+  .fila-paciente-top .input-group > .input-group-addon {
+    flex: 0 0 70px !important;
+    width: 70px !important;
+    max-width: 70px !important;
+  }
+  .fila-paciente-top .input-group > .input-group-addon > select {
+    width: 70px !important;
+    max-width: 70px !important;
+    height: 38px !important;
+    padding: 6px 4px !important;
+    font-size: 13px !important;
+  }
+  .fila-paciente-top .input-group > .input-group-btn {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+  }
+  .fila-paciente-top .input-group > .input-group-btn > .btn {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+  }
+
+  /* ---------- C. Fecha nacimiento + Edad (inline 60/40 → 65/35) ---------- */
+  #fecha_nacimiento_paciente {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+  #fecha_nacimiento_paciente + .input-group-addon,
+  .fila-paciente-top .input-group:last-child > .input-group-addon {
+    flex: 0 0 72px !important;
+    width: 72px !important;
+    max-width: 72px !important;
+  }
+  #edad_paciente {
+    width: 100% !important;
+    height: 38px !important;
+    text-align: center !important;
+  }
+
+  /* ---------- D. Presión arterial (sistólica / diastólica) ---------- */
+  #presion_sistolica,
+  #presion_diastolica {
+    flex: 1 1 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+  }
+  #presion_sistolica + .input-group-addon {
+    flex: 0 0 22px !important;
+    width: 22px !important;
+    min-width: 22px !important;
+    padding: 0 !important;
+    text-align: center !important;
+    line-height: 38px !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  /* ---------- E. Botones de gestión (Medicamentos, Exámenes, etc) ---------- */
+  #medicamento_agg,
+  #btn_modal_examenes,
+  #btn_modal_alergias,
+  #btn_modal_patologias,
+  #btn_modal_discapacidad,
+  #btn_ver_historial_medico,
+  .btn-historial {
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    white-space: normal !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ---------- F. Modal Seleccionar Medicamentos (col-xs-9/3) ---------- */
+  #modalSeleccionMedicamentos .modal-body > .row:first-child > .col-xs-9,
+  #modalSeleccionMedicamentos .modal-body > .row:first-child > .col-xs-3 {
+    width: 100% !important;
+    float: none !important;
+  }
+  #modalSeleccionMedicamentos .modal-body > .row:first-child > .col-xs-3 {
+    margin-top: 8px;
+  }
+
+  /* ---------- G. Paneles de medicamentos seleccionados (med-item) ---------- */
+  .med-item .panel-heading {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+  }
+  .med-item .panel-heading strong {
+    display: block;
+    margin-bottom: 2px;
+  }
+  .med-item .panel-heading .close {
+    margin-top: -22px !important;
+  }
+  .med-item .panel-body > .row > [class*="col-sm-"] {
+    margin-bottom: 6px;
+  }
+  .med-item .panel-body label.small {
+    font-size: 11px !important;
+    font-weight: 600;
+    color: #555;
+  }
+
+  /* ---------- H. Modal Exámenes (select + prioridad + botón en fila) ---------- */
+  #modalExamenes .modal-body > .row > .col-sm-6,
+  #modalExamenes .modal-body > .row > .col-sm-3 {
+    width: 100% !important;
+    float: none !important;
+    margin-bottom: 8px;
+  }
+  #modalExamenes .modal-body > .row > .col-sm-3 > label {
+    display: none;
+  }
+  #modalExamenes .modal-body > .row > .col-sm-3 > .btn {
+    width: 100% !important;
+  }
+
+  /* ---------- I. Campana de alertas del paciente ---------- */
+  #li-notificacion-alertas > a.link-campana-alertas {
+    padding: 8px 12px !important;
+  }
+  #li-notificacion-alertas .icono-campana-alertas img {
+    height: 22px !important;
+    width: 22px !important;
+  }
+  #li-notificacion-alertas .badge.bg-crimson {
+    top: 4px !important;
+    right: 6px !important;
+    font-size: 9px !important;
+    padding: 1px 5px !important;
+  }
+
+  /* ---------- J. Botones de antecedentes (grid 3 cols) ---------- */
+  #contenedor-botones-antecedentes > [class*="col-"] {
+    width: 100% !important;
+    float: none !important;
+    margin-bottom: 8px !important;
+  }
+  .btn-antecedente-tipo {
+    min-height: 55px !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+  .btn-antecedente-tipo .fa-2x {
+    font-size: 1.5em !important;
+    margin-top: 2px !important;
+  }
+
+  /* ---------- K. Checklist de antecedentes (2 cols + inputs extras) ---------- */
+  .chk-antecedente-wrap {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    padding: 8px 10px !important;
+  }
+  .chk-antecedente-wrap label {
+    width: 100% !important;
+    font-size: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px;
+  }
+  .chk-antecedente-wrap label input[type="checkbox"] {
+    margin: 0 !important;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+  .chk-antecedente-wrap .input-extra-antecedente,
+  .chk-antecedente-wrap .select-parentesco {
+    width: 100% !important;
+    margin-top: 4px;
+    display: block !important;
+  }
+
+  /* ---------- L. Timeline del historial ---------- */
+  .timeline-item {
+    padding-left: 12px !important;
+  }
+  .timeline-body {
+    font-size: 12px !important;
+    word-break: break-word !important;
+  }
+
+  /* ---------- M. Modales con z-index alto (evitar quedar detrás del backdrop) ---------- */
+  #modalAlertaSalud,
+  #modalTimelineCompleta,
+  #modalSeleccionMedicamentos,
+  #modalExamenes,
+  #modalAlergiaRapida,
+  #modalPatologiaRapida,
+  #modalDiscapacidadRapida {
+    z-index: 1060;
+  }
+
+  /* ============================================================
+   KARDEX (farmacia_inventario_kardex.php) — móvil
+   ============================================================ */
+
+  /* ---------- A. Cabecera del box: 4 elementos flotantes que chocan ---------- */
+  .box-header.with-border {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+  .box-header.with-border > .pull-left,
+  .box-header.with-border > .pull-right,
+  .box-header.with-border > span {
+    float: none !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  /* Oculta los <p class="pull-right" style="width:5px"> que son solo spacers */
+  .box-header.with-border > p.pull-right {
+    display: none !important;
+  }
+  /* Todos los botones del header: full-width apilados */
+  .box-header.with-border .btn,
+  .box-header.with-border .btn-sm {
+    width: 100% !important;
+    padding: 9px 12px !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+    display: block !important;
+    text-align: center !important;
+    height: auto !important;
+  }
+  /* El botón de filtrar vive dentro de un <span>, asegurar que se vea */
+  .box-header.with-border > span > .btn {
+    width: 100% !important;
+  }
+  /* El form-inline del buscador ocupa todo el ancho */
+  .box-header.with-border .form-inline,
+  .box-header.with-border .form-inline > form {
+    width: 100% !important;
+    display: block !important;
+  }
+
+  /* ---------- B. Input de búsqueda: quitar el width:250px inline ---------- */
+  #buscar {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 38px !important;
+    font-size: 14px !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+  }
+
+  /* ---------- C. Tabla: scroll horizontal + legible ---------- */
+  #contenedorTabla {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  #contenedorTabla::-webkit-scrollbar { height: 6px; }
+  #contenedorTabla::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 3px;
+  }
+
+  #t_user {
+    min-width: 820px !important;   /* 8 columnas → necesita ancho mínimo */
+    font-size: 12px !important;
+    margin-bottom: 0 !important;
+  }
+  #t_user thead th {
+    padding: 8px 6px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    vertical-align: middle !important;
+  }
+  #t_user tbody td {
+    padding: 8px 6px !important;
+    vertical-align: middle !important;
+  }
+  #t_user tbody td small,
+  #t_user tbody td .text-row {
+    font-size: 11.5px !important;
+    line-height: 1.35 !important;
+  }
+  #t_user .badge {
+    font-size: 10px !important;
+    padding: 4px 7px !important;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  /* Mensajes "vacío" / "no encontrado" full-width legibles */
+  #tbody_kardex td[colspan] {
+    padding: 20px 12px !important;
+    font-size: 13px !important;
+    white-space: normal !important;
+  }
+  #tbody_kardex td[colspan] .fa-2x {
+    font-size: 1.8em !important;
+  }
+
+  /* ---------- D. Footer bar: dejar de ser fixed y apilar ---------- */
+  .kardex-footer-bar {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 12px 0 0 !important;
+    padding: 10px 0 0 !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #333 !important;
+    border-top: 1px solid #e5e5e5;
+    padding-top: 12px !important;
+  }
+
+  /* ---------- E. Paginación táctil ---------- */
+  #pagination_container {
+    width: 100% !important;
+    text-align: center !important;
+  }
+  #pagination_container nav { text-align: center !important; }
+  #pagination_container .pagination {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  #pagination_container .pagination > li {
+    float: none !important;
+    display: inline-block !important;
+  }
+  #pagination_container .pagination > li > a {
+    min-width: 38px !important;
+    min-height: 38px !important;
+    padding: 9px 11px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    border-radius: 4px !important;
+    background-color: #f4f4f4 !important;
+    border-color: #ddd !important;
+    color: #333 !important;
+  }
+  #pagination_container .pagination > .active > a {
+    background-color: #3c8dbc !important;
+    border-color: #3c8dbc !important;
+    color: #fff !important;
+  }
+
+  /* ---------- F. Resumen (Entradas/Salidas/Variación/Movimientos) ---------- */
+  #resumen_container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    font-size: 12px !important;
+  }
+  #resumen_container > span {
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    border-left: none !important;
+    border-radius: 4px !important;
+    background: #f8f9fa !important;
+    flex: 1 1 calc(50% - 6px) !important;
+    min-width: 140px !important;
+    text-align: center !important;
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  #resumen_container > span strong {
+    display: block !important;
+    font-size: 14px !important;
+    margin-top: 2px;
+  }
+  /* Ocultar el último span vacío que sobra */
+  #resumen_container > span:last-child:empty {
+    display: none !important;
+  }
+  /* Iconos del resumen */
+  #resumen_container > span .fa {
+    margin-right: 4px;
+  }
+
+  /* ---------- G. Modal de filtros avanzados ---------- */
+  #modalBusquedaAvanzadaKardex .modal-body {
+    padding: 12px !important;
+  }
+  #modalBusquedaAvanzadaKardex .modal-body .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  #modalBusquedaAvanzadaKardex .modal-body [class*="col-md-"],
+  #modalBusquedaAvanzadaKardex .modal-body [class*="col-sm-"] {
+    width: 100% !important;
+    float: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-bottom: 8px !important;
+  }
+  #modalBusquedaAvanzadaKardex .form-group {
+    margin-bottom: 10px !important;
+  }
+  #modalBusquedaAvanzadaKardex label {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    margin-bottom: 3px !important;
+    color: #333;
+  }
+  #modalBusquedaAvanzadaKardex .form-control {
+    height: 38px !important;
+    font-size: 14px !important;
+  }
+  #modalBusquedaAvanzadaKardex .modal-footer {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+  }
+  #modalBusquedaAvanzadaKardex .modal-footer .btn {
+    width: 100% !important;
+    margin: 0 !important;
+    float: none !important;
+    padding: 9px 12px !important;
+    font-size: 13px !important;
+  }
+
+  /* ---------- H. Ajustes finos ---------- */
+  /* Los <br><br> después del box-header son demasiado en móvil */
+  .box-header.with-border + br {
+    display: none !important;
+  }
+
+  /* Botones del box-header sin hover azul raro */
+  .box-header.with-border .btn:hover,
+  .box-header.with-border .btn:focus {
+    opacity: 0.92;
+  }
+}
+
+/* ============================================================
+Pantallas MUY pequeñas (≤360px) — ajustes extra
+============================================================ */
+@media (max-width: 360px) {
+  .nav-tabs-custom > .nav-tabs > li > a {
+    font-size: 11px !important;
+    padding: 7px 8px !important;
+  }
+  .form-control {
+    font-size: 13px !important;
+  }
+  .content-header h1 {
+    font-size: 17px !important;
+  }
+  .modal-body {
+    max-height: calc(100vh - 150px);
   }
 }

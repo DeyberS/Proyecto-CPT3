@@ -42,17 +42,13 @@ verificarAcceso('Ver Lotes'); // O 'Gestionar Vacunas'
       <?php if (in_array('Generar Reportes de Lotes', $_SESSION["permisos"])) : ?>
         <a href="#" class="btn-sm btn-info pull-right reporte"><i class="fa fa-book"></i> Generar Reporte </a>
       <?php endif; ?>
-      <p class="pull-right" style="width:5px;"></p>
-      <?php if (in_array('Crear Lotes', $_SESSION["permisos"])) : ?>
-        <a href="vacunacion_lotes_agregar.php" class="btn-sm btn-success pull-right"><i class="fa fa-plus"></i> Añadir Nuevo Lote </a>
-      <?php endif; ?>
       
       <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Buscar lote o vacuna..." style="border-radius:0; height:10%; width:250px; display:inline-block;" value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
       
       <p class="pull-right" style="width:5px;"></p>
-      <span data-toggle="tooltip" data-placement="right" title="Filtros avanzados de búsqueda de lotes">
+      <span data-toggle="tooltip" data-placement="right" title="Filtros búsqueda">
         <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzadaLotes">
-          <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar"></i>
+          <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:15px; height:20px; filter:invert(1);" title="Filtrar lote"></i>
         </button>
       </span>
     </div>

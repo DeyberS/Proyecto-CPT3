@@ -11,19 +11,15 @@ verificarAcceso('Gestionar Jornadas');
 
 <head>
   <title>Jornadas | Añadir</title>
+</head>
+
+<div class="content-wrapper">
   <style>
-    .input-error {
-      border: 2px solid crimson !important;
-      box-shadow: 0 0 5px crimson !important;
-      background-color: #fff5f5 !important;
-    }
     .form-group {
       margin-bottom: 15px;
     }
   </style>
-</head>
 
-<div class="content-wrapper">
   <section class="content-header">
     <h1>Añadir Nueva Jornada</h1>
     <ol class="breadcrumb">
@@ -44,7 +40,7 @@ verificarAcceso('Gestionar Jornadas');
             <div class="tab-pane active" id="tab_jornada" style="margin-bottom: 5%;">
               <div class="box-body">
                 <form id="formularioJornada" action="../../cfg/agregar/agregar_jornada.php" method="POST" novalidate>
-                  
+
                   <!-- FILA 1: NOMBRE Y TIPO -->
                   <div class="row">
                     <div class="col-sm-8 form-group" id="group_nombre">
@@ -161,144 +157,144 @@ verificarAcceso('Gestionar Jornadas');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    // ==========================================
-    // MOSTRAR AVISOS (COPIA FIEL DE CITAS)
-    // ==========================================
-    function mostrarAviso(texto, onHiddenCallBack = null) {
-      $('#avisoTexto').html(texto);
-      if (onHiddenCallBack && typeof onHiddenCallBack === 'function') {
-        $('#avisoModal').one('hidden.bs.modal', function() {
-          onHiddenCallBack();
-        });
+<script>
+  // ==========================================
+  // MOSTRAR AVISOS (COPIA FIEL DE CITAS)
+  // ==========================================
+  function mostrarAviso(texto, onHiddenCallBack = null) {
+    $('#avisoTexto').html(texto);
+    if (onHiddenCallBack && typeof onHiddenCallBack === 'function') {
+      $('#avisoModal').one('hidden.bs.modal', function() {
+        onHiddenCallBack();
+      });
+    }
+    $('#avisoModal').modal('show');
+  }
+
+  // ==========================================
+  // CONTROL DE MODALES (COPIA FIEL DE CITAS)
+  // ==========================================
+  $(document).on('show.bs.modal', '.modal', function(event) {
+    var zIndex = 1040 + (10 * $('.modal:visible').length);
+    $(this).css('z-index', zIndex);
+    setTimeout(function() {
+      $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+    }, 0);
+  });
+
+  $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
+    e.preventDefault();
+    var $modal = $(this).closest('.modal');
+    $modal.removeClass('in').addClass('out');
+    if ($modal.data('timerCierre')) clearTimeout($modal.data('timerCierre'));
+    var timerId = setTimeout(function() {
+      $modal.modal('hide');
+      $modal.removeClass('out');
+    }, 400);
+    $modal.data('timerCierre', timerId);
+  });
+
+  $('.modal').on('show.bs.modal', function() {
+    if ($(this).data('timerCierre')) clearTimeout($(this).data('timerCierre'));
+    $(this).removeClass('out');
+  });
+
+  $('.modal').on('hidden.bs.modal', function() {
+    if ($('.modal:visible').length) {
+      $('body').addClass('modal-open');
+    } else {
+      $('body').removeClass('modal-open');
+      $('.modal-backdrop').remove();
+    }
+  });
+
+  // ==========================================
+  // VALIDACIÓN DE FECHAS
+  // ==========================================
+  $('#fecha_inicio').on('change', function() {
+    const fechaInicio = $(this).val();
+    if (fechaInicio) {
+      $('#fecha_fin').attr('min', fechaInicio);
+      // Si la fecha fin es menor a la fecha inicio, la limpiamos
+      if ($('#fecha_fin').val() && $('#fecha_fin').val() < fechaInicio) {
+        $('#fecha_fin').val('');
+        mostrarAviso("⚠️ La Fecha de Fin no puede ser anterior a la Fecha de Inicio.");
       }
-      $('#avisoModal').modal('show');
+    }
+  });
+
+  // ==========================================
+  // VALIDACIÓN DEL FORMULARIO
+  // ==========================================
+  $('#formularioJornada').on('submit', function(e) {
+    e.preventDefault();
+
+    let isValid = true;
+    let errores = [];
+
+    $('.input-error').removeClass('input-error');
+
+    if ($('#nombre_jornada').val().trim() === '') {
+      $('#nombre_jornada').addClass('input-error');
+      errores.push("El nombre de la jornada es obligatorio.");
+      isValid = false;
+    }
+    if ($('#tipo_jornada').val() === '') {
+      $('#tipo_jornada').addClass('input-error');
+      errores.push("Debe seleccionar el tipo de jornada.");
+      isValid = false;
+    }
+    if ($('#fecha_inicio').val() === '') {
+      $('#fecha_inicio').addClass('input-error');
+      errores.push("La fecha de inicio es obligatoria.");
+      isValid = false;
+    }
+    if ($('#fecha_fin').val() === '') {
+      $('#fecha_fin').addClass('input-error');
+      errores.push("La fecha de fin es obligatoria.");
+      isValid = false;
+    }
+    if ($('#fecha_inicio').val() && $('#fecha_fin').val() && $('#fecha_fin').val() < $('#fecha_inicio').val()) {
+      $('#fecha_inicio').addClass('input-error');
+      $('#fecha_fin').addClass('input-error');
+      errores.push("La fecha de fin no puede ser anterior a la fecha de inicio.");
+      isValid = false;
+    }
+    if ($('#meta').val() === '' || parseInt($('#meta').val()) <= 0) {
+      $('#meta').addClass('input-error');
+      errores.push("La meta debe ser un número mayor a 0.");
+      isValid = false;
+    }
+    if ($('#id_lugar').val() === '') {
+      $('#id_lugar').addClass('input-error');
+      errores.push("Debe seleccionar el lugar / ASIC / CPT3.");
+      isValid = false;
+    }
+    if ($('#responsable').val().trim() === '') {
+      $('#responsable').addClass('input-error');
+      errores.push("El responsable de la jornada es obligatorio.");
+      isValid = false;
     }
 
-    // ==========================================
-    // CONTROL DE MODALES (COPIA FIEL DE CITAS)
-    // ==========================================
-    $(document).on('show.bs.modal', '.modal', function(event) {
-      var zIndex = 1040 + (10 * $('.modal:visible').length);
-      $(this).css('z-index', zIndex);
-      setTimeout(function() {
-        $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
-      }, 0);
-    });
+    if (!isValid) {
+      mostrarAviso("<b>Por favor corrija los siguientes errores:</b><br><ul><li>" + errores.join("</li><li>") + "</li></ul>");
+    } else {
+      this.submit();
+    }
+  });
 
-    $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
-      e.preventDefault();
-      var $modal = $(this).closest('.modal');
-      $modal.removeClass('in').addClass('out');
-      if ($modal.data('timerCierre')) clearTimeout($modal.data('timerCierre'));
-      var timerId = setTimeout(function() {
-        $modal.modal('hide');
-        $modal.removeClass('out');
-      }, 400);
-      $modal.data('timerCierre', timerId);
-    });
-
-    $('.modal').on('show.bs.modal', function() {
-      if ($(this).data('timerCierre')) clearTimeout($(this).data('timerCierre'));
-      $(this).removeClass('out');
-    });
-
-    $('.modal').on('hidden.bs.modal', function() {
-      if ($('.modal:visible').length) {
-        $('body').addClass('modal-open');
-      } else {
-        $('body').removeClass('modal-open');
-        $('.modal-backdrop').remove();
+  // ==========================================
+  // LIMPIAR ERRORES AL ESCRIBIR
+  // ==========================================
+  $(document).ready(function() {
+    $('.form-control').on('input change', function() {
+      if ($(this).val() !== "") {
+        $(this).closest('.form-group').removeClass('input-error');
       }
     });
-
-    // ==========================================
-    // VALIDACIÓN DE FECHAS
-    // ==========================================
-    $('#fecha_inicio').on('change', function() {
-      const fechaInicio = $(this).val();
-      if (fechaInicio) {
-        $('#fecha_fin').attr('min', fechaInicio);
-        // Si la fecha fin es menor a la fecha inicio, la limpiamos
-        if ($('#fecha_fin').val() && $('#fecha_fin').val() < fechaInicio) {
-          $('#fecha_fin').val('');
-          mostrarAviso("⚠️ La Fecha de Fin no puede ser anterior a la Fecha de Inicio.");
-        }
-      }
-    });
-
-    // ==========================================
-    // VALIDACIÓN DEL FORMULARIO
-    // ==========================================
-    $('#formularioJornada').on('submit', function(e) {
-      e.preventDefault();
-      
-      let isValid = true;
-      let errores = [];
-      
-      $('.input-error').removeClass('input-error');
-
-      if ($('#nombre_jornada').val().trim() === '') {
-        $('#nombre_jornada').addClass('input-error');
-        errores.push("El nombre de la jornada es obligatorio.");
-        isValid = false;
-      }
-      if ($('#tipo_jornada').val() === '') {
-        $('#tipo_jornada').addClass('input-error');
-        errores.push("Debe seleccionar el tipo de jornada.");
-        isValid = false;
-      }
-      if ($('#fecha_inicio').val() === '') {
-        $('#fecha_inicio').addClass('input-error');
-        errores.push("La fecha de inicio es obligatoria.");
-        isValid = false;
-      }
-      if ($('#fecha_fin').val() === '') {
-        $('#fecha_fin').addClass('input-error');
-        errores.push("La fecha de fin es obligatoria.");
-        isValid = false;
-      }
-      if ($('#fecha_inicio').val() && $('#fecha_fin').val() && $('#fecha_fin').val() < $('#fecha_inicio').val()) {
-        $('#fecha_inicio').addClass('input-error');
-        $('#fecha_fin').addClass('input-error');
-        errores.push("La fecha de fin no puede ser anterior a la fecha de inicio.");
-        isValid = false;
-      }
-      if ($('#meta').val() === '' || parseInt($('#meta').val()) <= 0) {
-        $('#meta').addClass('input-error');
-        errores.push("La meta debe ser un número mayor a 0.");
-        isValid = false;
-      }
-      if ($('#id_lugar').val() === '') {
-        $('#id_lugar').addClass('input-error');
-        errores.push("Debe seleccionar el lugar / ASIC / CPT3.");
-        isValid = false;
-      }
-      if ($('#responsable').val().trim() === '') {
-        $('#responsable').addClass('input-error');
-        errores.push("El responsable de la jornada es obligatorio.");
-        isValid = false;
-      }
-
-      if (!isValid) {
-        mostrarAviso("<b>Por favor corrija los siguientes errores:</b><br><ul><li>" + errores.join("</li><li>") + "</li></ul>");
-      } else {
-        this.submit();
-      }
-    });
-
-    // ==========================================
-    // LIMPIAR ERRORES AL ESCRIBIR
-    // ==========================================
-    $(document).ready(function() {
-      $('.form-control').on('input change', function() {
-        if ($(this).val() !== "") {
-          $(this).closest('.form-group').removeClass('input-error');
-        }
-      });
-    });
-  </script>
-</div>
+  });
+</script>

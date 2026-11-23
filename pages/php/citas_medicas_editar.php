@@ -46,20 +46,6 @@ verificarAcceso('Editar Citas');
   <title>Citas Médicas | Editar</title>
 </head>
 
-<style>
-  .input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-
-  .has-error .form-control {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-</style>
-
 <div class="content-wrapper">
   <section class="content-header">
     <h1>Editar Cita</h1>
@@ -326,7 +312,7 @@ include('includes/footer.php');
   });
 
   function limpiarErrores() {
-    $('.form-group').removeClass('has-error');
+    $('.form-control').removeClass('input-error');
   }
 
   function filtrarCedulaCita() {
@@ -400,9 +386,9 @@ include('includes/footer.php');
     const minRequired = 1;
 
     if (longitud > 0 && longitud < minRequired) {
-      $(this).closest('.form-group').addClass('has-error');
+      $(this).closest('.form-control').addClass('input-error');
     } else {
-      $(this).closest('.form-group').removeClass('has-error');
+      $(this).closest('.form-control').removeClass('input-error');
     }
   });
 
@@ -438,10 +424,10 @@ include('includes/footer.php');
     campos1.forEach(campo => {
       const inputc = $('#' + campo.id);
       if (inputc.val() === "" || inputc.val() === null) {
-        inputc.closest('.form-group').addClass('has-error');
+        inputc.closest('.form-control').addClass('input-error');
         erroresCampos.push(campo.nombre);
       } else {
-        inputc.closest('.form-group').removeClass('has-error');
+        inputc.closest('.form-control').removeClass('input-error');
       }
     });
 
@@ -463,7 +449,7 @@ include('includes/footer.php');
       mostrarAviso("⚠️ El establecimiento no presta servicio en el día seleccionado.");
       this.value = "";
       $('#hora_cita').val("").prop('disabled', true);
-      $(this).closest('.form-group').addClass('has-error');
+      $(this).closest('.form-control').addClass('input-error');
       return;
     }
 
@@ -474,7 +460,7 @@ include('includes/footer.php');
       .attr('min', horaInicio)
       .attr('max', horaFin);
 
-    $(this).closest('.form-group').removeClass('has-error');
+    $(this).closest('.form-control').removeClass('input-error');
 
     if ($('#hora_cita').val()) {
       $('#hora_cita').trigger('change');
@@ -509,9 +495,9 @@ include('includes/footer.php');
 
       mostrarAviso(`⚠️ Horario no disponible.<br>Nuestro horario de atención para este día es de <b>${horaInicioFmt} a ${horaFinFmt}</b>.`);
       $(this).val("");
-      $(this).closest('.form-group').addClass('has-error');
+      $(this).closest('.form-control').addClass('input-error');
     } else {
-      $(this).closest('.form-group').removeClass('has-error');
+      $(this).closest('.form-control').removeClass('input-error');
     }
   });
 
@@ -538,7 +524,7 @@ include('includes/footer.php');
 
     $('.form-control').on('input change', function() {
       if ($(this).val() !== "") {
-        $(this).closest('.form-group').removeClass('has-error');
+        $(this).closest('.form-control').removeClass('input-error');
       }
     });
 
@@ -585,7 +571,7 @@ include('includes/footer.php');
           btnGuardarCita.text('Guardar Cambios').attr('disabled', false);
           if (response.ocupado) {
             mostrarAviso('⚠️ El médico ya tiene otra cita programada en ese horario o dentro del rango de 1 hora.');
-            $('#group_medico, #group_fecha, #group_hora').addClass('has-error');
+            $('#id_medico, #fecha_cita, #hora_cita').addClass('input-error');
           } else {
             $('#modalGuardarCita').modal('show');
           }
@@ -613,10 +599,10 @@ include('includes/footer.php');
         },
         success: function(response) {
           if (response.existe) {
-            $('#nombre_paciente').val(response.nombre_completo).removeClass('has-error');
+            $('#nombre_paciente').val(response.nombre_completo).removeClass('input-error');
             $('#id_paciente_hidden').val(response.id);
             $('#edad_paciente_hidden').val(response.edad);
-            $('#group_cedula').removeClass('has-error');
+            $('#group_cedula').removeClass('input-error');
 
             $('#btnAbrirSelectorPaciente').removeClass('btn-info').addClass('btn-default').prop('disabled', true).css({
               'background-color': '#e9ecef',
@@ -631,7 +617,7 @@ include('includes/footer.php');
             $('#cedula_paciente').val('');
             $('#id_paciente_hidden').val('');
             $('#edad_paciente_hidden').val('');
-            $('#group_cedula').addClass('has-error');
+            $('#group_cedula').addClass('input-error');
 
             $('#btnAbrirSelectorPaciente').removeClass('btn-default').addClass('btn-info').prop('disabled', false).css({
               'background-color': '',
@@ -664,7 +650,7 @@ include('includes/footer.php');
         $('#nombre_paciente').val('');
         $('#id_paciente_hidden').val('');
         $('#edad_paciente_hidden').val('');
-        $('#group_cedula').removeClass('has-error');
+        $('#group_cedula').removeClass('input-error');
 
         $('#btnAbrirSelectorPaciente').removeClass('btn-default').addClass('btn-info').prop('disabled', false).css({
           'background-color': '',
@@ -767,7 +753,7 @@ include('includes/footer.php');
 
       if (fechaSeleccionada <= hoy) {
         mostrarAviso("⚠️ No se pueden programar citas para el mismo día. La fecha mínima permitida es a partir de mañana.");
-        $('#group_fecha').addClass('has-error');
+        $('#fecha_cita').addClass('input-error');
         return;
       } else {
         verificarDisponibilidadYMostrarModal();

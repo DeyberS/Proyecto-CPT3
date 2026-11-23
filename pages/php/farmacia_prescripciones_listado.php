@@ -225,9 +225,9 @@ verificarAcceso('Ver Recetas');
             </form>
 
             <p class="pull-right" style="width:5px;"></p>
-            <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de recetas.">
+            <span data-toggle="tooltip" data-placement="top" title="Filtrar búsqueda.">
               <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
-                <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+                <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:15px; height:20px; filter:invert(1);" title="Filtrar receta"></i>
               </button>
             </span>
 
@@ -357,7 +357,7 @@ verificarAcceso('Ver Recetas');
           </div>
         </div>
 
-        <nav aria-label="Page navigation">
+        <nav id="contenedorPaginacion" aria-label="Page navigation">
           <ul class="pagination">
             <?php
             $query_string = ($busqueda != '') ? "&buscar=" . urlencode($busqueda) : "";
@@ -433,7 +433,7 @@ verificarAcceso('Ver Recetas');
     </div>
   </div>
 
-  <div class="modal fade" id="modalListadoEstados" role="dialog">
+  <div class="modal fade" id="modalListadoEstados" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document" style="width: 90%;">
       <div class="modal-content">
         <div class="modal-header bg-primary">
@@ -637,197 +637,218 @@ verificarAcceso('Ver Recetas');
       </div>
     </div>
   </div>
+</div>
 
-  <?php
-  include("includes/footer.php");
-  ?>
+<?php
+include("includes/footer.php");
+?>
 
-  <script>
-    $(document).ready(function() {
-      window.cargarDatosAjax = function(url) {
-        $('#contenedorTabla tbody').css('opacity', '0.4');
+<script>
+  $(document).ready(function() {
+    window.cargarDatosAjax = function(url) {
+      $('#contenedorTabla tbody').css('opacity', '0.4');
 
-        $.get(url, function(data) {
-          var nuevaTabla = $(data).find('#contenedorTabla').html();
-          var nuevaPaginacion = $(data).find('.pagination').html();
-          var nuevoContador = $(data).find('#contador-total-ajax').html();
+      $.get(url, function(data) {
+        var nuevaTabla = $(data).find('#contenedorTabla').html();
+        var nuevaPaginacion = $(data).find('.pagination').html();
+        var nuevoContador = $(data).find('#contador-total-ajax').html();
 
-          $('#contenedorTabla').html(nuevaTabla);
-          $('.pagination').html(nuevaPaginacion);
-          $('#contador-total-ajax').html(nuevoContador);
+        $('#contenedorTabla').html(nuevaTabla);
+        $('.pagination').html(nuevaPaginacion);
+        $('#contador-total-ajax').html(nuevoContador);
 
-          window.history.pushState(null, '', url);
+        window.history.pushState(null, '', url);
 
-        }).fail(function() {
-          alert("Error de conexión al aplicar filtros.");
-          $('#contenedorTabla tbody').css('opacity', '1');
-        });
-      };
-
-      $('form:has(#buscar)').on('submit', function(e) {
-        e.preventDefault();
-        var url = 'farmacia_prescripciones_listado.php?' + $(this).serialize();
-        cargarDatosAjax(url);
+      }).fail(function() {
+        alert("Error de conexión al aplicar filtros.");
+        $('#contenedorTabla tbody').css('opacity', '1');
       });
+    };
 
-      $('#formBusquedaAvanzada').on('submit', function(e) {
-        e.preventDefault();
-        var url = 'farmacia_prescripciones_listado.php?' + $(this).serialize();
-        $('#modalBusquedaAvanzada').modal('hide');
-        cargarDatosAjax(url);
-      });
-
-      $(document).on('click', '.pagination a', function(e) {
-        e.preventDefault();
-        var url = $(this).attr('href');
-        if (url) {
-          cargarDatosAjax(url);
-        }
-      });
-
-      window.limpiarFiltrosAjax = function() {
-        $('#formBusquedaAvanzada')[0].reset();
-        $('#buscar').val('');
-        var urlLimpia = window.location.href.split('?')[0];
-        cargarDatosAjax(urlLimpia);
-        $('#modalBusquedaAvanzada').modal('hide');
-      };
-
-
-      $(document).on('click', '[data-dismiss="modal"]', function() {
-        $(this).closest('.modal').modal('hide');
-      });
-
-      $('.btn-abrir-modal-estado').on('click', function() {
-        var estado = $(this).data('estado');
-        $('#tituloModalEstados').text('Recetas - Estado: ' + estado);
-        $('#contenido-modal-estados').empty();
-        $('#loader-modal-estados').show();
-        $('#modalListadoEstados').modal('show');
-
-        var busquedaRapida = $('#buscar').val();
-        var filtrosAvanzados = $('#formBusquedaAvanzada').serialize();
-        var datosAjax = filtrosAvanzados + '&buscar=' + encodeURIComponent(busquedaRapida) + '&estado=' + encodeURIComponent(estado);
-
-        $.ajax({
-          url: '../../cfg/ajax/obtener_recetas_por_estado.php?' + datosAjax,
-          type: 'GET',
-          success: function(response) {
-            $('#loader-modal-estados').hide();
-            $('#contenido-modal-estados').html(response);
-          },
-          error: function() {
-            $('#loader-modal-estados').hide();
-            $('#contenido-modal-estados').html('<div class="alert alert-danger">Error al cargar los datos.</div>');
-          }
-        });
-      });
-
-      $('.reporte').on('click', function(e) {
-        e.preventDefault();
-        $('#ModalReportePrescripcion').modal('show');
-      });
-
-      $('#btnEjecutarReporteRecetas').on('click', function() {
-        var tipo = $('#tipo_reporte_receta').val();
-        var fecha_desde = $('#rep_fecha_desde').val();
-        var fecha_hasta = $('#rep_fecha_hasta').val();
-        var urlPDF = '../../cfg/reportes/generar_pdf_recetas.php?tipo=' + tipo;
-
-        if (fecha_desde !== '') urlPDF += '&desde=' + fecha_desde;
-        if (fecha_hasta !== '') urlPDF += '&hasta=' + fecha_hasta;
-
-        window.open(urlPDF, '_blank');
-        $('#ModalReportePrescripcion').modal('hide');
-      });
-
-      let datosEstadoTemp = {
-        id: null,
-        nuevoEstado: null,
-        tipoReceta: null
-      };
-
-      window.cambiarEstado = function(id, nuevoEstado, tipoReceta) {
-        datosEstadoTemp = {
-          id: id,
-          nuevoEstado: nuevoEstado,
-          tipoReceta: tipoReceta
-        };
-
-        if (nuevoEstado === 'no entregado' || nuevoEstado === 'Cancelado') {
-          $('#divMotivoCancelacion').slideDown();
-          $('#motivo_cancelacion').val('');
-          $('#motivo_otro_detalle').val('');
-          $('#divMotivoOtro').slideUp();
-          $('#errorMotivo').hide();
-        }
-
-        $('#modalConfirmarEstado').modal('show');
-      };
-
-      $(document).on('change', '#motivo_cancelacion', function() {
-        if ($(this).val() === 'Otro') {
-          $('#divMotivoOtro').slideDown();
-        } else {
-          $('#divMotivoOtro').slideUp();
-          $('#motivo_otro_detalle').val('');
-        }
-      });
-
-      $('#btnConfirmarEstado').click(function() {
-        let motivoCancelacion = '';
-
-        if (datosEstadoTemp.nuevoEstado === 'no entregado' || datosEstadoTemp.nuevoEstado === 'Cancelado') {
-          motivoCancelacion = $('#motivo_cancelacion').val() || '';
-
-          if (motivoCancelacion === '') {
-            $('#errorMotivo').slideDown();
-            $('#motivo_cancelacion').focus();
-            return;
-          }
-
-          // Si eligió "Otro", exigir texto
-          if (motivoCancelacion === 'Otro') {
-            const detalleOtro = $('#motivo_otro_detalle').val().trim();
-            if (detalleOtro === '') {
-              $('#divMotivoOtro textarea').addClass('input-error').focus();
-              return;
-            }
-            motivoCancelacion = 'Otro: ' + detalleOtro;
-          }
-        }
-
-        const btn = $(this);
-        btn.prop('disabled', true);
-        btn.text('Procesando...');
-
-        $.post('../../cfg/ajax/actualizar_estado_receta.php', {
-          id: datosEstadoTemp.id,
-          estado_entrega: datosEstadoTemp.nuevoEstado,
-          tipo: datosEstadoTemp.tipoReceta,
-          motivo: motivoCancelacion
-        }, function(data) {
-          if (data.trim() == 'ok') {
-            cargarDatosAjax(window.location.href);
-            $('#modalConfirmarEstado').modal('hide');
-          } else {
-            alert('Error al actualizar: ' + data);
-          }
-        }).fail(function() {
-          alert('Error de conexión con el servidor');
-        }).always(function() {
-          btn.prop('disabled', false);
-          btn.text('Aceptar');
-        });
-      });
-
+    $('form:has(#buscar)').on('submit', function(e) {
+      e.preventDefault();
+      var url = 'farmacia_prescripciones_listado.php?' + $(this).serialize();
+      cargarDatosAjax(url);
     });
 
-    <?php if ($mostrar_modal_exito) : ?>
-      $('#modalExito').modal('show');
-    <?php endif; ?>
+    $('#formBusquedaAvanzada').on('submit', function(e) {
+      e.preventDefault();
+      var url = 'farmacia_prescripciones_listado.php?' + $(this).serialize();
+      $('#modalBusquedaAvanzada').modal('hide');
+      cargarDatosAjax(url);
+    });
 
-    <?php if ($mostrar_modal_error) : ?>
-      $('#modalError').modal('show');
-    <?php endif; ?>
-  </script>
+    $(document).on('click', '.pagination a', function(e) {
+      e.preventDefault();
+      var url = $(this).attr('href');
+      if (url) {
+        cargarDatosAjax(url);
+      }
+    });
+
+    window.limpiarFiltrosAjax = function() {
+      $('#formBusquedaAvanzada')[0].reset();
+      $('#buscar').val('');
+      var urlLimpia = window.location.href.split('?')[0];
+      cargarDatosAjax(urlLimpia);
+      $('#modalBusquedaAvanzada').modal('hide');
+    };
+
+
+    $(document).on('click', '[data-dismiss="modal"]', function() {
+      $(this).closest('.modal').modal('hide');
+    });
+
+    // Usar delegación para sobrevivir a cualquier recarga de DOM
+    $(document).on('click', '.btn-abrir-modal-estado', function() {
+      var estado = $(this).data('estado');
+      var $modal = $('#modalListadoEstados');
+
+      // 1) Preparar contenido
+      $('#tituloModalEstados').text('Recetas - Estado: ' + estado);
+      $('#contenido-modal-estados').empty();
+      $('#loader-modal-estados').show();
+
+      // 2) Asegurar estado limpio del modal (evita race condition con fade)
+      if (!$modal.hasClass('in')) {
+        // Limpiar backdrops huérfanos de cierres anteriores
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+        $modal.removeAttr('aria-hidden');
+
+        // Abrir el modal
+        $modal.modal('show');
+      }
+      // Si ya está abierto (.in), no re-abrir: solo recargamos contenido
+
+      // 3) Cargar datos (misma lógica que ya tenías)
+      var busquedaRapida = $('#buscar').val();
+      var filtrosAvanzados = $('#formBusquedaAvanzada').serialize();
+      var datosAjax = filtrosAvanzados +
+        '&buscar=' + encodeURIComponent(busquedaRapida) +
+        '&estado=' + encodeURIComponent(estado);
+
+      $.ajax({
+        url: '../../cfg/ajax/obtener_recetas_por_estado.php?' + datosAjax,
+        type: 'GET',
+        success: function(response) {
+          $('#loader-modal-estados').hide();
+          $('#contenido-modal-estados').html(response);
+        },
+        error: function() {
+          $('#loader-modal-estados').hide();
+          $('#contenido-modal-estados').html(
+            '<div class="alert alert-danger">Error al cargar los datos.</div>'
+          );
+        }
+      });
+    });
+
+    $('.reporte').on('click', function(e) {
+      e.preventDefault();
+      $('#ModalReportePrescripcion').modal('show');
+    });
+
+    $('#btnEjecutarReporteRecetas').on('click', function() {
+      var tipo = $('#tipo_reporte_receta').val();
+      var fecha_desde = $('#rep_fecha_desde').val();
+      var fecha_hasta = $('#rep_fecha_hasta').val();
+      var urlPDF = '../../cfg/reportes/generar_pdf_recetas.php?tipo=' + tipo;
+
+      if (fecha_desde !== '') urlPDF += '&desde=' + fecha_desde;
+      if (fecha_hasta !== '') urlPDF += '&hasta=' + fecha_hasta;
+
+      window.open(urlPDF, '_blank');
+      $('#ModalReportePrescripcion').modal('hide');
+    });
+
+    let datosEstadoTemp = {
+      id: null,
+      nuevoEstado: null,
+      tipoReceta: null
+    };
+
+    window.cambiarEstado = function(id, nuevoEstado, tipoReceta) {
+      datosEstadoTemp = {
+        id: id,
+        nuevoEstado: nuevoEstado,
+        tipoReceta: tipoReceta
+      };
+
+      if (nuevoEstado === 'no entregado' || nuevoEstado === 'Cancelado') {
+        $('#divMotivoCancelacion').slideDown();
+        $('#motivo_cancelacion').val('');
+        $('#motivo_otro_detalle').val('');
+        $('#divMotivoOtro').slideUp();
+        $('#errorMotivo').hide();
+      }
+
+      $('#modalConfirmarEstado').modal('show');
+    };
+
+    $(document).on('change', '#motivo_cancelacion', function() {
+      if ($(this).val() === 'Otro') {
+        $('#divMotivoOtro').slideDown();
+      } else {
+        $('#divMotivoOtro').slideUp();
+        $('#motivo_otro_detalle').val('');
+      }
+    });
+
+    $('#btnConfirmarEstado').click(function() {
+      let motivoCancelacion = '';
+
+      if (datosEstadoTemp.nuevoEstado === 'no entregado' || datosEstadoTemp.nuevoEstado === 'Cancelado') {
+        motivoCancelacion = $('#motivo_cancelacion').val() || '';
+
+        if (motivoCancelacion === '') {
+          $('#errorMotivo').slideDown();
+          $('#motivo_cancelacion').focus();
+          return;
+        }
+
+        // Si eligió "Otro", exigir texto
+        if (motivoCancelacion === 'Otro') {
+          const detalleOtro = $('#motivo_otro_detalle').val().trim();
+          if (detalleOtro === '') {
+            $('#divMotivoOtro textarea').addClass('input-error').focus();
+            return;
+          }
+          motivoCancelacion = 'Otro: ' + detalleOtro;
+        }
+      }
+
+      const btn = $(this);
+      btn.prop('disabled', true);
+      btn.text('Procesando...');
+
+      $.post('../../cfg/ajax/actualizar_estado_receta.php', {
+        id: datosEstadoTemp.id,
+        estado_entrega: datosEstadoTemp.nuevoEstado,
+        tipo: datosEstadoTemp.tipoReceta,
+        motivo: motivoCancelacion
+      }, function(data) {
+        if (data.trim() == 'ok') {
+          cargarDatosAjax(window.location.href);
+          $('#modalConfirmarEstado').modal('hide');
+        } else {
+          alert('Error al actualizar: ' + data);
+        }
+      }).fail(function() {
+        alert('Error de conexión con el servidor');
+      }).always(function() {
+        btn.prop('disabled', false);
+        btn.text('Aceptar');
+      });
+    });
+
+  });
+
+  <?php if ($mostrar_modal_exito) : ?>
+    $('#modalExito').modal('show');
+  <?php endif; ?>
+
+  <?php if ($mostrar_modal_error) : ?>
+    $('#modalError').modal('show');
+  <?php endif; ?>
+</script>

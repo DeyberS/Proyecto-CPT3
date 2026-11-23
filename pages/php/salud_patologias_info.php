@@ -55,217 +55,215 @@ verificarAcceso('Ver Patologias');
     <title>Patología | Información</title>
 </head>
 
-<style>
-    .wrapper {
-        display: block !important;
-        min-height: 100% !important;
-        overflow-x: hidden !important;
-        background-color: #f4f7f9 !important;
-    }
-
-    .content-wrapper {
-        background-color: #f4f7f9 !important;
-        min-height: 125vh !important;
-    }
-
-    .content-custom {
-        padding: 50px 10px;
-        margin-left: 60px;
-    }
-
-    .main-container {
-        background: white;
-        min-height: 60vh;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        overflow: hidden;
-    }
-
-    .hero-header {
-        background: linear-gradient(135deg, #d81b60 0%, #222d32 100%);
-        color: white;
-        padding: 35px 30px;
-        border-bottom: 5px solid #f39c12;
-        position: relative;
-    }
-
-    .hero-icon {
-        font-size: 50px;
-        position: absolute;
-        right: 40px;
-        top: 20px;
-        opacity: 0.2;
-    }
-
-    .info-padding {
-        padding: 40px 30px;
-    }
-
-    .table-info-pat th {
-        background: #f9f9f9;
-        width: 35%;
-        color: #555;
-        font-size: 13px;
-        text-transform: uppercase;
-        vertical-align: middle !important;
-    }
-
-    .table-info-pat td {
-        font-size: 16px;
-        font-weight: 500;
-        color: #333;
-        vertical-align: middle !important;
-    }
-
-    .sintoma-item {
-        background: #fffafa;
-        border: 1px solid #fee2e2;
-        border-left: 4px solid #f39c12;
-        padding: 12px 15px;
-        margin-bottom: 8px;
-        border-radius: 4px;
-        font-size: 15px;
-        color: #444;
-        transition: transform 0.2s;
-    }
-
-    .sintoma-item:hover {
-        transform: translateX(5px);
-        background: #fff;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-
-    .med-item {
-        background: #fdfdfd;
-        border: 1px solid #eee;
-        border-left: 4px solid #00a65a;
-        padding: 12px 15px;
-        margin-bottom: 8px;
-        border-radius: 4px;
-        font-size: 15px;
-    }
-
-    @keyframes pulse-opacity {
-        0% {
-            opacity: 0;
+<div class="content-wrapper">
+    <style>
+        .wrapper {
+            display: block !important;
+            min-height: 100% !important;
+            overflow-x: hidden !important;
+            background-color: #f4f7f9 !important;
         }
 
-        100% {
-            opacity: 1;
+        .content-wrapper {
+            background-color: #f4f7f9 !important;
+            min-height: 125vh !important;
         }
-    }
-</style>
 
-<div class="wrapper">
-    <div class="content-wrapper">
-        <section class="content content-custom">
-            <div class="main-container">
+        .content-custom {
+            padding: 50px 10px;
+            margin-left: 60px;
+        }
 
-                <div class="hero-header text-left">
-                    <i class="fa fa-stethoscope hero-icon"></i>
-                    <h1 style="margin:0; font-weight: 800; letter-spacing: 1px;">
-                        <?php echo htmlspecialchars($row['nombre_patologia']); ?>
-                    </h1>
-                    <p style="margin-top:8px; font-size: 18px; opacity: 0.9;">
-                        <i class="fa fa-barcode"></i> Código CIE-10: <strong><?php echo htmlspecialchars($row['codigo_cie']); ?></strong>
-                    </p>
-                </div>
+        .main-container {
+            background: white;
+            min-height: 60vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
 
-                <div class="info-padding">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h4 class="page-header" style="color: #d81b60; font-weight:bold;">
-                                <i class="fa fa-file-text-o"></i> Información Clínica
-                            </h4>
-                            <table class="table table-bordered table-info-pat">
-                                <tr>
-                                    <th>Nombre de la Patología</th>
-                                    <td><?php echo htmlspecialchars($row['nombre_patologia']); ?></td>
-                                </tr>
-                                <tr>
-                                    <th>Código Internacional (CIE-10)</th>
-                                    <td>
-                                        <span class="label label-primary" style="font-size: 14px;">
-                                            <?php echo htmlspecialchars($row['codigo_cie']); ?>
+        .hero-header {
+            background: linear-gradient(135deg, #d81b60 0%, #222d32 100%);
+            color: white;
+            padding: 35px 30px;
+            border-bottom: 5px solid #f39c12;
+            position: relative;
+        }
+
+        .hero-icon {
+            font-size: 50px;
+            position: absolute;
+            right: 40px;
+            top: 20px;
+            opacity: 0.2;
+        }
+
+        .info-padding {
+            padding: 40px 30px;
+        }
+
+        .table-info-pat th {
+            background: #f9f9f9;
+            width: 35%;
+            color: #555;
+            font-size: 13px;
+            text-transform: uppercase;
+            vertical-align: middle !important;
+        }
+
+        .table-info-pat td {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            vertical-align: middle !important;
+        }
+
+        .sintoma-item {
+            background: #fffafa;
+            border: 1px solid #fee2e2;
+            border-left: 4px solid #f39c12;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 15px;
+            color: #444;
+            transition: transform 0.2s;
+        }
+
+        .sintoma-item:hover {
+            transform: translateX(5px);
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .med-item {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-left: 4px solid #00a65a;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+
+        @keyframes pulse-opacity {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <section class="content content-custom">
+        <div class="main-container">
+
+            <div class="hero-header text-left">
+                <i class="fa fa-stethoscope hero-icon"></i>
+                <h1 style="margin:0; font-weight: 800; letter-spacing: 1px;">
+                    <?php echo htmlspecialchars($row['nombre_patologia']); ?>
+                </h1>
+                <p style="margin-top:8px; font-size: 18px; opacity: 0.9;">
+                    <i class="fa fa-barcode"></i> Código CIE-10: <strong><?php echo htmlspecialchars($row['codigo_cie']); ?></strong>
+                </p>
+            </div>
+
+            <div class="info-padding">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="page-header" style="color: #d81b60; font-weight:bold;">
+                            <i class="fa fa-file-text-o"></i> Información Clínica
+                        </h4>
+                        <table class="table table-bordered table-info-pat">
+                            <tr>
+                                <th>Nombre de la Patología</th>
+                                <td><?php echo htmlspecialchars($row['nombre_patologia']); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Código Internacional (CIE-10)</th>
+                                <td>
+                                    <span class="label label-primary" style="font-size: 14px;">
+                                        <?php echo htmlspecialchars($row['codigo_cie']); ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>¿Es Enfermedad Contagiosa?</th>
+                                <td>
+                                    <?php if ($row['contagioso'] == 'SI') : ?>
+                                        <span class="label label-danger" style="font-size: 14px; padding: 5px 10px;">
+                                            <i class="fa fa-warning"></i> SÍ, ES CONTAGIOSA
                                         </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>¿Es Enfermedad Contagiosa?</th>
-                                    <td>
-                                        <?php if ($row['contagioso'] == 'SI') : ?>
-                                            <span class="label label-danger" style="font-size: 14px; padding: 5px 10px;">
-                                                <i class="fa fa-warning"></i> SÍ, ES CONTAGIOSA
-                                            </span>
-                                        <?php else : ?>
-                                            <span class="label label-success" style="font-size: 14px; padding: 5px 10px;">
-                                                <i class="fa fa-shield"></i> NO ES CONTAGIOSA
-                                            </span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Descripción / Observaciones</th>
-                                    <td>
-                                        <?php
-                                        if (!empty($row['descripcion'])) {
-                                            echo nl2br(htmlspecialchars($row['descripcion']));
-                                        } else {
-                                            echo '<span class="text-muted"><i>No se ha registrado una descripción clínica detallada para esta patología.</i></span>';
-                                        }
-                                        ?>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+                                    <?php else : ?>
+                                        <span class="label label-success" style="font-size: 14px; padding: 5px 10px;">
+                                            <i class="fa fa-shield"></i> NO ES CONTAGIOSA
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Descripción / Observaciones</th>
+                                <td>
+                                    <?php
+                                    if (!empty($row['descripcion'])) {
+                                        echo nl2br(htmlspecialchars($row['descripcion']));
+                                    } else {
+                                        echo '<span class="text-muted"><i>No se ha registrado una descripción clínica detallada para esta patología.</i></span>';
+                                    }
+                                    ?>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
 
-                        <div class="col-md-6">
-                            <h4 class="page-header" style="color: #f39c12; font-weight:bold;">
-                                <i class="fa fa-heartbeat"></i> Síntomas Frecuentes
-                            </h4>
-                            <?php if (empty($sintomas)) : ?>
-                                <div class="alert alert-default" style="background: #f9f9f9; border: 1px dashed #ccc; color: #777;">
-                                    <i class="fa fa-info-circle"></i> No hay síntomas asociados registrados en el sistema.
-                                </div>
-                            <?php else : ?>
-                                <?php foreach ($sintomas as $s) : ?>
-                                    <div class="sintoma-item">
-                                        <i class="fa fa-check text-orange" style="margin-right: 8px;"></i>
-                                        <strong><?php echo htmlspecialchars($s['nombre_sintoma']); ?></strong>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-
-                            <h4 class="page-header text-green" style="font-weight:bold; margin-top: 40px;">
-                                <i class="fa fa-medkit"></i> Medicamentos Relacionados
-                            </h4>
-                            <?php if (empty($medicamentos)) : ?>
-                                <p class="text-muted" style="font-style: italic;">Sin tratamientos farmacológicos predeterminados vinculados.</p>
-                            <?php else : ?>
-                                <?php foreach ($medicamentos as $med) : ?>
-                                    <div class="med-item">
-                                        <strong><?php echo htmlspecialchars($med['nombre_medicamento']); ?></strong>
-                                        <?php if ($med['cantidad_concentracion']) : ?>
-                                            <span class="pull-right badge bg-green">
-                                                <?php echo htmlspecialchars($med['cantidad_concentracion'] . " " . $med['unidad']); ?>
-                                            </span>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-
-                            <hr style="margin-top: 50px;">
-                            <div class="no-print text-right">
-                                <button type="button" class="btn btn-second" data-toggle="modal" data-target="#modalConfirmarRegreso">
-                                    <i class="fa fa-arrow-left"></i> Regresar
-                                </button>
+                    <div class="col-md-6">
+                        <h4 class="page-header" style="color: #f39c12; font-weight:bold;">
+                            <i class="fa fa-heartbeat"></i> Síntomas Frecuentes
+                        </h4>
+                        <?php if (empty($sintomas)) : ?>
+                            <div class="alert alert-default" style="background: #f9f9f9; border: 1px dashed #ccc; color: #777;">
+                                <i class="fa fa-info-circle"></i> No hay síntomas asociados registrados en el sistema.
                             </div>
+                        <?php else : ?>
+                            <?php foreach ($sintomas as $s) : ?>
+                                <div class="sintoma-item">
+                                    <i class="fa fa-check text-orange" style="margin-right: 8px;"></i>
+                                    <strong><?php echo htmlspecialchars($s['nombre_sintoma']); ?></strong>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+
+                        <h4 class="page-header text-green" style="font-weight:bold; margin-top: 40px;">
+                            <i class="fa fa-medkit"></i> Medicamentos Relacionados
+                        </h4>
+                        <?php if (empty($medicamentos)) : ?>
+                            <p class="text-muted" style="font-style: italic;">Sin tratamientos farmacológicos predeterminados vinculados.</p>
+                        <?php else : ?>
+                            <?php foreach ($medicamentos as $med) : ?>
+                                <div class="med-item">
+                                    <strong><?php echo htmlspecialchars($med['nombre_medicamento']); ?></strong>
+                                    <?php if ($med['cantidad_concentracion']) : ?>
+                                        <span class="pull-right badge bg-green">
+                                            <?php echo htmlspecialchars($med['cantidad_concentracion'] . " " . $med['unidad']); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+
+                        <hr style="margin-top: 50px;">
+                        <div class="no-print text-right">
+                            <button type="button" class="btn btn-second" data-toggle="modal" data-target="#modalConfirmarRegreso">
+                                <i class="fa fa-arrow-left"></i> Regresar
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
 
     <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegresoLabel">
         <div class="modal-dialog" role="document">

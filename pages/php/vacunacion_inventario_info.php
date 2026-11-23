@@ -19,7 +19,7 @@ $id_movimiento = isset($_GET['id']) ? $_GET['id'] : null;
 // Por ahora, quemamos los datos para que el diseño se vea.
 
 // Simulamos que el ID 1 es una ENTRADA y el ID 2 es un DESPACHO
-$esEntrada = ($id_movimiento == 1); 
+$esEntrada = ($id_movimiento == 1);
 
 $mov = [
     'Id_detalle_inventario' => $id_movimiento,
@@ -61,47 +61,253 @@ verificarAcceso('Ver Inventario');
     <title>Movimiento de Vacunas | Información</title>
 </head>
 
-<style>
-    :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
-    @media screen {
-        html, body { overflow: hidden !important; height: 118vh !important; background-color: var(--bg) !important; }
-        .wrapper, .content-wrapper { height: 118vh !important; min-height: 118vh !important; overflow: hidden !important; background-color: #f4f7f9 !important; }
-        .content-custom { padding: 20px 10px; margin-left: 60px; height: calc(100vh - 50px); overflow: hidden; }
-    }
-    body { font-family: 'Segoe UI', sans-serif; }
-    .receipt-card { background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); margin: 10px auto; border: none; display: flex; flex-direction: column; max-height: 85vh; }
-    .receipt-header { background: var(--primary); color: white; padding: 20px 30px; border-bottom: 5px solid <?php echo $tipo_bg; ?>; position: relative; flex-shrink: 0; }
-    .card-body { padding: 20px 30px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .status-badge { position: absolute; top: 25px; right: 30px; padding: 10px 20px; border-radius: 8px; font-weight: 800; background-color: <?php echo $tipo_bg; ?>; color: white; }
-    .info-entrega { background: #ebf5fb; border-radius: 10px; padding: 20px; border: 1px solid #d6eaf8; height: 100%; }
-    .label-custom { font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: 700; display: block; }
-    .val-custom { font-size: 16px; color: #2c3e50; font-weight: 500; }
-    .table-scroll-container { max-height: 160px; overflow-y: auto; border-bottom: 1px solid #eee; margin-bottom: 15px; }
-    .table-scroll-container::-webkit-scrollbar { width: 6px; }
-    .table-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
-    .table-scroll-container::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 5px; }
-    .table-scroll-container::-webkit-scrollbar-thumb:hover { background: #95a5a6; }
-    .table-productos { margin-bottom: 0; }
-    .table-productos th { background-color: #f8f9fa; color: var(--primary); font-size: 13px; position: sticky; top: 0; z-index: 10; }
-    .table-productos td { vertical-align: middle !important; font-size: 14px; }
-    .qty-badge { font-size: 16px; font-weight: bold; color: <?php echo $tipo_bg; ?>; background: #fdfdfd; padding: 5px 10px; border: 1px solid #eee; border-radius: 5px; display: inline-block; }
-    .img-strip-btn { position: relative; width: 100%; height: 50px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px dashed #ccc; background-color: #ecf0f1; transition: all 0.3s; }
-    .img-strip-btn:hover { border-color: #3498db; }
-    .img-strip-bg { position: absolute; top: -20px; left: -20px; right: -20px; bottom: -20px; background-size: cover; background-position: center; filter: blur(6px); opacity: 0.6; z-index: 1; }
-    .img-strip-text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary); font-size: 15px; text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8); }
-    .print-only { display: none !important; }
-    @media print {
-        body, html, .wrapper, .content-wrapper, .receipt-card { height: auto !important; max-height: none !important; overflow: visible !important; }
-        .table-scroll-container { max-height: none !important; overflow: visible !important; }
-        .table-productos th { position: static; }
-        .no-print { display: none !important; }
-        .print-only { display: block !important; }
-        .receipt-card { box-shadow: none; border: 1px solid #eee; margin: 0; }
-        .img-comprobante-print { width: 100%; max-height: 250px; object-fit: contain; border: 2px solid #ccc; border-radius: 8px; padding: 5px; }
-    }
-</style>
-
 <div class="content-wrapper">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f4f7f6;
+        }
+
+        @media screen {
+
+            html,
+            body {
+                overflow: hidden !important;
+                height: 118vh !important;
+                background-color: var(--bg) !important;
+            }
+
+            .wrapper,
+            .content-wrapper {
+                height: 118vh !important;
+                min-height: 118vh !important;
+                overflow: hidden !important;
+                background-color: #f4f7f9 !important;
+            }
+
+            .content-custom {
+                padding: 20px 10px;
+                margin-left: 60px;
+                height: calc(100vh - 50px);
+                overflow: hidden;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .receipt-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 10px auto;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+        }
+
+        .receipt-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 30px;
+            border-bottom: 5px solid <?php echo $tipo_bg; ?>;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .card-body {
+            padding: 20px 30px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 800;
+            background-color: <?php echo $tipo_bg; ?>;
+            color: white;
+        }
+
+        .info-entrega {
+            background: #ebf5fb;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #d6eaf8;
+            height: 100%;
+        }
+
+        .label-custom {
+            font-size: 11px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+        }
+
+        .val-custom {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .table-scroll-container {
+            max-height: 160px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 5px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #95a5a6;
+        }
+
+        .table-productos {
+            margin-bottom: 0;
+        }
+
+        .table-productos th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-size: 13px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-productos td {
+            vertical-align: middle !important;
+            font-size: 14px;
+        }
+
+        .qty-badge {
+            font-size: 16px;
+            font-weight: bold;
+            color: <?php echo $tipo_bg; ?>;
+            background: #fdfdfd;
+            padding: 5px 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .img-strip-btn {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px dashed #ccc;
+            background-color: #ecf0f1;
+            transition: all 0.3s;
+        }
+
+        .img-strip-btn:hover {
+            border-color: #3498db;
+        }
+
+        .img-strip-bg {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            background-size: cover;
+            background-position: center;
+            filter: blur(6px);
+            opacity: 0.6;
+            z-index: 1;
+        }
+
+        .img-strip-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 15px;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
+        }
+
+        .print-only {
+            display: none !important;
+        }
+
+        @media print {
+
+            body,
+            html,
+            .wrapper,
+            .content-wrapper,
+            .receipt-card {
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .table-scroll-container {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .table-productos th {
+                position: static;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            .receipt-card {
+                box-shadow: none;
+                border: 1px solid #eee;
+                margin: 0;
+            }
+
+            .img-comprobante-print {
+                width: 100%;
+                max-height: 250px;
+                object-fit: contain;
+                border: 2px solid #ccc;
+                border-radius: 8px;
+                padding: 5px;
+            }
+        }
+    </style>
+
     <section class="content">
         <div class="receipt-card">
             <div class="receipt-header">

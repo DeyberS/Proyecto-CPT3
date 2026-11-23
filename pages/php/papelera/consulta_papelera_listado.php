@@ -35,9 +35,9 @@ verificarAcceso('Ver papelera de consultas');
         </form>
       </div>
       <p class="pull-right" style="width:5px;"></p>
-      <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de consultas.">
+      <span data-toggle="tooltip" data-placement="top" title="Filtrar búsqueda">
         <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
-          <i class="fa fa-filter"><img src="../../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar consulta"></i>
+          <i><img src="../../../recursos/imagenes/iconos/filtrar.png" style="width:15px; height:20px; filter:invert(1);" title="Filtrar consulta"></i>
         </button>
       </span>
     </div>

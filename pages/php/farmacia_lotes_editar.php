@@ -15,13 +15,10 @@ verificarAcceso('Editar Lotes');
 
 <head>
   <title>Lotes | Editar</title>
-  <style>
-    .input-error {
-      border: 2px solid crimson !important;
-      box-shadow: 0 0 5px crimson !important;
-      background-color: #fff5f5 !important;
-    }
+</head>
 
+<div class="content-wrapper">
+  <style>
     #contenedor-medicamentos-edicion .list-group-item {
       font-size: 13px;
     }
@@ -48,9 +45,7 @@ verificarAcceso('Editar Lotes');
       transition: all 0.3s;
     }
   </style>
-</head>
 
-<div class="content-wrapper">
   <section class="content-header">
     <h1>Editar Lote</h1>
     <ol class="breadcrumb">
@@ -295,100 +290,101 @@ verificarAcceso('Editar Lotes');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    window.LISTA_MEDICAMENTOS_DISPONIBLES = <?php
-                                            $lista_meds = [];
-                                            $q_all_meds = $conexion->query("SELECT m.Id_medicamento, m.nombre_medicamento FROM medicamento m WHERE m.estatus = 1 ORDER BY m.nombre_medicamento ASC");
-                                            if ($q_all_meds) {
-                                              while ($m = $q_all_meds->fetch_assoc()) {
-                                                $lista_meds[] = ['id' => $m['Id_medicamento'], 'nombre' => $m['nombre_medicamento']];
-                                              }
+<script>
+  window.LISTA_MEDICAMENTOS_DISPONIBLES = <?php
+                                          $lista_meds = [];
+                                          $q_all_meds = $conexion->query("SELECT m.Id_medicamento, m.nombre_medicamento FROM medicamento m WHERE m.estatus = 1 ORDER BY m.nombre_medicamento ASC");
+                                          if ($q_all_meds) {
+                                            while ($m = $q_all_meds->fetch_assoc()) {
+                                              $lista_meds[] = ['id' => $m['Id_medicamento'], 'nombre' => $m['nombre_medicamento']];
                                             }
-                                            echo json_encode($lista_meds);
-                                            ?>;
-  </script>
+                                          }
+                                          echo json_encode($lista_meds);
+                                          ?>;
+</script>
 
-  <script>
-    (function() {
-      'use strict';
-      if (window.__editarLoteInicializado) return;
-      window.__editarLoteInicializado = true;
+<script>
+  (function() {
+    'use strict';
+    if (window.__editarLoteInicializado) return;
+    window.__editarLoteInicializado = true;
 
-      const today = new Date().toISOString().split('T')[0];
-      let filaMedDestino = null;
-      let tieneMedicamentosCargados = <?php echo $tiene_medicamentos ? 'true' : 'false'; ?>;
+    const today = new Date().toISOString().split('T')[0];
+    let filaMedDestino = null;
+    let tieneMedicamentosCargados = <?php echo $tiene_medicamentos ? 'true' : 'false'; ?>;
 
-      // Inicializar tooltip del botón de medicamentos
-      $('#wrap_btn_modal_meds_lote').tooltip({
-        container: 'body',
-        placement: 'top'
-      });
+    // Inicializar tooltip del botón de medicamentos
+    $('#wrap_btn_modal_meds_lote').tooltip({
+      container: 'body',
+      placement: 'top'
+    });
 
-      function mostrarAviso(msg) {
-        $('#avisoTexto').html(msg);
-        $('#avisoModal').modal('show');
-      }
+    function mostrarAviso(msg) {
+      $('#avisoTexto').html(msg);
+      $('#avisoModal').modal('show');
+    }
 
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
-      }
+    function limpiarErrores() {
+      $('input, select').removeClass('input-error');
+    }
 
-      // Lógica para bloquear fechas
-      $('#fecha_fabricacion').attr('max', today);
-      $('#fecha_vencimiento').prop('disabled', true);
+    // Lógica para bloquear fechas
+    $('#fecha_fabricacion').attr('max', today);
+    $('#fecha_vencimiento').prop('disabled', true);
 
-      if ($('#fecha_fabricacion').val()) {
-        $('#fecha_vencimiento').prop('disabled', false).attr('min', $('#fecha_fabricacion').val());
-      }
+    if ($('#fecha_fabricacion').val()) {
+      $('#fecha_vencimiento').prop('disabled', false).attr('min', $('#fecha_fabricacion').val());
+    }
 
-      $('#fecha_fabricacion').on('change', function() {
-        const fabDate = $(this).val();
-        if (fabDate) {
-          if (fabDate > today) {
-            mostrarAviso('La fecha de fabricación no puede ser futura.');
-            $(this).val('');
-            $('#fecha_vencimiento').prop('disabled', true).val('');
-            return;
-          }
-          $('#fecha_vencimiento').prop('disabled', false).attr('min', fabDate);
-          if ($('#fecha_vencimiento').val() && $('#fecha_vencimiento').val() < fabDate) {
-            $('#fecha_vencimiento').val('');
-          }
-        } else {
+    $('#fecha_fabricacion').on('change', function() {
+      const fabDate = $(this).val();
+      if (fabDate) {
+        if (fabDate > today) {
+          mostrarAviso('La fecha de fabricación no puede ser futura.');
+          $(this).val('');
           $('#fecha_vencimiento').prop('disabled', true).val('');
+          return;
         }
-      });
-
-      $('#fecha_vencimiento').on('change', function() {
-        const vencDate = $(this).val();
-        const fabDate = $('#fecha_fabricacion').val();
-        if (vencDate) {
-          if (vencDate <= today) {
-            mostrarAviso('La fecha de vencimiento debe ser una fecha futura (no puede ser hoy ni antes).');
-            $(this).val('');
-            return;
-          }
-          if (fabDate && vencDate < fabDate) {
-            mostrarAviso('La fecha de vencimiento no puede ser anterior a la de fabricación.');
-            $(this).val('');
-            return;
-          }
+        $('#fecha_vencimiento').prop('disabled', false).attr('min', fabDate);
+        if ($('#fecha_vencimiento').val() && $('#fecha_vencimiento').val() < fabDate) {
+          $('#fecha_vencimiento').val('');
         }
-      });
+      } else {
+        $('#fecha_vencimiento').prop('disabled', true).val('');
+      }
+    });
 
-      // --- LÓGICA DEL MODAL DE MEDICAMENTOS ---
+    $('#fecha_vencimiento').on('change', function() {
+      const vencDate = $(this).val();
+      const fabDate = $('#fecha_fabricacion').val();
+      if (vencDate) {
+        if (vencDate <= today) {
+          mostrarAviso('La fecha de vencimiento debe ser una fecha futura (no puede ser hoy ni antes).');
+          $(this).val('');
+          return;
+        }
+        if (fabDate && vencDate < fabDate) {
+          mostrarAviso('La fecha de vencimiento no puede ser anterior a la de fabricación.');
+          $(this).val('');
+          return;
+        }
+      }
+    });
 
-      function agregarFilaMedicamento(id = '', nombre = '', stock = 0) {
-        let colorStock = stock > 0 ? '#d9534f' : '#777';
-        let addonStock = `<span class="input-group-addon stock-badge" style="background-color: ${colorStock}; color: white;">Stock: ${stock}</span>`;
+    // --- LÓGICA DEL MODAL DE MEDICAMENTOS ---
 
-        let htmlBotones = '';
-        if (!tieneMedicamentosCargados) {
-          // Si NO hay datos, mostramos botones de buscar y eliminar
-          htmlBotones = `
+    function agregarFilaMedicamento(id = '', nombre = '', stock = 0) {
+      let colorStock = stock > 0 ? '#d9534f' : '#777';
+      let addonStock = `<span class="input-group-addon stock-badge" style="background-color: ${colorStock}; color: white;">Stock: ${stock}</span>`;
+
+      let htmlBotones = '';
+      if (!tieneMedicamentosCargados) {
+        // Si NO hay datos, mostramos botones de buscar y eliminar
+        htmlBotones = `
                 <span class="input-group-btn">
                   <button class="btn btn-info btn-search-med-lote" type="button" title="Buscar Medicamento">
                     <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:15px; height:15px;"></i>
@@ -400,18 +396,18 @@ verificarAcceso('Editar Lotes');
                   </button>
                 </span>
             `;
-        } else {
-          // Si YA hay datos, mostramos un candado bloqueado
-          htmlBotones = `
+      } else {
+        // Si YA hay datos, mostramos un candado bloqueado
+        htmlBotones = `
                 <span class="input-group-btn">
                   <button class="btn btn-second" type="button" disabled title="No editable en lote existente">
                     <i><img src="../../recursos/imagenes/iconos/pass_b.png" style="width:15px; height:15px;"></i>
                   </button>
                 </span>
             `;
-        }
+      }
 
-        let html = `
+      let html = `
           <div class="row fila-med-lote" style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #ddd;">
             <div class="col-sm-12">
               <div class="input-group">
@@ -423,233 +419,229 @@ verificarAcceso('Editar Lotes');
               </div>
             </div>
           </div>`;
-        $('#contenedor-medicamentos-edicion').append(html);
-      }
+      $('#contenedor-medicamentos-edicion').append(html);
+    }
 
-      function cargarMedicamentosGuardados() {
-        $('#contenedor-medicamentos-edicion').empty();
-        let dataGuardada = $('#medicamentos_ids').val();
-        if (dataGuardada && dataGuardada.trim() !== "" && dataGuardada !== "[]") {
-          try {
-            let lista = JSON.parse(dataGuardada);
-            lista.forEach(function(m) {
-              agregarFilaMedicamento(m.id, m.nombre, m.stock);
-            });
-            $('#count_meds_lote').text(lista.length);
-          } catch (e) {
-            console.error(e);
-          }
-        } else {
-          $('#count_meds_lote').text(0);
+    function cargarMedicamentosGuardados() {
+      $('#contenedor-medicamentos-edicion').empty();
+      let dataGuardada = $('#medicamentos_ids').val();
+      if (dataGuardada && dataGuardada.trim() !== "" && dataGuardada !== "[]") {
+        try {
+          let lista = JSON.parse(dataGuardada);
+          lista.forEach(function(m) {
+            agregarFilaMedicamento(m.id, m.nombre, m.stock);
+          });
+          $('#count_meds_lote').text(lista.length);
+        } catch (e) {
+          console.error(e);
         }
+      } else {
+        $('#count_meds_lote').text(0);
+      }
+    }
+
+    $('#modalMedicamentosLote').on('show.bs.modal', function() {
+      cargarMedicamentosGuardados();
+    });
+
+    $(document).on('click', '.btn-search-med-lote', function(e) {
+      e.preventDefault();
+      if (tieneMedicamentosCargados) return; // Bloqueo interno
+
+      filaMedDestino = $(this).closest('.fila-med-lote');
+      $('#inputBuscarMedLote').val('');
+      $('#listaResultadosMedLote').html('<div class="text-muted text-center" style="padding:15px;">Escriba para buscar...</div>');
+      $('#modalBuscarMedicamentoLote').modal('show');
+      $('#inputBuscarMedLote').focus();
+    });
+
+    let timerMed = null;
+    $(document).on('keyup', '#inputBuscarMedLote', function() {
+      if (tieneMedicamentosCargados) return;
+
+      let term = $(this).val().trim().toLowerCase();
+      if (timerMed) clearTimeout(timerMed);
+
+      let lista = window.LISTA_MEDICAMENTOS_DISPONIBLES || [];
+      if (term.length === 0) {
+        $('#listaResultadosMedLote').html('<div class="text-muted text-center" style="padding:15px;">Escriba para buscar...</div>');
+        return;
       }
 
-      $('#modalMedicamentosLote').on('show.bs.modal', function() {
-        cargarMedicamentosGuardados();
-      });
+      timerMed = setTimeout(function() {
+        let html = '';
+        let resultados = lista.filter(m => m.nombre.toLowerCase().includes(term) || m.id.toString() === term);
 
-      $(document).on('click', '.btn-search-med-lote', function(e) {
-        e.preventDefault();
-        if (tieneMedicamentosCargados) return; // Bloqueo interno
-
-        filaMedDestino = $(this).closest('.fila-med-lote');
-        $('#inputBuscarMedLote').val('');
-        $('#listaResultadosMedLote').html('<div class="text-muted text-center" style="padding:15px;">Escriba para buscar...</div>');
-        $('#modalBuscarMedicamentoLote').modal('show');
-        $('#inputBuscarMedLote').focus();
-      });
-
-      let timerMed = null;
-      $(document).on('keyup', '#inputBuscarMedLote', function() {
-        if (tieneMedicamentosCargados) return;
-
-        let term = $(this).val().trim().toLowerCase();
-        if (timerMed) clearTimeout(timerMed);
-
-        let lista = window.LISTA_MEDICAMENTOS_DISPONIBLES || [];
-        if (term.length === 0) {
-          $('#listaResultadosMedLote').html('<div class="text-muted text-center" style="padding:15px;">Escriba para buscar...</div>');
+        if (resultados.length === 0) {
+          $('#listaResultadosMedLote').html('<div class="text-muted text-center" style="padding:15px;">No se encontraron medicamentos.</div>');
           return;
         }
 
-        timerMed = setTimeout(function() {
-          let html = '';
-          let resultados = lista.filter(m => m.nombre.toLowerCase().includes(term) || m.id.toString() === term);
-
-          if (resultados.length === 0) {
-            $('#listaResultadosMedLote').html('<div class="text-muted text-center" style="padding:15px;">No se encontraron medicamentos.</div>');
-            return;
-          }
-
-          resultados.forEach(function(m) {
-            html += `<a href="#" class="list-group-item seleccionar-med-lote" data-id="${m.id}" data-nombre="${m.nombre}">
+        resultados.forEach(function(m) {
+          html += `<a href="#" class="list-group-item seleccionar-med-lote" data-id="${m.id}" data-nombre="${m.nombre}">
                       <strong>${m.nombre}</strong>
                     </a>`;
-          });
-          $('#listaResultadosMedLote').html(html);
-        }, 300);
-      });
-
-      $(document).on('click', '.seleccionar-med-lote', function(e) {
-        e.preventDefault();
-        if (tieneMedicamentosCargados) return;
-
-        let id = $(this).data('id');
-        let nombre = $(this).data('nombre');
-
-        let dup = false;
-        $('.input-id-med-lote').each(function() {
-          if ($(this).val() == id && $(this).closest('.fila-med-lote')[0] !== filaMedDestino[0]) dup = true;
         });
-        if (dup) {
-          mostrarAviso('⚠️ Este medicamento ya está asignado en otra fila.');
-          return;
-        }
+        $('#listaResultadosMedLote').html(html);
+      }, 300);
+    });
 
-        filaMedDestino.find('.input-id-med-lote').val(id);
-        filaMedDestino.find('.input-nombre-med-lote').val(nombre);
-        filaMedDestino.find('.input-stock-med-lote').val(0);
+    $(document).on('click', '.seleccionar-med-lote', function(e) {
+      e.preventDefault();
+      if (tieneMedicamentosCargados) return;
 
-        // Actualizar visualmente el addon de stock
-        let addon = filaMedDestino.find('.input-group-addon');
-        addon.text('Stock: 0').css('color', '#777');
+      let id = $(this).data('id');
+      let nombre = $(this).data('nombre');
 
-        $('#modalBuscarMedicamentoLote').modal('hide');
+      let dup = false;
+      $('.input-id-med-lote').each(function() {
+        if ($(this).val() == id && $(this).closest('.fila-med-lote')[0] !== filaMedDestino[0]) dup = true;
       });
-
-      $('#add_fila_med_lote').on('click', function() {
-        if (tieneMedicamentosCargados) return; // Bloqueo interno
-
-        let $ult = $('.fila-med-lote').last();
-        if ($ult.length && !$ult.find('.input-id-med-lote').val()) {
-          mostrarAviso('Debe seleccionar un medicamento en la fila actual antes de añadir otro.');
-          return;
-        }
-        agregarFilaMedicamento();
-      });
-
-      $(document).on('click', '.btn-remove-med-lote', function() {
-        if (tieneMedicamentosCargados) return; // Bloqueo interno
-
-        let $fila = $(this).closest('.fila-med-lote');
-        let stock = parseInt($fila.find('.input-stock-med-lote').val()) || 0;
-        if (stock > 0) {
-          mostrarAviso('No puede eliminar este medicamento porque tiene stock. Ajuste el stock a 0 primero.');
-          return;
-        }
-        $fila.remove();
-      });
-
-      $('#guardar_med_listo').on('click', function() {
-        if (tieneMedicamentosCargados) {
-          $('#modalMedicamentosLote').modal('hide');
-          return;
-        }
-
-        let seleccionados = [];
-        let count = 0;
-        $('.fila-med-lote').each(function() {
-          let id = $(this).find('.input-id-med-lote').val();
-          let nombre = $(this).find('.input-nombre-med-lote').val();
-          let stock = $(this).find('.input-stock-med-lote').val();
-          if (id) {
-            seleccionados.push({
-              id: parseInt(id),
-              nombre: nombre,
-              stock: parseInt(stock)
-            });
-            count++;
-          }
-        });
-
-        $('#medicamentos_ids').val(JSON.stringify(seleccionados));
-        $('#count_meds_lote').text(count);
-
-        // Actualizar el tooltip del botón principal
-        let nombres = seleccionados.map(m => m.nombre);
-        let tooltipTxt = nombres.length > 0 ? nombres.join(', ') : 'Sin medicamentos asociados';
-        $('#wrap_btn_modal_meds_lote').attr('title', tooltipTxt).tooltip('fixTitle');
-
-        $('#modalMedicamentosLote').modal('hide');
-      });
-
-      $('#cancelar_med_modal').on('click', function() {
-        cargarMedicamentosGuardados();
-        $('#modalMedicamentosLote').modal('hide');
-      });
-
-      // --- LÓGICA DE GUARDADO ---
-
-      function verificarLoteYMostrarModal() {
-        const nombre = $('#nombre_lote').val().trim();
-        const id_lote = $('input[name="Id"]').val();
-        const btnGuardar = $('#btnGuardar');
-
-        const textoOriginal = btnGuardar.text();
-        btnGuardar.text('Verificando...').attr('disabled', true);
-
-        $.ajax({
-          url: '../../cfg/ajax/verificar_existencia_lote.php',
-          method: 'POST',
-          dataType: 'json',
-          data: {
-            nombre: nombre,
-            id_lote: id_lote,
-            solo_nombre: true
-          },
-          success: function(response) {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-            limpiarErrores();
-
-            if (response.existe_lote) {
-              $('#group_nombre').addClass('input-error');
-              $('#nombre_lote').addClass('input-error');
-              mostrarAviso('⚠️ Error de Duplicidad:<br>Ya existe OTRO lote con el nombre <b>' + nombre + '</b> registrado en el sistema.');
-            } else if (response.error) {
-              mostrarAviso('⚠️ Error: ' + response.mensaje);
-            } else {
-              $('#modalGuardar').modal('show');
-            }
-          },
-          error: function() {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
-          }
-        });
+      if (dup) {
+        mostrarAviso('⚠️ Este medicamento ya está asignado en otra fila.');
+        return;
       }
 
-      $('#formularioLote').on('submit', function(e) {
-        e.preventDefault();
-        limpiarErrores();
-        let errores = [];
+      filaMedDestino.find('.input-id-med-lote').val(id);
+      filaMedDestino.find('.input-nombre-med-lote').val(nombre);
+      filaMedDestino.find('.input-stock-med-lote').val(0);
 
-        if ($('#nombre_lote').val().trim() === "") {
-          errores.push("El nombre del lote no puede estar vacío.");
-          $('#nombre_lote').addClass('input-error');
-        }
-        if ($('#fecha_fabricacion').val().trim() === "") {
-          errores.push("La fecha de fabricación no puede estar vacía.");
-          $('#fecha_fabricacion').addClass('input-error');
-        }
-        if ($('#fecha_vencimiento').val().trim() === "") {
-          errores.push("La fecha de vencimiento no puede estar vacía.");
-          $('#fecha_vencimiento').addClass('input-error');
-        }
-        if ($('#proveedor').val().trim() === "") {
-          errores.push("Debe asignar un proveedor a este lote.");
-          $('#proveedor').addClass('input-error');
-        }
+      // Actualizar visualmente el addon de stock
+      let addon = filaMedDestino.find('.input-group-addon');
+      addon.text('Stock: 0').css('color', '#777');
 
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          verificarLoteYMostrarModal();
+      $('#modalBuscarMedicamentoLote').modal('hide');
+    });
+
+    $('#add_fila_med_lote').on('click', function() {
+      if (tieneMedicamentosCargados) return; // Bloqueo interno
+
+      let $ult = $('.fila-med-lote').last();
+      if ($ult.length && !$ult.find('.input-id-med-lote').val()) {
+        mostrarAviso('Debe seleccionar un medicamento en la fila actual antes de añadir otro.');
+        return;
+      }
+      agregarFilaMedicamento();
+    });
+
+    $(document).on('click', '.btn-remove-med-lote', function() {
+      if (tieneMedicamentosCargados) return; // Bloqueo interno
+
+      let $fila = $(this).closest('.fila-med-lote');
+      let stock = parseInt($fila.find('.input-stock-med-lote').val()) || 0;
+      if (stock > 0) {
+        mostrarAviso('No puede eliminar este medicamento porque tiene stock. Ajuste el stock a 0 primero.');
+        return;
+      }
+      $fila.remove();
+    });
+
+    $('#guardar_med_listo').on('click', function() {
+      if (tieneMedicamentosCargados) {
+        $('#modalMedicamentosLote').modal('hide');
+        return;
+      }
+
+      let seleccionados = [];
+      let count = 0;
+      $('.fila-med-lote').each(function() {
+        let id = $(this).find('.input-id-med-lote').val();
+        let nombre = $(this).find('.input-nombre-med-lote').val();
+        let stock = $(this).find('.input-stock-med-lote').val();
+        if (id) {
+          seleccionados.push({
+            id: parseInt(id),
+            nombre: nombre,
+            stock: parseInt(stock)
+          });
+          count++;
         }
       });
 
-      $('#confirmarGuardar').on('click', function() {
-        $('#formularioLote').off('submit').submit();
+      $('#medicamentos_ids').val(JSON.stringify(seleccionados));
+      $('#count_meds_lote').text(count);
+
+      // Actualizar el tooltip del botón principal
+      let nombres = seleccionados.map(m => m.nombre);
+      let tooltipTxt = nombres.length > 0 ? nombres.join(', ') : 'Sin medicamentos asociados';
+      $('#wrap_btn_modal_meds_lote').attr('title', tooltipTxt).tooltip('fixTitle');
+
+      $('#modalMedicamentosLote').modal('hide');
+    });
+
+    $('#cancelar_med_modal').on('click', function() {
+      cargarMedicamentosGuardados();
+      $('#modalMedicamentosLote').modal('hide');
+    });
+
+    function verificarLoteYMostrarModal() {
+      const nombre = $('#nombre_lote').val().trim();
+      const id_lote = $('input[name="Id"]').val();
+      const btnGuardar = $('#btnGuardar');
+
+      const textoOriginal = btnGuardar.text();
+      btnGuardar.text('Verificando...').attr('disabled', true);
+
+      $.ajax({
+        url: '../../cfg/ajax/verificar_existencia_lote.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          nombre: nombre,
+          id_lote: id_lote,
+          solo_nombre: true
+        },
+        success: function(response) {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+          limpiarErrores();
+
+          if (response.existe_lote) {
+            $('#nombre_lote').addClass('input-error');
+            mostrarAviso('⚠️ Error de Duplicidad:<br>Ya existe OTRO lote con el nombre <b>' + nombre + '</b> registrado en el sistema.');
+          } else if (response.error) {
+            mostrarAviso('⚠️ Error: ' + response.mensaje);
+          } else {
+            $('#modalGuardar').modal('show');
+          }
+        },
+        error: function() {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+          mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
+        }
       });
-    })();
-  </script>
-</div>
+    }
+
+    $('#formularioLote').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let errores = [];
+
+      if ($('#nombre_lote').val().trim() === "") {
+        errores.push("El nombre del lote no puede estar vacío.");
+        $('#nombre_lote').addClass('input-error');
+      }
+      if ($('#fecha_fabricacion').val().trim() === "") {
+        errores.push("La fecha de fabricación no puede estar vacía.");
+        $('#fecha_fabricacion').addClass('input-error');
+      }
+      if ($('#fecha_vencimiento').val().trim() === "") {
+        errores.push("La fecha de vencimiento no puede estar vacía.");
+        $('#fecha_vencimiento').addClass('input-error');
+      }
+      if ($('#proveedor').val().trim() === "") {
+        errores.push("Debe asignar un proveedor a este lote.");
+        $('#proveedor').addClass('input-error');
+      }
+
+      if (errores.length > 0) {
+        mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        verificarLoteYMostrarModal();
+      }
+    });
+
+    $('#confirmarGuardar').on('click', function() {
+      $('#formularioLote').off('submit').submit();
+    });
+  })();
+</script>

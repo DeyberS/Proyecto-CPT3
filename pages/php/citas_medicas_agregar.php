@@ -16,20 +16,6 @@ verificarAcceso('Crear Citas');
   <title>Citas Médicas | Añadir</title>
 </head>
 
-<style>
-  .input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-
-  .has-error .form-control {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-</style>
-
 <div class="content-wrapper">
   <section class="content-header">
     <h1>Añadir Nueva Cita</h1>
@@ -210,150 +196,141 @@ verificarAcceso('Crear Citas');
   <?php
   include('modales/personas/pacientes_agregar_modal.php');
   include('modales/personas/pacientes_menores_agregar_modal.php');
-  include('includes/footer.php');
   ?>
 
-  <script>
-    const cedulaPacienteInput = document.getElementById('cedula_paciente');
-    const tipoCedulaPacienteSelect = document.getElementById('tipo_cedula_paciente');
-    const nombrePacienteInput = document.getElementById('nombre_paciente');
+</div>
 
-    function mostrarAviso(texto, onHiddenCallBack = null) {
-      $('#avisoTexto').html(texto);
+<?php
+include('includes/footer.php');
+?>
 
-      if (onHiddenCallBack && typeof onHiddenCallBack === 'function') {
-        $('#avisoModal').one('hidden.bs.modal', function() {
-          onHiddenCallBack();
-        });
-      }
+<script>
+  const cedulaPacienteInput = document.getElementById('cedula_paciente');
+  const tipoCedulaPacienteSelect = document.getElementById('tipo_cedula_paciente');
+  const nombrePacienteInput = document.getElementById('nombre_paciente');
 
-      $('#avisoModal').modal('show');
-    }
+  function mostrarAviso(texto, onHiddenCallBack = null) {
+    $('#avisoTexto').html(texto);
 
-    window.mostrarExito = function(mensaje) {
-      $('#headerTipoPaciente').removeClass('bg-crimson').addClass('bg-green');
-      $('#avisoTexto').html(mensaje);
-      $('#avisoModal').modal('show');
-    }
-
-    $(document).on('show.bs.modal', '.modal', function(event) {
-      var zIndex = 1040 + (10 * $('.modal:visible').length);
-      $(this).css('z-index', zIndex);
-      setTimeout(function() {
-        $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
-      }, 0);
-    });
-
-    $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
-      e.preventDefault();
-      var $modal = $(this).closest('.modal');
-
-      $modal.removeClass('in').addClass('out');
-
-      if ($modal.data('timerCierre')) {
-        clearTimeout($modal.data('timerCierre'));
-      }
-
-      var timerId = setTimeout(function() {
-        $modal.modal('hide');
-        $modal.removeClass('out');
-      }, 400);
-
-      $modal.data('timerCierre', timerId);
-    });
-
-    $('.modal').on('show.bs.modal', function() {
-      if ($(this).data('timerCierre')) {
-        clearTimeout($(this).data('timerCierre'));
-      }
-      $(this).removeClass('out');
-    });
-
-    $('.modal').on('hidden.bs.modal', function() {
-      if ($('.modal:visible').length) {
-        $('body').addClass('modal-open');
-      } else {
-        $('body').removeClass('modal-open');
-        $('.modal-backdrop').remove();
-      }
-    });
-
-    function limpiarErrores() {
-      $('.form-group').removeClass('has-error');
-    }
-
-    function filtrarCedulaCita() {
-      const tipo = $('#tipo_cedula_paciente').val();
-      let valor = cedulaPacienteInput.value;
-      let nuevoValor = valor;
-      let longitudMaxima = 20;
-
-      if (tipo === 'V' || tipo === 'E') {
-        nuevoValor = valor.replace(/[^0-9]/g, '');
-        longitudMaxima = 8;
-      } else if (tipo === 'RP') {
-        nuevoValor = valor.replace(/[^0-9]/g, '');
-        if (nuevoValor.length > 8) {
-          nuevoValor = nuevoValor.substring(0, 8) + '-' + nuevoValor.substring(8, 9);
-        }
-        longitudMaxima = 10;
-      } else if (tipo === 'PN') {
-        nuevoValor = valor.replace(/[^0-9a-zA-Z- ]/g, '');
-        longitudMaxima = 20;
-      }
-
-      cedulaPacienteInput.maxLength = longitudMaxima;
-      cedulaPacienteInput.value = nuevoValor;
-    }
-
-    function aplicarRestricciones() {
-      $('#cedula_paciente').on('input', filtrarCedulaCita);
-      $('#tipo_cedula_paciente').on('change', function() {
-        $('#cedula_paciente').val('');
-        filtrarCedulaCita();
-
-        $('#btnAbrirSelectorPaciente').removeClass('btn-default').addClass('btn-info').prop('disabled', false).css({
-          'background-color': '',
-          'border-color': '',
-          'pointer-events': ''
-        });
+    if (onHiddenCallBack && typeof onHiddenCallBack === 'function') {
+      $('#avisoModal').one('hidden.bs.modal', function() {
+        onHiddenCallBack();
       });
     }
 
-    function ajustarLongitudCedula(tipo) {
-      let maxLength = (tipo === 'PN') ? 20 : 8;
-      cedulaPacienteInput.setAttribute('maxlength', maxLength);
+    $('#avisoModal').modal('show');
+  }
 
-      if (cedulaPacienteInput.value.length > maxLength) {
-        cedulaPacienteInput.value = cedulaPacienteInput.value.substring(0, maxLength);
-      }
+  window.mostrarExito = function(mensaje) {
+    $('#headerTipoPaciente').removeClass('bg-crimson').addClass('bg-green');
+    $('#avisoTexto').html(mensaje);
+    $('#avisoModal').modal('show');
+  }
+
+  $(document).on('show.bs.modal', '.modal', function(event) {
+    var zIndex = 1040 + (10 * $('.modal:visible').length);
+    $(this).css('z-index', zIndex);
+    setTimeout(function() {
+      $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+    }, 0);
+  });
+
+  $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
+    e.preventDefault();
+    var $modal = $(this).closest('.modal');
+
+    $modal.removeClass('in').addClass('out');
+
+    if ($modal.data('timerCierre')) {
+      clearTimeout($modal.data('timerCierre'));
     }
 
-    function validarLongitudCedula() {
-      const tipo = $('#tipo_cedula_paciente').val();
-      const cedula = $('#cedula_paciente').val().trim();
-      const longitud = cedula.length;
+    var timerId = setTimeout(function() {
+      $modal.modal('hide');
+      $modal.removeClass('out');
+    }, 400);
 
-      if (tipo === 'RP') {
-        const regexRP = /^[0-9]{8}-[0-9]{1}$/;
-        if (!regexRP.test(cedula)) {
-          return {
-            valido: false,
-            mensaje: `Formato incorrecto. El documento REP- debe tener el formato 12345678-1.`
-          };
-        }
-        return {
-          valido: true
-        };
+    $modal.data('timerCierre', timerId);
+  });
+
+  $('.modal').on('show.bs.modal', function() {
+    if ($(this).data('timerCierre')) {
+      clearTimeout($(this).data('timerCierre'));
+    }
+    $(this).removeClass('out');
+  });
+
+  $('.modal').on('hidden.bs.modal', function() {
+    if ($('.modal:visible').length) {
+      $('body').addClass('modal-open');
+    } else {
+      $('body').removeClass('modal-open');
+      $('.modal-backdrop').remove();
+    }
+  });
+
+  function limpiarErrores() {
+    $('.form-control').removeClass('input-error');
+  }
+
+  function filtrarCedulaCita() {
+    const tipo = $('#tipo_cedula_paciente').val();
+    let valor = cedulaPacienteInput.value;
+    let nuevoValor = valor;
+    let longitudMaxima = 20;
+
+    if (tipo === 'V' || tipo === 'E') {
+      nuevoValor = valor.replace(/[^0-9]/g, '');
+      longitudMaxima = 8;
+    } else if (tipo === 'RP') {
+      nuevoValor = valor.replace(/[^0-9]/g, '');
+      if (nuevoValor.length > 8) {
+        nuevoValor = nuevoValor.substring(0, 8) + '-' + nuevoValor.substring(8, 9);
       }
+      longitudMaxima = 10;
+    } else if (tipo === 'PN') {
+      nuevoValor = valor.replace(/[^0-9a-zA-Z- ]/g, '');
+      longitudMaxima = 20;
+    }
 
-      let min = 2;
-      let max = (tipo === 'PN') ? 20 : 8;
+    cedulaPacienteInput.maxLength = longitudMaxima;
+    cedulaPacienteInput.value = nuevoValor;
+  }
 
-      if (longitud < min || longitud > max) {
+  function aplicarRestricciones() {
+    $('#cedula_paciente').on('input', filtrarCedulaCita);
+    $('#tipo_cedula_paciente').on('change', function() {
+      $('#cedula_paciente').val('');
+      filtrarCedulaCita();
+
+      $('#btnAbrirSelectorPaciente').removeClass('btn-default').addClass('btn-info').prop('disabled', false).css({
+        'background-color': '',
+        'border-color': '',
+        'pointer-events': ''
+      });
+    });
+  }
+
+  function ajustarLongitudCedula(tipo) {
+    let maxLength = (tipo === 'PN') ? 20 : 8;
+    cedulaPacienteInput.setAttribute('maxlength', maxLength);
+
+    if (cedulaPacienteInput.value.length > maxLength) {
+      cedulaPacienteInput.value = cedulaPacienteInput.value.substring(0, maxLength);
+    }
+  }
+
+  function validarLongitudCedula() {
+    const tipo = $('#tipo_cedula_paciente').val();
+    const cedula = $('#cedula_paciente').val().trim();
+    const longitud = cedula.length;
+
+    if (tipo === 'RP') {
+      const regexRP = /^[0-9]{8}-[0-9]{1}$/;
+      if (!regexRP.test(cedula)) {
         return {
           valido: false,
-          mensaje: `La cédula tipo ${tipo} debe tener entre ${min} y ${max} caracteres.`
+          mensaje: `Formato incorrecto. El documento REP- debe tener el formato 12345678-1.`
         };
       }
       return {
@@ -361,365 +338,379 @@ verificarAcceso('Crear Citas');
       };
     }
 
-    $('#cedula_paciente').on('blur', function() {
-      const tipo = $('#tipo_cedula_paciente').val();
-      const longitud = this.value.length;
-      const minRequired = 1;
+    let min = 2;
+    let max = (tipo === 'PN') ? 20 : 8;
 
-      if (longitud > 0 && longitud < minRequired) {
-        $(this).closest('.form-group').addClass('has-error');
-      } else {
-        $(this).closest('.form-group').removeClass('has-error');
-      }
-    });
+    if (longitud < min || longitud > max) {
+      return {
+        valido: false,
+        mensaje: `La cédula tipo ${tipo} debe tener entre ${min} y ${max} caracteres.`
+      };
+    }
+    return {
+      valido: true
+    };
+  }
 
-    const configuracionHorarios = <?php echo json_encode($horarios_db); ?>;
+  $('#cedula_paciente').on('blur', function() {
+    const tipo = $('#tipo_cedula_paciente').val();
+    const longitud = this.value.length;
+    const minRequired = 1;
 
-    $('#fecha_cita').on('change', function() {
-      if (!this.value) return;
+    if (longitud > 0 && longitud < minRequired) {
+      $(this).closest('.form-control').addClass('input-error');
+    } else {
+      $(this).closest('.form-control').removeClass('input-error');
+    }
+  });
 
-      const fechaSeleccionada = new Date(this.value + 'T00:00:00');
-      const diaSemanaJS = fechaSeleccionada.getUTCDay();
+  const configuracionHorarios = <?php echo json_encode($horarios_db); ?>;
 
-      const diaDB = (diaSemanaJS === 0) ? 7 : diaSemanaJS;
-      const configDia = configuracionHorarios[diaDB];
+  $('#fecha_cita').on('change', function() {
+    if (!this.value) return;
 
-      if (!configDia || configDia.estatus == 0) {
-        mostrarAviso("⚠️ El establecimiento no presta servicio en el día seleccionado.");
-        this.value = "";
-        $('#hora_cita').val("").prop('disabled', true);
-        $(this).closest('.form-group').addClass('has-error');
-        return;
-      }
+    const fechaSeleccionada = new Date(this.value + 'T00:00:00');
+    const diaSemanaJS = fechaSeleccionada.getUTCDay();
 
-      const horaInicio = configDia.hora_inicio.substring(0, 5);
-      const horaFin = configDia.hora_fin.substring(0, 5);
+    const diaDB = (diaSemanaJS === 0) ? 7 : diaSemanaJS;
+    const configDia = configuracionHorarios[diaDB];
 
-      $('#hora_cita').prop('disabled', false)
-        .attr('min', horaInicio)
-        .attr('max', horaFin);
+    if (!configDia || configDia.estatus == 0) {
+      mostrarAviso("⚠️ El establecimiento no presta servicio en el día seleccionado.");
+      this.value = "";
+      $('#hora_cita').val("").prop('disabled', true);
+      $(this).closest('.form-control').addClass('input-error');
+      return;
+    }
 
-      $(this).closest('.form-group').removeClass('has-error');
+    const horaInicio = configDia.hora_inicio.substring(0, 5);
+    const horaFin = configDia.hora_fin.substring(0, 5);
 
-      if ($('#hora_cita').val()) {
-        $('#hora_cita').trigger('change');
-      }
-    });
+    $('#hora_cita').prop('disabled', false)
+      .attr('min', horaInicio)
+      .attr('max', horaFin);
 
-    $('#hora_cita').on('change', function() {
-      const horaVal = $(this).val();
-      const fechaVal = $('#fecha_cita').val();
+    $(this).closest('.form-control').removeClass('input-error');
 
-      if (!horaVal || !fechaVal) return;
+    if ($('#hora_cita').val()) {
+      $('#hora_cita').trigger('change');
+    }
+  });
 
-      const fechaSeleccionada = new Date(fechaVal + 'T00:00:00');
-      const diaSemanaJS = fechaSeleccionada.getUTCDay();
-      const diaDB = (diaSemanaJS === 0) ? 7 : diaSemanaJS;
-      const configDia = configuracionHorarios[diaDB];
+  $('#hora_cita').on('change', function() {
+    const horaVal = $(this).val();
+    const fechaVal = $('#fecha_cita').val();
 
-      if (!configDia || configDia.estatus == 0) return;
+    if (!horaVal || !fechaVal) return;
 
-      const [h, m] = horaVal.split(':').map(Number);
-      const minutosSeleccionados = h * 60 + m;
+    const fechaSeleccionada = new Date(fechaVal + 'T00:00:00');
+    const diaSemanaJS = fechaSeleccionada.getUTCDay();
+    const diaDB = (diaSemanaJS === 0) ? 7 : diaSemanaJS;
+    const configDia = configuracionHorarios[diaDB];
 
-      const [hInicio, mInicio] = configDia.hora_inicio.split(':').map(Number);
-      const minutosInicio = hInicio * 60 + mInicio;
+    if (!configDia || configDia.estatus == 0) return;
 
-      const [hFin, mFin] = configDia.hora_fin.split(':').map(Number);
-      const minutosFin = hFin * 60 + mFin;
+    const [h, m] = horaVal.split(':').map(Number);
+    const minutosSeleccionados = h * 60 + m;
 
-      if (minutosSeleccionados < minutosInicio || minutosSeleccionados > minutosFin) {
-        const horaInicioFmt = configDia.hora_inicio.substring(0, 5);
-        const horaFinFmt = configDia.hora_fin.substring(0, 5);
+    const [hInicio, mInicio] = configDia.hora_inicio.split(':').map(Number);
+    const minutosInicio = hInicio * 60 + mInicio;
 
-        mostrarAviso(`⚠️ Horario no disponible.<br>Nuestro horario de atención para este día es de <b>${horaInicioFmt} a ${horaFinFmt}</b>.`);
-        $(this).val("");
-        $(this).closest('.form-group').addClass('has-error');
-      } else {
-        $(this).closest('.form-group').removeClass('has-error');
-      }
-    });
+    const [hFin, mFin] = configDia.hora_fin.split(':').map(Number);
+    const minutosFin = hFin * 60 + mFin;
 
-    function verificarCedulaYObtenerDatos(tipo, cedula, callback = null) {
-      if (cedula.length < 1) {
-        if (callback) callback(false);
-        return;
-      }
+    if (minutosSeleccionados < minutosInicio || minutosSeleccionados > minutosFin) {
+      const horaInicioFmt = configDia.hora_inicio.substring(0, 5);
+      const horaFinFmt = configDia.hora_fin.substring(0, 5);
 
-      $.ajax({
-        url: '../../cfg/ajax/obtener_paciente.php',
-        method: 'POST',
-        dataType: 'json',
-        data: {
-          tipo_cedula: tipo,
-          cedula: cedula
-        },
-        success: function(response) {
-          if (response.existe) {
-            $('#nombre_paciente').val(response.nombre_completo).removeClass('has-error');
-            $('#id_paciente_hidden').val(response.id);
-            $('#edad_paciente_hidden').val(response.edad);
-            $('#group_cedula').removeClass('has-error');
+      mostrarAviso(`⚠️ Horario no disponible.<br>Nuestro horario de atención para este día es de <b>${horaInicioFmt} a ${horaFinFmt}</b>.`);
+      $(this).val("");
+      $(this).closest('.form-control').addClass('input-error');
+    } else {
+      $(this).closest('.form-control').removeClass('input-error');
+    }
+  });
 
-            $('#btnAbrirSelectorPaciente').removeClass('btn-info').addClass('btn-default').prop('disabled', true).css({
-              'background-color': '#e9ecef',
-              'border-color': 'gray',
-              'pointer-events': 'none'
-            });
+  function verificarCedulaYObtenerDatos(tipo, cedula, callback = null) {
+    if (cedula.length < 1) {
+      if (callback) callback(false);
+      return;
+    }
 
-            if (callback) callback(true);
-          } else {
+    $.ajax({
+      url: '../../cfg/ajax/obtener_paciente.php',
+      method: 'POST',
+      dataType: 'json',
+      data: {
+        tipo_cedula: tipo,
+        cedula: cedula
+      },
+      success: function(response) {
+        if (response.existe) {
+          $('#nombre_paciente').val(response.nombre_completo).removeClass('input-error');
+          $('#id_paciente_hidden').val(response.id);
+          $('#edad_paciente_hidden').val(response.edad);
+          $('#group_cedula').removeClass('input-error');
 
-            $('#nombre_paciente').val('¡Paciente no encontrado!');
-            $('#cedula_paciente').val('');
-            $('#id_paciente_hidden').val('');
-            $('#edad_paciente_hidden').val('');
-            $('#group_cedula').addClass('has-error');
+          $('#btnAbrirSelectorPaciente').removeClass('btn-info').addClass('btn-default').prop('disabled', true).css({
+            'background-color': '#e9ecef',
+            'border-color': 'gray',
+            'pointer-events': 'none'
+          });
 
-            $('#btnAbrirSelectorPaciente').removeClass('btn-default').addClass('btn-info').prop('disabled', false).css({
-              'background-color': '',
-              'border-color': '',
-              'pointer-events': ''
-            });
+          if (callback) callback(true);
+        } else {
 
-            mostrarAviso("⚠️ El paciente con documento " + tipo + "-" + cedula + " no está registrado. Debe agregarlo haciendo clic en el botón <b>(+)</b>.");
-            if (callback) callback(false);
-          }
-        },
-        error: function() {
-          mostrarAviso('⚠️ Error de conexión al verificar el paciente.');
+          $('#nombre_paciente').val('¡Paciente no encontrado!');
+          $('#cedula_paciente').val('');
+          $('#id_paciente_hidden').val('');
+          $('#edad_paciente_hidden').val('');
+          $('#group_cedula').addClass('input-error');
+
+          $('#btnAbrirSelectorPaciente').removeClass('btn-default').addClass('btn-info').prop('disabled', false).css({
+            'background-color': '',
+            'border-color': '',
+            'pointer-events': ''
+          });
+
+          mostrarAviso("⚠️ El paciente con documento " + tipo + "-" + cedula + " no está registrado. Debe agregarlo haciendo clic en el botón <b>(+)</b>.");
           if (callback) callback(false);
         }
+      },
+      error: function() {
+        mostrarAviso('⚠️ Error de conexión al verificar el paciente.');
+        if (callback) callback(false);
+      }
+    });
+  }
+
+  let temporizadorBusqueda;
+
+  $('#cedula_paciente').on('input change blur', function(e) {
+    clearTimeout(temporizadorBusqueda);
+
+    const tipo = $('#tipo_cedula_paciente').val();
+    const cedula = $(this).val().trim();
+
+    let limiteMax = (tipo === 'PN') ? 20 : (tipo === 'RP' ? 10 : 8);
+
+    if (cedula.length === 0) {
+      $('#nombre_paciente').val('');
+      $('#id_paciente_hidden').val('');
+      $('#edad_paciente_hidden').val('');
+      $('#group_cedula').removeClass('input-error');
+
+      $('#btnAbrirSelectorPaciente').removeClass('btn-default').addClass('btn-info').prop('disabled', false).css({
+        'background-color': '',
+        'border-color': '',
+        'pointer-events': ''
       });
+      return;
     }
 
-    let temporizadorBusqueda;
+    if (e.type === 'blur' || e.type === 'change' || cedula.length === limiteMax || (tipo === 'PN' && cedula.length >= 10)) {
+      temporizadorBusqueda = setTimeout(function() {
+        verificarCedulaYObtenerDatos(tipo, cedula);
+      }, 50);
+    }
+  });
 
-    $('#cedula_paciente').on('input change blur', function(e) {
-      clearTimeout(temporizadorBusqueda);
+  $('#btnAbrirSelectorPaciente').off('click').on('click', function(e) {
+    e.preventDefault();
+    const tipo = $('#tipo_cedula_paciente').val();
+    const cedula = $('#cedula_paciente').val().trim();
 
-      const tipo = $('#tipo_cedula_paciente').val();
-      const cedula = $(this).val().trim();
+    if (cedula === "") {
+      $('#modalSeleccionTipoPaciente').modal('show');
+      return;
+    }
 
-      let limiteMax = (tipo === 'PN') ? 20 : (tipo === 'RP' ? 10 : 8);
-
-      if (cedula.length === 0) {
-        $('#nombre_paciente').val('');
-        $('#id_paciente_hidden').val('');
-        $('#edad_paciente_hidden').val('');
-        $('#group_cedula').removeClass('has-error');
-
-        $('#btnAbrirSelectorPaciente').removeClass('btn-default').addClass('btn-info').prop('disabled', false).css({
-          'background-color': '',
-          'border-color': '',
-          'pointer-events': ''
+    verificarCedulaYObtenerDatos(tipo, cedula, function(existe) {
+      if (!existe) {
+        $('#avisoModal').one('hidden.bs.modal', function() {
+          $('#modalSeleccionTipoPaciente').modal('show');
         });
-        return;
-      }
-
-      if (e.type === 'blur' || e.type === 'change' || cedula.length === limiteMax || (tipo === 'PN' && cedula.length >= 10)) {
-        temporizadorBusqueda = setTimeout(function() {
-          verificarCedulaYObtenerDatos(tipo, cedula);
-        }, 50);
       }
     });
+  });
 
-    $('#btnAbrirSelectorPaciente').off('click').on('click', function(e) {
-      e.preventDefault();
-      const tipo = $('#tipo_cedula_paciente').val();
-      const cedula = $('#cedula_paciente').val().trim();
+  $('#btnAbrirModalAdulto').off('click').on('click', function() {
+    var $modalSel = $('#modalSeleccionTipoPaciente');
 
-      if (cedula === "") {
-        $('#modalSeleccionTipoPaciente').modal('show');
-        return;
-      }
+    $modalSel.removeClass('in').addClass('out');
 
-      verificarCedulaYObtenerDatos(tipo, cedula, function(existe) {
-        if (!existe) {
-          $('#avisoModal').one('hidden.bs.modal', function() {
-            $('#modalSeleccionTipoPaciente').modal('show');
-          });
-        }
-      });
-    });
-
-    $('#btnAbrirModalAdulto').off('click').on('click', function() {
-      var $modalSel = $('#modalSeleccionTipoPaciente');
-
-      $modalSel.removeClass('in').addClass('out');
-
-      if ($modalSel.data('timerCierre')) {
-        clearTimeout($modalSel.data('timerCierre'));
-      }
-
-      var timerId = setTimeout(function() {
-        $modalSel.modal('hide');
-        $modalSel.removeClass('out');
-        $('#modalAgregarPacienteExterno').modal('show');
-      }, 400);
-
-      $modalSel.data('timerCierre', timerId);
-    });
-
-    $('#btnAbrirModalMenor').off('click').on('click', function() {
-      var $modalSel = $('#modalSeleccionTipoPaciente');
-
-      $modalSel.removeClass('in').addClass('out');
-
-      if ($modalSel.data('timerCierre')) {
-        clearTimeout($modalSel.data('timerCierre'));
-      }
-
-      var timerId = setTimeout(function() {
-        $modalSel.modal('hide');
-        $modalSel.removeClass('out');
-        $('#modalAgregarPacienteMenor').modal('show');
-      }, 400);
-
-      $modalSel.data('timerCierre', timerId);
-    });
-
-    function validarCamposCita() {
-      let erroresCampos = [];
-
-      const campos1 = [{
-          id: 'cedula_paciente',
-          nombre: 'Cédula / Documento'
-        },
-        {
-          id: 'id_especialidad',
-          nombre: 'Especialidad'
-        },
-        {
-          id: 'id_medico',
-          nombre: 'Médico Especialista'
-        },
-        {
-          id: 'fecha_cita',
-          nombre: 'Fecha'
-        },
-        {
-          id: 'hora_cita',
-          nombre: 'Hora'
-        },
-        {
-          id: 'motivo',
-          nombre: 'Motivo de la consulta'
-        }
-      ];
-
-      campos1.forEach(campo => {
-        const inputc = $('#' + campo.id);
-        if (inputc.val() === "" || inputc.val() === null) {
-          inputc.closest('.form-group').addClass('has-error');
-          erroresCampos.push(campo.nombre);
-        } else {
-          inputc.closest('.form-group').removeClass('has-error');
-        }
-      });
-
-      return erroresCampos;
+    if ($modalSel.data('timerCierre')) {
+      clearTimeout($modalSel.data('timerCierre'));
     }
 
-    $(document).ready(function() {
-      aplicarRestricciones();
-      $('.form-control').on('input change', function() {
-        if ($(this).val() !== "") {
-          $(this).closest('.form-group').removeClass('has-error');
-        }
-      });
+    var timerId = setTimeout(function() {
+      $modalSel.modal('hide');
+      $modalSel.removeClass('out');
+      $('#modalAgregarPacienteExterno').modal('show');
+    }, 400);
 
-      $('#id_especialidad').on('change', function() {
-        const espId = $(this).val();
-        if (espId) {
-          $('#id_medico').prop('disabled', false).html('<option value="">Cargando médicos...</option>');
-          $.post('../../cfg/ajax/obtener_medicos_por_especialidad.php', {
-            id_especialidad: espId
-          }, function(data) {
-            $('#id_medico').html(data);
-          });
-        } else {
-          $('#id_medico').prop('disabled', true).html('<option value="">Seleccione primero una especialidad</option>');
-        }
-      });
+    $modalSel.data('timerCierre', timerId);
+  });
 
-      function verificarDisponibilidadYMostrarModal() {
-        const btnGuardarCita = $('#btnGuardarCita');
-        const datos = {
-          id_medico: $('#id_medico').val(),
-          fecha: $('#fecha_cita').val(),
-          hora: $('#hora_cita').val()
-        };
+  $('#btnAbrirModalMenor').off('click').on('click', function() {
+    var $modalSel = $('#modalSeleccionTipoPaciente');
 
-        btnGuardarCita.text('Verificando disponibilidad...').attr('disabled', true);
+    $modalSel.removeClass('in').addClass('out');
 
-        $.ajax({
-          url: '../../cfg/ajax/verificar_disponibilidad_cita.php',
-          method: 'POST',
-          dataType: 'json',
-          data: datos,
-          success: function(response) {
-            btnGuardarCita.text('Añadir Cita').attr('disabled', false);
-            if (response.ocupado) {
-              mostrarAviso('⚠️ El médico ya tiene una cita programada en ese horario.');
-              $('#group_medico, #group_fecha, #group_hora').addClass('has-error');
-            } else {
-              $('#modalGuardarCita').modal('show');
-            }
-          },
-          error: function(xhr, status, error) {
-            btnGuardarCita.text('Añadir Cita').attr('disabled', false);
-            mostrarAviso('⚠️ Error al conectar con el servidor para verificar disponibilidad.');
-            console.error(error);
+    if ($modalSel.data('timerCierre')) {
+      clearTimeout($modalSel.data('timerCierre'));
+    }
+
+    var timerId = setTimeout(function() {
+      $modalSel.modal('hide');
+      $modalSel.removeClass('out');
+      $('#modalAgregarPacienteMenor').modal('show');
+    }, 400);
+
+    $modalSel.data('timerCierre', timerId);
+  });
+
+  function validarCamposCita() {
+    let erroresCampos = [];
+
+    const campos1 = [{
+        id: 'cedula_paciente',
+        nombre: 'Cédula / Documento'
+      },
+      {
+        id: 'id_especialidad',
+        nombre: 'Especialidad'
+      },
+      {
+        id: 'id_medico',
+        nombre: 'Médico Especialista'
+      },
+      {
+        id: 'fecha_cita',
+        nombre: 'Fecha'
+      },
+      {
+        id: 'hora_cita',
+        nombre: 'Hora'
+      },
+      {
+        id: 'motivo',
+        nombre: 'Motivo de la consulta'
+      }
+    ];
+
+    campos1.forEach(campo => {
+      const inputc = $('#' + campo.id);
+      if (inputc.val() === "" || inputc.val() === null) {
+        inputc.closest('.form-control').addClass('input-error');
+        erroresCampos.push(campo.nombre);
+      } else {
+        inputc.closest('.form-control').removeClass('input-error');
+      }
+    });
+
+    return erroresCampos;
+  }
+
+  $(document).ready(function() {
+    aplicarRestricciones();
+    $('.form-control').on('input change', function() {
+      if ($(this).val() !== "") {
+        $(this).closest('.form-control').removeClass('input-error');
+      }
+    });
+
+    $('#id_especialidad').on('change', function() {
+      const espId = $(this).val();
+      if (espId) {
+        $('#id_medico').prop('disabled', false).html('<option value="">Cargando médicos...</option>');
+        $.post('../../cfg/ajax/obtener_medicos_por_especialidad.php', {
+          id_especialidad: espId
+        }, function(data) {
+          $('#id_medico').html(data);
+        });
+      } else {
+        $('#id_medico').prop('disabled', true).html('<option value="">Seleccione primero una especialidad</option>');
+      }
+    });
+
+    function verificarDisponibilidadYMostrarModal() {
+      const btnGuardarCita = $('#btnGuardarCita');
+      const datos = {
+        id_medico: $('#id_medico').val(),
+        fecha: $('#fecha_cita').val(),
+        hora: $('#hora_cita').val()
+      };
+
+      btnGuardarCita.text('Verificando disponibilidad...').attr('disabled', true);
+
+      $.ajax({
+        url: '../../cfg/ajax/verificar_disponibilidad_cita.php',
+        method: 'POST',
+        dataType: 'json',
+        data: datos,
+        success: function(response) {
+          btnGuardarCita.text('Añadir Cita').attr('disabled', false);
+          if (response.ocupado) {
+            mostrarAviso('⚠️ El médico ya tiene una cita programada en ese horario.');
+            $('#id_medico, #fecha_cita, #hora_cita').addClass('input-error');
+          } else {
+            $('#modalGuardarCita').modal('show');
           }
-        });
+        },
+        error: function(xhr, status, error) {
+          btnGuardarCita.text('Añadir Cita').attr('disabled', false);
+          mostrarAviso('⚠️ Error al conectar con el servidor para verificar disponibilidad.');
+          console.error(error);
+        }
+      });
+    }
+
+    $('#formularioCita').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let erroresCampos = validarCamposCita();
+
+      if (erroresCampos.length > 0) {
+        mostrarAviso("⚠️ Por favor complete los siguientes campos obligatorios:<ul><li>" + erroresCampos.join("</li><li>") + "</li></ul>");
+        return;
       }
 
-      $('#formularioCita').on('submit', function(e) {
-        e.preventDefault();
-        limpiarErrores();
-        let erroresCampos = validarCamposCita();
+      const fechaVal = $('#fecha_cita').val();
+      const fechaSeleccionada = new Date(fechaVal + 'T00:00:00');
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
 
-        if (erroresCampos.length > 0) {
-          mostrarAviso("⚠️ Por favor complete los siguientes campos obligatorios:<ul><li>" + erroresCampos.join("</li><li>") + "</li></ul>");
-          return;
-        }
-
-        const fechaVal = $('#fecha_cita').val();
-        const fechaSeleccionada = new Date(fechaVal + 'T00:00:00');
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-
-        if (fechaSeleccionada <= hoy) {
-          mostrarAviso("⚠️ No se pueden programar citas para el mismo día. La fecha mínima permitida es a partir de mañana.");
-          $('#group_fecha').addClass('has-error');
-          return;
-        } else {
-          verificarDisponibilidadYMostrarModal();
-        }
-      });
-
-      $('#confirmarGuardarCita').on('click', function() {
-        $('#modalGuardarCita').modal('hide');
-        $('#formularioCita').off('submit').submit();
-      });
-
-      $('#cedula_paciente').on('blur', function() {
-        const tipo = $('#tipo_cedula_paciente').val();
-        const cedula = $(this).val();
-        if (cedula.length >= 1) {
-          verificarCedulaYObtenerDatos(tipo, cedula);
-        }
-      });
-
-      $('#tipo_cedula_paciente').on('change', function() {
-        const cedula = $('#cedula_paciente').val();
-        if (cedula.length >= 7) {
-          verificarCedulaYObtenerDatos($(this).val(), cedula);
-        }
-      });
-
-      ajustarLongitudCedula(tipoCedulaPacienteSelect.value);
-      aplicarRestricciones();
+      if (fechaSeleccionada <= hoy) {
+        mostrarAviso("⚠️ No se pueden programar citas para el mismo día. La fecha mínima permitida es a partir de mañana.");
+        $('#fecha_cita').addClass('input-error');
+        return;
+      } else {
+        verificarDisponibilidadYMostrarModal();
+      }
     });
-  </script>
+
+    $('#confirmarGuardarCita').on('click', function() {
+      $('#modalGuardarCita').modal('hide');
+      $('#formularioCita').off('submit').submit();
+    });
+
+    $('#cedula_paciente').on('blur', function() {
+      const tipo = $('#tipo_cedula_paciente').val();
+      const cedula = $(this).val();
+      if (cedula.length >= 1) {
+        verificarCedulaYObtenerDatos(tipo, cedula);
+      }
+    });
+
+    $('#tipo_cedula_paciente').on('change', function() {
+      const cedula = $('#cedula_paciente').val();
+      if (cedula.length >= 7) {
+        verificarCedulaYObtenerDatos($(this).val(), cedula);
+      }
+    });
+
+    ajustarLongitudCedula(tipoCedulaPacienteSelect.value);
+    aplicarRestricciones();
+  });
+</script>

@@ -47,146 +47,146 @@ verificarAcceso('Ver Medicos');
     <title>Médico | Informacion</title>
 </head>
 
-<style>
-    :root {
-        --primary-dark: #2c3e50;
-        --medical-blue: #007bff;
-        --bg-gray: #f4f7f6;
-    }
+<div class="content-wrapper">
+    <style>
+        :root {
+            --primary-dark: #2c3e50;
+            --medical-blue: #007bff;
+            --bg-gray: #f4f7f6;
+        }
 
-    .wrapper {
-        display: block !important;
-        background-color: #f4f7f9 !important;
-    }
+        .wrapper {
+            display: block !important;
+            background-color: #f4f7f9 !important;
+        }
 
-    .content-wrapper {
-        background-color: #f4f7f9 !important;
+        .content-wrapper {
+            background-color: #f4f7f9 !important;
 
-    }
+        }
 
-    .content-custom {
-        padding: 0px 10px;
-        margin-left: 60px;
-    }
+        .content-custom {
+            padding: 0px 10px;
+            margin-left: 60px;
+        }
 
-    body {
-        background-color: var(--bg-gray) !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    .profile-card {
-        background: #fff;
-        border-radius: 0px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin: 0px auto;
-        border: none;
-        min-height: 80vh;
-    }
-
-    .profile-header {
-        background: linear-gradient(135deg, var(--primary-dark) 0%, #34495e 100%);
-        color: white;
-        padding: 40px;
-        border-bottom: 5px solid var(--medical-blue);
-        position: relative;
-    }
-
-    .doctor-avatar {
-        width: 110px;
-        height: 110px;
-        background: transparent;
-        border-radius: 0px;
-        padding: 0;
-        box-shadow: none;
-        object-fit: contain;
-    }
-
-    .info-box-custom {
-        background: #f8f9fa;
-        border-radius: 0px;
-        padding: 20px;
-        border-left: 5px solid var(--medical-blue);
-        height: 100%;
-    }
-
-    .label-custom {
-        font-size: 11px;
-        color: #95a5a6;
-        text-transform: uppercase;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 2px;
-    }
-
-    .val-custom {
-        font-size: 16px;
-        color: var(--primary-dark);
-        font-weight: 600;
-    }
-
-    .section-title {
-        color: var(--medical-blue);
-        font-weight: 700;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-        text-transform: uppercase;
-        font-size: 14px;
-    }
-
-    .obs-box {
-        margin-top: 30px;
-        background: #fff9e6;
-        padding: 15px;
-        border-radius: 0px;
-        border: 1px dashed #f39c12;
-    }
-
-    .data-item-card {
-        background: #fff;
-        padding: 15px;
-        border-radius: 0px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-
-    .badge-depto {
-        background-color: var(--medical-blue);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        display: inline-block;
-        margin-right: 5px;
-        margin-bottom: 5px;
-        font-weight: 600;
-    }
-
-    .badge-espec {
-        background-color: #2ecc71;
-        color: white;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        display: inline-block;
-        margin-right: 5px;
-        margin-bottom: 5px;
-        font-weight: 600;
-    }
-
-    @media print {
-        .no-print {
-            display: none !important;
+        body {
+            background-color: var(--bg-gray) !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .profile-card {
-            box-shadow: none;
-            border: 1px solid #eee;
+            background: #fff;
+            border-radius: 0px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 0px auto;
+            border: none;
+            min-height: 80vh;
         }
-    }
-</style>
 
-<div class="content-wrapper">
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            border-bottom: 5px solid var(--medical-blue);
+            position: relative;
+        }
+
+        .doctor-avatar {
+            width: 110px;
+            height: 110px;
+            background: transparent;
+            border-radius: 0px;
+            padding: 0;
+            box-shadow: none;
+            object-fit: contain;
+        }
+
+        .info-box-custom {
+            background: #f8f9fa;
+            border-radius: 0px;
+            padding: 20px;
+            border-left: 5px solid var(--medical-blue);
+            height: 100%;
+        }
+
+        .label-custom {
+            font-size: 11px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .val-custom {
+            font-size: 16px;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .section-title {
+            color: var(--medical-blue);
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .obs-box {
+            margin-top: 30px;
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 0px;
+            border: 1px dashed #f39c12;
+        }
+
+        .data-item-card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 0px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .badge-depto {
+            background-color: var(--medical-blue);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .badge-espec {
+            background-color: #2ecc71;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            .profile-card {
+                box-shadow: none;
+                border: 1px solid #eee;
+            }
+        }
+    </style>
+    
     <section class="content">
         <div class="profile-card">
             <div class="profile-header">

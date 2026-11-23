@@ -281,132 +281,132 @@ include('includes/headerNav2.php');
 verificarAcceso('Ver Consultas');
 ?>
 <head>
-    <title>Consulta Médica - Información</title>
+    <title>Consulta Médica | Información</title>
 </head>
 
-<style>
-    .report-box {
-        background: #fff;
-        padding: 30px;
-        margin: 20px auto;
-        border-top: 5px solid #00c0ef;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .info-header {
-        border-bottom: 2px solid #f4f4f4;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-    }
-
-    .vitals-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-
-    .vital-card {
-        background: #f9f9f9;
-        border: 1px solid #eee;
-        padding: 10px;
-        border-radius: 4px;
-        flex: 1 1 130px;
-        min-width: 130px;
-        text-align: center;
-    }
-
-    .vital-card small {
-        display: block;
-        color: #777;
-        font-weight: bold;
-        font-size: 11px;
-        margin-bottom: 4px;
-    }
-
-    .vital-card strong {
-        font-size: 16px;
-        color: #222;
-    }
-
-    .vital-card.empty {
-        opacity: .55;
-        background: #fbfbfb;
-    }
-
-    .doctor-box {
-        background: #f0f9ff;
-        border: 1px solid #cce5ff;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-    }
-
-    .section-title {
-        border-left: 4px solid #00c0ef;
-        padding-left: 10px;
-        margin: 25px 0 12px;
-        font-weight: 700;
-        color: #333;
-    }
-
-    .data-label {
-        color: #777;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-        margin-bottom: 2px;
-        display: block;
-    }
-
-    .data-value {
-        font-size: 14px;
-        color: #222;
-    }
-
-    .alert-reaction {
-        border-left: 4px solid #d9534f;
-        background: #fff5f5;
-        padding: 10px 15px;
-        border-radius: 4px;
-        margin-top: 10px;
-    }
-
-    .badge-estado {
-        font-size: 10px;
-        padding: 2px 6px;
-        border-radius: 3px;
-        color: #fff;
-        margin-left: 6px;
-    }
-
-    .badge-Pendiente    { background: #f0ad4e; }
-    .badge-Entregado    { background: #00a65a; }
-    .badge-Parcialmente { background: #3c8dbc; }
-    .badge-Cancelado    { background: #d9534f; }
-    .badge-Tomada       { background: #3c8dbc; }
-    .badge-Resultado    { background: #00a65a; }
-
-    @media print {
-        .no-print { display: none !important; }
-        .report-box { box-shadow: none; border: none; margin: 0; padding: 0; }
-        .vital-card { break-inside: avoid; }
-    }
-
-    .row-actions {
-        display: flex !important;
-        justify-content: flex-end !important;
-        gap: 10px !important;
-        margin: 22px 0 15px !important;
-        padding: 0 5px !important;
-    }
-
-    .row-actions .btn {
-        min-width: 110px;
-    }
-</style>
-
 <div class="content-wrapper">
+    <style>
+        .report-box {
+            background: #fff;
+            padding: 30px;
+            margin: 20px auto;
+            border-top: 5px solid #00c0ef;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-header {
+            border-bottom: 2px solid #f4f4f4;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .vitals-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .vital-card {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 4px;
+            flex: 1 1 130px;
+            min-width: 130px;
+            text-align: center;
+        }
+
+        .vital-card small {
+            display: block;
+            color: #777;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .vital-card strong {
+            font-size: 16px;
+            color: #222;
+        }
+
+        .vital-card.empty {
+            opacity: .55;
+            background: #fbfbfb;
+        }
+
+        .doctor-box {
+            background: #f0f9ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            border-left: 4px solid #00c0ef;
+            padding-left: 10px;
+            margin: 25px 0 12px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .data-label {
+            color: #777;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .data-value {
+            font-size: 14px;
+            color: #222;
+        }
+
+        .alert-reaction {
+            border-left: 4px solid #d9534f;
+            background: #fff5f5;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .badge-estado {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #fff;
+            margin-left: 6px;
+        }
+
+        .badge-Pendiente    { background: #f0ad4e; }
+        .badge-Entregado    { background: #00a65a; }
+        .badge-Parcialmente { background: #3c8dbc; }
+        .badge-Cancelado    { background: #d9534f; }
+        .badge-Tomada       { background: #3c8dbc; }
+        .badge-Resultado    { background: #00a65a; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .report-box { box-shadow: none; border: none; margin: 0; padding: 0; }
+            .vital-card { break-inside: avoid; }
+        }
+
+        .row-actions {
+            display: flex !important;
+            justify-content: flex-end !important;
+            gap: 10px !important;
+            margin: 22px 0 15px !important;
+            padding: 0 5px !important;
+        }
+
+        .row-actions .btn {
+            min-width: 110px;
+        }
+    </style>
+
     <section class="content">
 
         <div class="report-box">
@@ -578,131 +578,125 @@ verificarAcceso('Ver Consultas');
 
         </div>
     </section>
-</div>
 
-<!-- =========================================================
-     MODAL: DETALLES COMPLETOS
-     ========================================================= -->
-<div class="modal fade" id="modalDetallesCompletos" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-info">
-                <h4 class="modal-title"><i class="fa fa-file-text-o"></i> Detalles Adicionales de la Consulta</h4>
-            </div>
-            <div class="modal-body">
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="box box-solid box-default">
-                            <div class="box-header"><h3 class="box-title">Evolución y Reacción</h3></div>
-                            <div class="box-body">
-                                <strong><i class="fa fa-line-chart"></i> Estado del paciente:</strong>
-                                <p class="text-muted"><?= nl2br(htmlspecialchars($evolucion['estado_paciente'] ?? '—')) ?></p>
-                                <hr>
-                                <strong><i class="fa fa-line-chart"></i> Evolución / Resultado:</strong>
-                                <p class="text-muted"><?= nl2br(htmlspecialchars($evolucion['evolucion_resultado'] ?? '—')) ?></p>
-                                <hr>
-                                <strong><i class="fa fa-warning"></i> Reacción adversa:</strong>
-                                <p class="text-muted">
-                                    <?= $tiene_reaccion ? 'Sí reportada' : 'No reportada' ?>
-                                    <?php if ($tiene_reaccion && !empty($detalle_reaccion_txt)): ?>
-                                        <br><em><?= nl2br(htmlspecialchars($detalle_reaccion_txt)) ?></em>
-                                    <?php endif; ?>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="box box-solid box-default">
-                            <div class="box-header"><h3 class="box-title">Exámenes y Paraclínicos</h3></div>
-                            <div class="box-body">
-                                <strong><i class="fa fa-flask"></i> Lectura de exámenes:</strong>
-                                <p class="text-muted"><?= nl2br(htmlspecialchars($evolucion['lectura_examenes'] ?? '—')) ?></p>
-                                <hr>
-                                <strong><i class="fa fa-plus-square"></i> Nuevos exámenes solicitados:</strong>
-                                <?php if (!empty($examenes_lista)): ?>
-                                    <ul style="padding-left: 18px; margin-bottom: 0;">
-                                        <?php foreach ($examenes_lista as $ex): ?>
-                                            <li class="text-muted" style="margin-bottom: 6px;">
-                                                <b><?= htmlspecialchars($ex['nombre_examen']) ?></b>
-                                                <small>(<?= htmlspecialchars($ex['tipo_examen']) ?>)</small>
-                                                — Prioridad: <?= htmlspecialchars($ex['prioridad']) ?>
-                                                <?php if (!empty($ex['indicaciones'])): ?>
-                                                    <br><small><em><?= htmlspecialchars($ex['indicaciones']) ?></em></small>
-                                                <?php endif; ?>
-                                                <?php if (!empty($ex['estado_item'])): ?>
-                                                    <br><small>Estado: <?= htmlspecialchars($ex['estado_item']) ?></small>
-                                                <?php endif; ?>
-                                            </li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                <?php else: ?>
-                                    <p class="text-muted"><em>No se solicitaron exámenes en esta consulta.</em></p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
+    <div class="modal fade" id="modalDetallesCompletos" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h4 class="modal-title"><i class="fa fa-file-text-o"></i> Detalles Adicionales de la Consulta</h4>
                 </div>
+                <div class="modal-body">
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="box box-solid box-default">
-                            <div class="box-header"><h3 class="box-title">Plan de Tratamiento e Indicaciones</h3></div>
-                            <div class="box-body">
-                                <p><?= nl2br(htmlspecialchars($datos_consulta['tratamiento_indicado'] ?? '—')) ?></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <?php if ($solicitud_med && (!empty($solicitud_med['entregado_a']) || !empty($solicitud_med['cedula_receptor']))): ?>
                     <div class="row">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <div class="box box-solid box-default">
-                                <div class="box-header"><h3 class="box-title">Receptor del Medicamento</h3></div>
+                                <div class="box-header"><h3 class="box-title">Evolución y Reacción</h3></div>
                                 <div class="box-body">
-                                    <p>
-                                        <b>Tipo:</b> <?= htmlspecialchars($solicitud_med['tipo_receptor'] ?? 'Paciente') ?><br>
-                                        <?php if (!empty($solicitud_med['entregado_a'])): ?>
-                                            <b>Nombre:</b> <?= htmlspecialchars($solicitud_med['entregado_a']) ?><br>
-                                        <?php endif; ?>
-                                        <?php if (!empty($solicitud_med['parentesco_receptor'])): ?>
-                                            <b>Parentesco:</b> <?= htmlspecialchars($solicitud_med['parentesco_receptor']) ?><br>
-                                        <?php endif; ?>
-                                        <?php if (!empty($solicitud_med['cedula_receptor'])): ?>
-                                            <b>Cédula:</b> <?= htmlspecialchars($solicitud_med['cedula_receptor']) ?>
+                                    <strong><i class="fa fa-line-chart"></i> Estado del paciente:</strong>
+                                    <p class="text-muted"><?= nl2br(htmlspecialchars($evolucion['estado_paciente'] ?? '—')) ?></p>
+                                    <hr>
+                                    <strong><i class="fa fa-line-chart"></i> Evolución / Resultado:</strong>
+                                    <p class="text-muted"><?= nl2br(htmlspecialchars($evolucion['evolucion_resultado'] ?? '—')) ?></p>
+                                    <hr>
+                                    <strong><i class="fa fa-warning"></i> Reacción adversa:</strong>
+                                    <p class="text-muted">
+                                        <?= $tiene_reaccion ? 'Sí reportada' : 'No reportada' ?>
+                                        <?php if ($tiene_reaccion && !empty($detalle_reaccion_txt)): ?>
+                                            <br><em><?= nl2br(htmlspecialchars($detalle_reaccion_txt)) ?></em>
                                         <?php endif; ?>
                                     </p>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                <?php endif; ?>
 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+                        <div class="col-md-6">
+                            <div class="box box-solid box-default">
+                                <div class="box-header"><h3 class="box-title">Exámenes y Paraclínicos</h3></div>
+                                <div class="box-body">
+                                    <strong><i class="fa fa-flask"></i> Lectura de exámenes:</strong>
+                                    <p class="text-muted"><?= nl2br(htmlspecialchars($evolucion['lectura_examenes'] ?? '—')) ?></p>
+                                    <hr>
+                                    <strong><i class="fa fa-plus-square"></i> Nuevos exámenes solicitados:</strong>
+                                    <?php if (!empty($examenes_lista)): ?>
+                                        <ul style="padding-left: 18px; margin-bottom: 0;">
+                                            <?php foreach ($examenes_lista as $ex): ?>
+                                                <li class="text-muted" style="margin-bottom: 6px;">
+                                                    <b><?= htmlspecialchars($ex['nombre_examen']) ?></b>
+                                                    <small>(<?= htmlspecialchars($ex['tipo_examen']) ?>)</small>
+                                                    — Prioridad: <?= htmlspecialchars($ex['prioridad']) ?>
+                                                    <?php if (!empty($ex['indicaciones'])): ?>
+                                                        <br><small><em><?= htmlspecialchars($ex['indicaciones']) ?></em></small>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($ex['estado_item'])): ?>
+                                                        <br><small>Estado: <?= htmlspecialchars($ex['estado_item']) ?></small>
+                                                    <?php endif; ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php else: ?>
+                                        <p class="text-muted"><em>No se solicitaron exámenes en esta consulta.</em></p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="box box-solid box-default">
+                                <div class="box-header"><h3 class="box-title">Plan de Tratamiento e Indicaciones</h3></div>
+                                <div class="box-body">
+                                    <p><?= nl2br(htmlspecialchars($datos_consulta['tratamiento_indicado'] ?? '—')) ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php if ($solicitud_med && (!empty($solicitud_med['entregado_a']) || !empty($solicitud_med['cedula_receptor']))): ?>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="box box-solid box-default">
+                                    <div class="box-header"><h3 class="box-title">Receptor del Medicamento</h3></div>
+                                    <div class="box-body">
+                                        <p>
+                                            <b>Tipo:</b> <?= htmlspecialchars($solicitud_med['tipo_receptor'] ?? 'Paciente') ?><br>
+                                            <?php if (!empty($solicitud_med['entregado_a'])): ?>
+                                                <b>Nombre:</b> <?= htmlspecialchars($solicitud_med['entregado_a']) ?><br>
+                                            <?php endif; ?>
+                                            <?php if (!empty($solicitud_med['parentesco_receptor'])): ?>
+                                                <b>Parentesco:</b> <?= htmlspecialchars($solicitud_med['parentesco_receptor']) ?><br>
+                                            <?php endif; ?>
+                                            <?php if (!empty($solicitud_med['cedula_receptor'])): ?>
+                                                <b>Cédula:</b> <?= htmlspecialchars($solicitud_med['cedula_receptor']) ?>
+                                            <?php endif; ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- =========================================================
-     MODAL: CONFIRMAR REGRESO
-     ========================================================= -->
-<div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-crimson">
-                <h4 class="modal-title"><i class="fa fa-warning"></i> Confirmación de Regreso</h4>
-            </div>
-            <div class="modal-body">
-                <p>Está a punto de regresar al listado. ¿Desea continuar?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-                <a href="consulta_listado.php" class="btn btn-danger">Regresar al Listado</a>
+    <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-crimson">
+                    <h4 class="modal-title"><i class="fa fa-warning"></i> Confirmación de Regreso</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Está a punto de regresar al listado. ¿Desea continuar?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+                    <a href="consulta_listado.php" class="btn btn-danger">Regresar al Listado</a>
+                </div>
             </div>
         </div>
     </div>

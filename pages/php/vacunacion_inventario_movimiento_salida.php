@@ -20,24 +20,100 @@ verificarAcceso('Generar Salidas de Inventario');
   <title>Inventario | Registrar Pérdida / Merma de Vacunas</title>
 </head>
 
-<style>
-  .table-responsive { max-height: 220px; overflow-y: auto; }
-  .table-detalle thead th { position: sticky; top: 0; background-color: #f4f4f4; z-index: 1; }
-  .tags-input-container { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px; border: 1px solid #d2d6de; background-color: #fff; min-height: 34px; cursor: text; }
-  .tags-input-container .tag-badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: white; }
-  .tags-input-container .tag-badge i { margin-left: 6px; cursor: pointer; font-size: 10px; }
-  .tags-input-fake { border: none; outline: none; flex-grow: 1; min-width: 150px; padding: 2px; }
-  .content-wrapper { min-height: 100vh !important; overflow-y: auto; }
-  .main-sidebar { position: fixed !important; height: 100%; }
-  .table-detalle th { background-color: #f4f4f4; text-align: center; }
-  .table-detalle td { text-align: center; vertical-align: middle !important; }
-  .row-vence-pronto { background-color: #fff3cd !important; }
-  .area-trabajo-blanca { background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
-  input[readonly], input[disabled] { background-color: #eeeeee !important; cursor: not-allowed; }
-  .text-green-bold { color: #00a65a; font-weight: bold; font-size: 1.2em; }
-</style>
-
 <div class="content-wrapper">
+
+  <style>
+    .table-responsive {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .table-detalle thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f4f4f4;
+      z-index: 1;
+    }
+
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 4px;
+      border: 1px solid #d2d6de;
+      background-color: #fff;
+      min-height: 34px;
+      cursor: text;
+    }
+
+    .tags-input-container .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .tags-input-container .tag-badge i {
+      margin-left: 6px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      min-width: 150px;
+      padding: 2px;
+    }
+
+    .content-wrapper {
+      min-height: 100vh !important;
+      overflow-y: auto;
+    }
+
+    .main-sidebar {
+      position: fixed !important;
+      height: 100%;
+    }
+
+    .table-detalle th {
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    .table-detalle td {
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .row-vence-pronto {
+      background-color: #fff3cd !important;
+    }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+    }
+
+    input[readonly],
+    input[disabled] {
+      background-color: #eeeeee !important;
+      cursor: not-allowed;
+    }
+
+    .text-green-bold {
+      color: #00a65a;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Registrar Pérdida / Merma de Vacunas</h1>
     <ol class="breadcrumb">
@@ -100,7 +176,8 @@ verificarAcceso('Generar Salidas de Inventario');
                     <div class="input-group">
                       <input type="date" id="fecha_recepcion" name="fecha_recepcion" class="form-control" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" onkeydown="return false;" style="width: 100%;">
                       <div class="input-group-btn" style="width: 100%;">
-                        <input type="time" id="hora_recepcion" name="hora_recepcion" class="form-control" value="<?php date_default_timezone_set('America/Caracas'); echo date('H:i'); ?>">
+                        <input type="time" id="hora_recepcion" name="hora_recepcion" class="form-control" value="<?php date_default_timezone_set('America/Caracas');
+                                                                                                                  echo date('H:i'); ?>">
                       </div>
                     </div>
                   </div>
@@ -179,238 +256,238 @@ verificarAcceso('Generar Salidas de Inventario');
       </div>
     </form>
   </section>
-</div>
 
-<!-- MODAL AGREGAR VACUNA A DAR DE BAJA -->
-<div class="modal fade" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title"><i class="fa fa-minus-circle"></i> Seleccionar Lote a Dar de Baja</h4>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
-              <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre de la vacuna...">
-            </div>
-          </div>
-          <br><br>
-          <div class="col-sm-12 form-group">
-            <label>Vacuna del Catálogo (*):</label>
-            <div class="input-group">
-              <select id="Id_descripcion_medicamento" class="form-control">
-                <option value="">--- Seleccione una Vacuna ---</option>
-                <!-- SIMULACIÓN -->
-                <option value="1" data-nombre="Antipoliomielítica (VPI) [1 Dosis]" data-componentes="Virus Inactivados">Antipoliomielítica (VPI) - [1 Dosis]</option>
-                <option value="2" data-nombre="Antisarampión (SRP) [10 Dosis]" data-componentes="Virus Atenuados">Antisarampión (SRP) - [10 Dosis]</option>
-                <option value="3" data-nombre="Vacuna BCG [20 Dosis]" data-componentes="Bacteria Atenuada">Vacuna BCG - [20 Dosis]</option>
-              </select>
-              <span class="input-group-btn">
-                <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" style="height: 34px;">
-                  <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
-                </button>
-              </span>
-            </div>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3">
-            <label>Seleccione Lote (*):</label>
-            <div class="input-group">
-              <select id="lista_lotes" class="form-control">
-                <option value="">-- Seleccione un lote --</option>
-              </select>
-              <span class="input-group-btn">
-                <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;">
-                  <i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i>
-                </button>
-              </span>
-            </div>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3">
-            <label>F. Vencimiento:</label>
-            <input type="text" id="fecha_vencimiento_readonly" class="form-control" readonly disabled>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3">
-            <label>Dosis a Dar de Baja (*):</label>
-            <input type="text" id="cantidad_baja" class="form-control" placeholder="Solo números">
-            <small id="max_stock_help" class="form-text text-muted" style="color:#d9534f; font-weight:bold;"></small>
-          </div>
-
-          <div class="col-sm-12 form-group mt-3">
-            <label>Observación:</label>
-            <textarea id="observaciones" name="observaciones" class="form-control" rows="2" placeholder="Ej: Se rompió la cadena de frío, frascos vencidos..."></textarea>
-          </div>
+  <!-- MODAL AGREGAR VACUNA A DAR DE BAJA -->
+  <div class="modal fade" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title"><i class="fa fa-minus-circle"></i> Seleccionar Lote a Dar de Baja</h4>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL BÚSQUEDA AVANZADA (SIMPLIFICADO) -->
-<div class="modal fade" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel">Filtros de Búsqueda Avanzada</h5>
-      </div>
-      <div class="modal-body">
-        <form id="formFiltroModal">
-          <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+        <div class="modal-body">
           <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-12">
               <div class="form-group">
-                <label for="filtro_nombre">Nombre (o ID):</label>
-                <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre...">
+                <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
+                <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre de la vacuna...">
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_presentacion">Presentación:</label>
-                <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
-                  <option value="">-- Todas --</option>
-                  <option value="1">1 Dosis</option>
-                  <option value="2">10 Dosis</option>
-                  <option value="3">20 Dosis</option>
+            <br><br>
+            <div class="col-sm-12 form-group">
+              <label>Vacuna del Catálogo (*):</label>
+              <div class="input-group">
+                <select id="Id_descripcion_medicamento" class="form-control">
+                  <option value="">--- Seleccione una Vacuna ---</option>
+                  <!-- SIMULACIÓN -->
+                  <option value="1" data-nombre="Antipoliomielítica (VPI) [1 Dosis]" data-componentes="Virus Inactivados">Antipoliomielítica (VPI) - [1 Dosis]</option>
+                  <option value="2" data-nombre="Antisarampión (SRP) [10 Dosis]" data-componentes="Virus Atenuados">Antisarampión (SRP) - [10 Dosis]</option>
+                  <option value="3" data-nombre="Vacuna BCG [20 Dosis]" data-componentes="Bacteria Atenuada">Vacuna BCG - [20 Dosis]</option>
                 </select>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" style="height: 34px;">
+                    <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_principios">Componentes (contiene):</label>
-                <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Virus...">
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Seleccione Lote (*):</label>
+              <div class="input-group">
+                <select id="lista_lotes" class="form-control">
+                  <option value="">-- Seleccione un lote --</option>
+                </select>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;">
+                    <i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
               </div>
             </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-second" id="btnLimpiarFiltros">Limpiar Filtros</button>
-        <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- MODAL EVIDENCIA -->
-<div class="modal fade" id="modalEvidencia" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title"><i class="fa fa-file-image-o"></i> Gestionar Evidencia</h4>
-      </div>
-      <div class="modal-body text-center">
-        <div id="modal-placeholder" style="padding: 40px 20px; border: 2px dashed #ddd; border-radius: 10px; color: #999;">
-          <i class="fa fa-cloud-upload" style="font-size: 50px; margin-bottom: 15px;"></i>
-          <h4 id="placeholder-texto">Cargando interfaz...</h4>
-        </div>
-        <div id="modal-seccion-camara" style="display:none;">
-          <video id="video-modal" width="100%" style="max-width: 450px; border-radius: 8px; background: #000;" autoplay></video>
-          <canvas id="canvas-modal" style="display:none;"></canvas>
-          <div style="margin-top:10px;">
-            <button type="button" id="btn-capturar-modal" class="btn btn-success"><i class="fa fa-camera"></i> Tomar Foto</button>
+            <div class="col-sm-4 form-group mt-3">
+              <label>F. Vencimiento:</label>
+              <input type="text" id="fecha_vencimiento_readonly" class="form-control" readonly disabled>
+            </div>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Dosis a Dar de Baja (*):</label>
+              <input type="text" id="cantidad_baja" class="form-control" placeholder="Solo números">
+              <small id="max_stock_help" class="form-text text-muted" style="color:#d9534f; font-weight:bold;"></small>
+            </div>
+
+            <div class="col-sm-12 form-group mt-3">
+              <label>Observación:</label>
+              <textarea id="observaciones" name="observaciones" class="form-control" rows="2" placeholder="Ej: Se rompió la cadena de frío, frascos vencidos..."></textarea>
+            </div>
           </div>
         </div>
-        <input type="file" id="input-archivo-modal" accept="image/*" style="display:none;">
-        <div id="modal-contenedor-previa" style="display:none; margin-top:10px;">
-          <img id="foto-previa-modal" src="" style="max-width: 100%; max-height: 400px; border: 3px solid #3c8dbc; border-radius: 5px;">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn-aceptar-evidencia" style="display:none;">Confirmar</button>
+    </div>
+  </div>
+
+  <!-- MODAL BÚSQUEDA AVANZADA (SIMPLIFICADO) -->
+  <div class="modal fade" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel">Filtros de Búsqueda Avanzada</h5>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltroModal">
+            <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_nombre">Nombre (o ID):</label>
+                  <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="1">1 Dosis</option>
+                    <option value="2">10 Dosis</option>
+                    <option value="3">20 Dosis</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_principios">Componentes (contiene):</label>
+                  <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Virus...">
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-second" id="btnLimpiarFiltros">Limpiar Filtros</button>
+          <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL VISUALIZAR FOTO -->
-<div class="modal fade" id="modalVisualizarFoto" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-navy">
-        <h4 class="modal-title"><i class="fa fa-eye"></i> Vista Previa de Evidencia</h4>
-      </div>
-      <div class="modal-body text-center">
-        <img id="img-vista-grande" src="" style="width: 100%; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2);">
+  <!-- MODAL EVIDENCIA -->
+  <div class="modal fade" id="modalEvidencia" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title"><i class="fa fa-file-image-o"></i> Gestionar Evidencia</h4>
+        </div>
+        <div class="modal-body text-center">
+          <div id="modal-placeholder" style="padding: 40px 20px; border: 2px dashed #ddd; border-radius: 10px; color: #999;">
+            <i class="fa fa-cloud-upload" style="font-size: 50px; margin-bottom: 15px;"></i>
+            <h4 id="placeholder-texto">Cargando interfaz...</h4>
+          </div>
+          <div id="modal-seccion-camara" style="display:none;">
+            <video id="video-modal" width="100%" style="max-width: 450px; border-radius: 8px; background: #000;" autoplay></video>
+            <canvas id="canvas-modal" style="display:none;"></canvas>
+            <div style="margin-top:10px;">
+              <button type="button" id="btn-capturar-modal" class="btn btn-success"><i class="fa fa-camera"></i> Tomar Foto</button>
+            </div>
+          </div>
+          <input type="file" id="input-archivo-modal" accept="image/*" style="display:none;">
+          <div id="modal-contenedor-previa" style="display:none; margin-top:10px;">
+            <img id="foto-previa-modal" src="" style="max-width: 100%; max-height: 400px; border: 3px solid #3c8dbc; border-radius: 5px;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-aceptar-evidencia" style="display:none;">Confirmar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL CONFIRMAR VENCIDOS -->
-<div class="modal fade" id="modalConfirmarVencidos" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Confirmación de Vencidos</h5>
-      </div>
-      <div class="modal-body">
-        <p>¿Está seguro de querer añadir <strong>TODAS</strong> las vacunas vencidas (con stock mayor a 0) a la lista?</p>
-        <p class="text-danger"><small><i class="fa fa-info-circle"></i> Nota: Esta acción sobrescribirá cualquier vacuna que ya haya añadido a la lista actual.</small></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="btnConfirmarVencidosAction"><i class="fa fa-check"></i>Aceptar</button>
+  <!-- MODAL VISUALIZAR FOTO -->
+  <div class="modal fade" id="modalVisualizarFoto" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-navy">
+          <h4 class="modal-title"><i class="fa fa-eye"></i> Vista Previa de Evidencia</h4>
+        </div>
+        <div class="modal-body text-center">
+          <img id="img-vista-grande" src="" style="width: 100%; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2);">
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL AVISO -->
-<div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div id="headerAviso" class="modal-header bg-crimson">
-        <h5 class="modal-title">Aviso Importante</h5>
-      </div>
-      <div class="modal-body">
-        <p id="avisoTexto"></p>
-      </div>
-      <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL REGRESAR -->
-<div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title">Confirmación de Regreso</h5>
-      </div>
-      <div class="modal-body">
-        <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <a href="vacunacion_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+  <!-- MODAL CONFIRMAR VENCIDOS -->
+  <div class="modal fade" id="modalConfirmarVencidos" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Confirmación de Vencidos</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de querer añadir <strong>TODAS</strong> las vacunas vencidas (con stock mayor a 0) a la lista?</p>
+          <p class="text-danger"><small><i class="fa fa-info-circle"></i> Nota: Esta acción sobrescribirá cualquier vacuna que ya haya añadido a la lista actual.</small></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarVencidosAction"><i class="fa fa-check"></i>Aceptar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL GUARDAR -->
-<div class="modal fade" id="modalSalidaGuardar" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div id="headerSalidaGuardar" class="modal-header bg-green">
-        <h5 class="modal-title">Confirmación de Guardado</h5>
+  <!-- MODAL AVISO -->
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div id="headerAviso" class="modal-header bg-crimson">
+          <h5 class="modal-title">Aviso Importante</h5>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
       </div>
-      <div class="modal-body">
-        <p>¿Está seguro de procesar este ajuste de inventario? Esta acción modificará las dosis disponibles en el sistema.</p>
+    </div>
+  </div>
+
+  <!-- MODAL REGRESAR -->
+  <div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title">Confirmación de Regreso</h5>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="vacunacion_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="confirmarGuardadoFinal">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- MODAL GUARDAR -->
+  <div class="modal fade" id="modalSalidaGuardar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div id="headerSalidaGuardar" class="modal-header bg-green">
+          <h5 class="modal-title">Confirmación de Guardado</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de procesar este ajuste de inventario? Esta acción modificará las dosis disponibles en el sistema.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmarGuardadoFinal">Aceptar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -447,7 +524,11 @@ verificarAcceso('Generar Salidas de Inventario');
         $('#placeholder-texto').text('Iniciando Cámara...');
         const video = document.getElementById('video-modal');
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+          navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: "environment"
+              }
+            })
             .then(stream => {
               streamModal = stream;
               video.srcObject = stream;
@@ -460,7 +541,9 @@ verificarAcceso('Generar Salidas de Inventario');
       } else {
         $('#placeholder-texto').text('Seleccionando archivo...');
         $('#input-archivo-modal').click();
-        setTimeout(() => { $('#placeholder-texto').text('Esperando archivo...'); }, 1000);
+        setTimeout(() => {
+          $('#placeholder-texto').text('Esperando archivo...');
+        }, 1000);
       }
     };
 
@@ -493,7 +576,10 @@ verificarAcceso('Generar Salidas de Inventario');
     let evidenciasArray = [];
     $('#btn-aceptar-evidencia').off('click').on('click', function() {
       const base64Str = $('#foto-previa-modal').attr('src');
-      if (base64Str) { evidenciasArray.push(base64Str); actualizarMiniaturasUI(); }
+      if (base64Str) {
+        evidenciasArray.push(base64Str);
+        actualizarMiniaturasUI();
+      }
       $('#modalEvidencia').modal('hide');
     });
 
@@ -526,7 +612,10 @@ verificarAcceso('Generar Salidas de Inventario');
     });
 
     $('#modalEvidencia').on('hidden.bs.modal', function() {
-      if (streamModal) { streamModal.getTracks().forEach(t => t.stop()); streamModal = null; }
+      if (streamModal) {
+        streamModal.getTracks().forEach(t => t.stop());
+        streamModal = null;
+      }
     });
 
     // LÓGICA DE MOTIVO
@@ -562,11 +651,28 @@ verificarAcceso('Generar Salidas de Inventario');
 
     $('#btnConfirmarVencidosAction').on('click', function() {
       $('#modalConfirmarVencidos').modal('hide');
-      
+
       // SIMULACIÓN: Aquí se cargarían los lotes vencidos de la BD
-      listaDetalles = [
-        { id_medicamento: '1', nombre_medicamento: 'Antipoliomielítica (VPI)', componentes: 'Virus Inactivados', lote_id: '2', lote: 'VPI-002', fecha_vencimiento: '2024-12-01', cantidad: 50, observacion: 'Lote vencido automáticamente' },
-        { id_medicamento: '2', nombre_medicamento: 'Antisarampión (SRP)', componentes: 'Virus Atenuados', lote_id: '5', lote: 'SRP-881', fecha_vencimiento: '2024-11-15', cantidad: 30, observacion: 'Lote vencido automáticamente' }
+      listaDetalles = [{
+          id_medicamento: '1',
+          nombre_medicamento: 'Antipoliomielítica (VPI)',
+          componentes: 'Virus Inactivados',
+          lote_id: '2',
+          lote: 'VPI-002',
+          fecha_vencimiento: '2024-12-01',
+          cantidad: 50,
+          observacion: 'Lote vencido automáticamente'
+        },
+        {
+          id_medicamento: '2',
+          nombre_medicamento: 'Antisarampión (SRP)',
+          componentes: 'Virus Atenuados',
+          lote_id: '5',
+          lote: 'SRP-881',
+          fecha_vencimiento: '2024-11-15',
+          cantidad: 30,
+          observacion: 'Lote vencido automáticamente'
+        }
       ];
       actualizarTablaDetalles();
       mostrarExito("Éxito: Se añadieron 2 lotes vencidos a la lista (Simulado).");
@@ -575,7 +681,7 @@ verificarAcceso('Generar Salidas de Inventario');
     // LÓGICA DE FILTROS AVANZADOS (SIMULADA)
     const medicamentoSelectPrincipal = $('#Id_descripcion_medicamento');
     const opcionesOriginalesMedicamentos = medicamentoSelectPrincipal.html();
-    
+
     $('#btnLimpiarFiltros').on('click', function() {
       $('#formFiltroModal')[0].reset();
       medicamentoSelectPrincipal.html(opcionesOriginalesMedicamentos);
@@ -602,7 +708,10 @@ verificarAcceso('Generar Salidas de Inventario');
         if (busquedaRapida && !texto.includes(busquedaRapida.toLowerCase())) match = false;
         if (nombre_med && !texto.includes(nombre_med.toLowerCase())) match = false;
         if (principios && !texto.includes(principios.toLowerCase())) match = false;
-        if (match) { opcionesFiltradas += $(this)[0].outerHTML; hayResultados = true; }
+        if (match) {
+          opcionesFiltradas += $(this)[0].outerHTML;
+          hayResultados = true;
+        }
       });
 
       if (hayResultados) {
@@ -654,7 +763,11 @@ verificarAcceso('Generar Salidas de Inventario');
             let ultimaEtiqueta = tagsArray.pop();
             $(this).val(ultimaEtiqueta);
             renderizarTags();
-            if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+            if (tagsArray.length === 0) {
+              $('#btnLimpiarFiltros').click();
+            } else {
+              $('#btnAplicarFiltros').click();
+            }
           }
         }
       });
@@ -663,11 +776,20 @@ verificarAcceso('Generar Salidas de Inventario');
         let index = $(this).data('index');
         tagsArray.splice(index, 1);
         renderizarTags();
-        if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+        if (tagsArray.length === 0) {
+          $('#btnLimpiarFiltros').click();
+        } else {
+          $('#btnAplicarFiltros').click();
+        }
       });
 
-      $contenedor.on('click', function() { $inputFalso.focus(); });
-      $('#btnLimpiarFiltros').on('click', function() { tagsArray = []; renderizarTags(); });
+      $contenedor.on('click', function() {
+        $inputFalso.focus();
+      });
+      $('#btnLimpiarFiltros').on('click', function() {
+        tagsArray = [];
+        renderizarTags();
+      });
     }
 
     inicializarTags('#filtro_busqueda_rapida');
@@ -695,7 +817,11 @@ verificarAcceso('Generar Salidas de Inventario');
       if (this.value === '0') this.value = '1';
     });
 
-    $('#infoLote').tooltip({ html: true, placement: 'right', title: 'Seleccione un lote primero' });
+    $('#infoLote').tooltip({
+      html: true,
+      placement: 'right',
+      title: 'Seleccione un lote primero'
+    });
 
     // SIMULACIÓN DE CARGA DE LOTES
     $('#Id_descripcion_medicamento').on('change', function() {
@@ -706,20 +832,49 @@ verificarAcceso('Generar Salidas de Inventario');
 
       if (medId) {
         // SIMULACIÓN: En lugar de AJAX, quemamos los datos
-        let data = { lotes: [] };
+        let data = {
+          lotes: []
+        };
         if (medId == '1') { // VPI
-          data.lotes = [
-            { Id: '1', lote: 'VPI-001', cantidad_actual: 150, fecha_fabricacion: '2025-01-01', fecha_vencimiento: '2026-01-01', dias_restantes: 60, nombre_proveedor: 'SUAF' },
-            { Id: '2', lote: 'VPI-002', cantidad_actual: 50, fecha_fabricacion: '2024-06-01', fecha_vencimiento: '2024-12-01', dias_restantes: -5, nombre_proveedor: 'Ministerio' }
+          data.lotes = [{
+              Id: '1',
+              lote: 'VPI-001',
+              cantidad_actual: 150,
+              fecha_fabricacion: '2025-01-01',
+              fecha_vencimiento: '2026-01-01',
+              dias_restantes: 60,
+              nombre_proveedor: 'SUAF'
+            },
+            {
+              Id: '2',
+              lote: 'VPI-002',
+              cantidad_actual: 50,
+              fecha_fabricacion: '2024-06-01',
+              fecha_vencimiento: '2024-12-01',
+              dias_restantes: -5,
+              nombre_proveedor: 'Ministerio'
+            }
           ];
         } else if (medId == '2') { // SRP
-          data.lotes = [
-            { Id: '3', lote: 'SRP-991', cantidad_actual: 80, fecha_fabricacion: '2025-05-10', fecha_vencimiento: '2026-05-10', dias_restantes: 180, nombre_proveedor: 'Ministerio' }
-          ];
+          data.lotes = [{
+            Id: '3',
+            lote: 'SRP-991',
+            cantidad_actual: 80,
+            fecha_fabricacion: '2025-05-10',
+            fecha_vencimiento: '2026-05-10',
+            dias_restantes: 180,
+            nombre_proveedor: 'Ministerio'
+          }];
         } else if (medId == '3') { // BCG
-          data.lotes = [
-            { Id: '4', lote: 'BCG-003', cantidad_actual: 200, fecha_fabricacion: '2025-01-01', fecha_vencimiento: '2026-11-15', dias_restantes: 365, nombre_proveedor: 'SUAF' }
-          ];
+          data.lotes = [{
+            Id: '4',
+            lote: 'BCG-003',
+            cantidad_actual: 200,
+            fecha_fabricacion: '2025-01-01',
+            fecha_vencimiento: '2026-11-15',
+            dias_restantes: 365,
+            nombre_proveedor: 'SUAF'
+          }];
         }
 
         $lotes.empty().append('<option value="">-- Seleccione un lote --</option>');
@@ -727,9 +882,13 @@ verificarAcceso('Generar Salidas de Inventario');
           data.lotes.forEach(l => {
             let estilo = l.dias_restantes <= 0 ? "color:red;" : "";
             let textoDisp = "";
-            if (l.dias_restantes < 0) { textoDisp = " (VENCIDO)"; } 
-            else if (l.dias_restantes === 0) { textoDisp = " (VENCE HOY)"; } 
-            else { textoDisp = ` (Faltan ${l.dias_restantes} días)`; }
+            if (l.dias_restantes < 0) {
+              textoDisp = " (VENCIDO)";
+            } else if (l.dias_restantes === 0) {
+              textoDisp = " (VENCE HOY)";
+            } else {
+              textoDisp = ` (Faltan ${l.dias_restantes} días)`;
+            }
 
             let prov = l.nombre_proveedor ? l.nombre_proveedor : 'Sin Proveedor';
             let fab = l.fecha_fabricacion ? l.fecha_fabricacion : 'N/A';
@@ -750,7 +909,7 @@ verificarAcceso('Generar Salidas de Inventario');
 
         $('#fecha_vencimiento_readonly').val(option.data('venc'));
         const tipoActual = $('#id_tipo_movimiento').find(':selected').data('tipo') || 'resta';
-        
+
         if (tipoActual === 'suma') {
           $('#max_stock_help').text(`Stock actual: ${option.data('cant')} dosis. (Ingrese cantidad a sumar)`);
         } else {
@@ -788,9 +947,21 @@ verificarAcceso('Generar Salidas de Inventario');
 
       $('.modal-body .form-control').removeClass('input-error');
 
-      if (!id_med) { $('#Id_descripcion_medicamento').addClass('input-error'); mostrarAviso('Seleccione una vacuna.'); return; }
-      if (!lote_id) { $('#lista_lotes').addClass('input-error'); mostrarAviso('Seleccione un lote.'); return; }
-      if (isNaN(cant_baja) || cant_baja <= 0) { $('#cantidad_baja').addClass('input-error'); mostrarAviso('Ingrese una cantidad válida.'); return; }
+      if (!id_med) {
+        $('#Id_descripcion_medicamento').addClass('input-error');
+        mostrarAviso('Seleccione una vacuna.');
+        return;
+      }
+      if (!lote_id) {
+        $('#lista_lotes').addClass('input-error');
+        mostrarAviso('Seleccione un lote.');
+        return;
+      }
+      if (isNaN(cant_baja) || cant_baja <= 0) {
+        $('#cantidad_baja').addClass('input-error');
+        mostrarAviso('Ingrese una cantidad válida.');
+        return;
+      }
 
       const tipoActual = $('#id_tipo_movimiento').find(':selected').data('tipo') || 'resta';
       if (tipoActual === 'resta' && cant_baja > max_cant) {

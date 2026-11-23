@@ -211,11 +211,11 @@ try {
 
     /* 5.3 detalle_paciente_menor */
     $sql_dm = "INSERT INTO detalle_paciente_menor 
-               (etnia, tipo_etnia, analfabeta, nivel_instruccion, mision, `años_aprobados`, discapacidad, tipo_discapacidad, tipo_paciente, id_persona) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    (etnia, tipo_etnia, analfabeta, nivel_instruccion, mision, `años_aprobados`, tipo_paciente, id_persona) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt_dm = $conexion->prepare($sql_dm);
     if (!$stmt_dm) throw new Exception("Prepare detalle_menor: " . $conexion->error);
-    $stmt_dm->bind_param("ssssssissi", $etnia, $tipo_etnia, $analfabeta, $nivel_instruccion_db, $mision_db, $anos_db, $discapacidad_flag, $tipo_discapacidad, $tipo_paciente, $id_menor);
+    $stmt_dm->bind_param("sssssisi", $etnia, $tipo_etnia, $analfabeta, $nivel_instruccion_db, $mision_db, $anos_db, $tipo_paciente, $id_menor);    
     if (!$stmt_dm->execute()) throw new Exception("Execute detalle_menor: " . $stmt_dm->error);
     $stmt_dm->close();
 
@@ -230,14 +230,14 @@ try {
 
     /* 5.5 patologías */
     if (!empty($patologias)) {
-        $sql_pat = "INSERT INTO historial_patologias (Id_persona, Id_patologia, Id_Historial, fecha_registro, estatus) VALUES (?, ?, ?, ?, ?)";
+        $sql_pat = "INSERT INTO historial_patologias (Id_patologia, Id_Historial, fecha_registro, estatus) VALUES (?, ?, ?, ?)";
         $stmt_pat = $conexion->prepare($sql_pat);
         if (!$stmt_pat) throw new Exception("Prepare patologia: " . $conexion->error);
         foreach ($patologias as $p) {
             $id_pat = intval($p['id'] ?? 0);
             if ($id_pat <= 0) continue;
             $fecha_pat = !empty($p['fecha']) ? $p['fecha'] : date('Y-m-d');
-            $stmt_pat->bind_param("iiiss", $id_menor, $id_pat, $id_historial, $fecha_pat, $estatus_str);
+            $stmt_pat->bind_param("iiss", $id_pat, $id_historial, $fecha_reg, $estatus_str);
             if (!$stmt_pat->execute()) throw new Exception("Execute patologia: " . $stmt_pat->error);
         }
         $stmt_pat->close();
@@ -245,14 +245,14 @@ try {
 
     /* 5.6 alergias */
     if (!empty($alergias)) {
-        $sql_ale = "INSERT INTO historial_alergias (Id_persona, Id_alergia, Id_Historial, fecha_registro, estatus) VALUES (?, ?, ?, ?, ?)";
+        $sql_ale = "INSERT INTO historial_alergias (Id_alergia, Id_Historial, fecha_registro, estatus) VALUES (?, ?, ?, ?)";        
         $stmt_ale = $conexion->prepare($sql_ale);
         if (!$stmt_ale) throw new Exception("Prepare alergia: " . $conexion->error);
         foreach ($alergias as $a) {
             $id_ale = intval($a['id'] ?? 0);
             if ($id_ale <= 0) continue;
             $fecha_ale = !empty($a['fecha']) ? $a['fecha'] : date('Y-m-d');
-            $stmt_ale->bind_param("iiiss", $id_menor, $id_ale, $id_historial, $fecha_ale, $estatus_str);
+            $stmt_ale->bind_param("iiss", $id_ale, $id_historial, $fecha_reg, $estatus_str);           
             if (!$stmt_ale->execute()) throw new Exception("Execute alergia: " . $stmt_ale->error);
         }
         $stmt_ale->close();
@@ -260,14 +260,14 @@ try {
 
     /* 5.7 discapacidades */
     if (!empty($discapacidades)) {
-        $sql_disc = "INSERT INTO historial_discapacidades (Id_persona, Id_discapacidad, fecha_registro, estatus) VALUES (?, ?, ?, ?)";
+        $sql_disc = "INSERT INTO historial_discapacidades (Id_Historial, Id_discapacidad, fecha_registro, estatus) VALUES (?, ?, ?, ?)"; 
         $stmt_disc = $conexion->prepare($sql_disc);
         if (!$stmt_disc) throw new Exception("Prepare discapacidad: " . $conexion->error);
         foreach ($discapacidades as $d) {
             $id_disc = intval($d['id'] ?? 0);
             if ($id_disc <= 0) continue;
             $fecha_disc = !empty($d['fecha']) ? $d['fecha'] : null;
-            $stmt_disc->bind_param("iiss", $id_menor, $id_disc, $fecha_disc, $estatus_str);
+            $stmt_disc->bind_param("iiss", $id_historial, $id_disc, $fecha_disc, $estatus_str);            
             if (!$stmt_disc->execute()) throw new Exception("Execute discapacidad: " . $stmt_disc->error);
         }
         $stmt_disc->close();

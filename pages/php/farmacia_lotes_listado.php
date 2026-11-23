@@ -38,9 +38,9 @@ verificarAcceso('Ver Lotes');
       <?php endif; ?>
       <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." style="border-radius:0; height:10%; width:250px; display:inline-block;" value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="width: 200px;" autocomplete="off">
       <p class="pull-right" style="width:5px;"></p>
-      <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de lotes.">
+      <span data-toggle="tooltip" data-placement="top" title="Filtrar búsqueda.">
         <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzadaLotes">
-          <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+          <i><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:15px; height:20px; filter:invert(1);" title="Filtrar lote"></i>
         </button>
       </span>
     </div>

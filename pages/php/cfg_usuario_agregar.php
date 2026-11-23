@@ -130,169 +130,168 @@ verificarAcceso('Crear Usuarios');
       </div>
     </div>
   </div>
+</div>
 
-  <?php
-  include('includes/footer.php');
-  ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    $(document).ready(function() {
-      function mostrarAviso(mensaje) {
-        clearTimeout($('#avisoModal').data('timer'));
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
+<script>
+  $(document).ready(function() {
+    function mostrarAviso(mensaje) {
+      clearTimeout($('#avisoModal').data('timer'));
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
+
+    function limpiarErrores() {
+      $('input, select').removeClass('input-error');
+    }
+
+    async function validarConexionYHora() {
+      if (!navigator.onLine) {
+        mostrarAviso('⚠️ Error: Adaptador de red desconectado. Verifique su Wi-Fi o cable.');
+        return false;
       }
 
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
-      }
+      try {
+        const urlSinCache = window.location.href.split('?')[0] + '?_nocache=' + new Date().getTime();
 
-      async function validarConexionYHora() {
-        if (!navigator.onLine) {
-          mostrarAviso('⚠️ Error: Adaptador de red desconectado. Verifique su Wi-Fi o cable.');
-          return false;
-        }
-
-        try {
-          const urlSinCache = window.location.href.split('?')[0] + '?_nocache=' + new Date().getTime();
-
-          const response = await fetch(urlSinCache, {
-            method: 'HEAD',
-            cache: 'no-store'
-          });
-
-          const dateHeader = response.headers.get('Date');
-          if (dateHeader) {
-            const serverTime = new Date(dateHeader).getTime();
-            const localTime = new Date().getTime();
-
-            if (Math.abs(serverTime - localTime) > 300000) {
-              mostrarAviso('⚠️ Error: La hora de su sistema es incorrecta. Por favor, ajuste el reloj de su equipo para poder guardar.');
-              return false;
-            }
-          } else {
-            console.warn("⚠️ Aviso: El servidor no está enviando la cabecera de hora.");
-          }
-
-          return true;
-
-        } catch (error) {
-          mostrarAviso('⚠️ Error: Sin conexión a internet. Está conectado a una red, pero no tiene salida hacia el servidor.');
-          return false;
-        }
-      }
-
-      function abrirModalGuardar() {
-        clearTimeout($('#modalGuardarUsuario').data('timer'));
-        $('#modalGuardarUsuario').modal('show');
-      }
-
-      function verificarUsuarioYMostrarModal() {
-        var nombreUsuario = $('#nombre').val().trim();
-        var emailUsuario = $('#email').val().trim();
-        var idUsuario = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
-        var btnSubmit = $('#abrirModalGuardar');
-        var textoOriginal = btnSubmit.text();
-
-        btnSubmit.text('Verificando...').attr('disabled', true);
-
-        $.ajax({
-          url: '../../cfg/ajax/verificar_existencia_usuario.php',
-          type: 'POST',
-          data: {
-            nombre: nombreUsuario,
-            email: emailUsuario,
-            id: idUsuario
-          },
-          dataType: 'json',
-          success: function(response) {
-            btnSubmit.text(textoOriginal).attr('disabled', false);
-
-            if (response.existe_nombre && response.existe_email) {
-              $('#nombre').addClass('input-error');
-              $('#email').addClass('input-error');
-              mostrarAviso('⚠️ Error: El nombre de usuario y el correo electrónico ya están en uso.');
-            } else if (response.existe_nombre) {
-              $('#nombre').addClass('input-error');
-              mostrarAviso('⚠️ Error: El nombre de usuario "' + nombreUsuario + '" ya está en uso.');
-            } else if (response.existe_email) {
-              $('#email').addClass('input-error');
-              mostrarAviso('⚠️ Error: El correo electrónico "' + emailUsuario + '" ya está en uso.');
-            } else {
-              $('#modalGuardarUsuario').modal('show');
-            }
-          },
-          error: function() {
-            btnSubmit.text(textoOriginal).attr('disabled', false);
-            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
-          }
+        const response = await fetch(urlSinCache, {
+          method: 'HEAD',
+          cache: 'no-store'
         });
-      }
 
-      $('#formularioUsuario').on('submit', function(e) {
-        e.preventDefault();
+        const dateHeader = response.headers.get('Date');
+        if (dateHeader) {
+          const serverTime = new Date(dateHeader).getTime();
+          const localTime = new Date().getTime();
+
+          if (Math.abs(serverTime - localTime) > 300000) {
+            mostrarAviso('⚠️ Error: La hora de su sistema es incorrecta. Por favor, ajuste el reloj de su equipo para poder guardar.');
+            return false;
+          }
+        } else {
+          console.warn("⚠️ Aviso: El servidor no está enviando la cabecera de hora.");
+        }
+
+        return true;
+
+      } catch (error) {
+        mostrarAviso('⚠️ Error: Sin conexión a internet. Está conectado a una red, pero no tiene salida hacia el servidor.');
+        return false;
+      }
+    }
+
+    function abrirModalGuardar() {
+      clearTimeout($('#modalGuardarUsuario').data('timer'));
+      $('#modalGuardarUsuario').modal('show');
+    }
+
+    function verificarUsuarioYMostrarModal() {
+      var nombreUsuario = $('#nombre').val().trim();
+      var emailUsuario = $('#email').val().trim();
+      var idUsuario = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+      var btnSubmit = $('#abrirModalGuardar');
+      var textoOriginal = btnSubmit.text();
+
+      btnSubmit.text('Verificando...').attr('disabled', true);
+
+      $.ajax({
+        url: '../../cfg/ajax/verificar_existencia_usuario.php',
+        type: 'POST',
+        data: {
+          nombre: nombreUsuario,
+          email: emailUsuario,
+          id: idUsuario
+        },
+        dataType: 'json',
+        success: function(response) {
+          btnSubmit.text(textoOriginal).attr('disabled', false);
+
+          if (response.existe_nombre && response.existe_email) {
+            $('#nombre').addClass('input-error');
+            $('#email').addClass('input-error');
+            mostrarAviso('⚠️ Error: El nombre de usuario y el correo electrónico ya están en uso.');
+          } else if (response.existe_nombre) {
+            $('#nombre').addClass('input-error');
+            mostrarAviso('⚠️ Error: El nombre de usuario "' + nombreUsuario + '" ya está en uso.');
+          } else if (response.existe_email) {
+            $('#email').addClass('input-error');
+            mostrarAviso('⚠️ Error: El correo electrónico "' + emailUsuario + '" ya está en uso.');
+          } else {
+            $('#modalGuardarUsuario').modal('show');
+          }
+        },
+        error: function() {
+          btnSubmit.text(textoOriginal).attr('disabled', false);
+          mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
+        }
+      });
+    }
+
+    $('#formularioUsuario').on('submit', function(e) {
+      e.preventDefault();
+    });
+
+    $('#abrirModalGuardar').off('click').on('click', async function(e) {
+      e.preventDefault();
+
+      var entornoValido = await validarConexionYHora();
+      if (!entornoValido) return;
+
+      limpiarErrores();
+      var formularioValido = true;
+
+      $('input[required], select[required]').each(function() {
+        var $input = $(this);
+        if (($input.is('select') && ($input.val() === null || $input.val() === "")) ||
+          (!$input.is('select') && $input.val().trim() === "")) {
+          $input.addClass('input-error');
+          formularioValido = false;
+        }
       });
 
-      $('#abrirModalGuardar').off('click').on('click', async function(e) {
-        e.preventDefault();
+      if (!formularioValido) {
+        mostrarAviso('⚠️ Error: Los campos obligatorios (*) deben estar llenos.');
+        return;
+      }
 
-        var entornoValido = await validarConexionYHora();
-        if (!entornoValido) return;
+      var password = $('#password').val() ? $('#password').val().trim() : "";
+      var confirmPassword = $('#confirm_password').val() ? $('#confirm_password').val().trim() : "";
+      var cambiandoPassword = (password !== "" || confirmPassword !== "");
+      var esNuevoUsuario = !$('input[name="Id"]').length;
 
-        limpiarErrores();
-        var formularioValido = true;
-
-        $('input[required], select[required]').each(function() {
-          var $input = $(this);
-          if (($input.is('select') && ($input.val() === null || $input.val() === "")) ||
-            (!$input.is('select') && $input.val().trim() === "")) {
-            $input.addClass('input-error');
-            formularioValido = false;
-          }
-        });
-
-        if (!formularioValido) {
-          mostrarAviso('⚠️ Error: Los campos obligatorios (*) deben estar llenos.');
+      if (esNuevoUsuario || cambiandoPassword) {
+        if (password === "" || confirmPassword === "") {
+          $('#password').addClass('input-error');
+          $('#confirm_password').addClass('input-error');
+          mostrarAviso('⚠️ Error: Debe llenar ambos campos de contraseña.');
           return;
         }
-
-        var password = $('#password').val() ? $('#password').val().trim() : "";
-        var confirmPassword = $('#confirm_password').val() ? $('#confirm_password').val().trim() : "";
-        var cambiandoPassword = (password !== "" || confirmPassword !== "");
-        var esNuevoUsuario = !$('input[name="Id"]').length;
-
-        if (esNuevoUsuario || cambiandoPassword) {
-          if (password === "" || confirmPassword === "") {
-            $('#password').addClass('input-error');
-            $('#confirm_password').addClass('input-error');
-            mostrarAviso('⚠️ Error: Debe llenar ambos campos de contraseña.');
-            return;
-          }
-          if (password.length < 6 || password.length > 16) {
-            $('#password').addClass('input-error');
-            mostrarAviso('⚠️ Error de Contraseña: La longitud debe ser entre 6 y 16 dígitos.');
-            return;
-          }
-          if (password !== confirmPassword) {
-            $('#password').addClass('input-error');
-            $('#confirm_password').addClass('input-error');
-            mostrarAviso('⚠️ Error: Las contraseñas no coinciden.');
-            return;
-          }
+        if (password.length < 6 || password.length > 16) {
+          $('#password').addClass('input-error');
+          mostrarAviso('⚠️ Error de Contraseña: La longitud debe ser entre 6 y 16 dígitos.');
+          return;
         }
-        verificarUsuarioYMostrarModal();
-      });
-
-      $('#confirmarGuardadoFinal').off('click').on('click', function(e) {
-        $('#modalGuardarUsuario').modal('hide');
-        $('#formularioUsuario')[0].submit();
-      });
-
-      $('#abrirModalRegresar').on('click', function() {
-        $('#modalRegresarUsuario').modal('show');
-      });
+        if (password !== confirmPassword) {
+          $('#password').addClass('input-error');
+          $('#confirm_password').addClass('input-error');
+          mostrarAviso('⚠️ Error: Las contraseñas no coinciden.');
+          return;
+        }
+      }
+      verificarUsuarioYMostrarModal();
     });
-  </script>
-  </body>
 
-  </html>
+    $('#confirmarGuardadoFinal').off('click').on('click', function(e) {
+      $('#modalGuardarUsuario').modal('hide');
+      $('#formularioUsuario')[0].submit();
+    });
+
+    $('#abrirModalRegresar').on('click', function() {
+      $('#modalRegresarUsuario').modal('show');
+    });
+  });
+</script>
+</body>
+
+</html>

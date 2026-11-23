@@ -10,43 +10,43 @@ verificarAcceso('Ajustar Stock de Medicamentos'); // Puedes cambiar el permiso a
   <title>Inventario | Ajuste de Stock de Vacunas</title>
 </head>
 
-<style>
-  .tags-input-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    padding: 4px;
-    border: 1px solid #d2d6de;
-    background-color: #fff;
-    min-height: 34px;
-    cursor: text;
-  }
-
-  .tags-input-container .tag-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    color: white;
-  }
-
-  .tags-input-container .tag-badge i {
-    margin-left: 6px;
-    cursor: pointer;
-    font-size: 10px;
-  }
-
-  .tags-input-fake {
-    border: none;
-    outline: none;
-    flex-grow: 1;
-    min-width: 150px;
-    padding: 2px;
-  }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 4px;
+      border: 1px solid #d2d6de;
+      background-color: #fff;
+      min-height: 34px;
+      cursor: text;
+    }
+
+    .tags-input-container .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .tags-input-container .tag-badge i {
+      margin-left: 6px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      min-width: 150px;
+      padding: 2px;
+    }
+  </style>
+
   <section class="content-header">
     <h1>
       Ajuste de Stock de Vacunas
@@ -71,7 +71,7 @@ verificarAcceso('Ajustar Stock de Medicamentos'); // Puedes cambiar el permiso a
                 <form id="formularioAjuste" style="margin-bottom:2%;" method="POST" action="../../cfg/movimientos_inventario.php" novalidate autocomplete="off">
                   <input type="hidden" name="op" id="op" value="<?php echo $operacion_actual; ?>">
                   <label class="control-label"></label>
-                  
+
                   <div class="col-sm-4" id="group_laboratorio">
                     <label>Vacuna / Biológico (*):</label>
                     <div class="input-group">
@@ -128,109 +128,109 @@ verificarAcceso('Ajustar Stock de Medicamentos'); // Puedes cambiar el permiso a
       </div>
     </div>
   </section>
-</div>
 
-<!-- MODAL BÚSQUEDA AVANZADA -->
-<div class="modal fade" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel">Filtros de Búsqueda Avanzada</h5>
-      </div>
-      <div class="modal-body">
-        <form id="formFiltroModal">
-          <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
-              <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre de vacuna...">
-            </div>
-          </div>
-          <br><br>
-          <div class="row">
-            <div class="col-md-4">
+  <!-- MODAL BÚSQUEDA AVANZADA -->
+  <div class="modal fade" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-labelledby="modalBúsquedaAvanzadaMedicamentoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title" id="modalBúsquedaAvanzadaMedicamentoLabel">Filtros de Búsqueda Avanzada</h5>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltroModal">
+            <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+            <div class="col-md-12">
               <div class="form-group">
-                <label for="filtro_nombre">Nombre (o ID):</label>
-                <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre o ID...">
+                <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
+                <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre de vacuna...">
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_presentacion">Presentación:</label>
-                <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
-                  <option value="">-- Todas --</option>
-                  <option value="1">1 Dosis</option>
-                  <option value="2">10 Dosis</option>
-                  <option value="3">20 Dosis</option>
-                </select>
+            <br><br>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_nombre">Nombre (o ID):</label>
+                  <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre o ID...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="1">1 Dosis</option>
+                    <option value="2">10 Dosis</option>
+                    <option value="3">20 Dosis</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_principios">Componentes (contiene):</label>
+                  <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Virus Inactivados...">
+                </div>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_principios">Componentes (contiene):</label>
-                <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Virus Inactivados...">
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-primary" id="btnLimpiarFiltros">Limpiar Filtros</button>
-        <button type="button" class="btn btn-success" id="btnAplicarFiltros">Aplicar Filtros</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="btnLimpiarFiltros">Limpiar Filtros</button>
+          <button type="button" class="btn btn-success" id="btnAplicarFiltros">Aplicar Filtros</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL AVISO -->
-<div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title" id="avisoModalLabel">Aviso Importante</h5>
-      </div>
-      <div class="modal-body">
-        <p id="avisoTexto"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+  <!-- MODAL AVISO -->
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title" id="avisoModalLabel">Aviso Importante</h5>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL GUARDAR -->
-<div class="modal fade" id="modalAjusteGuardar" tabindex="-1" role="dialog" aria-labelledby="modalAjusteGuardarLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-green">
-        <h5 class="modal-title" id="modalAjusteGuardarLabel">Confirmación de Guardado</h5>
-      </div>
-      <div class="modal-body">
-        <p>¿Está seguro de que desea actualizar la información del stock de esta vacuna en el inventario?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
+  <!-- MODAL GUARDAR -->
+  <div class="modal fade" id="modalAjusteGuardar" tabindex="-1" role="dialog" aria-labelledby="modalAjusteGuardarLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h5 class="modal-title" id="modalAjusteGuardarLabel">Confirmación de Guardado</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea actualizar la información del stock de esta vacuna en el inventario?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL REGRESAR -->
-<div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-labelledby="modalRegresarInventarioLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title" id="modalRegresarInventarioLabel">Confirmación de Regreso</h5>
-      </div>
-      <div class="modal-body">
-        <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <a href="vacunacion_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+  <!-- MODAL REGRESAR -->
+  <div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-labelledby="modalRegresarInventarioLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title" id="modalRegresarInventarioLabel">Confirmación de Regreso</h5>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="vacunacion_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
       </div>
     </div>
   </div>
@@ -309,7 +309,7 @@ include('includes/footer.php');
       // SIMULACIÓN: En lugar de AJAX, filtramos las opciones existentes visualmente
       let opcionesFiltradas = '<option value="">--- Seleccione una Vacuna ---</option>';
       const $opciones = $(opcionesOriginalesMedicamentos).filter('option[value!=""]');
-      
+
       let hayResultados = false;
       $opciones.each(function() {
         let texto = $(this).text().toLowerCase();
@@ -341,11 +341,23 @@ include('includes/footer.php');
         // SIMULACIÓN: Aquí iría el AJAX real. Por ahora quemamos datos.
         let data = {};
         if (id_desc == '1') { // VPI
-          data = { existencia_actual: 150, stock_minimo: 50, stock_maximo: 500 };
+          data = {
+            existencia_actual: 150,
+            stock_minimo: 50,
+            stock_maximo: 500
+          };
         } else if (id_desc == '2') { // SRP
-          data = { existencia_actual: 80, stock_minimo: 20, stock_maximo: 300 };
+          data = {
+            existencia_actual: 80,
+            stock_minimo: 20,
+            stock_maximo: 300
+          };
         } else if (id_desc == '3') { // BCG
-          data = { existencia_actual: 200, stock_minimo: 100, stock_maximo: 600 };
+          data = {
+            existencia_actual: 200,
+            stock_minimo: 100,
+            stock_maximo: 600
+          };
         }
 
         if (data.existencia_actual !== undefined) {

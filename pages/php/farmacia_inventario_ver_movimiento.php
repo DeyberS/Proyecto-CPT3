@@ -111,253 +111,441 @@ verificarAcceso('Ver Inventario');
     <title>Movimiento | Informacion</title>
 </head>
 
-<style>
-    :root {
-        --primary: #2c3e50;
-        --accent: #3498db;
-        --bg: #f4f7f6;
-    }
+<div class="content-wrapper">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f4f7f6;
+        }
 
-    @media screen {
-
-        html,
+        /* ============================================================
+       BASE (todos los dispositivos)
+       ============================================================ */
         body {
-            overflow: hidden !important;
-            height: 118vh !important;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg) !important;
         }
 
         .wrapper,
         .content-wrapper {
-            height: 118vh !important;
-            min-height: 118vh !important;
-            overflow: hidden !important;
             background-color: #f4f7f9 !important;
+            min-height: 100vh;
         }
 
         .content-custom {
             padding: 20px 10px;
-            margin-left: 60px;
-            height: calc(100vh - 50px);
-            overflow: hidden;
+            margin-left: 0;
+            box-sizing: border-box;
         }
-    }
 
-    body {
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    .receipt-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin: 10px auto;
-        border: none;
-        display: flex;
-        flex-direction: column;
-        max-height: 85vh;
-    }
-
-    .receipt-header {
-        background: var(--primary);
-        color: white;
-        padding: 20px 30px;
-        border-bottom: 5px solid <?php echo $tipo_bg; ?>;
-        position: relative;
-        flex-shrink: 0;
-    }
-
-    .card-body {
-        padding: 20px 30px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .status-badge {
-        position: absolute;
-        top: 25px;
-        right: 30px;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-weight: 800;
-        background-color: <?php echo $tipo_bg; ?>;
-        color: white;
-    }
-
-    .info-entrega {
-        background: #ebf5fb;
-        border-radius: 10px;
-        padding: 20px;
-        border: 1px solid #d6eaf8;
-        height: 100%;
-    }
-
-    .label-custom {
-        font-size: 11px;
-        color: #95a5a6;
-        text-transform: uppercase;
-        font-weight: 700;
-        display: block;
-    }
-
-    .val-custom {
-        font-size: 16px;
-        color: #2c3e50;
-        font-weight: 500;
-    }
-
-    .table-scroll-container {
-        max-height: 160px;
-        overflow-y: auto;
-        border-bottom: 1px solid #eee;
-        margin-bottom: 15px;
-    }
-
-    .table-scroll-container::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .table-scroll-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 5px;
-    }
-
-    .table-scroll-container::-webkit-scrollbar-thumb {
-        background: #bdc3c7;
-        border-radius: 5px;
-    }
-
-    .table-scroll-container::-webkit-scrollbar-thumb:hover {
-        background: #95a5a6;
-    }
-
-    .table-productos {
-        margin-bottom: 0;
-    }
-
-    .table-productos th {
-        background-color: #f8f9fa;
-        color: var(--primary);
-        font-size: 13px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    .table-productos td {
-        vertical-align: middle !important;
-        font-size: 14px;
-    }
-
-    .qty-badge {
-        font-size: 16px;
-        font-weight: bold;
-        color: <?php echo $tipo_bg; ?>;
-        background: #fdfdfd;
-        padding: 5px 10px;
-        border: 1px solid #eee;
-        border-radius: 5px;
-        display: inline-block;
-    }
-
-    .img-strip-btn {
-        position: relative;
-        width: 100%;
-        height: 50px;
-        border-radius: 8px;
-        overflow: hidden;
-        cursor: pointer;
-        border: 2px dashed #ccc;
-        background-color: #ecf0f1;
-        transition: all 0.3s;
-    }
-
-    .img-strip-btn:hover {
-        border-color: #3498db;
-    }
-
-    .img-strip-bg {
-        position: absolute;
-        top: -20px;
-        left: -20px;
-        right: -20px;
-        bottom: -20px;
-        background-size: cover;
-        background-position: center;
-        filter: blur(6px);
-        opacity: 0.6;
-        z-index: 1;
-    }
-
-    .img-strip-text {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 2;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: var(--primary);
-        font-size: 15px;
-        text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
-    }
-
-    .print-only {
-        display: none !important;
-    }
-
-    @media print {
-
-        body,
-        html,
-        .wrapper,
-        .content-wrapper,
         .receipt-card {
-            height: auto !important;
-            max-height: none !important;
-            overflow: visible !important;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 10px auto;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            max-height: 92vh;
+            max-width: min(112vw, 1600px);
+            width: 100%;
+        }
+
+        .receipt-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 30px;
+            border-bottom: 5px solid <?php echo $tipo_bg; ?>;
+            position: relative;
+            flex-shrink: 0;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .receipt-header h1,
+        .receipt-header h2,
+        .receipt-header h3,
+        .receipt-header h4 {
+            margin: 0;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .card-body {
+            padding: 20px 30px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+            /* necesario para que flex-grow funcione */
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 800;
+            background-color: <?php echo $tipo_bg; ?>;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .info-entrega {
+            background: #ebf5fb;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #d6eaf8;
+            height: 100%;
+        }
+
+        .label-custom {
+            font-size: 11px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+        }
+
+        .val-custom {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 500;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
 
         .table-scroll-container {
-            max-height: none !important;
-            overflow: visible !important;
+            max-height: clamp(200px, 32vh, 420px);
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 5px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #95a5a6;
+        }
+
+        .table-productos {
+            margin-bottom: 0;
         }
 
         .table-productos th {
-            position: static;
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-size: 13px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .no-print {
-            display: none !important;
+        .table-productos td {
+            vertical-align: middle !important;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .qty-badge {
+            font-size: 16px;
+            font-weight: bold;
+            color: <?php echo $tipo_bg; ?>;
+            background: #fdfdfd;
+            padding: 5px 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .img-strip-btn {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px dashed #ccc;
+            background-color: #ecf0f1;
+            transition: all 0.3s;
+        }
+
+        .img-strip-btn:hover {
+            border-color: #3498db;
+        }
+
+        .img-strip-bg {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            background-size: cover;
+            background-position: center;
+            filter: blur(6px);
+            opacity: 0.6;
+            z-index: 1;
+        }
+
+        .img-strip-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 15px;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
         }
 
         .print-only {
-            display: block !important;
+            display: none !important;
         }
 
-        .receipt-card {
-            box-shadow: none;
-            border: 1px solid #eee;
-            margin: 0;
+        /* ============================================================
+       TABLET (≤ 991 px)
+       ============================================================ */
+        @media (max-width: 991px) {
+            .content-custom {
+                padding: 15px 8px;
+            }
+
+            .receipt-header {
+                padding: 18px 20px;
+            }
+
+            .card-body {
+                padding: 15px 20px;
+            }
+
+            .status-badge {
+                top: 15px;
+                right: 20px;
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+
+            .info-entrega {
+                padding: 15px;
+            }
         }
 
-        .img-comprobante-print {
-            width: 100%;
-            max-height: 250px;
-            object-fit: contain;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            padding: 5px;
-        }
-    }
-</style>
+        /* ============================================================
+       MÓVIL (≤ 767 px)
+       ============================================================ */
+        @media (max-width: 767px) {
 
-<div class="content-wrapper">
+            /* Permitir scroll vertical natural: el recibo puede crecer */
+            html,
+            body {
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                height: auto !important;
+            }
+
+            .wrapper,
+            .content-wrapper {
+                min-height: auto !important;
+            }
+
+            .content-custom {
+                padding: 10px 6px;
+                margin-left: 0 !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .receipt-card {
+                max-height: none !important;
+                /* deja crecer al recibo */
+                margin: 5px auto;
+                border-radius: 8px;
+            }
+
+            /* Header: título arriba, badge debajo (sin absolute) */
+            .receipt-header {
+                padding: 15px;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .receipt-header h1,
+            .receipt-header h2,
+            .receipt-header h3,
+            .receipt-header h4 {
+                font-size: 1.15em;
+                line-height: 1.25;
+            }
+
+            .status-badge {
+                position: static !important;
+                padding: 6px 12px;
+                font-size: 11px;
+                align-self: flex-start;
+            }
+
+            .card-body {
+                padding: 12px;
+                overflow: visible;
+            }
+
+            .info-entrega {
+                padding: 12px;
+                height: auto;
+                margin-bottom: 12px;
+            }
+
+            .label-custom {
+                font-size: 10px;
+            }
+
+            .val-custom {
+                font-size: 13px;
+            }
+
+            /* Tabla: más alta y con scroll interno más cómodo */
+            .table-scroll-container {
+                max-height: 240px;
+            }
+
+            .table-productos th {
+                font-size: 11px;
+                padding: 6px 4px;
+            }
+
+            .table-productos td {
+                font-size: 12px;
+                padding: 6px 4px;
+            }
+
+            .qty-badge {
+                font-size: 13px;
+                padding: 3px 7px;
+            }
+
+            .img-strip-btn {
+                height: 42px;
+                margin-top: 6px;
+            }
+
+            .img-strip-text {
+                font-size: 12px;
+            }
+
+            /* Botones del recibo: full-width apilados */
+            .receipt-card .no-print .btn,
+            .receipt-card .no-print a.btn {
+                display: block;
+                width: 100%;
+                margin: 4px 0 !important;
+            }
+        }
+
+        /* ============================================================
+       MÓVIL PEQUEÑO (≤ 360 px)
+       ============================================================ */
+        @media (max-width: 360px) {
+            .content-custom {
+                padding: 8px 4px;
+            }
+
+            .receipt-header {
+                padding: 12px;
+            }
+
+            .card-body {
+                padding: 10px;
+            }
+
+            .info-entrega {
+                padding: 10px;
+            }
+
+            .table-productos th,
+            .table-productos td {
+                font-size: 10.5px;
+                padding: 5px 3px;
+            }
+
+            .status-badge {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+        }
+
+        /* ============================================================
+       IMPRESIÓN
+       ============================================================ */
+        @media print {
+
+            body,
+            html,
+            .wrapper,
+            .content-wrapper,
+            .receipt-card {
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .table-scroll-container {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .table-productos th {
+                position: static;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            .receipt-card {
+                box-shadow: none;
+                border: 1px solid #eee;
+                margin: 0;
+            }
+
+            .img-comprobante-print {
+                width: 100%;
+                max-height: 250px;
+                object-fit: contain;
+                border: 2px solid #ccc;
+                border-radius: 8px;
+                padding: 5px;
+            }
+        }
+    </style>
+
     <section class="content">
         <div class="receipt-card">
             <div class="receipt-header">

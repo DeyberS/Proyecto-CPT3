@@ -31,9 +31,9 @@ verificarAcceso('Ver papelera de lotes');
       <a href="../farmacia_lotes_listado.php" class="btn-sm btn-primary pull-right"> Regresar al Listado </a>
       <input type="text" id="buscar" name="buscar" class="form-control pull-left" placeholder="Escriba para buscar..." style="border-radius:0; height:10%; width:250px; display:inline-block;" value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" style="width: 200px;" autocomplete="off">
       <p class="pull-right" style="width:5px;"></p>
-      <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de lotes.">
-        <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzadaLotes">
-          <i class="fa fa-filter"><img src="../../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+      <span data-toggle="tooltip" data-placement="top" title="Filtrar búsqueda">
+        <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzada">
+          <i><img src="../../../recursos/imagenes/iconos/filtrar.png" style="width:15px; height:20px; filter:invert(1);" title="Filtrar lote"></i>
         </button>
       </span>
     </div>
@@ -206,7 +206,7 @@ verificarAcceso('Ver papelera de lotes');
   }
   ?>
 
-  <div class="modal fade" id="modalBusquedaAvanzadaLotes" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
+  <div class="modal fade" id="modalBusquedaAvanzada" tabindex="-1" role="dialog" aria-labelledby="modalFiltrosLabel">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <form id="formBusquedaAvanzada" method="GET" action="">
@@ -399,7 +399,7 @@ verificarAcceso('Ver papelera de lotes');
       $('#formBusquedaAvanzada').on('submit', function(e) {
         e.preventDefault();
         var url = 'farmacia_lotes_papelera_listado.php?' + $(this).serialize();
-        $('#modalBusquedaAvanzadaLotes').modal('hide');
+        $('#modalBusquedaAvanzada').modal('hide');
         cargarDatosAjax(url);
       });
 
@@ -415,7 +415,7 @@ verificarAcceso('Ver papelera de lotes');
         $('#buscar_modal').val('');
         var urlLimpia = window.location.href.split('?')[0];
         cargarDatosAjax(urlLimpia);
-        $('#modalBusquedaAvanzadaLotes').modal('hide');
+        $('#modalBusquedaAvanzada').modal('hide');
       };
 
       <?php if ($mostrar_modal_exito) : ?>

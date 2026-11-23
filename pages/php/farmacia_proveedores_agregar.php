@@ -96,92 +96,93 @@ verificarAcceso('Crear Proveedores');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    $(document).ready(function() {
-      function mostrarAviso(mensaje) {
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
-      }
+<script>
+  $(document).ready(function() {
+    function mostrarAviso(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
 
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
-        $('.form-group').removeClass('input-error');
-      }
+    function limpiarErrores() {
+      $('input, select').removeClass('input-error');
+      $('.form-group').removeClass('input-error');
+    }
 
-      function bloquearNumeros(e) {
-        const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
-        if (teclasPermitidas.includes(e.key)) return;
-        if (e.key >= "0" && e.key <= "9") {
-          e.preventDefault();
-        }
-      }
-
-      function limpiarNumeros(e) {
-        e.target.value = e.target.value.replace(/[0-9]/g, "");
-      }
-
-      function verificarProveedorYMostrarModal() {
-        const nombre = $('#nombre_proveedor').val().trim();
-        const btnGuardar = $('#btnGuardar');
-
-        const textoOriginal = btnGuardar.text();
-        btnGuardar.text('Verificando...').attr('disabled', true);
-
-        $.ajax({
-          url: '../../cfg/ajax/verificar_existencia_proveedor.php',
-          method: 'POST',
-          dataType: 'json',
-          data: {
-            nombre: nombre
-          },
-          success: function(response) {
-            limpiarErrores();
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-
-            if (response.existe_nombre) {
-              $('#nombre_proveedor').addClass('input-error');
-              mostrarAviso(`⚠️ Error de Duplicidad:<ul><li>Ya existe un proveedor registrado con el nombre: <b>${nombre}</b></li></ul>`);
-            } else {
-              $('#modalGuardar').modal('show');
-            }
-          },
-          error: function(xhr, status, error) {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos. <br>Detalle: ' + error);
-          }
-        });
-      }
-
-      $('#formularioProveedor').on('submit', function(e) {
+    function bloquearNumeros(e) {
+      const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
+      if (teclasPermitidas.includes(e.key)) return;
+      if (e.key >= "0" && e.key <= "9") {
         e.preventDefault();
-        limpiarErrores();
-        let errores = [];
+      }
+    }
 
-        if ($('#nombre_proveedor').val().trim() === "") {
-          errores.push("Falta el nombre del proveedor.");
-          $('#nombre_proveedor').addClass('input-error');
-        }
+    function limpiarNumeros(e) {
+      e.target.value = e.target.value.replace(/[0-9]/g, "");
+    }
 
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          verificarProveedorYMostrarModal();
+    function verificarProveedorYMostrarModal() {
+      const nombre = $('#nombre_proveedor').val().trim();
+      const btnGuardar = $('#btnGuardar');
+
+      const textoOriginal = btnGuardar.text();
+      btnGuardar.text('Verificando...').attr('disabled', true);
+
+      $.ajax({
+        url: '../../cfg/ajax/verificar_existencia_proveedor.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          nombre: nombre
+        },
+        success: function(response) {
+          limpiarErrores();
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+
+          if (response.existe_nombre) {
+            $('#nombre_proveedor').addClass('input-error');
+            mostrarAviso(`⚠️ Error de Duplicidad:<ul><li>Ya existe un proveedor registrado con el nombre: <b>${nombre}</b></li></ul>`);
+          } else {
+            $('#modalGuardar').modal('show');
+          }
+        },
+        error: function(xhr, status, error) {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+          mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos. <br>Detalle: ' + error);
         }
       });
+    }
 
-      $('#confirmarGuardar').on('click', function() {
-        $('#formularioProveedor').off('submit').submit();
-      });
+    $('#formularioProveedor').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let errores = [];
 
-      const campos = [document.getElementById("nombre_proveedor")];
-      campos.forEach(campo => {
-        if (campo) {
-          campo.addEventListener("keydown", bloquearNumeros);
-          campo.addEventListener("input", limpiarNumeros);
-        }
-      });
+      if ($('#nombre_proveedor').val().trim() === "") {
+        errores.push("Falta el nombre del proveedor.");
+        $('#nombre_proveedor').addClass('input-error');
+      }
+
+      if (errores.length > 0) {
+        mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        verificarProveedorYMostrarModal();
+      }
     });
-  </script>
+
+    $('#confirmarGuardar').on('click', function() {
+      $('#formularioProveedor').off('submit').submit();
+    });
+
+    const campos = [document.getElementById("nombre_proveedor")];
+    campos.forEach(campo => {
+      if (campo) {
+        campo.addEventListener("keydown", bloquearNumeros);
+        campo.addEventListener("input", limpiarNumeros);
+      }
+    });
+  });
+</script>

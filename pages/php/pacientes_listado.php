@@ -3,7 +3,6 @@ include('includes/headerNav2.php');
 verificarAcceso('Gestionar Pacientes');
 ?>
 
-<head>
   <title>Pacientes | Listado</title>
 </head>
 

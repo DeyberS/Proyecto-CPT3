@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 15-11-2026 a las 22:51:24
+-- Tiempo de generación: 23-11-2026 a las 20:59:58
 -- Versión del servidor: 10.1.35-MariaDB
 -- Versión de PHP: 7.2.9
 
@@ -103,13 +103,6 @@ CREATE TABLE `citas` (
   `estatus` int(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Volcado de datos para la tabla `citas`
---
-
-INSERT INTO `citas` (`id_cita`, `fecha_cita`, `hora_cita`, `motivo`, `Id_paciente`, `Id_medico`, `Id_especialidad`, `fecha_registro`, `estado`, `estatus`) VALUES
-(1, '2026-11-19', '09:50:00', 'Motivo', 5, 1, 2, '2026-11-12 20:46:46', 'Pendiente', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -160,7 +153,8 @@ CREATE TABLE `consulta` (
 
 INSERT INTO `consulta` (`Id_consulta`, `fecha_consulta`, `motivo_consulta`, `tratamiento_indicado`, `Id_historial`, `Id_medico`, `Id_paciente`, `estatus`) VALUES
 (1, '2026-11-06', 'Motivo', 'Tratamiento', 1, 1, 5, 1),
-(2, '2026-11-12', 'Motivo', 'Tratamiento General', 1, 1, 5, 1);
+(2, '2026-11-12', 'Motivo', 'Tratamiento General', 1, 1, 5, 1),
+(3, '2026-11-22', 'Cancer', 'NADA', 1, 1, 5, 1);
 
 --
 -- Disparadores `consulta`
@@ -238,7 +232,7 @@ CREATE TABLE `descripcion_medicamento` (
 INSERT INTO `descripcion_medicamento` (`Id`, `via_aplicacion`, `almacenamiento`, `excipientes`, `stock_minimo`, `stock_maximo`, `codigo_barras`, `contenido_neto`, `cantidad_concentracion`, `Id_tipo_concentracion`, `Id_laboratorio`, `Id_presentacion`, `Id_medicamento`, `estatus`) VALUES
 (1, 'Oral', '8_a_15', NULL, 0, 0, '234234235234', '10 Pastillas', 250, 2, 2, 1, 1, '1'),
 (2, 'Oral', '8_a_15', NULL, 1, 100, 'Ninguno', '10 Pastillas', 250, 1, 2, 2, 2, '1'),
-(3, 'Oral', '8_a_15', NULL, 0, 0, 'Ninguno', '10 Pastillas', 250, 1, 2, 1, 4, '1'),
+(3, 'Oral', '8_a_15', NULL, 1, 200, 'Ninguno', '10 Pastillas', 250, 1, 2, 1, 4, '1'),
 (4, 'Oral', '8_a_15', '', 1, 100, '123456678', '10 Pastillas', 250, 1, 2, 2, 5, '1'),
 (5, 'Oral', '8_a_15', '', 1, 100, '124124214', '10 Pastillas', 250, 1, 2, 2, 6, '1');
 
@@ -387,7 +381,7 @@ CREATE TABLE `detalle_patologia_sintomas` (
 --
 
 INSERT INTO `detalle_patologia_sintomas` (`Id`, `Id_patologia`, `Id_sintoma`) VALUES
-(2, 1, 1);
+(3, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -487,7 +481,8 @@ CREATE TABLE `detalle_solicitud` (
 
 INSERT INTO `detalle_solicitud` (`id_detalle`, `id_solicitud`, `id_descripcion_medicamento`, `cantidad_recetada`, `dosis`, `frecuencia`, `via`, `duracion`, `indicaciones`, `cantidad_entregada`, `estatus_item`, `paciente_notificado`, `motivo`) VALUES
 (6, 1, 4, 1, '1 tableta', 'Cada 5h', 'Oral', 'Una Semana', 'Despues de comer', 0, 'Pendiente', 0, 'Motivo'),
-(7, 2, 2, 1, '2 tabletas', 'cada 2h', 'Oral', '5', 'despues de todo', 0, 'Pendiente', 0, 'Motivo');
+(7, 2, 2, 1, '2 tabletas', 'cada 2h', 'Oral', '5', 'despues de todo', 0, 'Pendiente', 0, 'Motivo'),
+(8, 3, 2, 1, '1', 'ss', 'Oral', '2', 'dd', 0, 'Pendiente', 0, 'Cancer');
 
 --
 -- Disparadores `detalle_solicitud`
@@ -602,7 +597,8 @@ CREATE TABLE `diagnostico_consulta` (
 
 INSERT INTO `diagnostico_consulta` (`id_diagnostico`, `id_consulta`, `id_patologia`, `descripcion_libre`, `tipo`, `codigo_cie`) VALUES
 (1, 1, 1, 'Diagnóstico', 'Principal', 'A99'),
-(2, 2, 1, 'Diagnóstico', 'Principal', 'A99');
+(2, 2, 1, 'Diagnóstico', 'Principal', 'A99'),
+(3, 3, 1, 'Diagnóstico', 'Principal', 'A99');
 
 -- --------------------------------------------------------
 
@@ -771,7 +767,8 @@ CREATE TABLE `evolucion_consulta` (
 
 INSERT INTO `evolucion_consulta` (`id_evolucion`, `id_consulta`, `fecha_registro`, `estado_paciente`, `evolucion_resultado`, `lectura_examenes`) VALUES
 (1, 1, '2026-11-12 17:13:06', 'Primera Consulta', 'Paciente acude a consulta por primera vez. Se realiza historia clínica completa, examen físico y se establece diagnóstico inicial con plan de tratamiento.', 'Colesterol Alto'),
-(2, 2, '2026-11-12 17:46:45', 'Sano', 'Mejoro Gracias a Dios', 'Colesterol Regular');
+(2, 2, '2026-11-12 17:46:45', 'Sano', 'Mejoro Gracias a Dios', 'Colesterol Regular'),
+(3, 3, '2026-11-22 13:29:47', 'Primera Consulta', 'Paciente acude por primera vez. Se inicia protocolo.', NULL);
 
 -- --------------------------------------------------------
 
@@ -920,7 +917,8 @@ INSERT INTO `historial_discapacidades` (`Id`, `Id_Historial`, `Id_discapacidad`,
 (5, 2, 8, '2026-11-06', 1),
 (7, 1, 3, '2026-11-06', 1),
 (9, 3, 5, '2026-11-06', 1),
-(10, 1, 6, '2026-11-11', 1);
+(10, 1, 6, '2026-11-11', 1),
+(11, 1, 4, '2026-11-22', 1);
 
 -- --------------------------------------------------------
 
@@ -942,7 +940,7 @@ CREATE TABLE `historial_medico` (
 --
 
 INSERT INTO `historial_medico` (`id_historial`, `grupo_sanguineo`, `fecha`, `Id_persona`, `estatus`, `antecedentes_json`) VALUES
-(1, 'O+', '2026-11-06 08:48:34', 5, 1, '{\"habitos\":{\"2.c.27 Otros Habitos\":true},\"patologicos\":{\"2.c.34 Intervención Quirúrgica (Z98.8)\":\"2020\"},\"notas_adicionales\":\"SSS\",\"familiares\":{}}'),
+(1, 'O+', '2026-11-06 08:48:34', 5, 1, '{\"habitos\":{\"2.c.27 Otros Habitos\":true},\"patologicos\":{\"2.c.34 Intervención Quirúrgica (Z98.8)\":\"2020\"},\"notas_adicionales\":\"Algo\\n---\\nSSS\",\"familiares\":[]}'),
 (2, 'A+', '2026-11-06 18:31:14', 7, 1, NULL),
 (3, 'A+', '2026-11-06 18:50:41', 8, 1, NULL);
 
@@ -1871,8 +1869,8 @@ CREATE TABLE `persona` (
 --
 
 INSERT INTO `persona` (`id`, `nombre`, `apellido`, `tipo_cedula`, `cedula`, `fecha_nacimiento`, `genero`, `email`, `password`, `login_attempts`, `last_login_attempt`, `reset_token`, `token_expiry`, `token_activacion`, `estatus`) VALUES
-(1, 'Administrador', NULL, '', NULL, '0000-00-00', '', 'Davidsg769@gmail.com', '$2y$10$q5PbnpQ1rKzbA8v5pxm0GeTtXH4DaEMV2pPVZ1zMz6YWLNS6wtiCq', 0, '2026-11-11 15:06:55', NULL, NULL, NULL, 2),
-(3, 'Fernando Gabriel', 'Escaloni', 'V', '11111111', '2008-10-10', 'Masculino', 'Fernando12@gmail.com', '', 0, NULL, NULL, NULL, NULL, 2),
+(1, 'Administrador', NULL, '', NULL, '0000-00-00', '', 'Davidsg769@gmail.com', '$2y$10$q5PbnpQ1rKzbA8v5pxm0GeTtXH4DaEMV2pPVZ1zMz6YWLNS6wtiCq', 0, '2026-11-11 15:06:55', NULL, NULL, NULL, 1),
+(3, 'Fernando Gabriel', 'Escaloni', 'V', '11111111', '2008-10-10', 'Masculino', 'Fernando12@gmail.com', '', 0, NULL, NULL, NULL, NULL, 1),
 (5, 'Juan David', 'Pérez Mendoza', 'V', '12345678', '1990-05-15', 'Masculino', 'juan@example.com', '', 0, NULL, NULL, NULL, NULL, 1),
 (6, 'Maria', 'Veorez', 'V', '31306222', '2008-11-06', 'Masculino', 'DoctorM@gmail.com', NULL, 0, NULL, NULL, NULL, NULL, 1),
 (7, 'Carlos Manuel', 'Gonzales Veroes', 'PN', '123456789', '2025-02-12', 'Masculino', NULL, '', 0, NULL, NULL, NULL, NULL, 1),
@@ -1968,8 +1966,7 @@ CREATE TABLE `proveedor` (
 --
 
 INSERT INTO `proveedor` (`Id_proveedor`, `nombre_proveedor`, `estatus`) VALUES
-(1, 'SUAF Portuguesa', 1),
-(2, 'XL', 1);
+(1, 'SUAF Portuguesa', 1);
 
 -- --------------------------------------------------------
 
@@ -3433,7 +3430,8 @@ CREATE TABLE `signos_vitales_consulta` (
 
 INSERT INTO `signos_vitales_consulta` (`id_medicion`, `id_consulta`, `fecha_medicion`, `peso`, `talla`, `temperatura`, `presion_sistolica`, `presion_diastolica`, `frecuencia_cardiaca`, `frecuencia_respiratoria`, `saturacion`) VALUES
 (1, 1, '2026-11-12 17:13:06', '1.00', '2.00', '3.0', 5, 6, 4, 8, 7),
-(2, 2, '2026-11-12 17:46:45', '1.00', '2.00', '3.0', 5, 6, 4, 8, 7);
+(2, 2, '2026-11-12 17:46:45', '1.00', '2.00', '3.0', 5, 6, 4, 8, 7),
+(3, 3, '2026-11-22 13:29:47', '1.00', '2.00', '3.0', 5, 6, 4, 8, 7);
 
 -- --------------------------------------------------------
 
@@ -3506,7 +3504,8 @@ CREATE TABLE `solicitud_medicamento` (
 
 INSERT INTO `solicitud_medicamento` (`id_solicitud`, `origen`, `id_consulta`, `id_paciente`, `id_medico`, `id_receptor`, `tipo_receptor`, `entregado_a`, `cedula_receptor`, `parentesco_receptor`, `estatus_general`, `fecha_solicitud`) VALUES
 (1, 'Interno', 1, 5, 1, 5, 'Paciente', 'Juan David Pérez Mendoza', NULL, 'Ninguno', 'Pendiente', '2026-11-06 14:01:42'),
-(2, 'Interno', 2, 5, 1, 5, 'Paciente', 'Juan David Pérez Mendoza', NULL, 'Ninguno', 'Pendiente', '2026-11-12 17:46:46');
+(2, 'Interno', 2, 5, 1, 5, 'Paciente', 'Juan David Pérez Mendoza', NULL, 'Ninguno', 'Pendiente', '2026-11-12 17:46:46'),
+(3, 'Interno', 3, 5, 1, 5, 'Paciente', 'Juan David Pérez Mendoza', NULL, 'Ninguno', 'Pendiente', '2026-11-22 13:29:47');
 
 --
 -- Disparadores `solicitud_medicamento`
@@ -3994,7 +3993,8 @@ ALTER TABLE `municipio`
 --
 ALTER TABLE `notificaciones_usuarios`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `idx_unica_notificacion` (`id_usuario`,`referencia_id`);
+  ADD UNIQUE KEY `idx_unica_notificacion` (`id_usuario`,`referencia_id`),
+  ADD KEY `idx_usuario_leida_id` (`id_usuario`,`leida`,`id`);
 
 --
 -- Indices de la tabla `observaciones_historial_medico`
@@ -4191,7 +4191,7 @@ ALTER TABLE `antecedentes_sexuales_reproductivos`
 -- AUTO_INCREMENT de la tabla `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_cita` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `configuracion_horarios`
@@ -4203,7 +4203,7 @@ ALTER TABLE `configuracion_horarios`
 -- AUTO_INCREMENT de la tabla `consulta`
 --
 ALTER TABLE `consulta`
-  MODIFY `Id_consulta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id_consulta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `departamento`
@@ -4251,7 +4251,7 @@ ALTER TABLE `detalle_patologia_medicamento`
 -- AUTO_INCREMENT de la tabla `detalle_patologia_sintomas`
 --
 ALTER TABLE `detalle_patologia_sintomas`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_pedidos`
@@ -4275,7 +4275,7 @@ ALTER TABLE `detalle_principio_medicamento`
 -- AUTO_INCREMENT de la tabla `detalle_solicitud`
 --
 ALTER TABLE `detalle_solicitud`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_solicitud_examen`
@@ -4287,7 +4287,7 @@ ALTER TABLE `detalle_solicitud_examen`
 -- AUTO_INCREMENT de la tabla `diagnostico_consulta`
 --
 ALTER TABLE `diagnostico_consulta`
-  MODIFY `id_diagnostico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_diagnostico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `direccion`
@@ -4329,7 +4329,7 @@ ALTER TABLE `estilos_de_vida_paciente`
 -- AUTO_INCREMENT de la tabla `evolucion_consulta`
 --
 ALTER TABLE `evolucion_consulta`
-  MODIFY `id_evolucion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_evolucion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `examen_catalogo`
@@ -4377,7 +4377,7 @@ ALTER TABLE `historial_antecedentes_sexuales_reproductivos`
 -- AUTO_INCREMENT de la tabla `historial_discapacidades`
 --
 ALTER TABLE `historial_discapacidades`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_medico`
@@ -4443,7 +4443,7 @@ ALTER TABLE `municipio`
 -- AUTO_INCREMENT de la tabla `notificaciones_usuarios`
 --
 ALTER TABLE `notificaciones_usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3672;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=719;
 
 --
 -- AUTO_INCREMENT de la tabla `observaciones_historial_medico`
@@ -4503,7 +4503,7 @@ ALTER TABLE `principio_activo`
 -- AUTO_INCREMENT de la tabla `proveedor`
 --
 ALTER TABLE `proveedor`
-  MODIFY `Id_proveedor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id_proveedor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `reaccion_adversa_consulta`
@@ -4539,7 +4539,7 @@ ALTER TABLE `sector`
 -- AUTO_INCREMENT de la tabla `signos_vitales_consulta`
 --
 ALTER TABLE `signos_vitales_consulta`
-  MODIFY `id_medicion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_medicion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `sintomas`
@@ -4557,7 +4557,7 @@ ALTER TABLE `solicitud_examen`
 -- AUTO_INCREMENT de la tabla `solicitud_medicamento`
 --
 ALTER TABLE `solicitud_medicamento`
-  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `telefonos_personas`

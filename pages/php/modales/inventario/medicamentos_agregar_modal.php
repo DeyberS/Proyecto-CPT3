@@ -75,7 +75,7 @@ if (isset($_GET['duplicar_id'])) {
             </div>
             <label class="control-label"></label>
             <div class="col-sm-4 form-group" id="med_group_presentacion">
-              <p>Presentacion (*):</p>
+              <p>Presentación (*):</p>
               <select class="form-control" name="presentacion" id="presentacion" required>
                 <option value="">--- Seleccione presentacion ---</option>
                 <?php

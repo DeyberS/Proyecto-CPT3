@@ -96,97 +96,98 @@ verificarAcceso('Crear Especialidades');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    $(document).ready(function() {
-      function mostrarAviso(mensaje) {
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
-      }
+<script>
+  $(document).ready(function() {
+    function mostrarAviso(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
 
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
-        $('.form-group').removeClass('input-error');
-      }
+    function limpiarErrores() {
+      $('input, select').removeClass('input-error');
+      $('.form-group').removeClass('input-error');
+    }
 
-      function bloquearNumeros(e) {
-        const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
-        if (teclasPermitidas.includes(e.key)) return;
-        if (e.key >= "0" && e.key <= "9") {
-          e.preventDefault();
-        }
-      }
-
-      function limpiarNumeros(e) {
-        e.target.value = e.target.value.replace(/[0-9]/g, "");
-      }
-
-      function verificarEspecialidadYMostrarModal() {
-        const nombre = $('#nombre_especialidad').val().trim();
-        const btnGuardar = $('#formularioEspecialidad button[type="submit"]');
-
-        const textoOriginal = btnGuardar.text();
-        btnGuardar.text('Verificando...').attr('disabled', true);
-
-        $.ajax({
-          url: '../../cfg/ajax/verificar_existencia_especialidad.php',
-          method: 'POST',
-          dataType: 'json',
-          data: {
-            nombre: nombre
-          },
-          success: function(response) {
-            let errores_ajax = [];
-            limpiarErrores();
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-
-            if (response.existe_nombre) {
-              errores_ajax.push(`⚠️ Ya existe una especialidad con el nombre: ${nombre}`);
-              $('#nombre_especialidad').addClass('input-error');
-            }
-
-            if (errores_ajax.length > 0) {
-              mostrarAviso('⚠️ Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
-            } else {
-              $('#modalGuardar').modal('show');
-            }
-          },
-          error: function(xhr, status, error) {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
-          }
-        });
-      }
-
-      $('#formularioEspecialidad').on('submit', function(e) {
+    function bloquearNumeros(e) {
+      const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
+      if (teclasPermitidas.includes(e.key)) return;
+      if (e.key >= "0" && e.key <= "9") {
         e.preventDefault();
-        limpiarErrores();
-        let errores = [];
+      }
+    }
 
-        if ($('#nombre_especialidad').val().trim() === "") {
-          errores.push("Falta el Nombre de la especialidad.");
-          $('#nombre_especialidad').addClass('input-error');
-        }
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          verificarEspecialidadYMostrarModal();
+    function limpiarNumeros(e) {
+      e.target.value = e.target.value.replace(/[0-9]/g, "");
+    }
+
+    function verificarEspecialidadYMostrarModal() {
+      const nombre = $('#nombre_especialidad').val().trim();
+      const btnGuardar = $('#formularioEspecialidad button[type="submit"]');
+
+      const textoOriginal = btnGuardar.text();
+      btnGuardar.text('Verificando...').attr('disabled', true);
+
+      $.ajax({
+        url: '../../cfg/ajax/verificar_existencia_especialidad.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          nombre: nombre
+        },
+        success: function(response) {
+          let errores_ajax = [];
+          limpiarErrores();
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+
+          if (response.existe_nombre) {
+            errores_ajax.push(`⚠️ Ya existe una especialidad con el nombre: ${nombre}`);
+            $('#nombre_especialidad').addClass('input-error');
+          }
+
+          if (errores_ajax.length > 0) {
+            mostrarAviso('⚠️ Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
+          } else {
+            $('#modalGuardar').modal('show');
+          }
+        },
+        error: function(xhr, status, error) {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+          mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
         }
       });
+    }
 
-      $('#confirmarGuardar').on('click', function() {
-        $('#modalGuardar').modal('hide');
-        $('#formularioEspecialidad').off('submit').submit();
-      });
+    $('#formularioEspecialidad').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let errores = [];
 
-      const campos = [document.getElementById("nombre_especialidad")];
-      campos.forEach(campo => {
-        if (campo) {
-          campo.addEventListener("keydown", bloquearNumeros);
-          campo.addEventListener("input", limpiarNumeros);
-        }
-      });
+      if ($('#nombre_especialidad').val().trim() === "") {
+        errores.push("Falta el Nombre de la especialidad.");
+        $('#nombre_especialidad').addClass('input-error');
+      }
+      if (errores.length > 0) {
+        mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        verificarEspecialidadYMostrarModal();
+      }
     });
-  </script>
+
+    $('#confirmarGuardar').on('click', function() {
+      $('#modalGuardar').modal('hide');
+      $('#formularioEspecialidad').off('submit').submit();
+    });
+
+    const campos = [document.getElementById("nombre_especialidad")];
+    campos.forEach(campo => {
+      if (campo) {
+        campo.addEventListener("keydown", bloquearNumeros);
+        campo.addEventListener("input", limpiarNumeros);
+      }
+    });
+  });
+</script>

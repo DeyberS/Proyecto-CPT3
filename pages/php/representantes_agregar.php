@@ -7,28 +7,22 @@ verificarAcceso('Crear Representantes');
   <title>Representantes | Añadir</title>
 </head>
 
-<style>
-  .input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-
-  #avisoModal {
-    z-index: 999999 !important;
-  }
-
-  .nav-tabs>li>a {
-    pointer-events: none;
-    cursor: default;
-  }
-
-  .nav-tabs li.disabled-tab a {
-    color: #b2b2b2 !important;
-  }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    #avisoModal {
+      z-index: 999999 !important;
+    }
+
+    .nav-tabs>li>a {
+      pointer-events: none;
+      cursor: default;
+    }
+
+    .nav-tabs li.disabled-tab a {
+      color: #b2b2b2 !important;
+    }
+  </style>
+
   <section class="content-header">
     <h1>
       Añadir Representante
@@ -241,61 +235,61 @@ verificarAcceso('Crear Representantes');
       </div>
     </div>
   </section>
+
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson" id="avisoModalHeader">
+          <h4 class="modal-title" id="avisoModalLabel"><i class="fa fa-warning"></i> Aviso Importante</h4>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegresoLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h4 class="modal-title" id="modalConfirmarRegresoLabel"><i class="fa fa-sign-out"></i> Confirmación de Regreso</h4>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Regresar</button>
+          <a href="representantes_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalGuardarRepresentante" tabindex="-1" role="dialog" aria-labelledby="modalGuardarRepresentanteLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h4 class="modal-title" id="modalGuardarRepresentanteLabel"><i class="fa fa-save"></i>Confirmación de Guardado</h4>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea guardar la información del nuevo representante?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Regresar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <?php
 include('includes/footer.php');
 ?>
-
-<div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-labelledby="avisoModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson" id="avisoModalHeader">
-        <h4 class="modal-title" id="avisoModalLabel"><i class="fa fa-warning"></i> Aviso Importante</h4>
-      </div>
-      <div class="modal-body">
-        <p id="avisoTexto"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegresoLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h4 class="modal-title" id="modalConfirmarRegresoLabel"><i class="fa fa-sign-out"></i> Confirmación de Regreso</h4>
-      </div>
-      <div class="modal-body">
-        <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Regresar</button>
-        <a href="representantes_listado.php" class="btn btn-danger">Abandonar Formulario</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalGuardarRepresentante" tabindex="-1" role="dialog" aria-labelledby="modalGuardarRepresentanteLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-green">
-        <h4 class="modal-title" id="modalGuardarRepresentanteLabel"><i class="fa fa-save"></i>Confirmación de Guardado</h4>
-      </div>
-      <div class="modal-body">
-        <p>¿Está seguro de que desea guardar la información del nuevo representante?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Regresar</button>
-        <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
   window.mostrarAviso = function(mensaje) {

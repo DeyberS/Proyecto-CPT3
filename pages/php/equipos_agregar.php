@@ -7,13 +7,13 @@ verificarAcceso('Gestionar Equipos');
   <title>Inventario de Equipos | Añadir</title>
 </head>
 
-<style>
-  .form-group {
-    margin-bottom: 15px;
-  }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    .form-group {
+      margin-bottom: 15px;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Añadir Nuevo Equipo</h1>
     <ol class="breadcrumb">
@@ -34,7 +34,7 @@ verificarAcceso('Gestionar Equipos');
             <div class="tab-pane active" id="tab_1" style="margin-bottom: 5%;">
               <div class="box-body">
                 <form id="formularioEquipo" action="../../cfg/agregar/agregar_equipo.php" method="POST" novalidate>
-                  
+
                   <!-- FILA 1: DESCRIPCIÓN Y CATEGORÍA -->
                   <div class="row">
                     <div class="col-sm-8 form-group" id="group_descripcion">
@@ -170,88 +170,88 @@ verificarAcceso('Gestionar Equipos');
       </div>
     </div>
   </div>
-
-  <?php include('includes/footer.php'); ?>
-
-  <script>
-    $(document).ready(function() {
-      function mostrarAviso(mensaje) {
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
-      }
-
-      function limpiarErrores() {
-        $('.form-group').removeClass('has-error');
-        $('.input-error').removeClass('input-error');
-      }
-
-      // Validar el formulario
-      $('#formularioEquipo').on('submit', function(e) {
-        e.preventDefault();
-        limpiarErrores();
-
-        let errores = [];
-
-        if ($('#descripcion').val().trim() === '') {
-          errores.push('La descripción del equipo es obligatoria.');
-          $('#descripcion').addClass('input-error');
-        }
-
-        if ($('#id_categoria').val() === '') {
-          errores.push('Debe seleccionar una categoría.');
-          $('#id_categoria').addClass('input-error');
-        }
-
-        if ($('#cantidad').val() === '' || parseInt($('#cantidad').val()) <= 0) {
-          errores.push('La cantidad debe ser un número mayor a 0.');
-          $('#cantidad').addClass('input-error');
-        }
-
-        if ($('#ubicacion').val().trim() === '') {
-          errores.push('La ubicación es obligatoria.');
-          $('#ubicacion').addClass('input-error');
-        }
-
-        if ($('#estado').val() === '') {
-          errores.push('Debe seleccionar el estado inicial del equipo.');
-          $('#estado').addClass('input-error');
-        }
-
-        if ($('#fecha_registro').val() === '') {
-          errores.push('La fecha de registro es obligatoria.');
-          $('#fecha_registro').addClass('input-error');
-        }
-
-        if (errores.length > 0) {
-          mostrarAviso('<b>Por favor corrija los siguientes errores:</b><br><ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          $('#modalGuardar').modal('show');
-        }
-      });
-
-      // Confirmar guardado
-      $('#confirmarGuardar').on('click', function() {
-        $('#modalGuardar').modal('hide');
-        $('#formularioEquipo').off('submit').submit();
-      });
-
-      // Limpiar errores al escribir
-      $('.form-control').on('input change', function() {
-        if ($(this).val() !== '') {
-          $(this).removeClass('input-error');
-        }
-      });
-
-      // Validar que la cantidad sea positiva
-      $('#cantidad').on('input', function() {
-        let valor = this.value;
-        valor = valor.replace(/[^0-9]/g, '');
-        if (valor === '' || parseInt(valor) < 1) {
-          this.value = 1;
-        } else {
-          this.value = valor;
-        }
-      });
-    });
-  </script>
 </div>
+
+<?php include('includes/footer.php'); ?>
+
+<script>
+  $(document).ready(function() {
+    function mostrarAviso(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
+
+    function limpiarErrores() {
+      $('.form-group').removeClass('has-error');
+      $('.input-error').removeClass('input-error');
+    }
+
+    // Validar el formulario
+    $('#formularioEquipo').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+
+      let errores = [];
+
+      if ($('#descripcion').val().trim() === '') {
+        errores.push('La descripción del equipo es obligatoria.');
+        $('#descripcion').addClass('input-error');
+      }
+
+      if ($('#id_categoria').val() === '') {
+        errores.push('Debe seleccionar una categoría.');
+        $('#id_categoria').addClass('input-error');
+      }
+
+      if ($('#cantidad').val() === '' || parseInt($('#cantidad').val()) <= 0) {
+        errores.push('La cantidad debe ser un número mayor a 0.');
+        $('#cantidad').addClass('input-error');
+      }
+
+      if ($('#ubicacion').val().trim() === '') {
+        errores.push('La ubicación es obligatoria.');
+        $('#ubicacion').addClass('input-error');
+      }
+
+      if ($('#estado').val() === '') {
+        errores.push('Debe seleccionar el estado inicial del equipo.');
+        $('#estado').addClass('input-error');
+      }
+
+      if ($('#fecha_registro').val() === '') {
+        errores.push('La fecha de registro es obligatoria.');
+        $('#fecha_registro').addClass('input-error');
+      }
+
+      if (errores.length > 0) {
+        mostrarAviso('<b>Por favor corrija los siguientes errores:</b><br><ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        $('#modalGuardar').modal('show');
+      }
+    });
+
+    // Confirmar guardado
+    $('#confirmarGuardar').on('click', function() {
+      $('#modalGuardar').modal('hide');
+      $('#formularioEquipo').off('submit').submit();
+    });
+
+    // Limpiar errores al escribir
+    $('.form-control').on('input change', function() {
+      if ($(this).val() !== '') {
+        $(this).removeClass('input-error');
+      }
+    });
+
+    // Validar que la cantidad sea positiva
+    $('#cantidad').on('input', function() {
+      let valor = this.value;
+      valor = valor.replace(/[^0-9]/g, '');
+      if (valor === '' || parseInt(valor) < 1) {
+        this.value = 1;
+      } else {
+        this.value = valor;
+      }
+    });
+  });
+</script>

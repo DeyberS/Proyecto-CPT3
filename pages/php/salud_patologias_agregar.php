@@ -193,24 +193,25 @@ verificarAcceso('Crear Patologias');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    $(document).ready(function() {
-      function mostrarAviso(mensaje) {
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
-      }
+<script>
+  $(document).ready(function() {
+    function mostrarAviso(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
 
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
-        $('.form-group').removeClass('input-error');
-        $('#btn_modal_sintomas').removeClass('btn-error-sombreado');
-      }
+    function limpiarErrores() {
+      $('input, select').removeClass('input-error');
+      $('.form-group').removeClass('input-error');
+      $('#btn_modal_sintomas').removeClass('btn-error-sombreado');
+    }
 
-      function agregarFilaSintoma(idSeleccionado = "") {
-        let htmlSintoma = `
+    function agregarFilaSintoma(idSeleccionado = "") {
+      let htmlSintoma = `
             <div class="row fila-sintoma" style="margin-bottom: 10px;">
                 <div class="col-sm-10">
                     <div class="input-group">
@@ -232,196 +233,196 @@ verificarAcceso('Crear Patologias');
                 </div>
             </div>`;
 
-        $('#contenedor_filas_sintomas').append(htmlSintoma);
-        if (idSeleccionado) {
-          $('#contenedor_filas_sintomas .fila-sintoma:last .select-sintoma').val(idSeleccionado);
+      $('#contenedor_filas_sintomas').append(htmlSintoma);
+      if (idSeleccionado) {
+        $('#contenedor_filas_sintomas .fila-sintoma:last .select-sintoma').val(idSeleccionado);
+      }
+    }
+
+    $('#btn_modal_sintomas').tooltip();
+    $('#btn_modal_sintomas').click(function() {
+      if ($('#contenedor_filas_sintomas').children().length === 0) agregarFilaSintoma();
+    });
+
+    $('#add_fila_sintoma').click(() => agregarFilaSintoma());
+    $(document).on('click', '.btn-remove-sintoma', function() {
+      $(this).closest('.fila-sintoma').remove();
+    });
+
+    $('#guardar_sintomas_listo').click(function() {
+      let ids = [];
+      let nombres = [];
+      $('.select-sintoma').each(function() {
+        let val = $(this).val();
+        if (val && val !== "") {
+          ids.push(val);
+          nombres.push($(this).find('option:selected').text().trim());
         }
+      });
+
+      $('#sintomas_ids').val(ids.join(','));
+      let textoTooltip = ids.length > 0 ? nombres.join(', ') : 'Ningún síntoma seleccionado';
+      $('#btn_modal_sintomas').attr('data-original-title', textoTooltip).tooltip('fixTitle');
+    });
+
+    $(document).on('change', '.select-sintoma', function() {
+      let selectActual = $(this);
+      let valorActual = selectActual.val();
+      if (valorActual === "") return;
+
+      let conteo = 0;
+      $('.select-sintoma').each(function() {
+        if ($(this).val() === valorActual) conteo++;
+      });
+      if (conteo > 1) {
+        mostrarAviso("⚠️ <b>Atención:</b> Este síntoma ya ha sido seleccionado. Por favor, elija uno diferente.");
+        selectActual.val("");
+      }
+    });
+
+    let selectDestinoTargetSintoma = null;
+    $(document).on('click', '.btn-search-sintoma', function() {
+      selectDestinoTargetSintoma = $(this).closest('.input-group').find('.select-sintoma');
+      $('#modalBuscarSintoma').modal('show');
+      $('#inputBuscarSintoma').val('').trigger('keyup');
+    });
+
+    $('#inputBuscarSintoma').on('keyup', function() {
+      let texto = $(this).val().toLowerCase();
+      let html = '';
+      let opciones = $('.select-sintoma:first option').not('[value=""]');
+      opciones.each(function() {
+        let nombre = $(this).text();
+        if (nombre.toLowerCase().includes(texto)) {
+          html += `<a href="#" class="list-group-item list-group-item-action seleccionar-sintoma" data-id="${$(this).val()}">${nombre}</a>`;
+        }
+      });
+      $('#listaResultadosSintoma').html(html);
+    });
+
+    $(document).on('click', '.seleccionar-sintoma', function(e) {
+      e.preventDefault();
+      selectDestinoTargetSintoma.val($(this).data('id')).trigger('change');
+      $('#modalBuscarSintoma').modal('hide');
+    });
+
+    $('#btnGuardarSintomaBD').click(function() {
+      let nombreSintoma = $('#nombre_nuevo_sintoma').val().trim();
+
+      if (nombreSintoma === "") {
+        mostrarAviso("⚠️ El nombre del síntoma no puede estar vacío.");
+        return;
       }
 
-      $('#btn_modal_sintomas').tooltip();
-      $('#btn_modal_sintomas').click(function() {
-        if ($('#contenedor_filas_sintomas').children().length === 0) agregarFilaSintoma();
-      });
+      let btn = $(this);
+      btn.prop('disabled', true).text('Guardando...');
 
-      $('#add_fila_sintoma').click(() => agregarFilaSintoma());
-      $(document).on('click', '.btn-remove-sintoma', function() {
-        $(this).closest('.fila-sintoma').remove();
-      });
+      $.ajax({
+        url: '../../cfg/ajax/ajax_guardar_sintoma.php',
+        type: 'POST',
+        data: {
+          nombre_sintoma: nombreSintoma
+        },
+        dataType: 'json',
+        success: function(response) {
+          if (response.success) {
+            let nuevoId = response.id;
+            let nuevoNombre = response.nombre;
+            let nuevaOpcion = `<option value="${nuevoId}">${nuevoNombre}</option>`;
 
-      $('#guardar_sintomas_listo').click(function() {
-        let ids = [];
-        let nombres = [];
-        $('.select-sintoma').each(function() {
-          let val = $(this).val();
-          if (val && val !== "") {
-            ids.push(val);
-            nombres.push($(this).find('option:selected').text().trim());
+            $('.select-sintoma').append(nuevaOpcion);
+            $('#nombre_nuevo_sintoma').val('');
+            $('#modalNuevoSintoma').modal('hide');
+
+          } else {
+            mostrarAviso("⚠️ Error al guardar: " + (response.error || "Desconocido"));
           }
-        });
-
-        $('#sintomas_ids').val(ids.join(','));
-        let textoTooltip = ids.length > 0 ? nombres.join(', ') : 'Ningún síntoma seleccionado';
-        $('#btn_modal_sintomas').attr('data-original-title', textoTooltip).tooltip('fixTitle');
-      });
-
-      $(document).on('change', '.select-sintoma', function() {
-        let selectActual = $(this);
-        let valorActual = selectActual.val();
-        if (valorActual === "") return;
-
-        let conteo = 0;
-        $('.select-sintoma').each(function() {
-          if ($(this).val() === valorActual) conteo++;
-        });
-        if (conteo > 1) {
-          mostrarAviso("⚠️ <b>Atención:</b> Este síntoma ya ha sido seleccionado. Por favor, elija uno diferente.");
-          selectActual.val("");
+        },
+        error: function() {
+          mostrarAviso("⚠️ Error de conexión al intentar guardar el síntoma.");
+        },
+        complete: function() {
+          btn.prop('disabled', false).text('Guardar y Seleccionar');
         }
-      });
-
-      let selectDestinoTargetSintoma = null;
-      $(document).on('click', '.btn-search-sintoma', function() {
-        selectDestinoTargetSintoma = $(this).closest('.input-group').find('.select-sintoma');
-        $('#modalBuscarSintoma').modal('show');
-        $('#inputBuscarSintoma').val('').trigger('keyup');
-      });
-
-      $('#inputBuscarSintoma').on('keyup', function() {
-        let texto = $(this).val().toLowerCase();
-        let html = '';
-        let opciones = $('.select-sintoma:first option').not('[value=""]');
-        opciones.each(function() {
-          let nombre = $(this).text();
-          if (nombre.toLowerCase().includes(texto)) {
-            html += `<a href="#" class="list-group-item list-group-item-action seleccionar-sintoma" data-id="${$(this).val()}">${nombre}</a>`;
-          }
-        });
-        $('#listaResultadosSintoma').html(html);
-      });
-
-      $(document).on('click', '.seleccionar-sintoma', function(e) {
-        e.preventDefault();
-        selectDestinoTargetSintoma.val($(this).data('id')).trigger('change');
-        $('#modalBuscarSintoma').modal('hide');
-      });
-
-      $('#btnGuardarSintomaBD').click(function() {
-        let nombreSintoma = $('#nombre_nuevo_sintoma').val().trim();
-
-        if (nombreSintoma === "") {
-          mostrarAviso("⚠️ El nombre del síntoma no puede estar vacío.");
-          return;
-        }
-
-        let btn = $(this);
-        btn.prop('disabled', true).text('Guardando...');
-
-        $.ajax({
-          url: '../../cfg/ajax/ajax_guardar_sintoma.php',
-          type: 'POST',
-          data: {
-            nombre_sintoma: nombreSintoma
-          },
-          dataType: 'json',
-          success: function(response) {
-            if (response.success) {
-              let nuevoId = response.id;
-              let nuevoNombre = response.nombre;
-              let nuevaOpcion = `<option value="${nuevoId}">${nuevoNombre}</option>`;
-
-              $('.select-sintoma').append(nuevaOpcion);
-              $('#nombre_nuevo_sintoma').val('');
-              $('#modalNuevoSintoma').modal('hide');
-
-            } else {
-              mostrarAviso("⚠️ Error al guardar: " + (response.error || "Desconocido"));
-            }
-          },
-          error: function() {
-            mostrarAviso("⚠️ Error de conexión al intentar guardar el síntoma.");
-          },
-          complete: function() {
-            btn.prop('disabled', false).text('Guardar y Seleccionar');
-          }
-        });
-      });
-
-      $('#modalNuevoSintoma').on('hidden.bs.modal', function() {
-        $('#nombre_nuevo_sintoma').val('');
-      });
-
-      $('#formularioPatologia').on('submit', function(e) {
-        e.preventDefault();
-        limpiarErrores();
-        let errores = [];
-
-        if ($('#nombre_patologia').val().trim() === "") {
-          errores.push("Falta el Nombre de la patología.");
-          $('#nombre_patologia').addClass('input-error');
-        }
-        if ($('#codigo_cie').val().trim() === "") {
-          errores.push("Falta el Código CIE-10.");
-          $('#codigo_cie').addClass('input-error');
-        }
-        if ($('#enfermedad_contagiosa').val() === "") {
-          errores.push("Seleccione si es contagiosa.");
-          $('#enfermedad_contagiosa').addClass('input-error');
-        }
-        if ($('#sintomas_ids').val().trim() === "") {
-          errores.push("Debe seleccionar al menos un Síntoma.");
-          $('#btn_modal_sintomas').addClass('btn-error-sombreado');
-        }
-
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores:<ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          const nombre = $('#nombre_patologia').val().trim();
-          const codigo = $('#codigo_cie').val().trim();
-          const idActual = $('input[name="Id"]').length > 0 ? $('input[name="Id"]').val() : 0;
-          const btnGuardar = $('#btnGuardar');
-          const textoOriginal = btnGuardar.text();
-
-          btnGuardar.text('Verificando...').attr('disabled', true);
-
-          $.ajax({
-            url: '../../cfg/ajax/verificar_existencia_patologia.php',
-            method: 'POST',
-            dataType: 'json',
-            data: {
-              nombre: nombre,
-              codigo: codigo,
-              id_actual: idActual
-            },
-            success: function(response) {
-              let errores_ajax = [];
-              btnGuardar.text(textoOriginal).attr('disabled', false);
-
-              if (response.existe_nombre) {
-                errores_ajax.push(`⚠️ Ya existe una patología con el nombre: ${nombre}`);
-                $('#nombre_patologia').addClass('input-error');
-              }
-              if (response.existe_codigo) {
-                errores_ajax.push(`⚠️ Ya existe una patología con el Código CIE-10: ${codigo}`);
-                $('#codigo_cie').addClass('input-error');
-              }
-
-              if (errores_ajax.length > 0) {
-                mostrarAviso('⚠️ Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
-              } else {
-                $('#modalGuardar').modal('show');
-              }
-            },
-            error: function(xhr, status, error) {
-              btnGuardar.text(textoOriginal).attr('disabled', false);
-              mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
-            }
-          });
-        }
-      });
-
-      $('#confirmarGuardar').on('click', function() {
-        $('#modalGuardar').modal('hide');
-        $('#formularioPatologia').off('submit').submit();
       });
     });
-  </script>
+
+    $('#modalNuevoSintoma').on('hidden.bs.modal', function() {
+      $('#nombre_nuevo_sintoma').val('');
+    });
+
+    $('#formularioPatologia').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let errores = [];
+
+      if ($('#nombre_patologia').val().trim() === "") {
+        errores.push("Falta el Nombre de la patología.");
+        $('#nombre_patologia').addClass('input-error');
+      }
+      if ($('#codigo_cie').val().trim() === "") {
+        errores.push("Falta el Código CIE-10.");
+        $('#codigo_cie').addClass('input-error');
+      }
+      if ($('#enfermedad_contagiosa').val() === "") {
+        errores.push("Seleccione si es contagiosa.");
+        $('#enfermedad_contagiosa').addClass('input-error');
+      }
+      if ($('#sintomas_ids').val().trim() === "") {
+        errores.push("Debe seleccionar al menos un Síntoma.");
+        $('#btn_modal_sintomas').addClass('btn-error-sombreado');
+      }
+
+      if (errores.length > 0) {
+        mostrarAviso('⚠️ Errores:<ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        const nombre = $('#nombre_patologia').val().trim();
+        const codigo = $('#codigo_cie').val().trim();
+        const idActual = $('input[name="Id"]').length > 0 ? $('input[name="Id"]').val() : 0;
+        const btnGuardar = $('#btnGuardar');
+        const textoOriginal = btnGuardar.text();
+
+        btnGuardar.text('Verificando...').attr('disabled', true);
+
+        $.ajax({
+          url: '../../cfg/ajax/verificar_existencia_patologia.php',
+          method: 'POST',
+          dataType: 'json',
+          data: {
+            nombre: nombre,
+            codigo: codigo,
+            id_actual: idActual
+          },
+          success: function(response) {
+            let errores_ajax = [];
+            btnGuardar.text(textoOriginal).attr('disabled', false);
+
+            if (response.existe_nombre) {
+              errores_ajax.push(`⚠️ Ya existe una patología con el nombre: ${nombre}`);
+              $('#nombre_patologia').addClass('input-error');
+            }
+            if (response.existe_codigo) {
+              errores_ajax.push(`⚠️ Ya existe una patología con el Código CIE-10: ${codigo}`);
+              $('#codigo_cie').addClass('input-error');
+            }
+
+            if (errores_ajax.length > 0) {
+              mostrarAviso('⚠️ Error de Duplicidad:' + '<ul><li>' + errores_ajax.join('</li><li>') + '</li></ul>');
+            } else {
+              $('#modalGuardar').modal('show');
+            }
+          },
+          error: function(xhr, status, error) {
+            btnGuardar.text(textoOriginal).attr('disabled', false);
+            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
+          }
+        });
+      }
+    });
+
+    $('#confirmarGuardar').on('click', function() {
+      $('#modalGuardar').modal('hide');
+      $('#formularioPatologia').off('submit').submit();
+    });
+  });
+</script>

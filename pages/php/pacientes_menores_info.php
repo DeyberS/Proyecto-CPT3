@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+  session_start();
 }
 
 include("../../cfg/conexion.php");
@@ -8,27 +8,28 @@ include("../../cfg/conexion.php");
 $id_url = isset($_GET['Id']) ? (int)$_GET['Id'] : 0;
 
 if ($id_url <= 0) {
-    $_SESSION['mensaje_user_error'] = "Debe seleccionar una consulta válida para ver su información.";
-    header("Location: pacientes_menores_listado.php");
-    exit;
+  $_SESSION['mensaje_user_error'] = "Debe seleccionar una consulta válida para ver su información.";
+  header("Location: pacientes_menores_listado.php");
+  exit;
 }
 
 if (!isset($_SESSION["permisos"]) || !is_array($_SESSION["permisos"])) {
-    $_SESSION["permisos"] = [];
+  $_SESSION["permisos"] = [];
 }
 
 if (!function_exists('safeJson')) {
-    function safeJson($data) {
-        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($json === false) {
-            if (defined('JSON_INVALID_UTF8_SUBSTITUTE')) {
-                $json = json_encode($data, JSON_INVALID_UTF8_SUBSTITUTE);
-            } else {
-                $json = json_encode($data);
-            }
-        }
-        return $json === false ? '[]' : $json;
+  function safeJson($data)
+  {
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($json === false) {
+      if (defined('JSON_INVALID_UTF8_SUBSTITUTE')) {
+        $json = json_encode($data, JSON_INVALID_UTF8_SUBSTITUTE);
+      } else {
+        $json = json_encode($data);
+      }
     }
+    return $json === false ? '[]' : $json;
+  }
 }
 
 $puedeEditarAntecedentes = in_array('Editar Antecedentes', $_SESSION["permisos"], true);
@@ -42,197 +43,459 @@ verificarAcceso('Ver Pacientes Menores de Edad');
   <title>Pacientes Menores | Información</title>
 </head>
 
-<style>
+<div class="content-wrapper">
+  <style>
     :root {
       --primary-dark: #2c3e50;
       --medical-blue: #007bff;
       --bg-gray: #f4f7f9;
     }
 
-    body, html {
+    body,
+    html {
       background-color: var(--bg-gray) !important;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden !important;
     }
 
-    .content-wrapper { background-color: var(--bg-gray) !important; height: 100vh; overflow: hidden; }
-    .content-custome { padding: 15px; height: calc(100vh - 50px); }
+    .content-wrapper {
+      background-color: var(--bg-gray) !important;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .content-custome {
+      padding: 15px;
+      height: calc(100vh - 50px);
+    }
 
     .profile-card {
-      width: 98%; max-width: none; margin: 0 auto 30px auto;
-      background: #fff; border-radius: 0px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); border: none;
+      width: 98%;
+      max-width: none;
+      margin: 0 auto 30px auto;
+      background: #fff;
+      border-radius: 0px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border: none;
       height: calc(120vh - 140px);
-      display: flex; flex-direction: column; overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     .profile-header {
       background: linear-gradient(135deg, var(--primary-dark) 0%, #34495e 100%);
-      color: white; padding: 25px 40px;
-      border-bottom: 5px solid var(--medical-blue); flex-shrink: 0;
+      color: white;
+      padding: 25px 40px;
+      border-bottom: 5px solid var(--medical-blue);
+      flex-shrink: 0;
     }
 
     .paciente-avatar {
-      width: 100px; height: 100px; background: transparent;
-      border-radius: 0px; padding: 0; box-shadow: none; object-fit: contain;
+      width: 100px;
+      height: 100px;
+      background: transparent;
+      border-radius: 0px;
+      padding: 0;
+      box-shadow: none;
+      object-fit: contain;
     }
 
-    .label-custom { font-size: 11px; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 2px; }
-    .label-light { color: #bdc3c7; }
-    .label-dark  { color: #95a5a6; }
+    .label-custom {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 2px;
+    }
 
-    .val-custom { font-size: 16px; font-weight: 600; }
-    .val-light  { color: #fff; }
-    .val-dark   { color: var(--primary-dark); }
+    .label-light {
+      color: #bdc3c7;
+    }
+
+    .label-dark {
+      color: #95a5a6;
+    }
+
+    .val-custom {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .val-light {
+      color: #fff;
+    }
+
+    .val-dark {
+      color: var(--primary-dark);
+    }
 
     .section-title {
-      color: var(--medical-blue); font-weight: 700; border-bottom: 1px solid #eee;
-      padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; font-size: 14px;
+      color: var(--medical-blue);
+      font-weight: 700;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      font-size: 14px;
     }
 
     .data-item-card {
-      background: #f8f9fa; padding: 15px; border-radius: 0px;
-      border-left: 4px solid var(--medical-blue); margin-bottom: 15px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 0px;
+      border-left: 4px solid var(--medical-blue);
+      margin-bottom: 15px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
     }
 
     .nav-tabs-custom {
-      background: transparent; box-shadow: none;
-      display: flex; flex-direction: column; flex: 1; overflow: hidden;
+      background: transparent;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
     }
 
-    .nav-tabs { border-bottom: 2px solid #eee; background: #f8f9fa; padding: 0 20px; flex-shrink: 0; }
-    .nav-tabs>li>a {
-      border-radius: 0 !important; color: #7f8c8d !important; font-weight: 600;
-      text-transform: uppercase; font-size: 13px; padding: 15px 20px;
-      border: none !important; transition: all 0.3s ease;
+    .nav-tabs {
+      border-bottom: 2px solid #eee;
+      background: #f8f9fa;
+      padding: 0 20px;
+      flex-shrink: 0;
     }
-    .nav-tabs>li>a:hover { background-color: #e9ecef; color: var(--primary-dark) !important; }
+
+    .nav-tabs>li>a {
+      border-radius: 0 !important;
+      color: #7f8c8d !important;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 13px;
+      padding: 15px 20px;
+      border: none !important;
+      transition: all 0.3s ease;
+    }
+
+    .nav-tabs>li>a:hover {
+      background-color: #e9ecef;
+      color: var(--primary-dark) !important;
+    }
+
     .nav-tabs>li.active>a,
     .nav-tabs>li.active>a:focus,
     .nav-tabs>li.active>a:hover {
-      color: var(--medical-blue) !important; background-color: #fff !important;
+      color: var(--medical-blue) !important;
+      background-color: #fff !important;
       border-bottom: 3px solid var(--medical-blue) !important;
     }
 
     .tab-content-container {
-      padding: 30px; flex: 1; overflow-y: auto; overflow-x: hidden;
+      padding: 30px;
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
-    .badge-alergia, .badge-patologia, .badge-representante, .badge-discapacidad {
-      color: white; padding: 6px 12px; border-radius: 0px; font-size: 12px;
-      display: inline-block; margin-right: 5px; margin-bottom: 5px; font-weight: 600;
+    .badge-alergia,
+    .badge-patologia,
+    .badge-representante,
+    .badge-discapacidad {
+      color: white;
+      padding: 6px 12px;
+      border-radius: 0px;
+      font-size: 12px;
+      display: inline-block;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      font-weight: 600;
     }
-    .badge-alergia       { background-color: #e67e22; }
-    .badge-patologia     { background-color: #e74c3c; }
-    .badge-representante { background-color: #0d9488; }
-    .badge-discapacidad  { background-color: #8e44ad; }
+
+    .badge-alergia {
+      background-color: #e67e22;
+    }
+
+    .badge-patologia {
+      background-color: #e74c3c;
+    }
+
+    .badge-representante {
+      background-color: #0d9488;
+    }
+
+    .badge-discapacidad {
+      background-color: #8e44ad;
+    }
 
     .badge-estado {
-      padding: 4px 10px; border-radius: 0px; font-weight: 600; font-size: 11px; text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 0px;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
     }
 
     .btn-nav-container {
-      display: flex; justify-content: flex-end; gap: 15px;
-      margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
     }
 
-    .timeline { position: relative; padding-left: 20px; border-left: 2px solid #eee; }
-    .timeline-item { margin-bottom: 20px; position: relative; }
+    .timeline {
+      position: relative;
+      padding-left: 20px;
+      border-left: 2px solid #eee;
+    }
+
+    .timeline-item {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
     .timeline-item::before {
-      content: ''; position: absolute; left: -27px; top: 0px;
-      width: 12px; height: 12px; background-color: var(--medical-blue);
-      border-radius: 50%; border: 2px solid #fff;
+      content: '';
+      position: absolute;
+      left: -27px;
+      top: 0px;
+      width: 12px;
+      height: 12px;
+      background-color: var(--medical-blue);
+      border-radius: 50%;
+      border: 2px solid #fff;
     }
 
     .badge-container {
-      position: relative; max-height: 96px; overflow: hidden;
-      transition: max-height .25s ease; padding-bottom: 0; margin-bottom: 4px;
+      position: relative;
+      max-height: 96px;
+      overflow: hidden;
+      transition: max-height .25s ease;
+      padding-bottom: 0;
+      margin-bottom: 4px;
     }
+
     .badge-container.has-overflow:not(.expanded)::after {
-      content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 34px;
-      background: linear-gradient(to bottom, rgba(255,255,255,0), #f8f9fa 90%); pointer-events: none;
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 34px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #f8f9fa 90%);
+      pointer-events: none;
     }
+
     .badge-container.bg-orange.has-overflow:not(.expanded)::after {
-      background: linear-gradient(to bottom, rgba(253,242,233,0), #fdf2e9 90%);
+      background: linear-gradient(to bottom, rgba(253, 242, 233, 0), #fdf2e9 90%);
     }
+
     .badge-container.bg-red.has-overflow:not(.expanded)::after {
-      background: linear-gradient(to bottom, rgba(253,237,236,0), #fdedec 90%);
+      background: linear-gradient(to bottom, rgba(253, 237, 236, 0), #fdedec 90%);
     }
 
     .ver-mas-btn {
-      background: none; border: none; color: var(--medical-blue);
-      font-weight: 700; font-size: 12px; padding: 4px 0; cursor: pointer;
-      text-decoration: underline; display: inline-block; margin-top: 2px;
+      background: none;
+      border: none;
+      color: var(--medical-blue);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 4px 0;
+      cursor: pointer;
+      text-decoration: underline;
+      display: inline-block;
+      margin-top: 2px;
     }
-    .ver-mas-btn:hover { color: var(--primary-dark); }
-    .ver-mas-btn i { margin-right: 4px; }
 
-    .modal-items-scroll { max-height: none; overflow-y: visible; }
-    .modal-items-scroll.scrollable { max-height: 280px; overflow-y: auto; padding-right: 8px; }
-    .modal-items-scroll.scrollable::-webkit-scrollbar { width: 6px; }
-    .modal-items-scroll.scrollable::-webkit-scrollbar-thumb {
-      background: #cbd5e1; border-radius: 3px;
+    .ver-mas-btn:hover {
+      color: var(--primary-dark);
     }
-    .modal-items-scroll.scrollable::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .ver-mas-btn i {
+      margin-right: 4px;
+    }
+
+    .modal-items-scroll {
+      max-height: none;
+      overflow-y: visible;
+    }
+
+    .modal-items-scroll.scrollable {
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .modal-items-scroll.scrollable::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .modal-items-scroll.scrollable::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    .modal-items-scroll.scrollable::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
 
     .chip-item {
-      display: block; padding: 10px 14px; margin-bottom: 8px;
-      background: #f8fafc; border-left: 3px solid var(--medical-blue);
-      font-size: 13px; color: var(--primary-dark); font-weight: 600;
-      border-radius: 0; word-wrap: break-word;
+      display: block;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      background: #f8fafc;
+      border-left: 3px solid var(--medical-blue);
+      font-size: 13px;
+      color: var(--primary-dark);
+      font-weight: 600;
+      border-radius: 0;
+      word-wrap: break-word;
     }
-    .chip-item:last-child { margin-bottom: 0; }
-    .chip-item.chip-orange { border-left-color: #e67e22; background: #fdf2e9; }
-    .chip-item.chip-red    { border-left-color: #e74c3c; background: #fdedec; }
-    .chip-item.chip-purple { border-left-color: #8e44ad; background: #f3e8f7; }
-    .chip-item.chip-teal   { border-left-color: #0d9488; background: #e6f7f5; }
-    .chip-item small { font-weight: 500; color: #7f8c8d; margin-left: 6px; }
-    .chip-item strong { display: block; margin-bottom: 2px; }
 
-    .antecedente-list { list-style: none; padding-left: 0; margin-bottom: 0; }
-    .antecedente-list li {
-      padding: 6px 0; border-bottom: 1px dashed #eee;
-      font-size: 14px; color: var(--primary-dark);
+    .chip-item:last-child {
+      margin-bottom: 0;
     }
-    .antecedente-list li:last-child { border-bottom: none; }
-    .antecedente-list li i { color: #27ae60; margin-right: 8px; }
+
+    .chip-item.chip-orange {
+      border-left-color: #e67e22;
+      background: #fdf2e9;
+    }
+
+    .chip-item.chip-red {
+      border-left-color: #e74c3c;
+      background: #fdedec;
+    }
+
+    .chip-item.chip-purple {
+      border-left-color: #8e44ad;
+      background: #f3e8f7;
+    }
+
+    .chip-item.chip-teal {
+      border-left-color: #0d9488;
+      background: #e6f7f5;
+    }
+
+    .chip-item small {
+      font-weight: 500;
+      color: #7f8c8d;
+      margin-left: 6px;
+    }
+
+    .chip-item strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .antecedente-list {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 0;
+    }
+
+    .antecedente-list li {
+      padding: 6px 0;
+      border-bottom: 1px dashed #eee;
+      font-size: 14px;
+      color: var(--primary-dark);
+    }
+
+    .antecedente-list li:last-child {
+      border-bottom: none;
+    }
+
+    .antecedente-list li i {
+      color: #27ae60;
+      margin-right: 8px;
+    }
 
     .btn-antecedente-tipo {
-      min-height: 70px; text-align: left; padding: 10px 15px;
-      font-weight: 600; font-size: 13px; white-space: normal;
-      line-height: 1.2; border-radius: 0;
-    }
-    .btn-antecedente-tipo .badge {
-      background: #fff; color: #3c8dbc; font-weight: bold;
+      min-height: 70px;
+      text-align: left;
+      padding: 10px 15px;
+      font-weight: 600;
+      font-size: 13px;
+      white-space: normal;
+      line-height: 1.2;
+      border-radius: 0;
     }
 
-    .chk-antecedente-wrap { padding: 6px 10px; border-bottom: 1px solid #eee; }
-    .chk-antecedente-wrap:hover { background: #f9f9f9; }
-    .chk-antecedente-wrap label { font-weight: normal; cursor: pointer; margin: 0; }
+    .btn-antecedente-tipo .badge {
+      background: #fff;
+      color: #3c8dbc;
+      font-weight: bold;
+    }
+
+    .chk-antecedente-wrap {
+      padding: 6px 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .chk-antecedente-wrap:hover {
+      background: #f9f9f9;
+    }
+
+    .chk-antecedente-wrap label {
+      font-weight: normal;
+      cursor: pointer;
+      margin: 0;
+    }
 
     /* Modales responsivos con scroll interno */
-    .modal-dialog { max-height: calc(100vh - 60px); margin: 30px auto; }
-    .modal-content { max-height: calc(100vh - 60px); display: flex; flex-direction: column; }
-    .modal-header, .modal-footer { flex-shrink: 0; }
-    .modal-body { overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; }
+    .modal-dialog {
+      max-height: calc(100vh - 60px);
+      margin: 30px auto;
+    }
+
+    .modal-content {
+      max-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header,
+    .modal-footer {
+      flex-shrink: 0;
+    }
+
+    .modal-body {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1 1 auto;
+    }
 
     @media (max-width: 768px) {
-      body, html { overflow: auto !important; }
-      .profile-card { height: auto; margin-bottom: 20px; }
-      .tab-content-container { overflow-y: visible; }
-      .modal-dialog { max-height: calc(100vh - 20px); margin: 10px auto; }
-      .modal-content { max-height: calc(100vh - 20px); }
-    }
-</style>
 
-  <div class="content-wrapper">
-    <section class="content content-custome">
-      <div class="row w-100 m-0" style="width: 100%; margin: 0;">
-        <div class="col-xs-12" style="padding: 0;">
-          <div class="profile-card">
-            <?php
-            $sql = "SELECT 
+      body,
+      html {
+        overflow: auto !important;
+      }
+
+      .profile-card {
+        height: auto;
+        margin-bottom: 20px;
+      }
+
+      .tab-content-container {
+        overflow-y: visible;
+      }
+
+      .modal-dialog {
+        max-height: calc(100vh - 20px);
+        margin: 10px auto;
+      }
+
+      .modal-content {
+        max-height: calc(100vh - 20px);
+      }
+    }
+  </style>
+  <section class="content content-custome">
+    <div class="row w-100 m-0" style="width: 100%; margin: 0;">
+      <div class="col-xs-12" style="padding: 0;">
+        <div class="profile-card">
+          <?php
+          $sql = "SELECT 
             p.id, p.email, p.nombre, p.apellido, p.tipo_cedula, p.cedula, p.fecha_nacimiento, p.genero,
             dp.etnia, dp.analfabeta, dp.tipo_etnia, dp.nivel_instruccion, dp.mision, dp.años_aprobados,
             hm.grupo_sanguineo,
@@ -268,63 +531,63 @@ verificarAcceso('Ver Pacientes Menores de Edad');
             LEFT JOIN pais paisdir ON direst.Id_Pais = paisdir.Id_Pais
             WHERE p.id = $id_url";
 
-            $resultado = $conexion->query($sql);
-            if (!$resultado) {
-                die("<pre style='color:red;padding:20px;background:#fff;'>Error SQL: " . htmlspecialchars($conexion->error) . "</pre>");
-            }
+          $resultado = $conexion->query($sql);
+          if (!$resultado) {
+            die("<pre style='color:red;padding:20px;background:#fff;'>Error SQL: " . htmlspecialchars($conexion->error) . "</pre>");
+          }
 
-            $row = $resultado->fetch_assoc();
-            if (!$row) {
-                die("<div style='padding:20px;color:red;background:#fff;'>Paciente menor no encontrado (Id=" . htmlspecialchars($id_url) . ").</div>");
-            }
+          $row = $resultado->fetch_assoc();
+          if (!$row) {
+            die("<div style='padding:20px;color:red;background:#fff;'>Paciente menor no encontrado (Id=" . htmlspecialchars($id_url) . ").</div>");
+          }
 
-            $id_paciente = $row['id'];
+          $id_paciente = $row['id'];
 
-            $nombre_pais_nac      = (!empty(trim($row['nombre_pais_nac'])))      ? $row['nombre_pais_nac']      : 'No registrado';
-            $nombre_estado_nac    = (!empty(trim($row['nombre_estado_nac'])))    ? $row['nombre_estado_nac']    : 'No registrado';
-            $nombre_municipio_nac = (!empty(trim($row['nombre_municipio_nac']))) ? $row['nombre_municipio_nac'] : 'No registrado';
+          $nombre_pais_nac      = (!empty(trim($row['nombre_pais_nac'])))      ? $row['nombre_pais_nac']      : 'No registrado';
+          $nombre_estado_nac    = (!empty(trim($row['nombre_estado_nac'])))    ? $row['nombre_estado_nac']    : 'No registrado';
+          $nombre_municipio_nac = (!empty(trim($row['nombre_municipio_nac']))) ? $row['nombre_municipio_nac'] : 'No registrado';
 
-            $nombre_pais_dir      = (!empty(trim($row['nombre_pais_dir'])))      ? $row['nombre_pais_dir']      : 'No registrado';
-            $nombre_estado_dir    = (!empty(trim($row['nombre_estado_dir'])))    ? $row['nombre_estado_dir']    : 'No registrado';
-            $nombre_municipio_dir = (!empty(trim($row['nombre_municipio_dir']))) ? $row['nombre_municipio_dir'] : 'No registrado';
-            $nombre_sector_dir    = (!empty(trim($row['nombre_sector_dir'])))    ? $row['nombre_sector_dir']    : 'No registrado';
+          $nombre_pais_dir      = (!empty(trim($row['nombre_pais_dir'])))      ? $row['nombre_pais_dir']      : 'No registrado';
+          $nombre_estado_dir    = (!empty(trim($row['nombre_estado_dir'])))    ? $row['nombre_estado_dir']    : 'No registrado';
+          $nombre_municipio_dir = (!empty(trim($row['nombre_municipio_dir']))) ? $row['nombre_municipio_dir'] : 'No registrado';
+          $nombre_sector_dir    = (!empty(trim($row['nombre_sector_dir'])))    ? $row['nombre_sector_dir']    : 'No registrado';
 
-            $lista_patologias = $row['lista_patologias'] ?? '';
-            $lista_alergias   = $row['lista_alergias']   ?? '';
+          $lista_patologias = $row['lista_patologias'] ?? '';
+          $lista_alergias   = $row['lista_alergias']   ?? '';
 
-            $nombre_menor      = $row['nombre']            ?? '';
-            $apellido_menor    = $row['apellido']          ?? '';
-            $tipo_cedula_menor = $row['tipo_cedula']       ?? 'PN';
-            $documento_menor   = $row['cedula']            ?? '';
-            $fecha_nac_orig    = $row['fecha_nacimiento']  ?? '';
-            $fecha_nac_display = (!empty($fecha_nac_orig) && $fecha_nac_orig != '0000-00-00')
-                                ? date('d/m/Y', strtotime($fecha_nac_orig))
-                                : 'No registrado';
+          $nombre_menor      = $row['nombre']            ?? '';
+          $apellido_menor    = $row['apellido']          ?? '';
+          $tipo_cedula_menor = $row['tipo_cedula']       ?? 'PN';
+          $documento_menor   = $row['cedula']            ?? '';
+          $fecha_nac_orig    = $row['fecha_nacimiento']  ?? '';
+          $fecha_nac_display = (!empty($fecha_nac_orig) && $fecha_nac_orig != '0000-00-00')
+            ? date('d/m/Y', strtotime($fecha_nac_orig))
+            : 'No registrado';
 
-            $genero_menor            = (!empty(trim($row['genero']))) ? $row['genero'] : 'No registrado';
-            $etnia_menor             = $row['etnia']             ?? '';
-            $etnia_tipo_menor        = $row['tipo_etnia']        ?? '';
-            $analfabeta_menor        = $row['analfabeta']        ?? '';
-            $instruccion_menor       = $row['nivel_instruccion'] ?? '';
-            $mision_menor            = $row['mision']            ?? '';
-            $años_aprobados_menor    = $row['años_aprobados']    ?? '';
+          $genero_menor            = (!empty(trim($row['genero']))) ? $row['genero'] : 'No registrado';
+          $etnia_menor             = $row['etnia']             ?? '';
+          $etnia_tipo_menor        = $row['tipo_etnia']        ?? '';
+          $analfabeta_menor        = $row['analfabeta']        ?? '';
+          $instruccion_menor       = $row['nivel_instruccion'] ?? '';
+          $mision_menor            = $row['mision']            ?? '';
+          $años_aprobados_menor    = $row['años_aprobados']    ?? '';
 
-            $avenida_calle     = (!empty(trim($row['avenida_calle']))) ? $row['avenida_calle'] : 'Ninguna';
-            $referencia        = (!empty(trim($row['referencia'])))    ? $row['referencia']    : 'Ninguno';
-            $tiempo_residencia = $row['tiempo_residencia'] ?? '';
-            $tiempo            = $row['tiempo']            ?? '';
-            $residencia_str    = (!empty(trim($tiempo_residencia))) ? $tiempo_residencia . ' ' . $tiempo : 'No registrado';
+          $avenida_calle     = (!empty(trim($row['avenida_calle']))) ? $row['avenida_calle'] : 'Ninguna';
+          $referencia        = (!empty(trim($row['referencia'])))    ? $row['referencia']    : 'Ninguno';
+          $tiempo_residencia = $row['tiempo_residencia'] ?? '';
+          $tiempo            = $row['tiempo']            ?? '';
+          $residencia_str    = (!empty(trim($tiempo_residencia))) ? $tiempo_residencia . ' ' . $tiempo : 'No registrado';
 
-            $grupo_sanguineo = (!empty(trim($row['grupo_sanguineo']))) ? $row['grupo_sanguineo'] : 'No registrado';
+          $grupo_sanguineo = (!empty(trim($row['grupo_sanguineo']))) ? $row['grupo_sanguineo'] : 'No registrado';
 
-            $edad_menor_calc = 0;
-            if (!empty($fecha_nac_orig) && $fecha_nac_orig != '0000-00-00') {
-                $fn_calc = new DateTime($fecha_nac_orig);
-                $edad_menor_calc = (new DateTime())->diff($fn_calc)->y;
-            }
+          $edad_menor_calc = 0;
+          if (!empty($fecha_nac_orig) && $fecha_nac_orig != '0000-00-00') {
+            $fn_calc = new DateTime($fecha_nac_orig);
+            $edad_menor_calc = (new DateTime())->diff($fn_calc)->y;
+          }
 
-            $representantes_array = [];
-            $sql_reps = "SELECT 
+          $representantes_array = [];
+          $sql_reps = "SELECT 
                             hr.Id AS id_relacion, hr.Id_representante,
                             hr.tipo_representante, hr.parentesco,
                             r.nombre AS nombre_rep, r.apellido AS apellido_rep,
@@ -341,238 +604,237 @@ verificarAcceso('Ver Pacientes Menores de Edad');
                          INNER JOIN persona r ON hr.Id_representante = r.id
                          WHERE hr.Id_paciente = $id_paciente AND hr.estatus = '1'
                          ORDER BY hr.tipo_representante ASC, hr.Id ASC";
-            $res_reps = $conexion->query($sql_reps);
-            if ($res_reps && $res_reps->num_rows > 0) {
-                while ($r = $res_reps->fetch_assoc()) {
-                    $representantes_array[] = $r;
-                }
+          $res_reps = $conexion->query($sql_reps);
+          if ($res_reps && $res_reps->num_rows > 0) {
+            while ($r = $res_reps->fetch_assoc()) {
+              $representantes_array[] = $r;
             }
+          }
 
-            $discapacidades_array = [];
-            $sql_discs = "SELECT hd.Id, hd.Id_discapacidad, hd.fecha_registro, d.nombre_discapacidad
+          $discapacidades_array = [];
+          $sql_discs = "SELECT hd.Id, hd.Id_discapacidad, hd.fecha_registro, d.nombre_discapacidad
                           FROM historial_discapacidades hd
                           INNER JOIN discapacidades d ON hd.Id_discapacidad = d.Id_discapacidad
                           INNER JOIN historial_medico hm ON hd.Id_Historial = hm.id_historial
                           WHERE hm.Id_persona = $id_paciente AND hd.estatus = '1'
                           ORDER BY hd.fecha_registro ASC, hd.Id ASC";
-            $res_discs = $conexion->query($sql_discs);
-            if ($res_discs && $res_discs->num_rows > 0) {
-                while ($d = $res_discs->fetch_assoc()) {
-                    $discapacidades_array[] = $d;
-                }
+          $res_discs = $conexion->query($sql_discs);
+          if ($res_discs && $res_discs->num_rows > 0) {
+            while ($d = $res_discs->fetch_assoc()) {
+              $discapacidades_array[] = $d;
             }
+          }
 
-            $tiene_discapacidad = count($discapacidades_array) > 0;
-            ?>
+          $tiene_discapacidad = count($discapacidades_array) > 0;
+          ?>
 
-            <input type="hidden" name="Id" value="<?= $row['id']; ?>">
+          <input type="hidden" name="Id" value="<?= $row['id']; ?>">
 
-            <div class="profile-header">
-              <div class="row w-100">
-                <div class="col-sm-2 text-center">
-                  <img src="../../recursos/imagenes/iconos/Paciente_icon1.png" class="paciente-avatar" alt="Foto Paciente" onerror="this.src='../../recursos/imagenes/iconos/usuario2.png';">
-                </div>
-                <div class="col-sm-10">
-                  <h2 style="margin: 5px 0; font-weight: 800;"><?php echo htmlspecialchars($nombre_menor); ?> <?php echo htmlspecialchars($apellido_menor); ?></h2>
-                  <p style="font-size: 18px; opacity: 0.9;"><i class="fa fa-id-card-o"></i> Documento: <?php echo htmlspecialchars($tipo_cedula_menor); ?>-<?php echo htmlspecialchars($documento_menor); ?></p>
-                  <div class="row" style="margin-top: 15px;">
-                    <div class="col-xs-4">
-                      <span class="label-custom label-light">F. Nacimiento</span>
-                      <span class="val-custom val-light"><?php echo $fecha_nac_display; ?></span>
-                    </div>
-                    <div class="col-xs-4">
-                      <span class="label-custom label-light">Sexo</span>
-                      <span class="val-custom val-light"><?php echo htmlspecialchars($genero_menor); ?></span>
-                    </div>
-                    <div class="col-xs-4">
-                      <span class="label-custom label-light">Grupo Sanguíneo</span>
-                      <span class="val-custom val-light"><?php echo htmlspecialchars($grupo_sanguineo); ?></span>
-                    </div>
+          <div class="profile-header">
+            <div class="row w-100">
+              <div class="col-sm-2 text-center">
+                <img src="../../recursos/imagenes/iconos/Paciente_icon1.png" class="paciente-avatar" alt="Foto Paciente" onerror="this.src='../../recursos/imagenes/iconos/usuario2.png';">
+              </div>
+              <div class="col-sm-10">
+                <h2 style="margin: 5px 0; font-weight: 800;"><?php echo htmlspecialchars($nombre_menor); ?> <?php echo htmlspecialchars($apellido_menor); ?></h2>
+                <p style="font-size: 18px; opacity: 0.9;"><i class="fa fa-id-card-o"></i> Documento: <?php echo htmlspecialchars($tipo_cedula_menor); ?>-<?php echo htmlspecialchars($documento_menor); ?></p>
+                <div class="row" style="margin-top: 15px;">
+                  <div class="col-xs-4">
+                    <span class="label-custom label-light">F. Nacimiento</span>
+                    <span class="val-custom val-light"><?php echo $fecha_nac_display; ?></span>
+                  </div>
+                  <div class="col-xs-4">
+                    <span class="label-custom label-light">Sexo</span>
+                    <span class="val-custom val-light"><?php echo htmlspecialchars($genero_menor); ?></span>
+                  </div>
+                  <div class="col-xs-4">
+                    <span class="label-custom label-light">Grupo Sanguíneo</span>
+                    <span class="val-custom val-light"><?php echo htmlspecialchars($grupo_sanguineo); ?></span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div class="nav-tabs-custom">
-              <ul class="nav nav-tabs">
-                <li class="active" data-tab-name="info"><a href="#info" data-toggle="tab"><i class="fa fa-user"></i> Datos Personales</a></li>
-                <li data-tab-name="ocupacion_estudios"><a href="#ocupacion_estudios" data-toggle="tab"><i class="fa fa-graduation-cap"></i> Ocupación y Estudios</a></li>
-                <li data-tab-name="salud"><a href="#salud" data-toggle="tab"><i class="fa fa-heartbeat"></i> Salud</a></li>
-                <li data-tab-name="salud_otros"><a href="#salud_otros" data-toggle="tab"><i class="fa fa-file-text-o"></i> Historial Médico</a></li>
-              </ul>
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active" data-tab-name="info"><a href="#info" data-toggle="tab"><i class="fa fa-user"></i> Datos Personales</a></li>
+              <li data-tab-name="ocupacion_estudios"><a href="#ocupacion_estudios" data-toggle="tab"><i class="fa fa-graduation-cap"></i> Ocupación y Estudios</a></li>
+              <li data-tab-name="salud"><a href="#salud" data-toggle="tab"><i class="fa fa-heartbeat"></i> Salud</a></li>
+              <li data-tab-name="salud_otros"><a href="#salud_otros" data-toggle="tab"><i class="fa fa-file-text-o"></i> Historial Médico</a></li>
+            </ul>
 
-              <div class="tab-content tab-content-container">
+            <div class="tab-content tab-content-container">
 
-                <div class="tab-pane active" id="info">
-                  <div class="row">
-                    <div class="col-md-5">
-                      <h4 class="section-title"><i class="fa fa-users"></i> Info del Representante</h4>
-                      <div class="data-item-card" style="border-left-color: #0d9488;">
-                        <span class="label-custom label-dark">
-                          <i class="fa fa-users" style="color:#0d9488;"></i>
-                          Representante(s) Legal(es)
-                          <span class="badge bg-teal" style="font-size:10px;"><?php echo count($representantes_array); ?></span>
-                        </span>
-                        <div style="margin-top: 8px;" id="cont-representantes"></div>
+              <div class="tab-pane active" id="info">
+                <div class="row">
+                  <div class="col-md-5">
+                    <h4 class="section-title"><i class="fa fa-users"></i> Info del Representante</h4>
+                    <div class="data-item-card" style="border-left-color: #0d9488;">
+                      <span class="label-custom label-dark">
+                        <i class="fa fa-users" style="color:#0d9488;"></i>
+                        Representante(s) Legal(es)
+                        <span class="badge bg-teal" style="font-size:10px;"><?php echo count($representantes_array); ?></span>
+                      </span>
+                      <div style="margin-top: 8px;" id="cont-representantes"></div>
+                    </div>
+
+                    <h4 class="section-title" style="margin-top: 30px;"><i class="fa fa-map-marker"></i> Lugar de Nacimiento</h4>
+                    <div class="data-item-card" style="border-left-color: #95a5a6;">
+                      <p style="margin: 0; color: var(--primary-dark); font-weight: 500;">
+                        <?php echo htmlspecialchars($nombre_pais_nac); ?>,
+                        <?php echo htmlspecialchars($nombre_estado_nac); ?>,
+                        <?php echo htmlspecialchars($nombre_municipio_nac); ?>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="col-md-7">
+                    <h4 class="section-title"><i class="fa fa-address-card-o"></i> Datos Sociales y Residencia</h4>
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <div class="data-item-card">
+                          <span class="label-custom label-dark">Etnia</span>
+                          <span class="val-custom val-dark">
+                            <span class="badge bg-<?php echo ($etnia_menor == 'Si' ? 'green' : 'red'); ?> badge-estado"><?php echo !empty(trim($etnia_menor)) ? htmlspecialchars($etnia_menor) : 'No'; ?></span>
+                            <?php if ($etnia_menor == 'Si') echo '(' . htmlspecialchars($etnia_tipo_menor) . ')'; ?>
+                          </span>
+                        </div>
                       </div>
-
-                      <h4 class="section-title" style="margin-top: 30px;"><i class="fa fa-map-marker"></i> Lugar de Nacimiento</h4>
-                      <div class="data-item-card" style="border-left-color: #95a5a6;">
-                        <p style="margin: 0; color: var(--primary-dark); font-weight: 500;">
-                          <?php echo htmlspecialchars($nombre_pais_nac); ?>,
-                          <?php echo htmlspecialchars($nombre_estado_nac); ?>,
-                          <?php echo htmlspecialchars($nombre_municipio_nac); ?>
-                        </p>
+                      <div class="col-sm-6">
+                        <div class="data-item-card">
+                          <span class="label-custom label-dark">¿Analfabeta?</span>
+                          <span class="val-custom val-dark"><span class="badge bg-<?php echo ($analfabeta_menor == 'Si' ? 'green' : 'red'); ?> badge-estado"><?php echo !empty(trim($analfabeta_menor)) ? htmlspecialchars($analfabeta_menor) : 'No'; ?></span></span>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="col-md-7">
-                      <h4 class="section-title"><i class="fa fa-address-card-o"></i> Datos Sociales y Residencia</h4>
+                    <div class="data-item-card" style="border-left-color: #27ae60; margin-top: 10px;">
+                      <span class="label-custom label-dark">Dirección de Residencia</span>
+                      <div class="row" style="margin-top: 10px;">
+                        <div class="col-sm-6">
+                          <p style="margin-bottom: 5px;"><strong>País:</strong> <?php echo htmlspecialchars($nombre_pais_dir); ?></p>
+                          <p style="margin-bottom: 5px;"><strong>Estado:</strong> <?php echo htmlspecialchars($nombre_estado_dir); ?></p>
+                          <p style="margin-bottom: 5px;"><strong>Municipio:</strong> <?php echo htmlspecialchars($nombre_municipio_dir); ?></p>
+                          <p style="margin-bottom: 5px;"><strong>Sector:</strong> <?php echo htmlspecialchars($nombre_sector_dir); ?></p>
+                        </div>
+                        <div class="col-sm-6">
+                          <p style="margin-bottom: 5px;"><strong>Av/Calle:</strong> <?php echo htmlspecialchars($avenida_calle); ?></p>
+                          <p style="margin-bottom: 5px;"><strong>Ref:</strong> <?php echo htmlspecialchars($referencia); ?></p>
+                          <p style="margin-bottom: 5px;"><strong>T. Resid.:</strong> <?php echo htmlspecialchars($residencia_str); ?></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="btn-nav-container">
+                  <button type="button" class="btn btn-second" data-toggle="modal" data-target="#modalConfirmarRegreso"><i class="fa fa-arrow-left"></i> Regresar al Menú</button>
+                  <button type="button" class="btn btn-primary next-tab" data-tab-actual="#info" data-tab-siguiente="ocupacion_estudios">Siguiente <i class="fa fa-arrow-right"></i></button>
+                </div>
+              </div>
+
+              <div class="tab-pane" id="ocupacion_estudios">
+                <div class="row">
+                  <div class="col-md-5">
+                    <h4 class="section-title"><i class="fa fa-briefcase"></i> Ámbito Académico</h4>
+                    <div class="data-item-card">
+                      <span class="label-custom label-dark">Nivel de Instrucción</span>
+                      <span class="val-custom val-dark">
+                        <?php
+                        $instruccion = trim($instruccion_menor);
+                        echo ($instruccion === 'sin_instruccion') ? 'Sin Instrucción' : (!empty($instruccion) ? htmlspecialchars($instruccion) : 'Ninguno');
+                        ?>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-7">
+                    <h4 class="section-title"><i class="fa fa-handshake-o"></i> Misiones Educativas</h4>
+                    <div class="data-item-card" style="border-left-color: #f1c40f;">
                       <div class="row">
-                        <div class="col-sm-6">
-                          <div class="data-item-card">
-                            <span class="label-custom label-dark">Etnia</span>
-                            <span class="val-custom val-dark">
-                              <span class="badge bg-<?php echo ($etnia_menor == 'Si' ? 'green' : 'red'); ?> badge-estado"><?php echo !empty(trim($etnia_menor)) ? htmlspecialchars($etnia_menor) : 'No'; ?></span>
-                              <?php if ($etnia_menor == 'Si') echo '(' . htmlspecialchars($etnia_tipo_menor) . ')'; ?>
-                            </span>
-                          </div>
+                        <div class="col-sm-4">
+                          <span class="label-custom label-dark">¿Participó?</span>
+                          <span class="val-custom val-dark"><span class="badge bg-<?php echo ($mision_menor ? 'green' : 'red'); ?> badge-estado"><?php echo (!empty(trim($mision_menor)) ? 'Si' : 'No'); ?></span></span>
                         </div>
-                        <div class="col-sm-6">
-                          <div class="data-item-card">
-                            <span class="label-custom label-dark">¿Analfabeta?</span>
-                            <span class="val-custom val-dark"><span class="badge bg-<?php echo ($analfabeta_menor == 'Si' ? 'green' : 'red'); ?> badge-estado"><?php echo !empty(trim($analfabeta_menor)) ? htmlspecialchars($analfabeta_menor) : 'No'; ?></span></span>
-                          </div>
+                        <div class="col-sm-4">
+                          <span class="label-custom label-dark">Nombre de Misión</span>
+                          <span class="val-custom val-dark"><?php echo !empty(trim($mision_menor)) ? htmlspecialchars($mision_menor) : 'N/A'; ?></span>
                         </div>
-                      </div>
-
-                      <div class="data-item-card" style="border-left-color: #27ae60; margin-top: 10px;">
-                        <span class="label-custom label-dark">Dirección de Residencia</span>
-                        <div class="row" style="margin-top: 10px;">
-                          <div class="col-sm-6">
-                            <p style="margin-bottom: 5px;"><strong>País:</strong> <?php echo htmlspecialchars($nombre_pais_dir); ?></p>
-                            <p style="margin-bottom: 5px;"><strong>Estado:</strong> <?php echo htmlspecialchars($nombre_estado_dir); ?></p>
-                            <p style="margin-bottom: 5px;"><strong>Municipio:</strong> <?php echo htmlspecialchars($nombre_municipio_dir); ?></p>
-                            <p style="margin-bottom: 5px;"><strong>Sector:</strong> <?php echo htmlspecialchars($nombre_sector_dir); ?></p>
-                          </div>
-                          <div class="col-sm-6">
-                            <p style="margin-bottom: 5px;"><strong>Av/Calle:</strong> <?php echo htmlspecialchars($avenida_calle); ?></p>
-                            <p style="margin-bottom: 5px;"><strong>Ref:</strong> <?php echo htmlspecialchars($referencia); ?></p>
-                            <p style="margin-bottom: 5px;"><strong>T. Resid.:</strong> <?php echo htmlspecialchars($residencia_str); ?></p>
-                          </div>
+                        <div class="col-sm-4">
+                          <span class="label-custom label-dark">Años Aprobados</span>
+                          <span class="val-custom val-dark"><?php echo !empty(trim($años_aprobados_menor)) ? htmlspecialchars($años_aprobados_menor) : '0'; ?></span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="btn-nav-container">
-                    <button type="button" class="btn btn-second" data-toggle="modal" data-target="#modalConfirmarRegreso"><i class="fa fa-arrow-left"></i> Regresar al Menú</button>
-                    <button type="button" class="btn btn-primary next-tab" data-tab-actual="#info" data-tab-siguiente="ocupacion_estudios">Siguiente <i class="fa fa-arrow-right"></i></button>
+                </div>
+                <div class="btn-nav-container">
+                  <button type="button" class="btn btn-second prev-tab" data-tab-anterior="info"><i class="fa fa-arrow-left"></i> Atrás</button>
+                  <button type="button" class="btn btn-primary next-tab" data-tab-actual="#ocupacion_estudios" data-tab-siguiente="salud">Siguiente <i class="fa fa-arrow-right"></i></button>
+                </div>
+              </div>
+
+              <div class="tab-pane" id="salud">
+                <div class="row">
+                  <div class="col-md-5">
+                    <h4 class="section-title"><i class="fa fa-exclamation-triangle"></i> Alertas de Salud</h4>
+                    <div class="data-item-card" style="border-left-color: #e67e22; background-color: #fdf2e9;">
+                      <span class="label-custom" style="color: #d35400;">Alergias Conocidas</span>
+                      <div style="margin-top: 8px;" id="cont-alergias"></div>
+                    </div>
+
+                    <div class="data-item-card" style="border-left-color: #e74c3c; background-color: #fdedec;">
+                      <span class="label-custom" style="color: #c0392b;">Patologías Crónicas</span>
+                      <div style="margin-top: 8px;" id="cont-patologias"></div>
+                    </div>
+
+                    <div class="data-item-card" style="border-left-color: #8e44ad;">
+                      <span class="label-custom label-dark">
+                        <i class="fa fa-wheelchair" style="color:#8e44ad;"></i>
+                        Discapacidades
+                        <?php if ($tiene_discapacidad) : ?>
+                          <span class="badge bg-purple" style="font-size:10px;"><?php echo count($discapacidades_array); ?></span>
+                        <?php endif; ?>
+                      </span>
+                      <div style="margin-top: 8px;" id="cont-discapacidades"></div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-7">
+                    <h4 class="section-title"><i class="fa fa-calendar-check-o"></i> Consultas Recientes</h4>
+                    <div class="timeline" id="historial-consultas-container">
+                      <div class="alert alert-info" style="border-radius: 0px;"><i class="fa fa-spinner fa-spin"></i> Cargando las consultas...</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="btn-nav-container">
+                  <button type="button" class="btn btn-second prev-tab" data-tab-actual="#salud" data-tab-anterior="ocupacion_estudios"><i class="fa fa-arrow-left"></i> Atrás</button>
+                  <button type="button" class="btn btn-primary next-tab" data-tab-actual="#salud" data-tab-siguiente="salud_otros">Siguiente <i class="fa fa-arrow-right"></i></button>
+                </div>
+              </div>
+
+              <!-- ══════════ TAB HISTORIAL: ahora con botones por categoría ══════════ -->
+              <div class="tab-pane" id="salud_otros">
+                <h4 class="section-title"><i class="fa fa-file-medical-alt"></i> Antecedentes Médicos</h4>
+                <p class="text-muted" style="margin-bottom:15px;">
+                  Seleccione una categoría para ver el detalle registrado<?= $puedeEditarAntecedentes ? ' o editarlo' : '' ?>.
+                </p>
+                <div id="contenedor-antecedentes">
+                  <div class="alert alert-info" style="border-radius: 0px;">
+                    <i class="fa fa-spinner fa-spin"></i> Cargando antecedentes médicos...
                   </div>
                 </div>
 
-                <div class="tab-pane" id="ocupacion_estudios">
-                  <div class="row">
-                    <div class="col-md-5">
-                      <h4 class="section-title"><i class="fa fa-briefcase"></i> Ámbito Académico</h4>
-                      <div class="data-item-card">
-                        <span class="label-custom label-dark">Nivel de Instrucción</span>
-                        <span class="val-custom val-dark">
-                          <?php
-                          $instruccion = trim($instruccion_menor);
-                          echo ($instruccion === 'sin_instruccion') ? 'Sin Instrucción' : (!empty($instruccion) ? htmlspecialchars($instruccion) : 'Ninguno');
-                          ?>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="col-md-7">
-                      <h4 class="section-title"><i class="fa fa-handshake-o"></i> Misiones Educativas</h4>
-                      <div class="data-item-card" style="border-left-color: #f1c40f;">
-                        <div class="row">
-                          <div class="col-sm-4">
-                            <span class="label-custom label-dark">¿Participó?</span>
-                            <span class="val-custom val-dark"><span class="badge bg-<?php echo ($mision_menor ? 'green' : 'red'); ?> badge-estado"><?php echo (!empty(trim($mision_menor)) ? 'Si' : 'No'); ?></span></span>
-                          </div>
-                          <div class="col-sm-4">
-                            <span class="label-custom label-dark">Nombre de Misión</span>
-                            <span class="val-custom val-dark"><?php echo !empty(trim($mision_menor)) ? htmlspecialchars($mision_menor) : 'N/A'; ?></span>
-                          </div>
-                          <div class="col-sm-4">
-                            <span class="label-custom label-dark">Años Aprobados</span>
-                            <span class="val-custom val-dark"><?php echo !empty(trim($años_aprobados_menor)) ? htmlspecialchars($años_aprobados_menor) : '0'; ?></span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="btn-nav-container">
-                    <button type="button" class="btn btn-second prev-tab" data-tab-anterior="info"><i class="fa fa-arrow-left"></i> Atrás</button>
-                    <button type="button" class="btn btn-primary next-tab" data-tab-actual="#ocupacion_estudios" data-tab-siguiente="salud">Siguiente <i class="fa fa-arrow-right"></i></button>
-                  </div>
-                </div>
-
-                <div class="tab-pane" id="salud">
-                  <div class="row">
-                    <div class="col-md-5">
-                      <h4 class="section-title"><i class="fa fa-exclamation-triangle"></i> Alertas de Salud</h4>
-                      <div class="data-item-card" style="border-left-color: #e67e22; background-color: #fdf2e9;">
-                        <span class="label-custom" style="color: #d35400;">Alergias Conocidas</span>
-                        <div style="margin-top: 8px;" id="cont-alergias"></div>
-                      </div>
-
-                      <div class="data-item-card" style="border-left-color: #e74c3c; background-color: #fdedec;">
-                        <span class="label-custom" style="color: #c0392b;">Patologías Crónicas</span>
-                        <div style="margin-top: 8px;" id="cont-patologias"></div>
-                      </div>
-
-                      <div class="data-item-card" style="border-left-color: #8e44ad;">
-                        <span class="label-custom label-dark">
-                          <i class="fa fa-wheelchair" style="color:#8e44ad;"></i>
-                          Discapacidades
-                          <?php if ($tiene_discapacidad): ?>
-                            <span class="badge bg-purple" style="font-size:10px;"><?php echo count($discapacidades_array); ?></span>
-                          <?php endif; ?>
-                        </span>
-                        <div style="margin-top: 8px;" id="cont-discapacidades"></div>
-                      </div>
-                    </div>
-
-                    <div class="col-md-7">
-                      <h4 class="section-title"><i class="fa fa-calendar-check-o"></i> Consultas Recientes</h4>
-                      <div class="timeline" id="historial-consultas-container">
-                        <div class="alert alert-info" style="border-radius: 0px;"><i class="fa fa-spinner fa-spin"></i> Cargando las consultas...</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="btn-nav-container">
-                    <button type="button" class="btn btn-second prev-tab" data-tab-actual="#salud" data-tab-anterior="ocupacion_estudios"><i class="fa fa-arrow-left"></i> Atrás</button>
-                    <button type="button" class="btn btn-primary next-tab" data-tab-actual="#salud" data-tab-siguiente="salud_otros">Siguiente <i class="fa fa-arrow-right"></i></button>
-                  </div>
-                </div>
-
-                <!-- ══════════ TAB HISTORIAL: ahora con botones por categoría ══════════ -->
-                <div class="tab-pane" id="salud_otros">
-                  <h4 class="section-title"><i class="fa fa-file-medical-alt"></i> Antecedentes Médicos</h4>
-                  <p class="text-muted" style="margin-bottom:15px;">
-                    Seleccione una categoría para ver el detalle registrado<?= $puedeEditarAntecedentes ? ' o editarlo' : '' ?>.
-                  </p>
-                  <div id="contenedor-antecedentes">
-                    <div class="alert alert-info" style="border-radius: 0px;">
-                      <i class="fa fa-spinner fa-spin"></i> Cargando antecedentes médicos...
-                    </div>
-                  </div>
-
-                  <div class="btn-nav-container">
-                    <button class="btn btn-second prev-tab" data-tab-actual="#salud_otros" data-tab-anterior="salud"><i class="fa fa-arrow-left"></i> Atrás</button>
-                  </div>
+                <div class="btn-nav-container">
+                  <button class="btn btn-second prev-tab" data-tab-actual="#salud_otros" data-tab-anterior="salud"><i class="fa fa-arrow-left"></i> Atrás</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 
   <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegresoLabel">
     <div class="modal-dialog" role="document">
@@ -608,10 +870,7 @@ verificarAcceso('Ver Pacientes Menores de Edad');
   </div>
 
   <!-- ══════════ MODAL DUAL: VER / EDITAR ANTECEDENTE ══════════ -->
-  <div class="modal fade" id="modalVerAntecedente" tabindex="-1" role="dialog"
-       data-mode="view"
-       data-puede-editar="<?= $puedeEditarAntecedentes ? '1' : '0' ?>"
-       data-key="">
+  <div class="modal fade" id="modalVerAntecedente" tabindex="-1" role="dialog" data-mode="view" data-puede-editar="<?= $puedeEditarAntecedentes ? '1' : '0' ?>" data-key="">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content" style="border-radius:0;">
         <div class="modal-header bg-info">
@@ -619,13 +878,12 @@ verificarAcceso('Ver Pacientes Menores de Edad');
             <i class="fa fa-file-text-o"></i> Antecedentes
           </h4>
         </div>
-        <div class="modal-body" id="cuerpo-modal-antecedente"
-             style="max-height:60vh; overflow-y:auto;">
+        <div class="modal-body" id="cuerpo-modal-antecedente" style="max-height:60vh; overflow-y:auto;">
         </div>
         <div class="modal-footer" style="background:#f8f9fa;">
           <div class="footer-view">
             <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-            <?php if ($puedeEditarAntecedentes): ?>
+            <?php if ($puedeEditarAntecedentes) : ?>
               <button type="button" class="btn btn-primary" id="btn-pasar-a-editar">
                 <i class="fa fa-pencil"></i> Editar
               </button>
@@ -641,8 +899,9 @@ verificarAcceso('Ver Pacientes Menores de Edad');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
 <script>
   /* ════════════════════════════════════════════════════════════════
@@ -698,29 +957,36 @@ verificarAcceso('Ver Pacientes Menores de Edad');
      BADGE GROUPS
      ════════════════════════════════════════════════════════════════ */
   function renderBadgeGroup(opts) {
-      const { containerId, items = [], emptyText = 'Ninguno registrado',
-              emptyColor = '#999', maxVisible = 3, title = 'Detalle',
-              colorClass = '', badgeClass = '' } = opts;
+    const {
+      containerId,
+      items = [],
+      emptyText = 'Ninguno registrado',
+      emptyColor = '#999',
+      maxVisible = 3,
+      title = 'Detalle',
+      colorClass = '',
+      badgeClass = ''
+    } = opts;
 
-      const $container = $('#' + containerId);
-      $container.empty();
+    const $container = $('#' + containerId);
+    $container.empty();
 
-      if (!items.length) {
-          $container.html(`<span class="val-custom" style="color:${emptyColor};">${emptyText}</span>`);
-          return;
-      }
+    if (!items.length) {
+      $container.html(`<span class="val-custom" style="color:${emptyColor};">${emptyText}</span>`);
+      return;
+    }
 
-      const visibles = items.slice(0, maxVisible);
-      let html = '<div class="badge-container ' +
-                 (items.length > maxVisible ? 'has-overflow' : '') +
-                 '" id="badge-wrap-' + containerId + '">';
-      visibles.forEach(it => {
-          html += it.html || `<span class="${badgeClass}">${it.label}</span>`;
-      });
-      html += '</div>';
+    const visibles = items.slice(0, maxVisible);
+    let html = '<div class="badge-container ' +
+      (items.length > maxVisible ? 'has-overflow' : '') +
+      '" id="badge-wrap-' + containerId + '">';
+    visibles.forEach(it => {
+      html += it.html || `<span class="${badgeClass}">${it.label}</span>`;
+    });
+    html += '</div>';
 
-      if (items.length > maxVisible) {
-          html += `
+    if (items.length > maxVisible) {
+      html += `
               <button type="button" class="ver-mas-btn"
                       data-toggle="modal" data-target="#modalItems-${containerId}">
                   <i class="fa fa-plus-circle"></i> Ver más (${items.length})
@@ -743,12 +1009,12 @@ verificarAcceso('Ver Pacientes Menores de Edad');
                   </div>
                 </div>
               </div>`;
-      }
-      $container.html(html);
+    }
+    $container.html(html);
   }
 
   const PUEDE_EDITAR_ANTECEDENTES = <?php echo $puedeEditarAntecedentes ? 'true' : 'false'; ?>;
-  const PUEDE_VER_CONSULTAS      = <?php echo $puedeVerConsultas      ? 'true' : 'false'; ?>;
+  const PUEDE_VER_CONSULTAS = <?php echo $puedeVerConsultas      ? 'true' : 'false'; ?>;
 
   /* ════════════════════════════════════════════════════════════════
      INIT
@@ -757,88 +1023,92 @@ verificarAcceso('Ver Pacientes Menores de Edad');
     const cedulaPaciente = "<?php echo htmlspecialchars($documento_menor, ENT_QUOTES); ?>";
     window.datosActuales = {};
 
-    const reps = <?= safeJson(array_map(function($rep){
-        $tel = (!empty(trim($rep['telefono_rep'])))
-            ? $rep['prefijo_rep'] . '-' . $rep['telefono_rep'] : '';
-        $ced = $rep['tipo_cedula_rep'] . '-' . $rep['cedula_rep'];
-        $tipo = $rep['tipo_representante'] ?? 'Legal';
-        $parentesco = !empty(trim($rep['parentesco'])) ? trim($rep['parentesco']) : '';
+    const reps = <?= safeJson(array_map(function ($rep) {
+                    $tel = (!empty(trim($rep['telefono_rep'])))
+                      ? $rep['prefijo_rep'] . '-' . $rep['telefono_rep'] : '';
+                    $ced = $rep['tipo_cedula_rep'] . '-' . $rep['cedula_rep'];
+                    $tipo = $rep['tipo_representante'] ?? 'Legal';
+                    $parentesco = !empty(trim($rep['parentesco'])) ? trim($rep['parentesco']) : '';
 
-        $htmlVista = '<span class="badge-representante">' 
-                   . htmlspecialchars($rep['nombre_rep'] . ' ' . $rep['apellido_rep']) 
-                   . '</span>';
+                    $htmlVista = '<span class="badge-representante">'
+                      . htmlspecialchars($rep['nombre_rep'] . ' ' . $rep['apellido_rep'])
+                      . '</span>';
 
-        $htmlModal = '<div class="chip-item chip-teal">'
-                   . '<strong>' . htmlspecialchars($rep['nombre_rep'] . ' ' . $rep['apellido_rep']) . '</strong>'
-                   . '<span class="badge bg-' . ($tipo === 'Legal' ? 'blue' : 'yellow') . ' badge-estado" style="margin-right:6px;">' . htmlspecialchars($tipo) . '</span>'
-                   . ($parentesco ? '<span class="badge bg-purple badge-estado">' . htmlspecialchars($parentesco) . '</span>' : '')
-                   . '<small><i class="fa fa-id-card-o"></i> ' . htmlspecialchars($ced) . '</small>'
-                   . ($tel ? '<small><i class="fa fa-phone"></i> ' . htmlspecialchars($tel) . '</small>' : '')
-                   . (!empty(trim($rep['email_rep'])) ? '<small><i class="fa fa-envelope-o"></i> ' . htmlspecialchars($rep['email_rep']) . '</small>' : '')
-                   . '</div>';
+                    $htmlModal = '<div class="chip-item chip-teal">'
+                      . '<strong>' . htmlspecialchars($rep['nombre_rep'] . ' ' . $rep['apellido_rep']) . '</strong>'
+                      . '<span class="badge bg-' . ($tipo === 'Legal' ? 'blue' : 'yellow') . ' badge-estado" style="margin-right:6px;">' . htmlspecialchars($tipo) . '</span>'
+                      . ($parentesco ? '<span class="badge bg-purple badge-estado">' . htmlspecialchars($parentesco) . '</span>' : '')
+                      . '<small><i class="fa fa-id-card-o"></i> ' . htmlspecialchars($ced) . '</small>'
+                      . ($tel ? '<small><i class="fa fa-phone"></i> ' . htmlspecialchars($tel) . '</small>' : '')
+                      . (!empty(trim($rep['email_rep'])) ? '<small><i class="fa fa-envelope-o"></i> ' . htmlspecialchars($rep['email_rep']) . '</small>' : '')
+                      . '</div>';
 
-        return [
-            'label'     => $rep['nombre_rep'] . ' ' . $rep['apellido_rep'],
-            'sub'       => $ced . ($tel ? ' · ' . $tel : ''),
-            'html'      => $htmlVista,
-            'htmlModal' => $htmlModal
-        ];
-    }, $representantes_array)) ?>;
+                    return [
+                      'label'     => $rep['nombre_rep'] . ' ' . $rep['apellido_rep'],
+                      'sub'       => $ced . ($tel ? ' · ' . $tel : ''),
+                      'html'      => $htmlVista,
+                      'htmlModal' => $htmlModal
+                    ];
+                  }, $representantes_array)) ?>;
 
     renderBadgeGroup({
-        containerId: 'cont-representantes',
-        items: reps,
-        emptyText: 'Ninguno registrado',
-        emptyColor: '#0d9488',
-        maxVisible: 3,
-        title: 'Representantes Legales',
-        colorClass: 'chip-teal',
-        badgeClass: 'badge-representante'
+      containerId: 'cont-representantes',
+      items: reps,
+      emptyText: 'Ninguno registrado',
+      emptyColor: '#0d9488',
+      maxVisible: 3,
+      title: 'Representantes Legales',
+      colorClass: 'chip-teal',
+      badgeClass: 'badge-representante'
     });
 
     const alergias = <?= safeJson(
-        !empty($lista_alergias)
-            ? array_map(function($a){ return ['label' => trim($a)]; }, explode('||', $lista_alergias))
-            : []
-    ) ?>;
+                        !empty($lista_alergias)
+                          ? array_map(function ($a) {
+                            return ['label' => trim($a)];
+                          }, explode('||', $lista_alergias))
+                          : []
+                      ) ?>;
 
     renderBadgeGroup({
-        containerId: 'cont-alergias',
-        items: alergias,
-        emptyText: 'Ninguna registrada',
-        emptyColor: '#e67e22',
-        maxVisible: 3,
-        title: 'Alergias Conocidas',
-        colorClass: 'chip-orange',
-        badgeClass: 'badge-alergia'
+      containerId: 'cont-alergias',
+      items: alergias,
+      emptyText: 'Ninguna registrada',
+      emptyColor: '#e67e22',
+      maxVisible: 3,
+      title: 'Alergias Conocidas',
+      colorClass: 'chip-orange',
+      badgeClass: 'badge-alergia'
     });
 
     const patologias = <?= safeJson(
-        !empty($lista_patologias)
-            ? array_map(function($p){ return ['label' => trim($p)]; }, explode('||', $lista_patologias))
-            : []
-    ) ?>;
+                          !empty($lista_patologias)
+                            ? array_map(function ($p) {
+                              return ['label' => trim($p)];
+                            }, explode('||', $lista_patologias))
+                            : []
+                        ) ?>;
 
     renderBadgeGroup({
-        containerId: 'cont-patologias',
-        items: patologias,
-        emptyText: 'Ninguna registrada',
-        emptyColor: '#e74c3c',
-        maxVisible: 3,
-        title: 'Patologías Crónicas',
-        colorClass: 'chip-red',
-        badgeClass: 'badge-patologia'
+      containerId: 'cont-patologias',
+      items: patologias,
+      emptyText: 'Ninguna registrada',
+      emptyColor: '#e74c3c',
+      maxVisible: 3,
+      title: 'Patologías Crónicas',
+      colorClass: 'chip-red',
+      badgeClass: 'badge-patologia'
     });
 
-    <?php if (!empty($discapacidades_array)): ?>
-      const discs = <?= safeJson(array_map(function($d){
-        return [
-          'label' => $d['nombre_discapacidad'],
-          'sub'   => !empty($d['fecha_registro'])
-                      ? '(' . date('d/m/Y', strtotime($d['fecha_registro'])) . ')'
-                      : ''
-        ];
-      }, $discapacidades_array)) ?>;
+    <?php if (!empty($discapacidades_array)) : ?>
+      const discs = <?= safeJson(array_map(function ($d) {
+                      return [
+                        'label' => $d['nombre_discapacidad'],
+                        'sub'   => !empty($d['fecha_registro'])
+                          ? '(' . date('d/m/Y', strtotime($d['fecha_registro'])) . ')'
+                          : ''
+                      ];
+                    }, $discapacidades_array)) ?>;
 
       renderBadgeGroup({
         containerId: 'cont-discapacidades',
@@ -850,7 +1120,7 @@ verificarAcceso('Ver Pacientes Menores de Edad');
         colorClass: 'chip-purple',
         badgeClass: 'badge-discapacidad'
       });
-    <?php else: ?>
+    <?php else : ?>
       $('#cont-discapacidades').html('<span class="badge bg-red badge-estado">No</span>');
     <?php endif; ?>
 
@@ -865,7 +1135,9 @@ verificarAcceso('Ver Pacientes Menores de Edad');
       $.ajax({
         url: '../../cfg/ajax/obtener_historial.php',
         type: 'GET',
-        data: { cedula: cedula },
+        data: {
+          cedula: cedula
+        },
         dataType: 'json',
         success: function(response) {
           if (response.success) {
@@ -963,152 +1235,414 @@ verificarAcceso('Ver Pacientes Menores de Edad');
         titulo: '2.a) Perinatales (Menores de 19)',
         icono: 'fa-baby',
         onlyMinor: true,
-        items: [
-          { label: '2.a.1 Carnet Prenatal' },
-          { label: '2.a.2 N° Consultas Prenatal (Z34.9)', input: 'number', placeholder: 'N°' },
-          { label: '2.a.3 Trastornos del Embarazo (Z87.5)' },
-          { label: '2.a.4 Embarazo a término (Z34.9)' },
-          { label: '2.a.5 Parto único espontáneo (O80.9)' },
-          { label: '2.a.6 Parto por cesárea (Z87.5)' },
-          { label: '2.a.7 Parto por fórceps (Z87.5)' },
-          { label: '2.a.8 Complicaciones del parto (Z87.5)' },
-          { label: '2.a.9 Complicación del puerperio (Z87.5)' },
-          { label: '2.a.10 Trastornos del RN (Z87.6)' },
-          { label: '2.a.11 Reanimación (Z87.6)' },
-          { label: '2.a.12 Peso al Nacer (Z00.1)', input: 'number', placeholder: 'gr' },
-          { label: '2.a.13 Talla al Nacer (Z00.1)', input: 'number', placeholder: 'cm' },
-          { label: '2.a.14 Perímetro Cefálico (Z00.1)', input: 'number', placeholder: 'cm' },
-          { label: '2.a.15 Lactancia Exclusiva (Z13.2)', input: 'number', placeholder: 'meses' },
-          { label: '2.a.16 Lactancia Mixta (Z13.2)', input: 'number', placeholder: 'meses' },
-          { label: '2.a.17 Ablactación (Z13.2)', input: 'number', placeholder: 'meses' },
-          { label: '2.a.18 Egreso RN Patológico (Z87.6)' },
-          { label: '2.a.19 Asfixia (Z87.6)' },
-          { label: '2.a.20 Egreso RN Sano (Z87.6)' }
+        items: [{
+            label: '2.a.1 Carnet Prenatal'
+          },
+          {
+            label: '2.a.2 N° Consultas Prenatal (Z34.9)',
+            input: 'number',
+            placeholder: 'N°'
+          },
+          {
+            label: '2.a.3 Trastornos del Embarazo (Z87.5)'
+          },
+          {
+            label: '2.a.4 Embarazo a término (Z34.9)'
+          },
+          {
+            label: '2.a.5 Parto único espontáneo (O80.9)'
+          },
+          {
+            label: '2.a.6 Parto por cesárea (Z87.5)'
+          },
+          {
+            label: '2.a.7 Parto por fórceps (Z87.5)'
+          },
+          {
+            label: '2.a.8 Complicaciones del parto (Z87.5)'
+          },
+          {
+            label: '2.a.9 Complicación del puerperio (Z87.5)'
+          },
+          {
+            label: '2.a.10 Trastornos del RN (Z87.6)'
+          },
+          {
+            label: '2.a.11 Reanimación (Z87.6)'
+          },
+          {
+            label: '2.a.12 Peso al Nacer (Z00.1)',
+            input: 'number',
+            placeholder: 'gr'
+          },
+          {
+            label: '2.a.13 Talla al Nacer (Z00.1)',
+            input: 'number',
+            placeholder: 'cm'
+          },
+          {
+            label: '2.a.14 Perímetro Cefálico (Z00.1)',
+            input: 'number',
+            placeholder: 'cm'
+          },
+          {
+            label: '2.a.15 Lactancia Exclusiva (Z13.2)',
+            input: 'number',
+            placeholder: 'meses'
+          },
+          {
+            label: '2.a.16 Lactancia Mixta (Z13.2)',
+            input: 'number',
+            placeholder: 'meses'
+          },
+          {
+            label: '2.a.17 Ablactación (Z13.2)',
+            input: 'number',
+            placeholder: 'meses'
+          },
+          {
+            label: '2.a.18 Egreso RN Patológico (Z87.6)'
+          },
+          {
+            label: '2.a.19 Asfixia (Z87.6)'
+          },
+          {
+            label: '2.a.20 Egreso RN Sano (Z87.6)'
+          }
         ]
       },
       familiares: {
         titulo: '2.b) Familiares y Otros Contactos',
         icono: 'fa-users',
-        items: [
-          { label: '2.b.1 Cáncer (Z80.9)', parentesco: true },
-          { label: '2.b.2 Alcoholismo (Z81.1)', parentesco: true },
-          { label: '2.b.3 Tabaquismo (Z81.2)', parentesco: true },
-          { label: '2.b.4 Drogas (Z81.3)', parentesco: true },
-          { label: '2.b.5 T. Mentales (Z81.8)', parentesco: true },
-          { label: '2.b.6 Neurológica (Z82.0)', parentesco: true },
-          { label: '2.b.7 Varices (Z82.4)', parentesco: true },
-          { label: '2.b.8 Cardiopatía (Z82.4)', parentesco: true },
-          { label: '2.b.9 HTA Sist. (Z82.4)', parentesco: true },
-          { label: '2.b.10 Asma (Z82.5)', parentesco: true },
-          { label: '2.b.11 Artritis (Z82.6)', parentesco: true },
-          { label: '2.b.12 Malform. Congénita (Z82.7)', parentesco: true },
-          { label: '2.b.13 VIH/SIDA (Z83.0)', parentesco: true },
-          { label: '2.b.14 Sífilis/ITS (Z83.1)', parentesco: true },
-          { label: '2.b.15 Tuberculosis (Z83.1)', parentesco: true },
-          { label: '2.b.16 Alergia (Z83.2)', parentesco: true },
-          { label: '2.b.17 Diabetes (Z83.3)', parentesco: true },
-          { label: '2.b.18 Desnutrición (Z83.4)', parentesco: true },
-          { label: '2.b.19 Obesidad (Z83.4)', parentesco: true },
-          { label: '2.b.20 Gastropatía (Z83.7)', parentesco: true },
-          { label: '2.b.21 Enf. Renal (Z84.1)', parentesco: true },
-          { label: '2.b.22 Otras (observaciones)', parentesco: true }
+        items: [{
+            label: '2.b.1 Cáncer (Z80.9)',
+            parentesco: true
+          },
+          {
+            label: '2.b.2 Alcoholismo (Z81.1)',
+            parentesco: true
+          },
+          {
+            label: '2.b.3 Tabaquismo (Z81.2)',
+            parentesco: true
+          },
+          {
+            label: '2.b.4 Drogas (Z81.3)',
+            parentesco: true
+          },
+          {
+            label: '2.b.5 T. Mentales (Z81.8)',
+            parentesco: true
+          },
+          {
+            label: '2.b.6 Neurológica (Z82.0)',
+            parentesco: true
+          },
+          {
+            label: '2.b.7 Varices (Z82.4)',
+            parentesco: true
+          },
+          {
+            label: '2.b.8 Cardiopatía (Z82.4)',
+            parentesco: true
+          },
+          {
+            label: '2.b.9 HTA Sist. (Z82.4)',
+            parentesco: true
+          },
+          {
+            label: '2.b.10 Asma (Z82.5)',
+            parentesco: true
+          },
+          {
+            label: '2.b.11 Artritis (Z82.6)',
+            parentesco: true
+          },
+          {
+            label: '2.b.12 Malform. Congénita (Z82.7)',
+            parentesco: true
+          },
+          {
+            label: '2.b.13 VIH/SIDA (Z83.0)',
+            parentesco: true
+          },
+          {
+            label: '2.b.14 Sífilis/ITS (Z83.1)',
+            parentesco: true
+          },
+          {
+            label: '2.b.15 Tuberculosis (Z83.1)',
+            parentesco: true
+          },
+          {
+            label: '2.b.16 Alergia (Z83.2)',
+            parentesco: true
+          },
+          {
+            label: '2.b.17 Diabetes (Z83.3)',
+            parentesco: true
+          },
+          {
+            label: '2.b.18 Desnutrición (Z83.4)',
+            parentesco: true
+          },
+          {
+            label: '2.b.19 Obesidad (Z83.4)',
+            parentesco: true
+          },
+          {
+            label: '2.b.20 Gastropatía (Z83.7)',
+            parentesco: true
+          },
+          {
+            label: '2.b.21 Enf. Renal (Z84.1)',
+            parentesco: true
+          },
+          {
+            label: '2.b.22 Otras (observaciones)',
+            parentesco: true
+          }
         ]
       },
       gineco: {
         titulo: '2.c) Sexuales y Reproductivos',
         icono: 'fa-venus-mars',
-        items: [
-          { label: '2.c.1 Telarquia', onlySex: 'Femenino' },
-          { label: '2.c.2 Pubarquia', onlySex: 'Femenino' },
-          { label: '2.c.3 Menarquia', input: 'number', placeholder: 'edad', onlySex: 'Femenino' },
-          { label: '2.c.4 Inicio Prec. Testicular', input: 'number', placeholder: 'edad', onlySex: 'Masculino', onlyMinor: true },
-          { label: '2.c.5 Ciclo Menstrual', input: 'text', placeholder: 'ej: 28 días', onlySex: 'Femenino' },
-          { label: '2.c.6 Primera Relación Sexual', input: 'number', placeholder: 'edad' },
-          { label: '2.c.7 Frecuencia de Rel. Sexual' },
-          { label: '2.c.8 Número de Parejas', input: 'number', placeholder: 'N°' },
-          { label: '2.c.9 Rel. Sexual Satisfactoria' },
-          { label: '2.c.10 Anticoncepción (ACO/DIU/Otro)' },
-          { label: '2.c.11 Número de Gestas', input: 'number', placeholder: 'N°', onlySex: 'Femenino' },
-          { label: '2.c.12 Número de Partos', input: 'number', placeholder: 'N°', onlySex: 'Femenino' },
-          { label: '2.c.13 Número de Cesáreas', input: 'number', placeholder: 'N°', onlySex: 'Femenino' },
-          { label: '2.c.14 Número de Abortos', input: 'number', placeholder: 'N°', onlySex: 'Femenino' },
-          { label: '2.c.15 Legrado Uterino', onlySex: 'Femenino' },
-          { label: '2.c.16 Menopausia / Andropausia' },
-          { label: '2.c.17 Otros' }
+        items: [{
+            label: '2.c.1 Telarquia',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.2 Pubarquia',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.3 Menarquia',
+            input: 'number',
+            placeholder: 'edad',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.4 Inicio Prec. Testicular',
+            input: 'number',
+            placeholder: 'edad',
+            onlySex: 'Masculino',
+            onlyMinor: true
+          },
+          {
+            label: '2.c.5 Ciclo Menstrual',
+            input: 'text',
+            placeholder: 'ej: 28 días',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.6 Primera Relación Sexual',
+            input: 'number',
+            placeholder: 'edad'
+          },
+          {
+            label: '2.c.7 Frecuencia de Rel. Sexual'
+          },
+          {
+            label: '2.c.8 Número de Parejas',
+            input: 'number',
+            placeholder: 'N°'
+          },
+          {
+            label: '2.c.9 Rel. Sexual Satisfactoria'
+          },
+          {
+            label: '2.c.10 Anticoncepción (ACO/DIU/Otro)'
+          },
+          {
+            label: '2.c.11 Número de Gestas',
+            input: 'number',
+            placeholder: 'N°',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.12 Número de Partos',
+            input: 'number',
+            placeholder: 'N°',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.13 Número de Cesáreas',
+            input: 'number',
+            placeholder: 'N°',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.14 Número de Abortos',
+            input: 'number',
+            placeholder: 'N°',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.15 Legrado Uterino',
+            onlySex: 'Femenino'
+          },
+          {
+            label: '2.c.16 Menopausia / Andropausia'
+          },
+          {
+            label: '2.c.17 Otros'
+          }
         ]
       },
       habitos: {
         titulo: '2.c) Estilo y Modo de Vida',
         icono: 'fa-heart',
-        items: [
-          { label: '2.c.18 Fuma (Z72.0)' },
-          { label: '2.c.19 ¿Desde cuándo Fuma? (Z72.0)', input: 'text', placeholder: 'años', dependsOn: '2.c.18 Fuma (Z72.0)' },
-          { label: '2.c.20 N° de Cigarrillos al día (Z72.0)', input: 'number', placeholder: 'N°', dependsOn: '2.c.18 Fuma (Z72.0)' },
-          { label: '2.c.21 Alcohol (Z72.1)' },
-          { label: '2.c.22 Cant. de Alcohol x semana (Z72.1)', input: 'text', placeholder: 'ej: 3 latas', dependsOn: '2.c.21 Alcohol (Z72.1)' },
-          { label: '2.c.23 Drogas ilícitas (Z72.2)' },
-          { label: '2.c.24 Actividad Física (Z72.3)' },
-          { label: '2.c.25 Sedentarismo (Z72.3)' },
-          { label: '2.c.26 Manejo del Estrés (Z72.3)' },
-          { label: '2.c.46 Chupa Dedo (Z86.5)' },
-          { label: '2.c.47 Onicofagia (Z86.5)' },
-          { label: '2.c.27 Otros Habitos' }
+        items: [{
+            label: '2.c.18 Fuma (Z72.0)'
+          },
+          {
+            label: '2.c.19 ¿Desde cuándo Fuma? (Z72.0)',
+            input: 'text',
+            placeholder: 'años',
+            dependsOn: '2.c.18 Fuma (Z72.0)'
+          },
+          {
+            label: '2.c.20 N° de Cigarrillos al día (Z72.0)',
+            input: 'number',
+            placeholder: 'N°',
+            dependsOn: '2.c.18 Fuma (Z72.0)'
+          },
+          {
+            label: '2.c.21 Alcohol (Z72.1)'
+          },
+          {
+            label: '2.c.22 Cant. de Alcohol x semana (Z72.1)',
+            input: 'text',
+            placeholder: 'ej: 3 latas',
+            dependsOn: '2.c.21 Alcohol (Z72.1)'
+          },
+          {
+            label: '2.c.23 Drogas ilícitas (Z72.2)'
+          },
+          {
+            label: '2.c.24 Actividad Física (Z72.3)'
+          },
+          {
+            label: '2.c.25 Sedentarismo (Z72.3)'
+          },
+          {
+            label: '2.c.26 Manejo del Estrés (Z72.3)'
+          },
+          {
+            label: '2.c.46 Chupa Dedo (Z86.5)'
+          },
+          {
+            label: '2.c.47 Onicofagia (Z86.5)'
+          },
+          {
+            label: '2.c.27 Otros Habitos'
+          }
         ]
       },
       patologicos: {
         titulo: '2.c) Eventos y Situaciones Personales',
         icono: 'fa-stethoscope',
-        items: [
-          { label: '2.c.28 Violencia Psicológica (Z91.4)' },
-          { label: '2.c.29 Violencia Física (Z91.6)' },
-          { label: '2.c.30 Violencia Sexual (Z91.6)' },
-          { label: '2.c.31 Accidentes (Z91.8)' },
-          { label: '2.c.32 Otros eventos (Z91.8)' },
-          { label: '2.c.32 Hospitalización (Z91.8)', input: 'text', placeholder: 'año/motivo' },
-          { label: '2.c.34 Intervención Quirúrgica (Z98.8)', input: 'text', placeholder: 'año/procedimiento' },
-          { label: '2.c.35 Otros' }
+        items: [{
+            label: '2.c.28 Violencia Psicológica (Z91.4)'
+          },
+          {
+            label: '2.c.29 Violencia Física (Z91.6)'
+          },
+          {
+            label: '2.c.30 Violencia Sexual (Z91.6)'
+          },
+          {
+            label: '2.c.31 Accidentes (Z91.8)'
+          },
+          {
+            label: '2.c.32 Otros eventos (Z91.8)'
+          },
+          {
+            label: '2.c.32 Hospitalización (Z91.8)',
+            input: 'text',
+            placeholder: 'año/motivo'
+          },
+          {
+            label: '2.c.34 Intervención Quirúrgica (Z98.8)',
+            input: 'text',
+            placeholder: 'año/procedimiento'
+          },
+          {
+            label: '2.c.35 Otros'
+          }
         ]
       }
     };
 
     const ANTECEDENTES_META = {
-      perinatales: { titulo: '2.a) Perinatales',                      icono: 'fa-baby' },
-      familiares:  { titulo: '2.b) Familiares y otros contactos',     icono: 'fa-users' },
-      gineco:      { titulo: '2.c) Sexuales y reproductivos',         icono: 'fa-venus-mars' },
-      habitos:     { titulo: '2.c) Estilo y modo de vida',            icono: 'fa-heart' },
-      patologicos: { titulo: '2.c) Eventos y situaciones personales', icono: 'fa-stethoscope' }
+      perinatales: {
+        titulo: '2.a) Perinatales',
+        icono: 'fa-baby'
+      },
+      familiares: {
+        titulo: '2.b) Familiares y otros contactos',
+        icono: 'fa-users'
+      },
+      gineco: {
+        titulo: '2.c) Sexuales y reproductivos',
+        icono: 'fa-venus-mars'
+      },
+      habitos: {
+        titulo: '2.c) Estilo y modo de vida',
+        icono: 'fa-heart'
+      },
+      patologicos: {
+        titulo: '2.c) Eventos y situaciones personales',
+        icono: 'fa-stethoscope'
+      }
     };
 
     /* Mapa de compatibilidad: keys antiguas → canónicas */
     const KEY_MAP = {
       'sexualidad_reproductivos': 'gineco',
-      'sexualidad':               'gineco',
-      'estilo_vida':              'habitos'
+      'sexualidad': 'gineco',
+      'estilo_vida': 'habitos'
     };
 
-    const _PAC_EDAD   = <?= (int)$edad_menor_calc ?>;
+    const _PAC_EDAD = <?= (int)$edad_menor_calc ?>;
     const _PAC_GENERO = "<?= htmlspecialchars($genero_menor ?? '', ENT_QUOTES) ?>";
-    const _PAC_IS_F   = _PAC_GENERO.toLowerCase().includes('femen');
-    const _PAC_IS_M   = !_PAC_IS_F;
+    const _PAC_IS_F = _PAC_GENERO.toLowerCase().includes('femen');
+    const _PAC_IS_M = !_PAC_IS_F;
 
     /* Normaliza datos viejos (string) y claves antiguas → formato canónico */
     function normalizarDatosAnt(datos) {
       if (typeof datos === 'string') {
         const s = datos.trim();
-        if (!s) return { items: {}, obs: '' };
+        if (!s) return {
+          items: {},
+          obs: ''
+        };
         try {
           const parsed = JSON.parse(s);
           if (typeof parsed === 'object' && parsed !== null) return normalizarDatosAnt(parsed);
-        } catch (e) { /* no es JSON */ }
-        return { items: { 'Registro': s }, obs: '' };
+        } catch (e) {
+          /* no es JSON */
+        }
+        return {
+          items: {
+            'Registro': s
+          },
+          obs: ''
+        };
       }
       if (typeof datos === 'object' && datos !== null) {
         const items = Object.assign({}, datos);
         const obs = items.__obs__ || '';
         delete items.__obs__;
-        return { items, obs };
+        return {
+          items,
+          obs
+        };
       }
-      return { items: {}, obs: '' };
+      return {
+        items: {},
+        obs: ''
+      };
     }
 
     function datosCategoria(key) {
@@ -1131,9 +1665,9 @@ verificarAcceso('Ver Pacientes Menores de Edad');
       Object.entries(ANTECEDENTES_META).forEach(([key, meta]) => {
         const norm = normalizarDatosAnt(datosCategoria(key));
         const cant = Object.keys(norm.items).length;
-        const badge = cant > 0
-          ? ` <span class="badge" style="background:#fff;color:#3c8dbc;">${cant}</span>`
-          : '';
+        const badge = cant > 0 ?
+          ` <span class="badge" style="background:#fff;color:#3c8dbc;">${cant}</span>` :
+          '';
         html += `
           <div class="col-xs-12 col-sm-6 col-md-4" style="margin-bottom:10px;">
             <button type="button"
@@ -1157,28 +1691,28 @@ verificarAcceso('Ver Pacientes Menores de Edad');
       const meta = ANTECEDENTES_META[key];
       const norm = normalizarDatosAnt(datosCategoria(key));
       const items = norm.items;
-      const obs   = norm.obs;
+      const obs = norm.obs;
 
       let body;
       if (Object.keys(items).length === 0 && !obs) {
-        body = '<div class="alert alert-warning" style="border-radius:0;">'
-             + '<i class="fa fa-info-circle"></i> No hay datos registrados en esta categoría.'
-             + '</div>';
+        body = '<div class="alert alert-warning" style="border-radius:0;">' +
+          '<i class="fa fa-info-circle"></i> No hay datos registrados en esta categoría.' +
+          '</div>';
       } else {
         body = '';
         if (Object.keys(items).length > 0) {
           body += '<ul class="antecedente-list">';
           for (const [label, valor] of Object.entries(items)) {
-            const detalle = (valor === true || valor === '' || valor == null)
-              ? ''
-              : `: <b style="color:var(--medical-blue);">${esc(valor)}</b>`;
+            const detalle = (valor === true || valor === '' || valor == null) ?
+              '' :
+              `: <b style="color:var(--medical-blue);">${esc(valor)}</b>`;
             body += `<li><i class="fa fa-check-circle"></i> ${esc(label)}${detalle}</li>`;
           }
           body += '</ul>';
         }
         if (obs) {
-          body += '<hr><p class="label-custom label-dark">Observaciones</p>'
-                + '<div class="data-item-card" style="margin-top:5px;">' + esc(obs) + '</div>';
+          body += '<hr><p class="label-custom label-dark">Observaciones</p>' +
+            '<div class="data-item-card" style="margin-top:5px;">' + esc(obs) + '</div>';
         }
       }
 
@@ -1200,20 +1734,20 @@ verificarAcceso('Ver Pacientes Menores de Edad');
 
       let html = '<div class="row">';
       tmpl.items.forEach(item => {
-        const label       = typeof item === 'string' ? item : item.label;
-        const inputType   = typeof item === 'object' ? item.input : null;
+        const label = typeof item === 'string' ? item : item.label;
+        const inputType = typeof item === 'object' ? item.input : null;
         const placeholder = typeof item === 'object' ? item.placeholder : '';
-        const dependsOn   = typeof item === 'object' ? item.dependsOn : null;
-        const parentesco  = typeof item === 'object' ? item.parentesco : false;
+        const dependsOn = typeof item === 'object' ? item.dependsOn : null;
+        const parentesco = typeof item === 'object' ? item.parentesco : false;
 
         if (item.onlySex === 'Femenino' && !_PAC_IS_F) return;
         if (item.onlySex === 'Masculino' && !_PAC_IS_M) return;
         if (item.onlyMinor && _PAC_EDAD >= 19) return;
 
         const isChecked = seleccionados[label] !== undefined;
-        const valExtra  = isChecked && typeof seleccionados[label] === 'string' ? seleccionados[label] : '';
-        const checked   = isChecked ? 'checked' : '';
-        const parentOk  = dependsOn ? (seleccionados[dependsOn] !== undefined) : true;
+        const valExtra = isChecked && typeof seleccionados[label] === 'string' ? seleccionados[label] : '';
+        const checked = isChecked ? 'checked' : '';
+        const parentOk = dependsOn ? (seleccionados[dependsOn] !== undefined) : true;
         const wrapperStyle = (dependsOn && !parentOk) ? 'display:none;' : '';
 
         html += `
@@ -1384,5 +1918,3 @@ verificarAcceso('Ver Pacientes Menores de Edad');
     });
   });
 </script>
-
-</html>

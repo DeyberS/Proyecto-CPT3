@@ -85,28 +85,22 @@ $redireccion = isset($_GET['pagina']) ? $_GET['pagina'] : 'ninguna';
   <title>Pacientes Menores | Añadir</title>
 </head>
 
-<style>
-  .input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-
-  #avisoModal {
-    z-index: 999999 !important;
-  }
-
-  .nav-tabs>li>a {
-    pointer-events: none;
-    cursor: default;
-  }
-
-  .nav-tabs li.disabled-tab a {
-    color: #b2b2b2 !important;
-  }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    #avisoModal {
+      z-index: 999999 !important;
+    }
+
+    .nav-tabs>li>a {
+      pointer-events: none;
+      cursor: default;
+    }
+
+    .nav-tabs li.disabled-tab a {
+      color: #b2b2b2 !important;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Añadir Paciente Menor de Edad</h1>
     <ol class="breadcrumb">
@@ -422,278 +416,282 @@ $redireccion = isset($_GET['pagina']) ? $_GET['pagina'] : 'ninguna';
                   </div>
                 </section>
               </div>
-            </div>
 
-            <div class="modal fade" id="modalPatologias" role="dialog">
-              <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title"><i class="fa fa-medkit"></i> Gestionar Patologías</h4>
-                  </div>
-                  <div class="modal-body">
-                    <div id="contenedor_filas_patologias"></div>
-                    <button type="button" class="btn btn-success btn-sm" id="add_fila_pat">
-                      <i class="fa fa-plus"></i> Añadir otra
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologia">
-                      <i class="fa fa-plus-circle"></i> Nueva Patología
-                    </button>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" id="cancelar_pat_modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="guardar_pat_listo">Listo</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="modalBuscarPat" role="dialog">
-              <div class="modal-dialog modal-md" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title">Buscar Patología</h4>
-                  </div>
-                  <div class="modal-body">
-                    <input type="text" id="inputBuscarPat" class="form-control" placeholder="Escriba para filtrar...">
-                    <div class="list-group" id="listaResultadosPat" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="modalAlergias" role="dialog">
-              <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title"><i class="fa fa-wheelchair"></i> Gestionar Alergias</h4>
-                  </div>
-                  <div class="modal-body">
-                    <div id="contenedor_filas_alergias"></div>
-                    <button type="button" class="btn btn-success btn-sm" id="add_fila_ale">
-                      <i class="fa fa-plus"></i> Añadir otra
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaAlergia">
-                      <i class="fa fa-plus-circle"></i> Nueva Alergia
-                    </button>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" id="cancelar_ale_modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="guardar_ale_listo">Listo</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="modalBuscarAle" role="dialog">
-              <div class="modal-dialog modal-md" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title">Buscar Alergia</h4>
-                  </div>
-                  <div class="modal-body">
-                    <input type="text" id="inputBuscarAle" class="form-control" placeholder="Escriba para filtrar...">
-                    <div class="list-group" id="listaResultadosAle" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="modalNuevaPatologia" role="dialog">
-              <div class="modal-dialog modal-md" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Patología</h4>
-                  </div>
-                  <div class="modal-body">
-                    <form id="formAjaxPatologia">
-                      <div class="form-group">
-                        <label>Nombre de la Patología (*):</label>
-                        <input type="text" class="form-control" id="ajax_nombre_pat" required>
-                      </div>
-                      <div class="form-group">
-                        <label>Código CIE (Opcional):</label>
-                        <input type="text" class="form-control" id="ajax_cie_pat">
-                      </div>
-                      <div class="form-group">
-                        <label>¿Es contagiosa?</label>
-                        <select class="form-control" id="ajax_contagiosa_pat">
-                          <option value="NO">NO</option>
-                          <option value="SI">SI</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label>Síntomas (*):</label>
-                        <button type="button" class="btn btn-info btn-block" id="btn_abrir_sintomas_ajax" data-toggle="tooltip" title="Ninguno seleccionado">
-                          <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:15px; height:15px; filter: invert(1);"></i> Gestionar Síntomas
-                        </button>
-                        <input type="hidden" id="ajax_sintomas_ids" value="">
-                      </div>
-                    </form>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btn_guardar_ajax_pat">Guardar</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="modalSintomasAjax" role="dialog" style="z-index: 1060;">
-              <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title"><i class="fa fa-list"></i> Seleccionar Síntomas</h4>
-                  </div>
-                  <div class="modal-body">
-                    <div id="contenedor_filas_sintomas_ajax"></div>
-                    <button type="button" class="btn btn-success btn-sm pull-left" id="add_fila_sintoma_ajax">
-                      <i class="fa fa-plus"></i> Añadir otro
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoSintoma" style="margin-left:5px;">
-                      <i class="fa fa-star"></i> Nuevo Síntoma
-                    </button>
-                    <div style="clear: both;"></div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="btn_confirmar_sintomas_ajax">Confirmar</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="modalNuevoSintoma" role="dialog" style="z-index: 1070;">
-              <div class="modal-dialog modal-md" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title">Crear Nuevo Síntoma</h4>
-                  </div>
-                  <div class="modal-body">
-                    <div class="form-group">
-                      <label>Nombre del Síntoma</label>
-                      <input type="text" id="nombre_nuevo_sintoma" class="form-control" placeholder="Ej. Dolor de cabeza">
+              <div class="modal fade" id="modalPatologias" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title"><i class="fa fa-medkit"></i> Gestionar Patologías</h4>
                     </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="btnGuardarSintomaBD">Guardar</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="modalNuevaAlergia" role="dialog">
-              <div class="modal-dialog modal-md" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Alergia</h4>
-                  </div>
-                  <div class="modal-body">
-                    <form id="formAjaxAlergia">
-                      <div class="form-group">
-                        <label>Nombre de la Alergia (*):</label>
-                        <input type="text" class="form-control" id="ajax_nombre_ale" required>
-                      </div>
-                    </form>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btn_guardar_ajax_ale">Guardar</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="modalDiscapacidades" role="dialog">
-              <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-primary">
-                    <h4 class="modal-title"><i class="fa fa-wheelchair"></i> Gestionar Discapacidad</h4>
-                  </div>
-                  <div class="modal-body">
-                    <div class="row fila-disc-modal">
-                      <div class="col-sm-6">
-                        <label>Tipo de Discapacidad (*):</label>
-                        <select class="form-control select-disc-dinamico" id="select_disc_unica"></select>
-                      </div>
-                      <div class="col-sm-4">
-                        <label>Fecha detección (Opcional):</label>
-                        <input type="date" class="form-control input-fecha-disc-dinamico" id="fecha_disc_unica" max="<?php echo date('Y-m-d'); ?>">
-                      </div>
-                      <div class="col-sm-2">
-                        <label style="display:block;">&nbsp;</label>
-                        <button type="button" class="btn btn-danger btn-remove-disc-modal">
-                          <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div style="margin-top: 15px;">
-                      <button type="button" class="btn btn-success btn-sm" id="btn_add_disc_row">
-                        <i class="fa fa-plus-circle"></i> Añadir Otra Discapacidad
+                    <div class="modal-body">
+                      <div id="contenedor_filas_patologias"></div>
+                      <button type="button" class="btn btn-success btn-sm" id="add_fila_pat">
+                        <i class="fa fa-plus"></i> Añadir otra
+                      </button>
+                      <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologia">
+                        <i class="fa fa-plus-circle"></i> Nueva Patología
                       </button>
                     </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" id="cancelar_disc_modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="guardar_disc_listo">Listo</button>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" id="cancelar_pat_modal">Cancelar</button>
+                      <button type="button" class="btn btn-primary" id="guardar_pat_listo">Listo</button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-crimson" id="avisoModalHeader">
-                    <h4 class="modal-title" id="avisoModalLabel"><i class="fa fa-warning"></i>Aviso Importante</h4>
-                  </div>
-                  <div class="modal-body">
-                    <p id="avisoTexto"></p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+              <div class="modal fade" id="modalBuscarPat" role="dialog">
+                <div class="modal-dialog modal-md" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title">Buscar Patología</h4>
+                    </div>
+                    <div class="modal-body">
+                      <input type="text" id="inputBuscarPat" class="form-control" placeholder="Escriba para filtrar...">
+                      <div class="list-group" id="listaResultadosPat" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-crimson">
-                    <h4 class="modal-title"><i class="fa fa-sign-out"></i>Confirmación de Regreso</h4>
-                  </div>
-                  <div class="modal-body">
-                    <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Regresar</button>
-                    <a href="pacientes_menores_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+              <div class="modal fade" id="modalAlergias" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title"><i class="fa fa-wheelchair"></i> Gestionar Alergias</h4>
+                    </div>
+                    <div class="modal-body">
+                      <div id="contenedor_filas_alergias"></div>
+                      <button type="button" class="btn btn-success btn-sm" id="add_fila_ale">
+                        <i class="fa fa-plus"></i> Añadir otra
+                      </button>
+                      <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaAlergia">
+                        <i class="fa fa-plus-circle"></i> Nueva Alergia
+                      </button>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" id="cancelar_ale_modal">Cancelar</button>
+                      <button type="button" class="btn btn-primary" id="guardar_ale_listo">Listo</button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="modal fade" id="modalGuardarPaciente" tabindex="-1" role="dialog">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-green">
-                    <h4 class="modal-title"><i class="fa fa-save"></i>Confirmación de Guardado</h4>
-                  </div>
-                  <div class="modal-body">
-                    <p>¿Está seguro de que desea guardar la información del nuevo paciente menor de edad?</p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-second" data-dismiss="modal">Regresar</button>
-                    <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Guardar</button>
+              <div class="modal fade" id="modalBuscarAle" role="dialog">
+                <div class="modal-dialog modal-md" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title">Buscar Alergia</h4>
+                    </div>
+                    <div class="modal-body">
+                      <input type="text" id="inputBuscarAle" class="form-control" placeholder="Escriba para filtrar...">
+                      <div class="list-group" id="listaResultadosAle" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              <div class="modal fade" id="modalNuevaPatologia" role="dialog">
+                <div class="modal-dialog modal-md" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Patología</h4>
+                    </div>
+                    <div class="modal-body">
+                      <form id="formAjaxPatologia">
+                        <div class="form-group">
+                          <label>Nombre de la Patología (*):</label>
+                          <input type="text" class="form-control" id="ajax_nombre_pat" required>
+                        </div>
+                        <div class="form-group">
+                          <label>Código CIE (Opcional):</label>
+                          <input type="text" class="form-control" id="ajax_cie_pat">
+                        </div>
+                        <div class="form-group">
+                          <label>¿Es contagiosa?</label>
+                          <select class="form-control" id="ajax_contagiosa_pat">
+                            <option value="NO">NO</option>
+                            <option value="SI">SI</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label>Síntomas (*):</label>
+                          <button type="button" class="btn btn-info btn-block" id="btn_abrir_sintomas_ajax" data-toggle="tooltip" title="Ninguno seleccionado">
+                            <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:15px; height:15px; filter: invert(1);"></i> Gestionar Síntomas
+                          </button>
+                          <input type="hidden" id="ajax_sintomas_ids" value="">
+                        </div>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+                      <button type="button" class="btn btn-primary" id="btn_guardar_ajax_pat">Guardar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal fade" id="modalSintomasAjax" role="dialog" style="z-index: 1060;">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title"><i class="fa fa-list"></i> Seleccionar Síntomas</h4>
+                    </div>
+                    <div class="modal-body">
+                      <div id="contenedor_filas_sintomas_ajax"></div>
+                      <button type="button" class="btn btn-success btn-sm pull-left" id="add_fila_sintoma_ajax">
+                        <i class="fa fa-plus"></i> Añadir otro
+                      </button>
+                      <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoSintoma" style="margin-left:5px;">
+                        <i class="fa fa-star"></i> Nuevo Síntoma
+                      </button>
+                      <div style="clear: both;"></div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" id="btn_confirmar_sintomas_ajax">Confirmar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal fade" id="modalNuevoSintoma" role="dialog" style="z-index: 1070;">
+                <div class="modal-dialog modal-md" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title">Crear Nuevo Síntoma</h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label>Nombre del Síntoma</label>
+                        <input type="text" id="nombre_nuevo_sintoma" class="form-control" placeholder="Ej. Dolor de cabeza">
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+                      <button type="button" class="btn btn-success" id="btnGuardarSintomaBD">Guardar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal fade" id="modalNuevaAlergia" role="dialog">
+                <div class="modal-dialog modal-md" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Alergia</h4>
+                    </div>
+                    <div class="modal-body">
+                      <form id="formAjaxAlergia">
+                        <div class="form-group">
+                          <label>Nombre de la Alergia (*):</label>
+                          <input type="text" class="form-control" id="ajax_nombre_ale" required>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+                      <button type="button" class="btn btn-primary" id="btn_guardar_ajax_ale">Guardar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal fade" id="modalDiscapacidades" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                      <h4 class="modal-title"><i class="fa fa-wheelchair"></i> Gestionar Discapacidad</h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="row fila-disc-modal">
+                        <div class="col-sm-6">
+                          <label>Tipo de Discapacidad (*):</label>
+                          <select class="form-control select-disc-dinamico" id="select_disc_unica"></select>
+                        </div>
+                        <div class="col-sm-4">
+                          <label>Fecha detección (Opcional):</label>
+                          <input type="date" class="form-control input-fecha-disc-dinamico" id="fecha_disc_unica" max="<?php echo date('Y-m-d'); ?>">
+                        </div>
+                        <div class="col-sm-2">
+                          <label style="display:block;">&nbsp;</label>
+                          <button type="button" class="btn btn-danger btn-remove-disc-modal">
+                            <i><img src="../../recursos/imagenes/iconos/Delete.png" style="width:15px; height:15px;"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div style="margin-top: 15px;">
+                        <button type="button" class="btn btn-success btn-sm" id="btn_add_disc_row">
+                          <i class="fa fa-plus-circle"></i> Añadir Otra Discapacidad
+                        </button>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" id="cancelar_disc_modal">Cancelar</button>
+                      <button type="button" class="btn btn-primary" id="guardar_disc_listo">Listo</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-crimson" id="avisoModalHeader">
+                      <h4 class="modal-title" id="avisoModalLabel"><i class="fa fa-warning"></i>Aviso Importante</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p id="avisoTexto"></p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-crimson">
+                      <h4 class="modal-title"><i class="fa fa-sign-out"></i>Confirmación de Regreso</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" data-dismiss="modal">Regresar</button>
+                      <a href="pacientes_menores_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal fade" id="modalGuardarPaciente" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-green">
+                      <h4 class="modal-title"><i class="fa fa-save"></i>Confirmación de Guardado</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p>¿Está seguro de que desea guardar la información del nuevo paciente menor de edad?</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-second" data-dismiss="modal">Regresar</button>
+                      <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Guardar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <?php
+              include('modales/personas/representantes_gestionar_modal.php');
+              include('modales/personas/representantes_agregar_modal.php');
+              ?>
+
             </div>
 
             <?php
             include('includes/footer.php');
-            include('modales/personas/representantes_gestionar_modal.php');
-            include('modales/personas/representantes_agregar_modal.php');
             ?>
 
             <script>

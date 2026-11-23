@@ -104,69 +104,68 @@ verificarAcceso('Crear Consultas');
   <title>Consultas | Añadir</title>
 </head>
 
-<style>
-  .input-error input[type="text"], .input-error select, .input-error textarea,
-  input.input-error, select.input-error, textarea.input-error {
-    border: 2px solid crimson !important;
-    box-shadow: 0 0 5px crimson !important;
-    background-color: #fff5f5 !important;
-  }
-  .nav-tabs>li>a { pointer-events: none; cursor: default; }
-  .nav-tabs li.disabled-table a { color: #b2b2b2 !important; }
-  #avisoModalConsulta { z-index: 2000000 !important; }
-  .fila-paciente-top .form-group { margin-bottom: 10px; }
-  #edad_paciente { background-color: #f4f4f4 !important; font-weight: bold; color: #333; text-align: center; }
-  .tab-content .tab-panel { display: none; }
-  .tab-content .tab-panel.active { display: block; }
-  .row-actions {
-    display: flex !important; justify-content: flex-end !important;
-    gap: 10px !important; margin: 22px 0 15px !important; padding: 0 5px !important;
-  }
-  .row-actions .btn { min-width: 110px; }
-  .tab-pane section { padding-bottom: 5px; }
-  .fila-ale .select-ale, .fila-pat .select-pat, .fila-disc .select-disc { width: 100%; }
-
-  .btn-antecedente-tipo {
-    min-height: 70px; text-align: left; padding: 10px 15px;
-    font-weight: 600; font-size: 13px; white-space: normal; line-height: 1.2;
-  }
-  .btn-antecedente-tipo .badge { background: #fff; color: #3c8dbc; font-weight: bold; }
-  .chk-antecedente-wrap { padding: 6px 10px; border-bottom: 1px solid #eee; }
-  .chk-antecedente-wrap:hover { background: #f9f9f9; }
-  .chk-antecedente-wrap label { font-weight: normal; cursor: pointer; margin: 0; }
-
-  /* Modales responsivos */
-  .modal-dialog { max-height: calc(100vh - 60px); margin: 30px auto; }
-  .modal-content { max-height: calc(100vh - 60px); display: flex; flex-direction: column; }
-  .modal-header, .modal-footer { flex-shrink: 0; }
-  .modal-body { overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; }
-  @media (max-width: 767px) {
-    .modal-dialog { max-height: calc(100vh - 20px); margin: 10px auto; }
-    .modal-content { max-height: calc(100vh - 20px); }
-  }
-  .modal.in ~ .modal-backdrop { z-index: 1040; }
-
-  /* Campana de alertas */
-  #li-notificacion-alertas>a.link-campana-alertas {
-    pointer-events: auto !important; cursor: pointer !important; text-decoration: none !important;
-    display: inline-block !important; position: relative !important; padding: 12px 18px !important; line-height: 1 !important;
-  }
-  #li-notificacion-alertas .badge.bg-crimson {
-    position: absolute !important; top: 6px !important; right: 8px !important;
-    background-color: crimson !important; color: #fff !important; font-size: 10px !important;
-    padding: 2px 6px !important; font-weight: bold !important; border-radius: 10px !important;
-    min-width: 18px !important; text-align: center !important; border: 2px solid #fff !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; line-height: 1.2 !important;
-    z-index: 5 !important; display: inline-block !important;
-  }
-  #li-notificacion-alertas .icono-campana-alertas { display: inline-block !important; line-height: 1 !important; }
-  #li-notificacion-alertas>a.link-campana-alertas:hover .icono-campana-alertas img { opacity: 0.5 !important; }
-  #li-notificacion-alertas .icono-campana-alertas img {
-    height: 25px !important; width: 25px !important; display: block !important; margin-top: 0px !important;
-  }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    .input-error input[type="text"], .input-error select, .input-error textarea,
+    input.input-error, select.input-error, textarea.input-error {
+      border: 2px solid crimson !important;
+      box-shadow: 0 0 5px crimson !important;
+      background-color: #fff5f5 !important;
+    }
+    .nav-tabs>li>a { pointer-events: none; cursor: default; }
+    .nav-tabs li.disabled-table a { color: #b2b2b2 !important; }
+    #avisoModalConsulta { z-index: 2000000 !important; }
+    .fila-paciente-top .form-group { margin-bottom: 10px; }
+    #edad_paciente { background-color: #f4f4f4 !important; font-weight: bold; color: #333; text-align: center; }
+    .tab-content .tab-panel { display: none; }
+    .tab-content .tab-panel.active { display: block; }
+    .row-actions {
+      display: flex !important; justify-content: flex-end !important;
+      gap: 10px !important; margin: 22px 0 15px !important; padding: 0 5px !important;
+    }
+    .row-actions .btn { min-width: 110px; }
+    .tab-pane section { padding-bottom: 5px; }
+    .fila-ale .select-ale, .fila-pat .select-pat, .fila-disc .select-disc { width: 100%; }
+
+    .btn-antecedente-tipo {
+      min-height: 70px; text-align: left; padding: 10px 15px;
+      font-weight: 600; font-size: 13px; white-space: normal; line-height: 1.2;
+    }
+    .btn-antecedente-tipo .badge { background: #fff; color: #3c8dbc; font-weight: bold; }
+    .chk-antecedente-wrap { padding: 6px 10px; border-bottom: 1px solid #eee; }
+    .chk-antecedente-wrap:hover { background: #f9f9f9; }
+    .chk-antecedente-wrap label { font-weight: normal; cursor: pointer; margin: 0; }
+
+    /* Modales responsivos */
+    .modal-dialog { max-height: calc(100vh - 60px); margin: 30px auto; }
+    .modal-content { max-height: calc(100vh - 60px); display: flex; flex-direction: column; }
+    .modal-header, .modal-footer { flex-shrink: 0; }
+    .modal-body { overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; }
+    @media (max-width: 767px) {
+      .modal-dialog { max-height: calc(100vh - 20px); margin: 10px auto; }
+      .modal-content { max-height: calc(100vh - 20px); }
+    }
+    .modal.in ~ .modal-backdrop { z-index: 1040; }
+
+    /* Campana de alertas */
+    #li-notificacion-alertas>a.link-campana-alertas {
+      pointer-events: auto !important; cursor: pointer !important; text-decoration: none !important;
+      display: inline-block !important; position: relative !important; padding: 12px 18px !important; line-height: 1 !important;
+    }
+    #li-notificacion-alertas .badge.bg-crimson {
+      position: absolute !important; top: 6px !important; right: 8px !important;
+      background-color: crimson !important; color: #fff !important; font-size: 10px !important;
+      padding: 2px 6px !important; font-weight: bold !important; border-radius: 10px !important;
+      min-width: 18px !important; text-align: center !important; border: 2px solid #fff !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; line-height: 1.2 !important;
+      z-index: 5 !important; display: inline-block !important;
+    }
+    #li-notificacion-alertas .icono-campana-alertas { display: inline-block !important; line-height: 1 !important; }
+    #li-notificacion-alertas>a.link-campana-alertas:hover .icono-campana-alertas img { opacity: 0.5 !important; }
+    #li-notificacion-alertas .icono-campana-alertas img {
+      height: 25px !important; width: 25px !important; display: block !important; margin-top: 0px !important;
+    }
+  </style>
   <section class="content-header">
     <h1>Nueva Consulta Médica</h1>
     <ol class="breadcrumb">
@@ -555,343 +554,347 @@ verificarAcceso('Crear Consultas');
       </div>
     </div>
   </section>
-</div>
 
-<!-- ============ MODALES ============ -->
-<div class="modal fade" id="modalSeleccionTipoPaciente" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title text-white"><i class="fa fa-users"></i> Tipo de Paciente</h4>
-      </div>
-      <div class="modal-body text-center">
-        <p>¿Qué tipo de paciente desea registrar?</p>
-        <button type="button" class="btn btn-primary btn-block mb-2" id="btnAbrirModalAdulto"><i class="fa fa-user"></i> Paciente Adulto (+18)</button>
-        <button type="button" class="btn btn-info btn-block" id="btnAbrirModalMenor"><i class="fa fa-child"></i> Paciente Menor (-18)</button>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+
+  <!-- ============ MODALES ============ -->
+  <div class="modal fade" id="modalSeleccionTipoPaciente" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title text-white"><i class="fa fa-users"></i> Tipo de Paciente</h4>
+        </div>
+        <div class="modal-body text-center">
+          <p>¿Qué tipo de paciente desea registrar?</p>
+          <button type="button" class="btn btn-primary btn-block mb-2" id="btnAbrirModalAdulto"><i class="fa fa-user"></i> Paciente Adulto (+18)</button>
+          <button type="button" class="btn btn-info btn-block" id="btnAbrirModalMenor"><i class="fa fa-child"></i> Paciente Menor (-18)</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalSeleccionMedicamentos" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-info">
-        <h4 class="modal-title"><i class="fa fa-medkit"></i> Seleccionar Medicamentos</h4>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-xs-9">
-            <div class="form-group">
-              <label for="selectMedicamentos">Medicamento:</label>
-              <div class="input-group">
-                <select id="selectMedicamentos" class="form-control select2" style="width: 100%;">
-                  <option value="">Cargando medicamentos...</option>
-                </select>
-                <span class="input-group-btn">
-                  <button class="btn btn-info" type="button" id="btnInfoMedicamento" data-toggle="tooltip" title="Detalles" style="height: 34px;">
-                    <i><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></i>
-                  </button>
-                </span>
+  <div class="modal fade" id="modalSeleccionMedicamentos" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title"><i class="fa fa-medkit"></i> Seleccionar Medicamentos</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-xs-9">
+              <div class="form-group">
+                <label for="selectMedicamentos">Medicamento:</label>
+                <div class="input-group">
+                  <select id="selectMedicamentos" class="form-control select2" style="width: 100%;">
+                    <option value="">Cargando medicamentos...</option>
+                  </select>
+                  <span class="input-group-btn">
+                    <button class="btn btn-info" type="button" id="btnInfoMedicamento" data-toggle="tooltip" title="Detalles" style="height: 34px;">
+                      <i><img src="../../recursos/imagenes/iconos/info.png" style="width:15px; height:15px;"></i>
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-xs-3">
+              <div class="form-group">
+                <label>&nbsp;</label>
+                <button type="button" class="btn btn-info" id="btnAnadirMedicamento" style="width:100%;"><i class="fa fa-plus"></i> Añadir</button>
               </div>
             </div>
           </div>
-          <div class="col-xs-3">
-            <div class="form-group">
+          <hr style="margin: 10px 0;">
+          <div class="row">
+            <div class="col-xs-12">
+              <h5 style="font-weight: bold; color: #555;">Medicamentos Seleccionados:</h5>
+              <div id="contenedorMedicamentosSeleccionados" style="min-height: 80px; border: 2px dashed #ddd; padding: 15px; border-radius: 6px; background-color: #f9f9f9;">
+                <p class="text-muted text-center" id="textoVacio">No hay medicamentos añadidos aún.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="aplicarSeleccionMedicamentos"><i class="fa fa-check"></i> Aplicar Selección</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalExamenes" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title"><i class="fa fa-flask"></i> Gestionar Exámenes Solicitados</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-6">
+              <label>Examen:</label>
+              <select id="selectExamen" class="form-control"><option value="">--- Seleccione un examen ---</option></select>
+            </div>
+            <div class="col-sm-3">
+              <label>Prioridad:</label>
+              <select id="prioridadExamen" class="form-control">
+                <option value="Rutina">Rutina</option>
+                <option value="Urgente">Urgente</option>
+              </select>
+            </div>
+            <div class="col-sm-3">
               <label>&nbsp;</label>
-              <button type="button" class="btn btn-info" id="btnAnadirMedicamento" style="width:100%;"><i class="fa fa-plus"></i> Añadir</button>
+              <button type="button" class="btn btn-info form-control" id="btn_add_examen"><i class="fa fa-plus"></i> Añadir</button>
             </div>
           </div>
-        </div>
-        <hr style="margin: 10px 0;">
-        <div class="row">
-          <div class="col-xs-12">
-            <h5 style="font-weight: bold; color: #555;">Medicamentos Seleccionados:</h5>
-            <div id="contenedorMedicamentosSeleccionados" style="min-height: 80px; border: 2px dashed #ddd; padding: 15px; border-radius: 6px; background-color: #f9f9f9;">
-              <p class="text-muted text-center" id="textoVacio">No hay medicamentos añadidos aún.</p>
-            </div>
+          <div class="form-group" style="margin-top:10px;">
+            <label>Indicaciones (opcional):</label>
+            <input type="text" id="indicacionesExamen" class="form-control" placeholder="Ej: en ayunas, con contraste">
+          </div>
+          <hr>
+          <div id="contenedor_examenes" style="min-height: 80px; border: 2px dashed #ddd; padding: 15px; border-radius: 6px; background-color: #f9f9f9;">
+            <p class="text-muted text-center" id="texto_vacio_examenes">No hay exámenes añadidos aún.</p>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="aplicarSeleccionMedicamentos"><i class="fa fa-check"></i> Aplicar Selección</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="aplicar_examenes"><i class="fa fa-check"></i> Aplicar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalExamenes" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-info">
-        <h4 class="modal-title"><i class="fa fa-flask"></i> Gestionar Exámenes Solicitados</h4>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-sm-6">
-            <label>Examen:</label>
-            <select id="selectExamen" class="form-control"><option value="">--- Seleccione un examen ---</option></select>
+  <div class="modal fade" id="modalAlergiaRapida" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-warning"></i> Gestionar Alergias</h4></div>
+        <div class="modal-body">
+          <div id="existentes_alergias_wrap" style="display:none; margin-bottom:15px;">
+            <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Alergias registradas previamente</h5>
+            <div id="existentes_alergias_list" style="margin-top:8px;"></div>
           </div>
-          <div class="col-sm-3">
-            <label>Prioridad:</label>
-            <select id="prioridadExamen" class="form-control">
-              <option value="Rutina">Rutina</option>
-              <option value="Urgente">Urgente</option>
-            </select>
-          </div>
-          <div class="col-sm-3">
-            <label>&nbsp;</label>
-            <button type="button" class="btn btn-info form-control" id="btn_add_examen"><i class="fa fa-plus"></i> Añadir</button>
+          <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Nuevas alergias a registrar</h5>
+          <div id="contenedor_filas_alergias" style="margin-top:10px;"></div>
+          <div style="margin-top:10px;">
+            <button type="button" class="btn btn-success btn-sm" id="add_fila_ale"><i class="fa fa-plus"></i> Añadir otra</button>
+            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaAlergiaRapida" style="margin-left:5px;"><i class="fa fa-plus-circle"></i> Nueva Alergia</button>
           </div>
         </div>
-        <div class="form-group" style="margin-top:10px;">
-          <label>Indicaciones (opcional):</label>
-          <input type="text" id="indicacionesExamen" class="form-control" placeholder="Ej: en ayunas, con contraste">
-        </div>
-        <hr>
-        <div id="contenedor_examenes" style="min-height: 80px; border: 2px dashed #ddd; padding: 15px; border-radius: 6px; background-color: #f9f9f9;">
-          <p class="text-muted text-center" id="texto_vacio_examenes">No hay exámenes añadidos aún.</p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="guardar_alergias_listo">Listo</button>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="aplicar_examenes"><i class="fa fa-check"></i> Aplicar</button>
-      </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalAlergiaRapida" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-warning"></i> Gestionar Alergias</h4></div>
-      <div class="modal-body">
-        <div id="existentes_alergias_wrap" style="display:none; margin-bottom:15px;">
-          <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Alergias registradas previamente</h5>
-          <div id="existentes_alergias_list" style="margin-top:8px;"></div>
+  <div class="modal fade" id="modalPatologiaRapida" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-heartbeat"></i> Gestionar Patologías</h4></div>
+        <div class="modal-body">
+          <div id="existentes_patologias_wrap" style="display:none; margin-bottom:15px;">
+            <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Patologías registradas previamente</h5>
+            <div id="existentes_patologias_list" style="margin-top:8px;"></div>
+          </div>
+          <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Nuevas patologías a registrar</h5>
+          <div id="contenedor_filas_patologias" style="margin-top:10px;"></div>
+          <div style="margin-top:10px;">
+            <button type="button" class="btn btn-success btn-sm" id="add_fila_pat"><i class="fa fa-plus"></i> Añadir otra</button>
+            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologiaRapida" style="margin-left:5px;"><i class="fa fa-plus-circle"></i> Nueva Patología</button>
+          </div>
         </div>
-        <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Nuevas alergias a registrar</h5>
-        <div id="contenedor_filas_alergias" style="margin-top:10px;"></div>
-        <div style="margin-top:10px;">
-          <button type="button" class="btn btn-success btn-sm" id="add_fila_ale"><i class="fa fa-plus"></i> Añadir otra</button>
-          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaAlergiaRapida" style="margin-left:5px;"><i class="fa fa-plus-circle"></i> Nueva Alergia</button>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="guardar_alergias_listo">Listo</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalPatologiaRapida" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-heartbeat"></i> Gestionar Patologías</h4></div>
-      <div class="modal-body">
-        <div id="existentes_patologias_wrap" style="display:none; margin-bottom:15px;">
-          <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Patologías registradas previamente</h5>
-          <div id="existentes_patologias_list" style="margin-top:8px;"></div>
-        </div>
-        <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Nuevas patologías a registrar</h5>
-        <div id="contenedor_filas_patologias" style="margin-top:10px;"></div>
-        <div style="margin-top:10px;">
-          <button type="button" class="btn btn-success btn-sm" id="add_fila_pat"><i class="fa fa-plus"></i> Añadir otra</button>
-          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevaPatologiaRapida" style="margin-left:5px;"><i class="fa fa-plus-circle"></i> Nueva Patología</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="guardar_patologias_listo">Listo</button>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="guardar_patologias_listo">Listo</button>
-      </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalDiscapacidadRapida" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-wheelchair"></i> Gestionar Discapacidades</h4></div>
-      <div class="modal-body">
-        <div id="existentes_discapacidades_wrap" style="display:none; margin-bottom:15px;">
-          <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Discapacidades registradas previamente</h5>
-          <div id="existentes_discapacidades_list" style="margin-top:8px;"></div>
+  <div class="modal fade" id="modalDiscapacidadRapida" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-wheelchair"></i> Gestionar Discapacidades</h4></div>
+        <div class="modal-body">
+          <div id="existentes_discapacidades_wrap" style="display:none; margin-bottom:15px;">
+            <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Discapacidades registradas previamente</h5>
+            <div id="existentes_discapacidades_list" style="margin-top:8px;"></div>
+          </div>
+          <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Nuevas discapacidades a registrar</h5>
+          <div id="contenedor_filas_discapacidades" style="margin-top:10px;"></div>
+          <div style="margin-top:10px;">
+            <button type="button" class="btn btn-success btn-sm" id="add_fila_disc"><i class="fa fa-plus"></i> Añadir otra</button>
+          </div>
         </div>
-        <h5 style="color:#555; border-bottom:1px solid #ddd; padding-bottom:5px;">Nuevas discapacidades a registrar</h5>
-        <div id="contenedor_filas_discapacidades" style="margin-top:10px;"></div>
-        <div style="margin-top:10px;">
-          <button type="button" class="btn btn-success btn-sm" id="add_fila_disc"><i class="fa fa-plus"></i> Añadir otra</button>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="guardar_discapacidades_listo">Listo</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalNuevaAlergiaRapida" tabindex="-1" role="dialog" style="z-index: 1080;">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Alergia (Catálogo)</h4></div>
-      <div class="modal-body">
-        <div class="form-group"><label>Nombre de la Alergia (*):</label><input type="text" class="form-control" id="ajax_nombre_ale_nuevo"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn_guardar_nueva_ale">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalNuevaPatologiaRapida" tabindex="-1" role="dialog" style="z-index: 1080;">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Patología (Catálogo)</h4></div>
-      <div class="modal-body">
-        <div class="form-group"><label>Nombre (*):</label><input type="text" class="form-control" id="ajax_nombre_pat_nuevo"></div>
-        <div class="form-group"><label>Código CIE (Opcional):</label><input type="text" class="form-control" id="ajax_cie_pat_nuevo"></div>
-        <div class="form-group"><label>¿Es contagiosa?</label>
-          <select class="form-control" id="ajax_contagiosa_pat_nuevo">
-            <option value="NO">NO</option>
-            <option value="SI">SI</option>
-          </select>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="guardar_discapacidades_listo">Listo</button>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn_guardar_nueva_pat">Guardar</button>
-      </div>
     </div>
   </div>
-</div>
 
-<!-- ============ MODALES DE ANTECEDENTES ============ -->
-<div class="modal fade" id="modalAntecedentesLista" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-clipboard-list"></i> Antecedentes Médicos del Paciente</h4></div>
-      <div class="modal-body">
-        <p class="text-muted">Seleccione el tipo de antecedente que desea registrar o revisar:</p>
-        <div class="row" id="contenedor-botones-antecedentes"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-success" id="btn_guardar_todos_antecedentes"><i class="fa fa-save"></i> Guardar Selecciones</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalChecklistAntecedente" tabindex="-1" role="dialog" style="z-index: 1080;">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-info">
-        <h4 class="modal-title" id="titulo-checklist-antecedente"><i class="fa fa-check-square-o"></i> Checklist</h4>
-      </div>
-      <div class="modal-body">
-        <div id="contenedor-checklist-antecedente"></div>
-        <div class="form-group" style="margin-top:15px;">
-          <label><b>Observaciones adicionales:</b></label>
-          <textarea class="form-control" id="observaciones-checklist" rows="2" placeholder="Detalles u observaciones..."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="btn_guardar_checklist_antecedente"><i class="fa fa-check"></i> Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============ AVISOS Y CONFIRMACIONES ============ -->
-<div class="modal fade" id="avisoModalConsulta" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson" id="headerAvisoConsulta">
-        <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Aviso Importante</h4>
-      </div>
-      <div class="modal-body"><div id="avisoTextoConsulta"></div></div>
-      <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalGuardarConsulta" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-green"><h4 class="modal-title"><i class="fa fa-save"></i> Confirmación de Guardado</h4></div>
-      <div class="modal-body"><p>¿Está seguro de que desea guardar la información de la nueva consulta?</p></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="enviar">Aceptar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalConfirmarRegresoConsulta" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson"><h4 class="modal-title"><i class="fa fa-sign-out"></i> Confirmación de Regreso</h4></div>
-      <div class="modal-body"><p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <a href="consulta_listado.php" class="btn btn-danger">Abandonar Formulario</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalAlertaSalud" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h4 class="modal-title text-white"><i class="fas fa-exclamation-circle"></i> Puntos de Atención</h4>
-      </div>
-      <div class="modal-body"><div id="contenedorAlertas" class="px-3"></div></div>
-      <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalTimelineCompleta" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-info"><h4 class="modal-title"><i class="fa fa-history"></i> Historial Completo de Consultas</h4></div>
-      <div class="modal-body" style="max-height: 450px; overflow-y: auto;">
-        <div id="contenedor-timeline-completa">
-          <div class="text-center"><i class="fa fa-refresh fa-spin"></i> Cargando historial...</div>
-        </div>
-      </div>
-      <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
-    </div>
-  </div>
-</div>
-
-<?php if ($error_busqueda) : ?>
-  <div class="modal fade" id="modal-error" tabindex="-1" role="dialog">
+  <div class="modal fade" id="modalNuevaAlergiaRapida" tabindex="-1" role="dialog" style="z-index: 1080;">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header bg-crimson"><h5 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Error de Búsqueda</h5></div>
-        <div class="modal-body"><p><?php echo htmlspecialchars($error_busqueda); ?></p></div>
+        <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Alergia (Catálogo)</h4></div>
+        <div class="modal-body">
+          <div class="form-group"><label>Nombre de la Alergia (*):</label><input type="text" class="form-control" id="ajax_nombre_ale_nuevo"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn_guardar_nueva_ale">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalNuevaPatologiaRapida" tabindex="-1" role="dialog" style="z-index: 1080;">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-plus-circle"></i> Nueva Patología (Catálogo)</h4></div>
+        <div class="modal-body">
+          <div class="form-group"><label>Nombre (*):</label><input type="text" class="form-control" id="ajax_nombre_pat_nuevo"></div>
+          <div class="form-group"><label>Código CIE (Opcional):</label><input type="text" class="form-control" id="ajax_cie_pat_nuevo"></div>
+          <div class="form-group"><label>¿Es contagiosa?</label>
+            <select class="form-control" id="ajax_contagiosa_pat_nuevo">
+              <option value="NO">NO</option>
+              <option value="SI">SI</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn_guardar_nueva_pat">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODALES DE ANTECEDENTES ============ -->
+  <div class="modal fade" id="modalAntecedentesLista" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary"><h4 class="modal-title"><i class="fa fa-clipboard-list"></i> Antecedentes Médicos del Paciente</h4></div>
+        <div class="modal-body">
+          <p class="text-muted">Seleccione el tipo de antecedente que desea registrar o revisar:</p>
+          <div class="row" id="contenedor-botones-antecedentes"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-success" id="btn_guardar_todos_antecedentes"><i class="fa fa-save"></i> Guardar Selecciones</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalChecklistAntecedente" tabindex="-1" role="dialog" style="z-index: 1080;">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title" id="titulo-checklist-antecedente"><i class="fa fa-check-square-o"></i> Checklist</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor-checklist-antecedente"></div>
+          <div class="form-group" style="margin-top:15px;">
+            <label><b>Observaciones adicionales:</b></label>
+            <textarea class="form-control" id="observaciones-checklist" rows="2" placeholder="Detalles u observaciones..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btn_guardar_checklist_antecedente"><i class="fa fa-check"></i> Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ AVISOS Y CONFIRMACIONES ============ -->
+  <div class="modal fade" id="avisoModalConsulta" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson" id="headerAvisoConsulta">
+          <h4 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Aviso Importante</h4>
+        </div>
+        <div class="modal-body"><div id="avisoTextoConsulta"></div></div>
         <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
       </div>
     </div>
   </div>
-  <script>$(function() { $('#modal-error').modal('show'); });</script>
-<?php endif; ?>
+
+  <div class="modal fade" id="modalGuardarConsulta" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green"><h4 class="modal-title"><i class="fa fa-save"></i> Confirmación de Guardado</h4></div>
+        <div class="modal-body"><p>¿Está seguro de que desea guardar la información de la nueva consulta?</p></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="enviar">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalConfirmarRegresoConsulta" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson"><h4 class="modal-title"><i class="fa fa-sign-out"></i> Confirmación de Regreso</h4></div>
+        <div class="modal-body"><p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="consulta_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalAlertaSalud" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h4 class="modal-title text-white"><i class="fas fa-exclamation-circle"></i> Puntos de Atención</h4>
+        </div>
+        <div class="modal-body"><div id="contenedorAlertas" class="px-3"></div></div>
+        <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalTimelineCompleta" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info"><h4 class="modal-title"><i class="fa fa-history"></i> Historial Completo de Consultas</h4></div>
+        <div class="modal-body" style="max-height: 450px; overflow-y: auto;">
+          <div id="contenedor-timeline-completa">
+            <div class="text-center"><i class="fa fa-refresh fa-spin"></i> Cargando historial...</div>
+          </div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <?php if ($error_busqueda) : ?>
+    <div class="modal fade" id="modal-error" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-crimson"><h5 class="modal-title"><i class="fa fa-exclamation-triangle"></i> Error de Búsqueda</h5></div>
+          <div class="modal-body"><p><?php echo htmlspecialchars($error_busqueda); ?></p></div>
+          <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
+        </div>
+      </div>
+    </div>
+    <script>$(function() { $('#modal-error').modal('show'); });</script>
+  <?php endif; ?>
+
+  <?php
+  include('modales/personas/pacientes_agregar_modal.php');
+  include('modales/personas/pacientes_menores_agregar_modal.php');
+  ?>
+</div>
 
 <?php
-include('modales/personas/pacientes_agregar_modal.php');
-include('modales/personas/pacientes_menores_agregar_modal.php');
 include('includes/footer.php');
 ?>
 

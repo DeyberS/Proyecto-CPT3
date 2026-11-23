@@ -196,16 +196,10 @@ verificarAcceso('Gestionar Programa');
   <section class="content">
     <div class="toolbar-container">
       <!-- BOTÓN DE HISTORIAL DE ENTREGAS (abre modal) -->
-      <a href="#" class="btn-sm btn-info pull-right" data-toggle="modal" data-target="#modalHistorialEntregas" style="height:31px;">
-        <i class="fa fa-history"></i> Ver Entregas
-        </button>
-
-        <!-- BOTÓN DE NUEVA PETICIÓN -->
-        <a href="programa_peticion_agregar.php" class="btn-sm btn-success pull-right" style="height:31px;">
-          <i class="fa fa-plus"></i> Nueva Petición
-        </a>
-
-        <!-- BUSCADOR -->
+        <a href="#" class="btn-sm btn-info pull-right" data-toggle="modal" data-target="#modalHistorialEntregas" style="height:31px;">
+        <i class="fa fa-history"></i> Ver Entregas</a>
+        <p class="pull-right" style="width:5px;"></p>
+        <a href="programa_peticion_agregar.php" class="btn-sm btn-success pull-right" style="height:31px;"><i class="fa fa-plus"></i> Nueva Petición</a>
         <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Escriba para buscar..." style="border-radius:0; height:10%; width:250px; display:inline-block;" autocomplete="off">
     </div>
     <br><br>

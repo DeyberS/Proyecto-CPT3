@@ -128,109 +128,110 @@ verificarAcceso('Editar Patologias');
               </div>
             </div>
           </div>
-
-          <div class="modal fade" id="modal_sintomas" role="dialog">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header bg-primary">
-                  <h4 class="modal-title">Gestionar Síntomas</h4>
-                </div>
-                <div class="modal-body">
-                  <div id="contenedor_filas_sintomas"></div>
-                  <button type="button" class="btn btn-success btn-sm pull-left" id="add_fila_sintoma">
-                    <i class="fa fa-plus"></i> Añadir otro
-                  </button>
-                  <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoSintoma" style="margin-left:5px;">
-                    <i class="fa fa-star"></i> Nuevo Sintoma
-                  </button>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-primary" id="guardar_sintomas_listo" data-dismiss="modal">Listo</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal fade" id="modalNuevoSintoma" role="dialog">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header bg-primary">
-                  <h4 class="modal-title">Crear Nuevo Síntoma</h4>
-                </div>
-                <div class="modal-body">
-                  <div class="form-group">
-                    <label>Nombre del Síntoma</label>
-                    <input type="text" id="nombre_nuevo_sintoma" class="form-control" placeholder="Ej. Dolor de cabeza">
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-primary" id="btnGuardarSintomaBD">Guardar</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal fade" id="modalBuscarSintoma" role="dialog">
-            <div class="modal-dialog modal-sm" role="document">
-              <div class="modal-content">
-                <div class="modal-header bg-info">
-                  <h4 class="modal-title">Buscar Síntoma</h4>
-                </div>
-                <div class="modal-body">
-                  <input type="text" id="inputBuscarSintoma" class="form-control" placeholder="Escriba para filtrar...">
-                  <div class="list-group" id="listaResultadosSintoma" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
+    </div>
   </section>
-</div>
 
-<div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title">Aviso de Validación
-      </div>
-      <div class="modal-body">
-        <p id="avisoTexto"></p>
-      </div>
-      <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalRegresar" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h4 class="modal-title">Confirmación de Regreso</h4>
-      </div>
-      <div class="modal-body">
-        <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <a href="salud_patologias_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+  <div class="modal fade" id="modal_sintomas" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title">Gestionar Síntomas</h4>
+        </div>
+        <div class="modal-body">
+          <div id="contenedor_filas_sintomas"></div>
+          <button type="button" class="btn btn-success btn-sm pull-left" id="add_fila_sintoma">
+            <i class="fa fa-plus"></i> Añadir otro
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoSintoma" style="margin-left:5px;">
+            <i class="fa fa-star"></i> Nuevo Sintoma
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="guardar_sintomas_listo" data-dismiss="modal">Listo</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="modal fade" id="modalGuardar" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-green">
-        <h4 class="modal-title">Confirmación de Guardado</h4>
+  <div class="modal fade" id="modalNuevoSintoma" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title">Crear Nuevo Síntoma</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre del Síntoma</label>
+            <input type="text" id="nombre_nuevo_sintoma" class="form-control" placeholder="Ej. Dolor de cabeza">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="btnGuardarSintomaBD">Guardar</button>
+        </div>
       </div>
-      <div class="modal-body">
-        <p>¿Está seguro de que desea actualizar la información de la patología?</p>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalBuscarSintoma" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info">
+          <h4 class="modal-title">Buscar Síntoma</h4>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="inputBuscarSintoma" class="form-control" placeholder="Escriba para filtrar...">
+          <div class="list-group" id="listaResultadosSintoma" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="confirmarGuardar">Aceptar</button>
+    </div>
+  </div>
+
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title">Aviso de Validación
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalRegresar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h4 class="modal-title">Confirmación de Regreso</h4>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="salud_patologias_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalGuardar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h4 class="modal-title">Confirmación de Guardado</h4>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea actualizar la información de la patología?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardar">Aceptar</button>
+        </div>
       </div>
     </div>
   </div>

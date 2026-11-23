@@ -8,26 +8,97 @@ include("../../cfg/conexion.php");
   <title>Pedidos de Vacunas | Añadir</title>
 </head>
 
-<style>
-  .tags-input-container {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 5px; width: 100%; min-height: 34px;
-    padding: 4px 12px; font-size: 14px; line-height: 1.42857143; color: #555; background-color: #fff;
-    border: 1px solid #ccc; border-radius: 4px; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s; cursor: text;
-  }
-  .tags-input-container:focus-within { border-color: #66afe9; outline: 0; box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6); }
-  .tags-input-fake { border: none; outline: none; background: transparent; flex-grow: 1; min-width: 150px; height: 24px; box-shadow: none !important; }
-  .tag-badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 3px; font-size: 12px; margin-bottom: 2px; margin-top: 2px; }
-  .tag-badge .remove-tag { margin-left: 6px; cursor: pointer; font-weight: bold; }
-  .table-detalle th { background-color: #f4f4f4; text-align: center; }
-  .table-detalle td { text-align: center; vertical-align: middle !important; }
-  .area-trabajo-blanca { background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 20px; overflow: hidden; }
-  input[type="date"][readonly], input[type="date"][disabled] { background-color: #eeeeee !important; cursor: not-allowed; }
-  .table-responsive { max-height: 220px; overflow-y: auto; }
-  .table-detalle thead th { position: sticky; top: 0; background-color: #f4f4f4; z-index: 1; }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+      min-height: 34px;
+      padding: 4px 12px;
+      font-size: 14px;
+      line-height: 1.42857143;
+      color: #555;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+      transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+      cursor: text;
+    }
+
+    .tags-input-container:focus-within {
+      border-color: #66afe9;
+      outline: 0;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      background: transparent;
+      flex-grow: 1;
+      min-width: 150px;
+      height: 24px;
+      box-shadow: none !important;
+    }
+
+    .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-bottom: 2px;
+      margin-top: 2px;
+    }
+
+    .tag-badge .remove-tag {
+      margin-left: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .table-detalle th {
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    .table-detalle td {
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    input[type="date"][readonly],
+    input[type="date"][disabled] {
+      background-color: #eeeeee !important;
+      cursor: not-allowed;
+    }
+
+    .table-responsive {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .table-detalle thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f4f4f4;
+      z-index: 1;
+    }
+  </style>
+
   <section class="content-header">
     <h1>Añadir Pedido de Vacunas</h1>
     <ol class="breadcrumb">
@@ -78,7 +149,8 @@ include("../../cfg/conexion.php");
                     <div class="input-group">
                       <input type="date" id="fecha_pedido" name="fecha_pedido" class="form-control" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>" onkeydown="return false;" style="width: 100%;">
                       <div class="input-group-btn" style="width: 100%;">
-                        <input type="time" id="hora_pedido" name="hora_pedido" class="form-control" value="<?php date_default_timezone_set('America/Caracas'); echo date('H:i'); ?>">
+                        <input type="time" id="hora_pedido" name="hora_pedido" class="form-control" value="<?php date_default_timezone_set('America/Caracas');
+                                                                                                            echo date('H:i'); ?>">
                       </div>
                     </div>
                   </div>
@@ -285,7 +357,6 @@ include("../../cfg/conexion.php");
       </div>
     </div>
   </div>
-
 </div>
 
 <?php include('includes/footer.php'); ?>
@@ -335,9 +406,20 @@ include("../../cfg/conexion.php");
 
       // SIMULACIÓN: En lugar de AJAX, quemamos los datos
       setTimeout(function() {
-        let response = [
-          { id_descripcion: '1', nombre_completo: 'Antipoliomielítica (VPI) [1 Dosis]', cantidad_a_pedir: 200, existencia_actual: 20, stock_maximo: 500 },
-          { id_descripcion: '3', nombre_completo: 'Vacuna BCG [20 Dosis]', cantidad_a_pedir: 50, existencia_actual: 10, stock_maximo: 300 }
+        let response = [{
+            id_descripcion: '1',
+            nombre_completo: 'Antipoliomielítica (VPI) [1 Dosis]',
+            cantidad_a_pedir: 200,
+            existencia_actual: 20,
+            stock_maximo: 500
+          },
+          {
+            id_descripcion: '3',
+            nombre_completo: 'Vacuna BCG [20 Dosis]',
+            cantidad_a_pedir: 50,
+            existencia_actual: 10,
+            stock_maximo: 300
+          }
         ];
 
         if (response.length === 0) {
@@ -379,9 +461,22 @@ include("../../cfg/conexion.php");
       if (idMed) {
         // SIMULACIÓN: En lugar de AJAX, quemamos los datos
         let data = {};
-        if (idMed == '1') { data = { existencia_actual: 20, stock_maximo: 500 }; }
-        else if (idMed == '2') { data = { existencia_actual: 100, stock_maximo: 300 }; }
-        else if (idMed == '3') { data = { existencia_actual: 10, stock_maximo: 300 }; }
+        if (idMed == '1') {
+          data = {
+            existencia_actual: 20,
+            stock_maximo: 500
+          };
+        } else if (idMed == '2') {
+          data = {
+            existencia_actual: 100,
+            stock_maximo: 300
+          };
+        } else if (idMed == '3') {
+          data = {
+            existencia_actual: 10,
+            stock_maximo: 300
+          };
+        }
 
         let ext = data.existencia_actual || 0;
         let sMax = data.stock_maximo || 0;
@@ -430,7 +525,10 @@ include("../../cfg/conexion.php");
         if (busquedaRapida && !texto.includes(busquedaRapida.toLowerCase())) match = false;
         if (nombre_med && !texto.includes(nombre_med.toLowerCase())) match = false;
         if (principios && !texto.includes(principios.toLowerCase())) match = false;
-        if (match) { opcionesFiltradas += $(this)[0].outerHTML; hayResultados = true; }
+        if (match) {
+          opcionesFiltradas += $(this)[0].outerHTML;
+          hayResultados = true;
+        }
       });
 
       if (hayResultados) {
@@ -482,7 +580,11 @@ include("../../cfg/conexion.php");
             let ultimaEtiqueta = tagsArray.pop();
             $(this).val(ultimaEtiqueta);
             renderizarTags();
-            if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+            if (tagsArray.length === 0) {
+              $('#btnLimpiarFiltros').click();
+            } else {
+              $('#btnAplicarFiltros').click();
+            }
           }
         }
       });
@@ -491,11 +593,20 @@ include("../../cfg/conexion.php");
         let index = $(this).data('index');
         tagsArray.splice(index, 1);
         renderizarTags();
-        if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+        if (tagsArray.length === 0) {
+          $('#btnLimpiarFiltros').click();
+        } else {
+          $('#btnAplicarFiltros').click();
+        }
       });
 
-      $contenedor.on('click', function() { $inputFalso.focus(); });
-      $('#btnLimpiarFiltros').on('click', function() { tagsArray = []; renderizarTags(); });
+      $contenedor.on('click', function() {
+        $inputFalso.focus();
+      });
+      $('#btnLimpiarFiltros').on('click', function() {
+        tagsArray = [];
+        renderizarTags();
+      });
     }
 
     inicializarTags('#filtro_busqueda_rapida');
@@ -522,8 +633,16 @@ include("../../cfg/conexion.php");
 
       $('#select_medicamento, #cantidad_agregar').removeClass('input-error');
 
-      if (!idMed) { $('#select_medicamento').addClass('input-error'); mostrarAviso("Debe seleccionar una vacuna del catálogo."); return; }
-      if (!cantidad || cantidad <= 0 || isNaN(cantidad)) { $('#cantidad_agregar').addClass('input-error'); mostrarAviso("Por favor, ingrese una cantidad válida mayor a cero."); return; }
+      if (!idMed) {
+        $('#select_medicamento').addClass('input-error');
+        mostrarAviso("Debe seleccionar una vacuna del catálogo.");
+        return;
+      }
+      if (!cantidad || cantidad <= 0 || isNaN(cantidad)) {
+        $('#cantidad_agregar').addClass('input-error');
+        mostrarAviso("Por favor, ingrese una cantidad válida mayor a cero.");
+        return;
+      }
 
       if (sMax > 0 && (existencia + cantidad) > sMax) {
         $('#cantidad_agregar').addClass('input-error');
@@ -537,7 +656,13 @@ include("../../cfg/conexion.php");
         if (existe) {
           existe.cantidad += cantidad;
         } else {
-          listaItemsPedido.push({ id_descripcion: idMed, nombre: nombreMed, cantidad: cantidad, existencia_actual: existencia, stock_maximo: sMax });
+          listaItemsPedido.push({
+            id_descripcion: idMed,
+            nombre: nombreMed,
+            cantidad: cantidad,
+            existencia_actual: existencia,
+            stock_maximo: sMax
+          });
         }
       } else {
         listaItemsPedido[indexEdicion].cantidad = cantidad;
@@ -546,7 +671,10 @@ include("../../cfg/conexion.php");
 
       actualizarTablaVisual();
       $('#modalAgregarMedicamento').removeClass('in').addClass('out');
-      setTimeout(function() { $('#modalAgregarMedicamento').modal('hide'); $('#modalAgregarMedicamento').removeClass('out'); }, 400);
+      setTimeout(function() {
+        $('#modalAgregarMedicamento').modal('hide');
+        $('#modalAgregarMedicamento').removeClass('out');
+      }, 400);
     });
 
     // ACTUALIZAR TABLA VISUAL
@@ -596,7 +724,9 @@ include("../../cfg/conexion.php");
       $('#modalAgregarMedicamento').modal('show');
     });
 
-    $('#abrirModalRegresar').on('click', function() { $('#modalRegresarInventario').modal('show'); });
+    $('#abrirModalRegresar').on('click', function() {
+      $('#modalRegresarInventario').modal('show');
+    });
 
     // VALIDACIÓN FINAL
     $('#btnValidarGuardar').on('click', function() {
@@ -606,10 +736,26 @@ include("../../cfg/conexion.php");
       $('#id_usuario').removeClass('input-error');
       $('#btnAbrirModalAgregar').removeClass('btn-error-sombreado');
 
-      if ($('#fecha_pedido').val() === "") { $('#fecha_pedido').addClass('input-error'); mostrarAviso("Debe asignar una fecha al pedido."); return; }
-      if ($('#hora_pedido').val() === "") { $('#hora_pedido').addClass('input-error'); mostrarAviso("Debe asignar una hora al pedido."); return; }
-      if ($('#id_usuario').val() === "") { $('#id_usuario').addClass('input-error'); mostrarAviso("Debe seleccionar el Usuario Solicitante."); return; }
-      if ($('#proveedor').val() === "") { $('#proveedor').addClass('input-error'); mostrarAviso("Debe seleccionar obligatoriamente un Proveedor / Donante."); return; }
+      if ($('#fecha_pedido').val() === "") {
+        $('#fecha_pedido').addClass('input-error');
+        mostrarAviso("Debe asignar una fecha al pedido.");
+        return;
+      }
+      if ($('#hora_pedido').val() === "") {
+        $('#hora_pedido').addClass('input-error');
+        mostrarAviso("Debe asignar una hora al pedido.");
+        return;
+      }
+      if ($('#id_usuario').val() === "") {
+        $('#id_usuario').addClass('input-error');
+        mostrarAviso("Debe seleccionar el Usuario Solicitante.");
+        return;
+      }
+      if ($('#proveedor').val() === "") {
+        $('#proveedor').addClass('input-error');
+        mostrarAviso("Debe seleccionar obligatoriamente un Proveedor / Donante.");
+        return;
+      }
 
       if (listaItemsPedido.length === 0) {
         $('#btnAbrirModalAgregar').addClass('btn-error-sombreado');

@@ -20,26 +20,114 @@ verificarAcceso('Generar Despacho de Inventario');
   <title>Inventario | Despacho de Vacunas</title>
 </head>
 
-<style>
-  #avisoModal { z-index: 1000000 !important; }
-  .table-responsive { max-height: 220px; overflow-y: auto; }
-  .table-detalle thead th { position: sticky; top: 0; background-color: #f4f4f4; z-index: 1; }
-  .input-group { display: flex !important; width: 100% !important; align-items: stretch; }
-  .input-group .form-control { flex: 1 1 auto; width: 1% !important; height: 34px !important; }
-  .input-group-btn { width: auto !important; display: flex !important; align-items: stretch; }
-  .input-group-btn .btn { height: 34px !important; display: flex; align-items: center; justify-content: center; }
-  .input-group-btn style[width="25%"], .input-group-btn[style*="width: 25%"] { width: 65px !important; flex: 0 0 65px !important; }
-  .tags-input-container { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px; border: 1px solid #d2d6de; background-color: #fff; min-height: 34px; cursor: text; }
-  .tags-input-container .tag-badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: white; }
-  .tags-input-container .tag-badge i { margin-left: 6px; cursor: pointer; font-size: 10px; }
-  .tags-input-fake { border: none; outline: none; flex-grow: 1; min-width: 150px; padding: 2px; }
-  .table-detalle th { background-color: #f4f4f4; text-align: center; }
-  .table-detalle td { text-align: center; vertical-align: middle !important; }
-  .area-trabajo-blanca { background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); margin-bottom: 20px; overflow: hidden; }
-  input[type="date"][readonly], input[type="date"][disabled] { background-color: #eeeeee !important; cursor: not-allowed; }
-</style>
-
 <div class="content-wrapper">
+  <style>
+    #avisoModal {
+      z-index: 1000000 !important;
+    }
+
+    .table-responsive {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .table-detalle thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f4f4f4;
+      z-index: 1;
+    }
+
+    .input-group {
+      display: flex !important;
+      width: 100% !important;
+      align-items: stretch;
+    }
+
+    .input-group .form-control {
+      flex: 1 1 auto;
+      width: 1% !important;
+      height: 34px !important;
+    }
+
+    .input-group-btn {
+      width: auto !important;
+      display: flex !important;
+      align-items: stretch;
+    }
+
+    .input-group-btn .btn {
+      height: 34px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .input-group-btn style[width="25%"],
+    .input-group-btn[style*="width: 25%"] {
+      width: 65px !important;
+      flex: 0 0 65px !important;
+    }
+
+    .tags-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 4px;
+      border: 1px solid #d2d6de;
+      background-color: #fff;
+      min-height: 34px;
+      cursor: text;
+    }
+
+    .tags-input-container .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .tags-input-container .tag-badge i {
+      margin-left: 6px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .tags-input-fake {
+      border: none;
+      outline: none;
+      flex-grow: 1;
+      min-width: 150px;
+      padding: 2px;
+    }
+
+    .table-detalle th {
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    .table-detalle td {
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .area-trabajo-blanca {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    input[type="date"][readonly],
+    input[type="date"][disabled] {
+      background-color: #eeeeee !important;
+      cursor: not-allowed;
+    }
+  </style>
   <section class="content-header">
     <h1>Despachar Vacunas (Biológicos)</h1>
     <ol class="breadcrumb">
@@ -186,217 +274,217 @@ verificarAcceso('Generar Despacho de Inventario');
       </div>
     </form>
   </section>
-</div>
 
-<!-- MODAL AGREGAR VACUNA AL DESPACHO -->
-<div class="modal" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title"><i class="fa fa-share-square-o"></i> Despachar Vacuna</h4>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
-              <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre de la vacuna...">
-            </div>
-          </div>
-          <br><br>
-          <div class="col-sm-12 form-group">
-            <label>Vacuna del Catálogo (*):</label>
-            <div class="input-group">
-              <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control select2" style="width: 100%;">
-                <option value="">--- Seleccione una Vacuna ---</option>
-                <!-- SIMULACIÓN -->
-                <option value="1" data-nombre="Antipoliomielítica (VPI) [1 Dosis]" data-componentes="Virus Inactivados">Antipoliomielítica (VPI) - [1 Dosis]</option>
-                <option value="2" data-nombre="Antisarampión (SRP) [10 Dosis]" data-componentes="Virus Atenuados">Antisarampión (SRP) - [10 Dosis]</option>
-                <option value="3" data-nombre="Vacuna BCG [20 Dosis]" data-componentes="Bacteria Atenuada">Vacuna BCG - [20 Dosis]</option>
-              </select>
-              <span class="input-group-btn">
-                <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada" id="btnBusquedaAvanzada">
-                  <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
-                </button>
-              </span>
-            </div>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3">
-            <label>Lote Disponible (*):</label>
-            <div class="input-group">
-              <select id="lote_seleccionado" class="form-control">
-                <option value="">Seleccione la vacuna primero</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3">
-            <label>Existencia Actual:</label>
-            <div class="input-group">
-              <input type="text" id="existencia_actual" class="form-control" value="0" readonly disabled style="background-color: #f9f9f9;">
-              <span class="input-group-btn">
-                <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;">
-                  <i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i>
-                </button>
-              </span>
-            </div>
-          </div>
-
-          <div class="col-sm-4 form-group mt-3">
-            <label>Dosis a Despachar (*):</label>
-            <input type="text" id="cantidad" class="form-control" placeholder="1" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
-          </div>
+  <!-- MODAL AGREGAR VACUNA AL DESPACHO -->
+  <div class="modal" id="modalAgregarMedicamento" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title"><i class="fa fa-share-square-o"></i> Despachar Vacuna</h4>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-success" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL BÚSQUEDA AVANZADA -->
-<div class="modal" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h5 class="modal-title">Filtros de Búsqueda Avanzada</h5>
-      </div>
-      <div class="modal-body">
-        <form id="formFiltroModal">
-          <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+        <div class="modal-body">
           <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-12">
               <div class="form-group">
-                <label for="filtro_nombre">Nombre (o ID):</label>
-                <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre...">
+                <label for="filtro_busqueda_rapida">Busqueda Rapida:</label>
+                <input type="text" id="filtro_busqueda_rapida" name="filtro_busqueda_rapida" class="form-control" placeholder="Escriba nombre de la vacuna...">
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_presentacion">Presentación:</label>
-                <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
-                  <option value="">-- Todas --</option>
-                  <option value="1">1 Dosis</option>
-                  <option value="2">10 Dosis</option>
-                  <option value="3">20 Dosis</option>
+            <br><br>
+            <div class="col-sm-12 form-group">
+              <label>Vacuna del Catálogo (*):</label>
+              <div class="input-group">
+                <select id="Id_descripcion_medicamento" name="Id_descripcion_medicamento" class="form-control select2" style="width: 100%;">
+                  <option value="">--- Seleccione una Vacuna ---</option>
+                  <!-- SIMULACIÓN -->
+                  <option value="1" data-nombre="Antipoliomielítica (VPI) [1 Dosis]" data-componentes="Virus Inactivados">Antipoliomielítica (VPI) - [1 Dosis]</option>
+                  <option value="2" data-nombre="Antisarampión (SRP) [10 Dosis]" data-componentes="Virus Atenuados">Antisarampión (SRP) - [10 Dosis]</option>
+                  <option value="3" data-nombre="Vacuna BCG [20 Dosis]" data-componentes="Bacteria Atenuada">Vacuna BCG - [20 Dosis]</option>
+                </select>
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modalBúsquedaAvanzadaMedicamento" title="Búsqueda Avanzada" id="btnBusquedaAvanzada">
+                    <i><img src="../../recursos/imagenes/iconos/buscar.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
+              </div>
+            </div>
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Lote Disponible (*):</label>
+              <div class="input-group">
+                <select id="lote_seleccionado" class="form-control">
+                  <option value="">Seleccione la vacuna primero</option>
                 </select>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="filtro_principios">Componentes (contiene):</label>
-                <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Virus...">
+
+            <div class="col-sm-4 form-group mt-3">
+              <label>Existencia Actual:</label>
+              <div class="input-group">
+                <input type="text" id="existencia_actual" class="form-control" value="0" readonly disabled style="background-color: #f9f9f9;">
+                <span class="input-group-btn">
+                  <button class="btn btn-info" type="button" id="infoLote" title="Informacion del lote" style="height: 34px;">
+                    <i><img src="../../recursos/imagenes/iconos/info.png" style="width:10px; height:10px;"></i>
+                  </button>
+                </span>
               </div>
             </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-second" id="btnLimpiarFiltros">Limpiar Filtros</button>
-        <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- MODAL EVIDENCIA -->
-<div class="modal fade" id="modalEvidencia" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title" style="color:white;"><i class="fa fa-file-image-o"></i> Gestionar Evidencia</h4>
-      </div>
-      <div class="modal-body text-center">
-        <div id="modal-placeholder" style="padding: 40px 20px; border: 2px dashed #ddd; border-radius: 10px; color: #999;">
-          <i class="fa fa-cloud-upload" style="font-size: 50px; margin-bottom: 15px;"></i>
-          <h4 id="placeholder-texto">Cargando interfaz...</h4>
-        </div>
-        <div id="modal-seccion-camara" style="display:none;">
-          <video id="video-modal" width="100%" style="max-width: 450px; border-radius: 8px; background: #000;" autoplay></video>
-          <canvas id="canvas-modal" style="display:none;"></canvas>
-          <div style="margin-top:10px;">
-            <button type="button" id="btn-capturar-modal" class="btn btn-success"><i class="fa fa-camera"></i> Tomar Foto</button>
+            <div class="col-sm-4 form-group mt-3">
+              <label>Dosis a Despachar (*):</label>
+              <input type="text" id="cantidad" class="form-control" placeholder="1" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1';">
+            </div>
           </div>
         </div>
-        <input type="file" id="input-archivo-modal" accept="image/*" style="display:none;">
-        <div id="modal-contenedor-previa" style="display:none; margin-top:10px;">
-          <img id="foto-previa-modal" src="" style="max-width: 100%; max-height: 400px; border: 3px solid #3c8dbc; border-radius: 5px;">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-success" id="btnConfirmarAgregarMedicamento"><i class="fa fa-check"></i> Añadir a la Lista</button>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn-aceptar-evidencia" style="display:none;">Confirmar y Usar</button>
+    </div>
+  </div>
+
+  <!-- MODAL BÚSQUEDA AVANZADA -->
+  <div class="modal" id="modalBúsquedaAvanzadaMedicamento" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title">Filtros de Búsqueda Avanzada</h5>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltroModal">
+            <p class="text-muted">Complete uno o varios campos para refinar su búsqueda.</p>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_nombre">Nombre (o ID):</label>
+                  <input type="text" id="filtro_nombre" name="filtro_nombre" class="form-control" placeholder="Escriba nombre...">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_presentacion">Presentación:</label>
+                  <select id="filtro_presentacion" name="filtro_presentacion" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option value="1">1 Dosis</option>
+                    <option value="2">10 Dosis</option>
+                    <option value="3">20 Dosis</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filtro_principios">Componentes (contiene):</label>
+                  <input type="text" id="filtro_principios" name="filtro_principios" class="form-control" placeholder="Ej: Virus...">
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-second" id="btnLimpiarFiltros">Limpiar Filtros</button>
+          <button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar Filtros</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL VISUALIZAR FOTO -->
-<div class="modal fade" id="modalVisualizarFoto" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-primary">
-        <h4 class="modal-title" style="color:white;"><i class="fa fa-eye"></i> Vista Previa de Evidencia</h4>
-      </div>
-      <div class="modal-body text-center">
-        <img id="img-vista-grande" src="" style="width: 100%; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2);">
+  <!-- MODAL EVIDENCIA -->
+  <div class="modal fade" id="modalEvidencia" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title" style="color:white;"><i class="fa fa-file-image-o"></i> Gestionar Evidencia</h4>
+        </div>
+        <div class="modal-body text-center">
+          <div id="modal-placeholder" style="padding: 40px 20px; border: 2px dashed #ddd; border-radius: 10px; color: #999;">
+            <i class="fa fa-cloud-upload" style="font-size: 50px; margin-bottom: 15px;"></i>
+            <h4 id="placeholder-texto">Cargando interfaz...</h4>
+          </div>
+          <div id="modal-seccion-camara" style="display:none;">
+            <video id="video-modal" width="100%" style="max-width: 450px; border-radius: 8px; background: #000;" autoplay></video>
+            <canvas id="canvas-modal" style="display:none;"></canvas>
+            <div style="margin-top:10px;">
+              <button type="button" id="btn-capturar-modal" class="btn btn-success"><i class="fa fa-camera"></i> Tomar Foto</button>
+            </div>
+          </div>
+          <input type="file" id="input-archivo-modal" accept="image/*" style="display:none;">
+          <div id="modal-contenedor-previa" style="display:none; margin-top:10px;">
+            <img id="foto-previa-modal" src="" style="max-width: 100%; max-height: 400px; border: 3px solid #3c8dbc; border-radius: 5px;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-aceptar-evidencia" style="display:none;">Confirmar y Usar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL AVISO -->
-<div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div id="headerDespachoAviso" class="modal-header bg-crimson">
-        <h5 class="modal-title">Aviso Importante</h5>
-      </div>
-      <div class="modal-body">
-        <p id="avisoTexto"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+  <!-- MODAL VISUALIZAR FOTO -->
+  <div class="modal fade" id="modalVisualizarFoto" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title" style="color:white;"><i class="fa fa-eye"></i> Vista Previa de Evidencia</h4>
+        </div>
+        <div class="modal-body text-center">
+          <img id="img-vista-grande" src="" style="width: 100%; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2);">
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL REGRESAR -->
-<div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title">Confirmación de Regreso</h5>
-      </div>
-      <div class="modal-body">
-        <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <a href="vacunacion_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+  <!-- MODAL AVISO -->
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div id="headerDespachoAviso" class="modal-header bg-crimson">
+          <h5 class="modal-title">Aviso Importante</h5>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL GUARDAR -->
-<div class="modal fade" id="modalDespachoGuardar" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-green">
-        <h5 class="modal-title">Confirmación de Despacho</h5>
+  <!-- MODAL REGRESAR -->
+  <div class="modal fade" id="modalRegresarInventario" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title">Confirmación de Regreso</h5>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="vacunacion_inventario_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
       </div>
-      <div class="modal-body">
-        <p>¿Está seguro de que desea procesar este despacho de vacunas al centro de salud seleccionado?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- MODAL GUARDAR -->
+  <div class="modal fade" id="modalDespachoGuardar" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h5 class="modal-title">Confirmación de Despacho</h5>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea procesar este despacho de vacunas al centro de salud seleccionado?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardadoFinal">Aceptar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -404,7 +492,9 @@ verificarAcceso('Generar Despacho de Inventario');
 
 <?php
 // include('modales/inventario/medicamentos_agregar_modal.php'); // COMENTADO
-if (isset($conexion)) { $conexion->close(); }
+if (isset($conexion)) {
+  $conexion->close();
+}
 include('includes/footer.php');
 ?>
 
@@ -412,9 +502,15 @@ include('includes/footer.php');
   $(document).ready(function() {
     $.fn.modal.Constructor.prototype.enforceFocus = function() {};
 
-    $('#infoLote').tooltip({ html: true, placement: 'right', title: 'Seleccione un lote primero' });
+    $('#infoLote').tooltip({
+      html: true,
+      placement: 'right',
+      title: 'Seleccione un lote primero'
+    });
 
-    if (typeof $.fn.select2 !== 'undefined') { $('.select2').select2(); }
+    if (typeof $.fn.select2 !== 'undefined') {
+      $('.select2').select2();
+    }
 
     var listaDetalles = [];
     var editandoIndex = -1;
@@ -423,40 +519,65 @@ include('includes/footer.php');
     $(document).on('show.bs.modal', '.modal', function(event) {
       var zIndex = 1040 + (10 * $('.modal:visible').length);
       $(this).css('z-index', zIndex);
-      setTimeout(function() { $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack'); }, 0);
+      setTimeout(function() {
+        $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+      }, 0);
     });
 
     $('.modal').on('click', '[data-dismiss="modal"]', function(e) {
       e.preventDefault();
       var $modal = $(this).closest('.modal');
       $modal.removeClass('in').addClass('out');
-      if ($modal.data('timerCierre')) { clearTimeout($modal.data('timerCierre')); }
-      var timerId = setTimeout(function() { $modal.modal('hide'); $modal.removeClass('out'); }, 400);
+      if ($modal.data('timerCierre')) {
+        clearTimeout($modal.data('timerCierre'));
+      }
+      var timerId = setTimeout(function() {
+        $modal.modal('hide');
+        $modal.removeClass('out');
+      }, 400);
       $modal.data('timerCierre', timerId);
     });
 
     $('.modal').on('show.bs.modal', function() {
-      if ($(this).data('timerCierre')) { clearTimeout($(this).data('timerCierre')); }
+      if ($(this).data('timerCierre')) {
+        clearTimeout($(this).data('timerCierre'));
+      }
       $(this).removeClass('out');
     });
 
     $('.modal').on('hidden.bs.modal', function() {
-      if ($('.modal:visible').length) { $('body').addClass('modal-open'); } else { $('body').removeClass('modal-open'); $('.modal-backdrop').remove(); }
+      if ($('.modal:visible').length) {
+        $('body').addClass('modal-open');
+      } else {
+        $('body').removeClass('modal-open');
+        $('.modal-backdrop').remove();
+      }
     });
 
-    window.mostrarAviso = function(mensaje) { $('#avisoTexto').html(mensaje); $('#avisoModal').modal('show'); }
-    window.mostrarExito = function(mensaje) { $('#headerDespachoAviso').removeClass('bg-crimson').addClass('bg-green'); $('#avisoTexto').html(mensaje); $('#avisoModal').modal('show'); }
+    window.mostrarAviso = function(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
+    window.mostrarExito = function(mensaje) {
+      $('#headerDespachoAviso').removeClass('bg-crimson').addClass('bg-green');
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
 
     function limpiarFormularioModal() {
       $('#Id_descripcion_medicamento').prop('disabled', false).val('').trigger('change');
-      if (typeof $.fn.select2 !== 'undefined') { $('#Id_descripcion_medicamento').trigger('change.select2'); }
+      if (typeof $.fn.select2 !== 'undefined') {
+        $('#Id_descripcion_medicamento').trigger('change.select2');
+      }
       $('#btnBusquedaAvanzada').prop('disabled', false);
       $('#lote_seleccionado').html('<option value="">Seleccione la vacuna primero</option>');
       $('#cantidad, #existencia_actual').val('').removeClass('input-error');
       $('#lote_seleccionado').removeClass('input-error');
     }
 
-    $('#abrirModalRegresar').on('click', function() { $('#modalRegresarInventario').modal('show'); });
+    $('#abrirModalRegresar').on('click', function() {
+      $('#modalRegresarInventario').modal('show');
+    });
 
     // LÓGICA DE CAPTURA DE EVIDENCIA (Mantenida de tu original)
     let streamModal = null;
@@ -469,7 +590,11 @@ include('includes/footer.php');
         $('#placeholder-texto').text('Iniciando Cámara...');
         const video = document.getElementById('video-modal');
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+          navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: "environment"
+              }
+            })
             .then(stream => {
               streamModal = stream;
               video.srcObject = stream;
@@ -482,7 +607,9 @@ include('includes/footer.php');
       } else {
         $('#placeholder-texto').text('Seleccionando archivo...');
         $('#input-archivo-modal').click();
-        setTimeout(() => { $('#placeholder-texto').text('Esperando archivo...'); }, 1000);
+        setTimeout(() => {
+          $('#placeholder-texto').text('Esperando archivo...');
+        }, 1000);
       }
     };
 
@@ -515,7 +642,10 @@ include('includes/footer.php');
     let evidenciasArray = [];
     $('#btn-aceptar-evidencia').off('click').on('click', function() {
       const base64Str = $('#foto-previa-modal').attr('src');
-      if (base64Str) { evidenciasArray.push(base64Str); actualizarMiniaturasUI(); }
+      if (base64Str) {
+        evidenciasArray.push(base64Str);
+        actualizarMiniaturasUI();
+      }
       $('#modalEvidencia').modal('hide');
     });
 
@@ -548,7 +678,10 @@ include('includes/footer.php');
     });
 
     $('#modalEvidencia').on('hidden.bs.modal', function() {
-      if (streamModal) { streamModal.getTracks().forEach(t => t.stop()); streamModal = null; }
+      if (streamModal) {
+        streamModal.getTracks().forEach(t => t.stop());
+        streamModal = null;
+      }
     });
 
     // LÓGICA DE FILTROS AVANZADOS (SIMULADA)
@@ -579,7 +712,10 @@ include('includes/footer.php');
         if (busquedaRapida && !texto.includes(busquedaRapida.toLowerCase())) match = false;
         if (nombre_med && !texto.includes(nombre_med.toLowerCase())) match = false;
         if (principios && !texto.includes(principios.toLowerCase())) match = false;
-        if (match) { opcionesFiltradas += $(this)[0].outerHTML; hayResultados = true; }
+        if (match) {
+          opcionesFiltradas += $(this)[0].outerHTML;
+          hayResultados = true;
+        }
       });
 
       if (hayResultados) {
@@ -631,7 +767,11 @@ include('includes/footer.php');
             let ultimaEtiqueta = tagsArray.pop();
             $(this).val(ultimaEtiqueta);
             renderizarTags();
-            if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+            if (tagsArray.length === 0) {
+              $('#btnLimpiarFiltros').click();
+            } else {
+              $('#btnAplicarFiltros').click();
+            }
           }
         }
       });
@@ -640,11 +780,20 @@ include('includes/footer.php');
         let index = $(this).data('index');
         tagsArray.splice(index, 1);
         renderizarTags();
-        if (tagsArray.length === 0) { $('#btnLimpiarFiltros').click(); } else { $('#btnAplicarFiltros').click(); }
+        if (tagsArray.length === 0) {
+          $('#btnLimpiarFiltros').click();
+        } else {
+          $('#btnAplicarFiltros').click();
+        }
       });
 
-      $contenedor.on('click', function() { $inputFalso.focus(); });
-      $('#btnLimpiarFiltros').on('click', function() { tagsArray = []; renderizarTags(); });
+      $contenedor.on('click', function() {
+        $inputFalso.focus();
+      });
+      $('#btnLimpiarFiltros').on('click', function() {
+        tagsArray = [];
+        renderizarTags();
+      });
     }
 
     inicializarTags('#filtro_busqueda_rapida');
@@ -671,20 +820,41 @@ include('includes/footer.php');
 
       if (medicamentoId) {
         // SIMULACIÓN: En lugar de AJAX, quemamos los datos de los lotes
-        let data = { lotes: [] };
+        let data = {
+          lotes: []
+        };
         if (medicamentoId == '1') { // VPI
-          data.lotes = [
-            { lote: 'VPI-001', cantidad_actual: 150, fecha_fabricacion: '2025-01-01', fecha_vencimiento: '2026-01-01', nombre_proveedor: 'SUAF' },
-            { lote: 'VPI-002', cantidad_actual: 50, fecha_fabricacion: '2024-06-01', fecha_vencimiento: '2024-12-01', nombre_proveedor: 'Ministerio' }
+          data.lotes = [{
+              lote: 'VPI-001',
+              cantidad_actual: 150,
+              fecha_fabricacion: '2025-01-01',
+              fecha_vencimiento: '2026-01-01',
+              nombre_proveedor: 'SUAF'
+            },
+            {
+              lote: 'VPI-002',
+              cantidad_actual: 50,
+              fecha_fabricacion: '2024-06-01',
+              fecha_vencimiento: '2024-12-01',
+              nombre_proveedor: 'Ministerio'
+            }
           ];
         } else if (medicamentoId == '2') { // SRP
-          data.lotes = [
-            { lote: 'SRP-991', cantidad_actual: 80, fecha_fabricacion: '2025-05-10', fecha_vencimiento: '2026-05-10', nombre_proveedor: 'Ministerio' }
-          ];
+          data.lotes = [{
+            lote: 'SRP-991',
+            cantidad_actual: 80,
+            fecha_fabricacion: '2025-05-10',
+            fecha_vencimiento: '2026-05-10',
+            nombre_proveedor: 'Ministerio'
+          }];
         } else if (medicamentoId == '3') { // BCG
-          data.lotes = [
-            { lote: 'BCG-003', cantidad_actual: 200, fecha_fabricacion: '2025-01-01', fecha_vencimiento: '2026-11-15', nombre_proveedor: 'SUAF' }
-          ];
+          data.lotes = [{
+            lote: 'BCG-003',
+            cantidad_actual: 200,
+            fecha_fabricacion: '2025-01-01',
+            fecha_vencimiento: '2026-11-15',
+            nombre_proveedor: 'SUAF'
+          }];
         }
 
         if (data.lotes.length > 0) {
@@ -770,10 +940,26 @@ include('includes/footer.php');
 
       $('.modal-body input, .modal-body select').removeClass('input-error');
 
-      if (!id_med) { $('#Id_descripcion_medicamento').addClass('input-error'); mostrarAviso('Seleccione una vacuna.'); return; }
-      if (!lote) { $('#lote_seleccionado').addClass('input-error'); mostrarAviso('Debe seleccionar un lote con disponibilidad.'); return; }
-      if (isNaN(cant) || cant <= 0) { $('#cantidad').addClass('input-error'); mostrarAviso('La cantidad a despachar debe ser mayor a 0.'); return; }
-      if (cant > existencia) { $('#cantidad').addClass('input-error'); mostrarAviso('La cantidad supera la existencia actual en este lote (' + existencia + ').'); return; }
+      if (!id_med) {
+        $('#Id_descripcion_medicamento').addClass('input-error');
+        mostrarAviso('Seleccione una vacuna.');
+        return;
+      }
+      if (!lote) {
+        $('#lote_seleccionado').addClass('input-error');
+        mostrarAviso('Debe seleccionar un lote con disponibilidad.');
+        return;
+      }
+      if (isNaN(cant) || cant <= 0) {
+        $('#cantidad').addClass('input-error');
+        mostrarAviso('La cantidad a despachar debe ser mayor a 0.');
+        return;
+      }
+      if (cant > existencia) {
+        $('#cantidad').addClass('input-error');
+        mostrarAviso('La cantidad supera la existencia actual en este lote (' + existencia + ').');
+        return;
+      }
 
       var esVencido = $('#lote_seleccionado option:selected').data('vencido');
       if (esVencido === 'si') {
@@ -785,7 +971,8 @@ include('includes/footer.php');
       var existeIndex = -1;
       for (var i = 0; i < listaDetalles.length; i++) {
         if (listaDetalles[i].id_medicamento === id_med && listaDetalles[i].lote === lote) {
-          existeIndex = i; break;
+          existeIndex = i;
+          break;
         }
       }
 
@@ -851,7 +1038,9 @@ include('includes/footer.php');
       $('#lote_seleccionado').removeClass('input-error').empty();
       $('#cantidad, #existencia_actual').val('').removeClass('input-error');
       $('#Id_descripcion_medicamento').prop('disabled', false);
-      if (typeof $.fn.select2 !== 'undefined') { $('#Id_descripcion_medicamento').trigger('change.select2'); }
+      if (typeof $.fn.select2 !== 'undefined') {
+        $('#Id_descripcion_medicamento').trigger('change.select2');
+      }
 
       $('#cantidad').val(item.cantidad);
       $('#Id_descripcion_medicamento').val(item.id_medicamento).trigger('change', [true]);
@@ -861,7 +1050,9 @@ include('includes/footer.php');
         if ($('#lote_seleccionado option[value="' + item.lote + '"]').length > 0) {
           $('#lote_seleccionado').val(item.lote).trigger('change');
           $('#lote_seleccionado').prop('disabled', true);
-          if (typeof $.fn.select2 !== 'undefined') { $('#lote_seleccionado').trigger('change.select2'); }
+          if (typeof $.fn.select2 !== 'undefined') {
+            $('#lote_seleccionado').trigger('change.select2');
+          }
           clearInterval(checkLotes);
         }
         intentos++;
@@ -884,10 +1075,22 @@ include('includes/footer.php');
       $('.form-control').removeClass('input-error');
       var hayErrores = false;
 
-      if (!$('#destino_ambulatorio').val()) { $('#destino_ambulatorio').addClass('input-error'); hayErrores = true; }
-      if (!$('#numero_guia').val().trim()) { $('#numero_guia').addClass('input-error'); hayErrores = true; }
-      if (!$('#responsable_receptor').val().trim()) { $('#responsable_receptor').addClass('input-error'); hayErrores = true; }
-      if (!$('#temperatura_transporte').val()) { $('#temperatura_transporte').addClass('input-error'); hayErrores = true; }
+      if (!$('#destino_ambulatorio').val()) {
+        $('#destino_ambulatorio').addClass('input-error');
+        hayErrores = true;
+      }
+      if (!$('#numero_guia').val().trim()) {
+        $('#numero_guia').addClass('input-error');
+        hayErrores = true;
+      }
+      if (!$('#responsable_receptor').val().trim()) {
+        $('#responsable_receptor').addClass('input-error');
+        hayErrores = true;
+      }
+      if (!$('#temperatura_transporte').val()) {
+        $('#temperatura_transporte').addClass('input-error');
+        hayErrores = true;
+      }
 
       if (hayErrores) {
         mostrarAviso("Faltan datos requeridos. Complete todos los campos marcados en rojo en la sección de Datos del Destino.");

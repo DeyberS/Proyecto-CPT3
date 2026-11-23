@@ -181,109 +181,110 @@ verificarAcceso('Crear Roles');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    $(document).ready(function() {
-      function mostrarAviso(mensaje) {
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
-      }
+<script>
+  $(document).ready(function() {
+    function mostrarAviso(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
 
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
-        $('.form-group').removeClass('input-error');
-      }
+    function limpiarErrores() {
+      $('input, select').removeClass('input-error');
+      $('.form-group').removeClass('input-error');
+    }
 
-      function bloquearNumeros(e) {
-        const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
-        if (teclasPermitidas.includes(e.key)) return;
-        if (e.key >= "0" && e.key <= "9") {
-          e.preventDefault();
-        }
-      }
-
-      function limpiarNumeros(e) {
-        e.target.value = e.target.value.replace(/[0-9]/g, "");
-      }
-
-      $("#busquedaPermiso").on("keyup", function() {
-        var value = $(this).val().toLowerCase();
-        $(".item-contenedor").filter(function() {
-          $(this).toggle($(this).find(".nombre-p").text().toLowerCase().indexOf(value) > -1)
-        });
-      });
-
-      $("#btnSelectAll").click(function() {
-        $(".check-permiso").prop('checked', true);
-      });
-
-      $("#btnUnselectAll").click(function() {
-        $(".check-permiso").prop('checked', false);
-      });
-
-      function verificarRolYMostrarModal() {
-        const nombre = $('#nombre_rol').val().trim();
-        const idRol = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
-        const btnGuardar = $('#btnGuardar');
-        const textoOriginal = btnGuardar.text();
-
-        btnGuardar.text('Verificando...').attr('disabled', true);
-
-        $.ajax({
-          url: '../../cfg/ajax/verificar_existencia_rol.php',
-          method: 'POST',
-          dataType: 'json',
-          data: {
-            nombre: nombre,
-            id: idRol
-          },
-          success: function(response) {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-
-            if (response.existe_nombre) {
-              $('#nombre_rol').addClass('input-error');
-              mostrarAviso('⚠️ Error: Ya existe un rol con el nombre: ' + nombre);
-            } else {
-              $('#modalGuardar').modal('show');
-            }
-          },
-          error: function() {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
-          }
-        });
-      }
-
-      $('#formularioRol').on('submit', function(e) {
+    function bloquearNumeros(e) {
+      const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
+      if (teclasPermitidas.includes(e.key)) return;
+      if (e.key >= "0" && e.key <= "9") {
         e.preventDefault();
-        limpiarErrores();
-        let errores = [];
+      }
+    }
 
-        if ($('#nombre_rol').val().trim() === "") {
-          errores.push("Falta el nombre del rol.");
-          $('#nombre_rol').addClass('input-error');
-        }
+    function limpiarNumeros(e) {
+      e.target.value = e.target.value.replace(/[0-9]/g, "");
+    }
 
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          verificarRolYMostrarModal();
-        }
-      });
-
-      $('#confirmarGuardar').on('click', function() {
-        $('#modalGuardar').modal('hide');
-        $('#formularioRol')[0].submit();
-      });
-
-      const campos = [document.getElementById("nombre_rol")];
-      campos.forEach(campo => {
-        if (campo) {
-          campo.addEventListener("keydown", bloquearNumeros);
-          campo.addEventListener("input", limpiarNumeros);
-        }
+    $("#busquedaPermiso").on("keyup", function() {
+      var value = $(this).val().toLowerCase();
+      $(".item-contenedor").filter(function() {
+        $(this).toggle($(this).find(".nombre-p").text().toLowerCase().indexOf(value) > -1)
       });
     });
-  </script>
+
+    $("#btnSelectAll").click(function() {
+      $(".check-permiso").prop('checked', true);
+    });
+
+    $("#btnUnselectAll").click(function() {
+      $(".check-permiso").prop('checked', false);
+    });
+
+    function verificarRolYMostrarModal() {
+      const nombre = $('#nombre_rol').val().trim();
+      const idRol = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+      const btnGuardar = $('#btnGuardar');
+      const textoOriginal = btnGuardar.text();
+
+      btnGuardar.text('Verificando...').attr('disabled', true);
+
+      $.ajax({
+        url: '../../cfg/ajax/verificar_existencia_rol.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          nombre: nombre,
+          id: idRol
+        },
+        success: function(response) {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+
+          if (response.existe_nombre) {
+            $('#nombre_rol').addClass('input-error');
+            mostrarAviso('⚠️ Error: Ya existe un rol con el nombre: ' + nombre);
+          } else {
+            $('#modalGuardar').modal('show');
+          }
+        },
+        error: function() {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+          mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
+        }
+      });
+    }
+
+    $('#formularioRol').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let errores = [];
+
+      if ($('#nombre_rol').val().trim() === "") {
+        errores.push("Falta el nombre del rol.");
+        $('#nombre_rol').addClass('input-error');
+      }
+
+      if (errores.length > 0) {
+        mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        verificarRolYMostrarModal();
+      }
+    });
+
+    $('#confirmarGuardar').on('click', function() {
+      $('#modalGuardar').modal('hide');
+      $('#formularioRol')[0].submit();
+    });
+
+    const campos = [document.getElementById("nombre_rol")];
+    campos.forEach(campo => {
+      if (campo) {
+        campo.addEventListener("keydown", bloquearNumeros);
+        campo.addEventListener("input", limpiarNumeros);
+      }
+    });
+  });
+</script>

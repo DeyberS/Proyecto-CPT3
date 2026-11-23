@@ -101,98 +101,99 @@ verificarAcceso('Crear Permisos');
       </div>
     </div>
   </div>
+</div>
 
-  <?php include('includes/footer.php'); ?>
+<?php include('includes/footer.php'); ?>
 
-  <script>
-    $(document).ready(function() {
-      function mostrarAviso(mensaje) {
-        $('#avisoTexto').html(mensaje);
-        $('#avisoModal').modal('show');
-      }
+<script>
+  $(document).ready(function() {
+    function mostrarAviso(mensaje) {
+      $('#avisoTexto').html(mensaje);
+      $('#avisoModal').modal('show');
+    }
 
-      function limpiarErrores() {
-        $('input, select').removeClass('input-error');
-        $('.form-group').removeClass('input-error');
-      }
+    function limpiarErrores() {
+      $('input, select').removeClass('input-error');
+      $('.form-group').removeClass('input-error');
+    }
 
-      function bloquearNumeros(e) {
-        const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
-        if (teclasPermitidas.includes(e.key)) return;
-        if (e.key >= "0" && e.key <= "9") {
-          e.preventDefault();
-        }
-      }
-
-      function limpiarNumeros(e) {
-        e.target.value = e.target.value.replace(/[0-9]/g, "");
-      }
-
-      function verificarPermisoYMostrarModal() {
-        const nombre = $('#nombre_permiso').val().trim();
-        const idPermiso = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
-        const btnGuardar = $('#btnGuardar');
-        const textoOriginal = btnGuardar.text();
-
-        btnGuardar.text('Verificando...').attr('disabled', true);
-
-        $.ajax({
-          url: '../../cfg/ajax/verificar_existencia_permiso.php',
-          method: 'POST',
-          dataType: 'json',
-          data: {
-            nombre: nombre,
-            id: idPermiso
-          },
-          success: function(response) {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-
-            if (response.existe_nombre) {
-              $('#nombre_permiso').addClass('input-error');
-              mostrarAviso('⚠️ Error: Ya existe un permiso con el nombre: ' + nombre);
-            } else {
-              $('#modalGuardar').modal('show');
-            }
-          },
-          error: function() {
-            btnGuardar.text(textoOriginal).attr('disabled', false);
-            mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
-          }
-        });
-      }
-
-      $('#formularioPermiso').on('submit', function(e) {
+    function bloquearNumeros(e) {
+      const teclasPermitidas = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", "Shift"];
+      if (teclasPermitidas.includes(e.key)) return;
+      if (e.key >= "0" && e.key <= "9") {
         e.preventDefault();
-        limpiarErrores();
-        let errores = [];
+      }
+    }
 
-        if ($('#nombre_permiso').val().trim() === "") {
-          errores.push("Falta el nombre del permiso.");
-          $('#nombre_permiso').addClass('input-error');
-        }
-        if ($('#descripcion').val().trim() === "") {
-          errores.push("Falta la descripcion del permiso.");
-          $('#descripcion').addClass('input-error');
-        }
+    function limpiarNumeros(e) {
+      e.target.value = e.target.value.replace(/[0-9]/g, "");
+    }
 
-        if (errores.length > 0) {
-          mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
-        } else {
-          verificarPermisoYMostrarModal();
+    function verificarPermisoYMostrarModal() {
+      const nombre = $('#nombre_permiso').val().trim();
+      const idPermiso = $('input[name="Id"]').length ? $('input[name="Id"]').val() : 0;
+      const btnGuardar = $('#btnGuardar');
+      const textoOriginal = btnGuardar.text();
+
+      btnGuardar.text('Verificando...').attr('disabled', true);
+
+      $.ajax({
+        url: '../../cfg/ajax/verificar_existencia_permiso.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          nombre: nombre,
+          id: idPermiso
+        },
+        success: function(response) {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+
+          if (response.existe_nombre) {
+            $('#nombre_permiso').addClass('input-error');
+            mostrarAviso('⚠️ Error: Ya existe un permiso con el nombre: ' + nombre);
+          } else {
+            $('#modalGuardar').modal('show');
+          }
+        },
+        error: function() {
+          btnGuardar.text(textoOriginal).attr('disabled', false);
+          mostrarAviso('⚠️ Error de Servidor: No se pudo verificar la base de datos.');
         }
       });
+    }
 
-      $('#confirmarGuardar').on('click', function() {
-        $('#modalGuardar').modal('hide');
-        $('#formularioPermiso')[0].submit();
-      });
+    $('#formularioPermiso').on('submit', function(e) {
+      e.preventDefault();
+      limpiarErrores();
+      let errores = [];
 
-      const campos = [document.getElementById("nombre_permiso"), document.getElementById("descripcion")];
-      campos.forEach(campo => {
-        if (campo) {
-          campo.addEventListener("keydown", bloquearNumeros);
-          campo.addEventListener("input", limpiarNumeros);
-        }
-      });
+      if ($('#nombre_permiso').val().trim() === "") {
+        errores.push("Falta el nombre del permiso.");
+        $('#nombre_permiso').addClass('input-error');
+      }
+      if ($('#descripcion').val().trim() === "") {
+        errores.push("Falta la descripcion del permiso.");
+        $('#descripcion').addClass('input-error');
+      }
+
+      if (errores.length > 0) {
+        mostrarAviso('⚠️ Errores: <ul><li>' + errores.join('</li><li>') + '</li></ul>');
+      } else {
+        verificarPermisoYMostrarModal();
+      }
     });
-  </script>
+
+    $('#confirmarGuardar').on('click', function() {
+      $('#modalGuardar').modal('hide');
+      $('#formularioPermiso')[0].submit();
+    });
+
+    const campos = [document.getElementById("nombre_permiso"), document.getElementById("descripcion")];
+    campos.forEach(campo => {
+      if (campo) {
+        campo.addEventListener("keydown", bloquearNumeros);
+        campo.addEventListener("input", limpiarNumeros);
+      }
+    });
+  });
+</script>

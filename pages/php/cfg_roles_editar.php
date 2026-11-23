@@ -186,63 +186,60 @@ verificarAcceso('Editar Roles');
               </div>
             </div>
           </div>
-
         </div>
       </div>
   </section>
-</div>
 
-<div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h5 class="modal-title">Aviso de Validación</h5>
+  <div class="modal fade" id="avisoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h5 class="modal-title">Aviso de Validación</h5>
+        </div>
+        <div class="modal-body">
+          <p id="avisoTexto"></p>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
       </div>
-      <div class="modal-body">
-        <p id="avisoTexto"></p>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalRegresar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-crimson">
+          <h4 class="modal-title">Confirmación de Regreso</h4>
+        </div>
+        <div class="modal-body">
+          <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <a href="cfg_roles_listado.php" class="btn btn-danger">Abandonar Formulario</a>
+        </div>
       </div>
-      <div class="modal-footer"><button type="button" class="btn btn-second" data-dismiss="modal">Cerrar</button></div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalGuardar" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-green">
+          <h4 class="modal-title">Confirmación de Guardado</h4>
+        </div>
+        <div class="modal-body">
+          <p>¿Está seguro de que desea actualizar la información del Rol?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="confirmarGuardar">Aceptar</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="modal fade" id="modalRegresar" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-crimson">
-        <h4 class="modal-title">Confirmación de Regreso</h4>
-      </div>
-      <div class="modal-body">
-        <p>Al hacer clic en "Abandonar Formulario", perderá todos los datos no guardados. ¿Desea continuar?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <a href="cfg_roles_listado.php" class="btn btn-danger">Abandonar Formulario</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalGuardar" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-green">
-        <h4 class="modal-title">Confirmación de Guardado</h4>
-      </div>
-      <div class="modal-body">
-        <p>¿Está seguro de que desea actualizar la información del Rol?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="confirmarGuardar">Aceptar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<?php
-include('includes/footer.php');
-?>
+<?php include('includes/footer.php'); ?>
 
 <script>
   $(document).ready(function() {
@@ -346,6 +343,3 @@ include('includes/footer.php');
     });
   });
 </script>
-</body>
-
-</html>

@@ -214,19 +214,17 @@ try {
     $seguro_db      = ($seguro_social !== '') ? $seguro_social : 'No';
 
     $sql_detalle = "INSERT INTO detalle_paciente 
-                    (situacion_conyugal, etnia, tipo_etnia, analfabeta, seguro_social,
-                     profesion, ocupacion, nivel_instruccion, mision, `años_aprobados`,
-                     discapacidad, representante, tipo_paciente, id_persona) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    (situacion_conyugal, etnia, tipo_etnia, analfabeta, seguro_social,
+     profesion, ocupacion, nivel_instruccion, mision, `años_aprobados`,
+     tipo_paciente, id_persona) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt_d = $conexion->prepare($sql_detalle);
     if (!$stmt_d) throw new Exception("Prepare detalle: " . $conexion->error);
 
-    $stmt_d->bind_param(
-        "sssssssssissis",
-        $sit_conyugal_db, $etnia_db, $tipo_etnia_db, $analfabeta_db, $seguro_db,
-        $profesion_db, $ocupacion_db, $nivel_inst_db, $mision_db, $anos_db,
-        $tiene_discapacidad, $tiene_representante, $tipo_paciente, $id_paciente
-    );
+    $stmt_d->bind_param("sssssssssisi",
+    $sit_conyugal_db, $etnia_db, $tipo_etnia_db, $analfabeta_db, $seguro_db,
+    $profesion_db, $ocupacion_db, $nivel_inst_db, $mision_db, $anos_db,
+    $tipo_paciente, $id_paciente);
 
     if (!$stmt_d->execute()) throw new Exception("Error Detalle: " . $stmt_d->error);
     $stmt_d->close();
@@ -334,9 +332,9 @@ try {
        8) historial_patologias
        --------------------------------------------------------- */
     if (!empty($patologias)) {
-        $sql_pat  = "INSERT INTO historial_patologias 
-                     (Id_persona, Id_patologia, Id_Historial, fecha_registro, estatus) 
-                     VALUES (?, ?, ?, ?, ?)";
+        $sql_pat = "INSERT INTO historial_patologias 
+            (Id_patologia, Id_Historial, fecha_registro, estatus) 
+            VALUES (?, ?, ?, ?)";
         $stmt_pat = $conexion->prepare($sql_pat);
         if (!$stmt_pat) throw new Exception("Prepare patologia: " . $conexion->error);
 
@@ -346,7 +344,7 @@ try {
 
             $fecha_pat = (!empty($pat['fecha'])) ? $pat['fecha'] : date('Y-m-d');
 
-            $stmt_pat->bind_param("iiiss", $id_paciente, $id_pat, $id_historial, $fecha_pat, $estatus_str);
+            $stmt_pat->bind_param("iiss", $id_pat, $id_historial, $fecha_pat, $estatus_str);
             $stmt_pat->execute();
         }
         $stmt_pat->close();
@@ -356,9 +354,9 @@ try {
        9) historial_alergias
        --------------------------------------------------------- */
     if (!empty($alergias)) {
-        $sql_ale  = "INSERT INTO historial_alergias 
-                     (Id_persona, Id_alergia, Id_Historial, fecha_registro, estatus) 
-                     VALUES (?, ?, ?, ?, ?)";
+        $sql_ale = "INSERT INTO historial_alergias 
+            (Id_alergia, Id_Historial, fecha_registro, estatus) 
+            VALUES (?, ?, ?, ?)";
         $stmt_ale = $conexion->prepare($sql_ale);
         if (!$stmt_ale) throw new Exception("Prepare alergia: " . $conexion->error);
 
@@ -368,7 +366,7 @@ try {
 
             $fecha_ale = (!empty($ale['fecha'])) ? $ale['fecha'] : date('Y-m-d');
 
-            $stmt_ale->bind_param("iiiss", $id_paciente, $id_ale, $id_historial, $fecha_ale, $estatus_str);
+            $stmt_ale->bind_param("iiss", $id_ale, $id_historial, $fecha_ale, $estatus_str);
             $stmt_ale->execute();
         }
         $stmt_ale->close();
@@ -379,9 +377,9 @@ try {
        (fecha_registro permite NULL)
        --------------------------------------------------------- */
     if (!empty($discapacidades)) {
-        $sql_disc  = "INSERT INTO historial_discapacidades 
-                      (Id_persona, Id_discapacidad, fecha_registro, estatus) 
-                      VALUES (?, ?, ?, ?)";
+        $sql_disc = "INSERT INTO historial_discapacidades 
+            (Id_Historial, Id_discapacidad, fecha_registro, estatus) 
+            VALUES (?, ?, ?, ?)";
         $stmt_disc = $conexion->prepare($sql_disc);
         if (!$stmt_disc) throw new Exception("Prepare discapacidad: " . $conexion->error);
 
@@ -391,7 +389,7 @@ try {
 
             $fecha_disc = (!empty($disc['fecha'])) ? $disc['fecha'] : null;
 
-            $stmt_disc->bind_param("iiss", $id_paciente, $id_disc, $fecha_disc, $estatus_str);
+            $stmt_disc->bind_param("iiss", $id_historial, $id_disc, $fecha_disc, $estatus_str);
             $stmt_disc->execute();
         }
         $stmt_disc->close();
@@ -446,4 +444,3 @@ try {
 }
 
 $conexion->close();
-?>

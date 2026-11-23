@@ -22,165 +22,165 @@ verificarAcceso('Ver Representantes');
     <title>Representantes | Información</title>
 </head>
 
-<style>
-    :root {
-        --primary-dark: #2c3e50;
-        --medical-blue: #007bff;
-        --bg-gray: #f4f7f9;
-    }
-
-    body {
-        background-color: var(--bg-gray) !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    .content-wrapper {
-        background-color: var(--bg-gray) !important;
-    }
-
-    .content-custome {
-        padding: 0px, 0px;
-        margin-left: 0px;
-    }
-
-    .content {
-        padding: 0px;
-    }
-
-    .profile-card {
-        max-width: 1200px;
-        margin: 15px auto;
-        background: #fff;
-        border-radius: 0px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        border: none;
-        min-height: 80vh;
-        overflow: hidden;
-    }
-
-    .profile-header {
-        background: linear-gradient(135deg, var(--primary-dark) 0%, #34495e 100%);
-        color: white;
-        padding: 10px;
-        border-bottom: 5px solid var(--medical-blue);
-    }
-
-    .paciente-avatar {
-        width: 110px;
-        height: 110px;
-        background: transparent;
-        border-radius: 0px;
-        padding: 0;
-        box-shadow: none;
-        object-fit: contain;
-    }
-
-    .label-custom {
-        font-size: 11px;
-        text-transform: uppercase;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 2px;
-    }
-
-    .label-light {
-        color: #bdc3c7;
-    }
-
-    .label-dark {
-        color: #95a5a6;
-    }
-
-    .val-custom {
-        font-size: 16px;
-        font-weight: 600;
-    }
-
-    .val-light {
-        color: #fff;
-    }
-
-    .val-dark {
-        color: var(--primary-dark);
-    }
-
-    .section-title {
-        color: var(--medical-blue);
-        font-weight: 700;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-        text-transform: uppercase;
-        font-size: 14px;
-    }
-
-    .data-item-card {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 0px;
-        border-left: 4px solid var(--medical-blue);
-        margin-bottom: 15px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-    }
-
-    .nav-tabs-custom {
-        background: transparent;
-        box-shadow: none;
-    }
-
-    .nav-tabs {
-        border-bottom: 2px solid #eee;
-        background: #f8f9fa;
-        padding: 0 20px;
-    }
-
-    .nav-tabs>li>a {
-        border-radius: 0 !important;
-        color: #7f8c8d !important;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 13px;
-        padding: 15px 20px;
-        border: none !important;
-        transition: all 0.3s ease;
-    }
-
-    .nav-tabs>li>a:hover {
-        background-color: #e9ecef;
-        color: var(--primary-dark) !important;
-    }
-
-    .nav-tabs>li.active>a,
-    .nav-tabs>li.active>a:focus,
-    .nav-tabs>li.active>a:hover {
-        color: var(--medical-blue) !important;
-        background-color: #fff !important;
-        border-bottom: 3px solid var(--medical-blue) !important;
-    }
-
-    .tab-content-container {
-        padding: 30px;
-    }
-
-    .badge-estado {
-        padding: 4px 10px;
-        border-radius: 0px;
-        font-weight: 600;
-        font-size: 11px;
-        text-transform: uppercase;
-    }
-
-    .btn-nav-container {
-        display: flex;
-        justify-content: flex-end;
-        gap: 15px;
-        margin-top: 00px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-    }
-</style>
-
 <div class="content-wrapper">
+    <style>
+        :root {
+            --primary-dark: #2c3e50;
+            --medical-blue: #007bff;
+            --bg-gray: #f4f7f9;
+        }
+
+        body {
+            background-color: var(--bg-gray) !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .content-wrapper {
+            background-color: var(--bg-gray) !important;
+        }
+
+        .content-custome {
+            padding: 0px, 0px;
+            margin-left: 0px;
+        }
+
+        .content {
+            padding: 0px;
+        }
+
+        .profile-card {
+            max-width: 1200px;
+            margin: 15px auto;
+            background: #fff;
+            border-radius: 0px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: none;
+            min-height: 80vh;
+            overflow: hidden;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #34495e 100%);
+            color: white;
+            padding: 10px;
+            border-bottom: 5px solid var(--medical-blue);
+        }
+
+        .paciente-avatar {
+            width: 110px;
+            height: 110px;
+            background: transparent;
+            border-radius: 0px;
+            padding: 0;
+            box-shadow: none;
+            object-fit: contain;
+        }
+
+        .label-custom {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .label-light {
+            color: #bdc3c7;
+        }
+
+        .label-dark {
+            color: #95a5a6;
+        }
+
+        .val-custom {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .val-light {
+            color: #fff;
+        }
+
+        .val-dark {
+            color: var(--primary-dark);
+        }
+
+        .section-title {
+            color: var(--medical-blue);
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .data-item-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 0px;
+            border-left: 4px solid var(--medical-blue);
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        }
+
+        .nav-tabs-custom {
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #eee;
+            background: #f8f9fa;
+            padding: 0 20px;
+        }
+
+        .nav-tabs>li>a {
+            border-radius: 0 !important;
+            color: #7f8c8d !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+            padding: 15px 20px;
+            border: none !important;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs>li>a:hover {
+            background-color: #e9ecef;
+            color: var(--primary-dark) !important;
+        }
+
+        .nav-tabs>li.active>a,
+        .nav-tabs>li.active>a:focus,
+        .nav-tabs>li.active>a:hover {
+            color: var(--medical-blue) !important;
+            background-color: #fff !important;
+            border-bottom: 3px solid var(--medical-blue) !important;
+        }
+
+        .tab-content-container {
+            padding: 30px;
+        }
+
+        .badge-estado {
+            padding: 4px 10px;
+            border-radius: 0px;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .btn-nav-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 00px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+
     <section class="content content-custome">
         <div class="row">
             <div class="col-xs-12">
@@ -437,23 +437,24 @@ verificarAcceso('Ver Representantes');
             </div>
         </div>
     </section>
-</div>
 
-<div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegresoLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-crimson">
-                <h4 class="modal-title" id="modalConfirmarRegresoLabel"><i class="fa fa-warning"></i> Confirmación de Regreso</h4>
-            </div>
-            <div class="modal-body">
-                <p>¿Está a punto de cerrar la ficha del representante y regresar al listado principal. ¿Desea continuar?</p>
-            </div>
-            <div class="modal-footer" style="background-color: #f8f9fa;">
-                <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
-                <a href="representantes_listado.php" class="btn btn-danger">Regresar al listado</a>
+    <div class="modal fade" id="modalConfirmarRegreso" tabindex="-1" role="dialog" aria-labelledby="modalConfirmarRegresoLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-crimson">
+                    <h4 class="modal-title" id="modalConfirmarRegresoLabel"><i class="fa fa-warning"></i> Confirmación de Regreso</h4>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está a punto de cerrar la ficha del representante y regresar al listado principal. ¿Desea continuar?</p>
+                </div>
+                <div class="modal-footer" style="background-color: #f8f9fa;">
+                    <button type="button" class="btn btn-second" data-dismiss="modal">Cancelar</button>
+                    <a href="representantes_listado.php" class="btn btn-danger">Regresar al listado</a>
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 
 <?php

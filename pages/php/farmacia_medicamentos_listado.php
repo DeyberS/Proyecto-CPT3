@@ -44,9 +44,9 @@ verificarAcceso('Gestionar Farmacia');
       <?php endif; ?>
       <input type="text" id="buscar" name="buscar" class="form-control" style="border-radius:0; height:10%; width:250px; display:inline-block;" placeholder="Escriba para buscar..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>" autocomplete="off">
       <p class="pull-right" style="width:5px;"></p>
-      <span data-toggle="tooltip" data-placement="right" title="Aqui podras filtrar de manera avanzada la busqueda de medicamentos.">
+      <span data-toggle="tooltip" data-placement="top" title="Filtrar búsqueda">
         <button type="button" class="btn-sm btn-primary btn-sm pull-left" data-toggle="modal" data-target="#modalBusquedaAvanzadaMedicamentos">
-          <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:10px; height:10px; filter:invert(1);" title="filtrar receta"></i>
+          <i class="fa fa-filter"><img src="../../recursos/imagenes/iconos/filtrar.png" style="width:15px; height:20px; filter:invert(1);" title="Filtrar medicamento"></i>
         </button>
       </span>
     </div>
